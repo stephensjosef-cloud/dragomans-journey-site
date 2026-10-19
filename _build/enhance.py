@@ -307,7 +307,8 @@ def enhance_local():
 def enhance_mainframe():
     p = OUT / "mainframe.html"
     t = p.read_text(encoding="utf-8")
-    t = rep_re(t, r'<div role="img" aria-label="Portrait of Josef Stephens goes here".*?\[PORTRAIT, BLACK AND WHITE\]</div>', PHOTO_MF)
+    t = rep_re(t, r'<div role="img" aria-label="Portrait of Josef Stephens goes here".*?\[PORTRAIT, BLACK AND WHITE\]</div>',
+               '<img src="josef-bw.jpg" alt="Josef Stephens" style="margin-top: 8px; aspect-ratio: 4 / 5; width: 100%; object-fit: cover; border: 1px solid #12161F; display: block">' if PHOTO.exists() else PHOTO_MF)
     t = rep_re(t, r'\s*<div style="[^"]*"><dt[^>]*>CREDENTIALS</dt><dd[^>]*>\[IBM Z XPLORE BADGE, ONCE EARNED\]</dd></div>', "")
     t = rep(t, "The job is finding that answer and proving the new system honors it.</p>",
             'The job is finding that answer and proving the new system honors it. <a href="comp3.html" style="color: #F07A4E; white-space: nowrap">Decode your own bytes →</a></p>')
@@ -343,6 +344,7 @@ def add_pages():
         (OUT / f).write_text(t, encoding="utf-8")
     if PHOTO.exists():
         shutil.copy(PHOTO, OUT / "josef.jpg")
+        shutil.copy(PHOTO.with_name("josef-bw.jpg"), OUT / "josef-bw.jpg")
 
 
 def enhance_index():
