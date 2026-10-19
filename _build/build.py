@@ -178,7 +178,7 @@ def build_index():
     page(
         "index.html",
         "Dragoman's Journey · Josef Stephens",
-        "Nothing I make reaches your customers or your production systems until a person has checked the proof.",
+        "Two routes, one guide: AI productions for Sonoma County small businesses and nonprofits, and proof of behavioral equivalence for COBOL migrations.",
         SITE,
         helmet, body, script, jsonld,
     )

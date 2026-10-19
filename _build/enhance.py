@@ -79,8 +79,8 @@ def iq_group(gid, question, options):
 INTAKE = f"""
     <div id="intake" hidden="" style="display: flex; flex-direction: column; gap: 20px; padding: clamp(18px, 2.4vw, 28px); border: 1px solid #3A4D44; background: #1A2822; border-radius: 2px">
       <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
-        <h3 style="margin: 0; {BIG}; font-size: clamp(26px, 2.6vw, 32px); line-height: 1">Want me to write the first email for you?</h3>
-        <span style="{MONO}; font-size: 13px; color: #93A39A">Three taps. You can change anything before it sends.</span>
+        <h3 style="margin: 0; {BIG}; font-size: clamp(26px, 2.6vw, 32px); line-height: 1">Three taps and I'll write your first email</h3>
+        <span style="{MONO}; font-size: 13px; color: #93A39A">You can change anything before it sends.</span>
       </div>
       {iq_group("q1", "What do you run?", ["A small business", "A nonprofit", "A school or youth program"])}
       {iq_group("q2", "Who says yes to spending money?", ["I do", "Me and one other person", "A board or committee"])}
@@ -98,9 +98,9 @@ INTAKE = f"""
 if DROPIN_DATE:
     drop_when, drop_where, drop_cta, drop_subj = DROPIN_DATE, DROPIN_PLACE or "Santa Rosa", "Tell me you're coming →", "Drop-in%20hours%3A%20I%27m%20coming"
 else:
-    drop_when = "First date coming soon"
-    drop_where = "A coffee shop or library in Santa Rosa. I'm setting the first one now, and I'll send the date to anyone who asks."
-    drop_cta, drop_subj = "Send me the date →", "Drop-in%20hours%3A%20send%20me%20the%20date"
+    drop_when = "The list hears first"
+    drop_where = "Twenty minutes, your pile and my full attention, somewhere in Santa Rosa with decent coffee. Dates go to the list before they go anywhere else."
+    drop_cta, drop_subj = "Put me on the list →", "Drop-in%20hours%3A%20put%20me%20on%20the%20list"
 
 DROPIN = f"""<!-- ============ DROP-IN HOURS ============ -->
 <section id="dropin" aria-labelledby="dropin-h" style="background: #E8E1D1">
