@@ -114,11 +114,11 @@ with sync_playwright() as p:
     for q, txt in (('q1', 'A small business'), ('q2', 'A board or committee'), ('q3', 'Just looking for now')):
         pg2.click(f'button.iq[data-q="{q}"]:has-text("{txt}")')
     pg2.fill('#iq-name', 'Test Kitchen')
-    pg2.click('#iq-send'); pg2.wait_for_timeout(200)
-    url = pg2.get_attribute('#iq-send', 'data-mailto') or ''
-    from urllib.parse import unquote
-    check('mailto built', url.startswith('mailto:stephens.josef@gmail.com?subject=Blueprint%20question%3A%20Test%20Kitchen'), url[:120])
-    check('mailto body has answers', 'Lessons, recipes or a curriculum' in unquote(url) and 'A board or committee' in unquote(url), unquote(url)[:300])
+    pg2.click('#iq-send'); pg2.wait_for_timeout(600)
+    check('quiz hands off to start page', 'start.html#' in pg2.url, pg2.url)
+    check('start page preselects pile', pg2.locator('.chips[data-key="pile"] .chip[aria-pressed="true"]').inner_text() == 'Lessons, recipes or a curriculum')
+    check('start page preselects run/yes/when', pg2.locator('.chip[aria-pressed="true"]').count() == 4, str(pg2.locator('.chip[aria-pressed="true"]').count()))
+    check('start page carries org name', pg2.input_value('#org') == 'Test Kitchen')
 
     check('drop-in section present', pg.locator('#dropin').count() == 1)
     check('contact links to drop-in', pg.locator('#contact a[href="#dropin"]').count() == 1)
@@ -131,6 +131,62 @@ with sync_playwright() as p:
         q.locator('section[aria-labelledby="start"]').screenshot(path=f'{SHOTS}/start-{w}.png')
         q.locator('#dropin').screenshot(path=f'{SHOTS}/dropin-{w}.png')
         q.locator('#josef').screenshot(path=f'{SHOTS}/josef-{w}.png')
+
+    # ---------------- start, briefing, drop-in (endpoint mocked)
+    import json as _json
+    posts = []
+    def mock_ok(route):
+        if route.request.method == 'POST':
+            posts.append(_json.loads(route.request.post_data or '{}'))
+        return route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
+    def mock_fail(route):
+        return route.fulfill(status=502, content_type='application/json', body='{"ok":false}', headers={'Access-Control-Allow-Origin': '*'})
+
+    pg = newpage(1440); pg.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok)
+    pg.goto(BASE + 'local.html'); pg.wait_for_timeout(300)
+    check('all Blueprint buttons go to start.html', pg.locator('a[href="start.html"]').count() == 3, str(pg.locator('a[href="start.html"]').count()))
+    check('no gmail anywhere on local', 'stephens.josef@gmail.com' not in pg.content())
+    pg.fill('#dl-email', 'list@example.com'); pg.wait_for_timeout(2700); pg.click('#dl-send'); pg.wait_for_timeout(400)
+    check('drop-in posts form=dropin', posts and posts[-1].get('form') == 'dropin' and posts[-1]['fields']['email'] == 'list@example.com', str(posts[-1:]))
+    check('drop-in confirms', "on the list" in pg.inner_text('#dl-msg'))
+
+    pg = newpage(1440); pg.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok)
+    pg.goto(BASE + 'start.html'); pg.wait_for_timeout(300)
+    check('start success panel hidden on load', not pg.locator('#bp-done').is_visible())
+    pg.click('#bp-send'); pg.wait_for_timeout(200)
+    check('start validates empty form', pg.locator('#bp-err').is_visible() and 'step 1' in pg.inner_text('#bp-err'))
+    pg.click('.chips[data-key="pile"] .chip >> nth=0')
+    pg.click('.chips[data-key="days"] .chip >> nth=1'); pg.click('.chips[data-key="days"] .chip >> nth=3')
+    pg.fill('#name', 'Pat Test'); pg.fill('#email', 'pat@example.com'); pg.fill('#never', 'We film and never post.')
+    n0 = len(posts)
+    pg.click('#bp-send'); pg.wait_for_timeout(500)
+    check('start posts form=blueprint', len(posts) == n0 + 1 and posts[-1]['form'] == 'blueprint', str(posts[-1:]))
+    check('start sends multi-select days', posts[-1]['fields'].get('days') == 'Tuesday, Thursday', str(posts[-1]['fields']))
+    check('start shows success', pg.locator('#bp-done').is_visible() and not pg.locator('#bp').is_visible())
+
+    pg = newpage(390); pg.route('**/dj-intake.stephens-josef.workers.dev/**', mock_fail)
+    pg.goto(BASE + 'start.html'); pg.wait_for_timeout(300)
+    pg.click('.chips[data-key="pile"] .chip >> nth=2'); pg.fill('#name', 'Pat'); pg.fill('#email', 'pat@example.com')
+    pg.click('#bp-send'); pg.wait_for_timeout(500)
+    check('start failure keeps form and offers email', pg.locator('#bp').is_visible() and pg.locator('#bp-err a[href^="mailto:hello@dragomansjourney.com"]').count() == 1)
+    check('start no overflow at 390', pg.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+    pg.screenshot(path=f'{SHOTS}/start-390.png', full_page=True)
+    q = newpage(1440); q.goto(BASE + 'start.html'); q.wait_for_timeout(400); q.screenshot(path=f'{SHOTS}/start-1440.png', full_page=True)
+
+    pg = newpage(1440); pg.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok)
+    pg.goto(BASE + 'briefing.html#ask=survey'); pg.wait_for_timeout(300)
+    check('briefing success panel hidden on load', not pg.locator('#br-done').is_visible())
+    check('briefing preselects survey', pg.locator('.chips[data-key="ask"] .chip[aria-pressed="true"]').inner_text() == 'A quote for the Survey')
+    pg.fill('#name', 'Dana Test'); pg.fill('#email', 'dana@bank.example'); pg.fill('#org', 'Example Credit Union')
+    pg.click('.chips[data-key="stage"] .chip >> nth=2')
+    n0 = len(posts)
+    pg.click('#br-send'); pg.wait_for_timeout(500)
+    check('briefing posts form=briefing', len(posts) == n0 + 1 and posts[-1]['form'] == 'briefing' and posts[-1]['fields'].get('ask') == 'A quote for the Survey', str(posts[-1:]))
+    check('briefing shows success', pg.locator('#br-done').is_visible())
+    for w in (390, 1440):
+        q = newpage(w); q.goto(BASE + 'briefing.html'); q.wait_for_timeout(400)
+        check(f'briefing no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        q.screenshot(path=f'{SHOTS}/briefing-{w}.png', full_page=True)
 
     # ---------------- mainframe
     for w in (390, 1440):

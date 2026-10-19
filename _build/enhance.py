@@ -17,7 +17,8 @@ HERE = Path(__file__).resolve().parent
 # Fill these in when Josef sets the first drop-in. Leave None until then.
 DROPIN_DATE = None    # e.g. "Thursday, November 12 · 3 to 5 PM"
 DROPIN_PLACE = None   # e.g. "Santa Rosa Central Library, 211 E Street"
-EMAIL = "stephens.josef@gmail.com"
+EMAIL = "hello@dragomansjourney.com"
+ENDPOINT = "https://dj-intake.stephens-josef.workers.dev/"
 LINKEDIN = None      # Josef's profile URL; until then the footer link is left out
 
 
@@ -90,17 +91,17 @@ INTAKE = f"""
         <input id="iq-name" autocomplete="organization" style="min-height: 52px; padding: 10px 14px; border: 1.5px solid #3A4D44; border-radius: 2px; background: #0E1B17; color: #E9EEE9; font: 500 17px 'Instrument Sans', sans-serif">
       </label>
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
-        <button type="button" id="iq-send" disabled="" class="btn-blaze" style="min-height: 56px; padding: 0 26px; border: 0; border-radius: 2px; background: #E8592B; color: #0E1B17; font: 700 17px 'Instrument Sans', sans-serif; cursor: pointer">Write my email →</button>
-        <span style="font-size: 15px; color: #93A39A">It opens in your own email app. Nothing sends until you press send.</span>
+        <button type="button" id="iq-send" disabled="" class="btn-blaze" style="min-height: 56px; padding: 0 26px; border: 0; border-radius: 2px; background: #E8592B; color: #0E1B17; font: 700 17px 'Instrument Sans', sans-serif; cursor: pointer">Continue to my Blueprint →</button>
+        <span style="font-size: 15px; color: #93A39A">Your answers carry over. Nothing is sent yet.</span>
       </div>
     </div>"""
 
 if DROPIN_DATE:
-    drop_when, drop_where, drop_cta, drop_subj = DROPIN_DATE, DROPIN_PLACE or "Santa Rosa", "Tell me you're coming →", "Drop-in%20hours%3A%20I%27m%20coming"
+    drop_when, drop_where, drop_cta = DROPIN_DATE, DROPIN_PLACE or "Santa Rosa", "Save me a seat →"
 else:
     drop_when = "The list hears first"
     drop_where = "Twenty minutes, your pile and my full attention, somewhere in Santa Rosa with decent coffee. Dates go to the list before they go anywhere else."
-    drop_cta, drop_subj = "Put me on the list →", "Drop-in%20hours%3A%20put%20me%20on%20the%20list"
+    drop_cta = "Put me on the list →"
 
 DROPIN = f"""<!-- ============ DROP-IN HOURS ============ -->
 <section id="dropin" aria-labelledby="dropin-h" style="background: #E8E1D1">
@@ -114,7 +115,15 @@ DROPIN = f"""<!-- ============ DROP-IN HOURS ============ -->
       <span style="{MONO}; font-size: 12px; letter-spacing: 0.1em; color: #6B716A">NEXT DROP-IN</span>
       <strong style="{BIG}; font-size: 34px; line-height: 1; color: #16201C">{drop_when}</strong>
       <span style="font-size: 17px; color: #3B4540">{drop_where}</span>
-      <a href="mailto:{EMAIL}?subject={drop_subj}" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; margin-top: 6px; background: #16201C; color: #F2EDE1; text-decoration: none; font-weight: 700; border-radius: 2px">{drop_cta}</a>
+      <form id="dl" novalidate style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px">
+        <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden" aria-hidden="true"><input id="dl-website" tabindex="-1" autocomplete="off"></div>
+        <label style="display: flex; flex-direction: column; gap: 6px"><span style="{MONO}; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B716A">Email</span>
+          <input id="dl-email" type="email" autocomplete="email" required style="min-height: 52px; padding: 10px 14px; border: 1.5px solid #B9B09C; border-radius: 2px; background: #FBF8F1; color: #16201C; font: 500 17px 'Instrument Sans', sans-serif"></label>
+        <label style="display: flex; flex-direction: column; gap: 6px"><span style="{MONO}; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B716A">Name (optional)</span>
+          <input id="dl-name" autocomplete="name" style="min-height: 52px; padding: 10px 14px; border: 1.5px solid #B9B09C; border-radius: 2px; background: #FBF8F1; color: #16201C; font: 500 17px 'Instrument Sans', sans-serif"></label>
+        <button type="submit" id="dl-send" style="align-self: flex-start; min-height: 52px; padding: 0 22px; border: 0; background: #16201C; color: #F2EDE1; font: 700 16px 'Instrument Sans', sans-serif; border-radius: 2px; cursor: pointer">{drop_cta}</button>
+        <p id="dl-msg" role="status" style="margin: 0; font-size: 16px; color: #3B4540" hidden></p>
+      </form>
     </div>
   </div>
 </section>
@@ -240,21 +249,37 @@ LOCAL_JS = r"""
   send.addEventListener('click', function () {
     if (send.disabled) return;
     var name = document.getElementById('iq-name').value.trim();
-    var subject = 'Blueprint question' + (name ? ': ' + name : '');
-    var body = 'Hi Josef,\n\n' +
-      'What I have a pile of: ' + pile + '\n' +
-      'What I run: ' + answers.q1 + (name ? ' (' + name + ')' : '') + '\n' +
-      'Who says yes: ' + answers.q2 + '\n' +
-      'When: ' + answers.q3 + '\n\n' +
-      'The part that never gets done:\n\n\n' +
-      'Thanks,\n';
-    var url = 'mailto:EMAIL?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    send.setAttribute('data-mailto', url);
+    var q = { pile: pile, run: answers.q1, yes: answers.q2, when: answers.q3, org: name };
+    var url = 'start.html#' + Object.keys(q).filter(function (k) { return q[k]; })
+      .map(function (k) { return k + '=' + encodeURIComponent(q[k]); }).join('&');
+    send.setAttribute('data-href', url);
     window.location.href = url;
+  });
+
+  // 4. Drop-in list.
+  var loaded = Date.now();
+  var dl = document.getElementById('dl');
+  dl.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var email = document.getElementById('dl-email').value.trim();
+    var msg = document.getElementById('dl-msg');
+    var btn = document.getElementById('dl-send');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'I need an email to send the date to.'; msg.hidden = false; return; }
+    btn.disabled = true;
+    fetch('ENDPOINT', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ form: 'dropin', fields: { email: email, name: document.getElementById('dl-name').value.trim() }, website: document.getElementById('dl-website').value, ms: Date.now() - loaded }) })
+      .then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })
+      .catch(function () { return false; })
+      .then(function (ok) {
+        btn.disabled = false;
+        if (ok) { dl.querySelectorAll('label, button').forEach(function (n) { n.hidden = true; }); msg.textContent = "You're on the list. The next date comes to your inbox first."; }
+        else { msg.innerHTML = 'That didn\'t go through. Try again, or write to <a href="mailto:EMAIL">EMAIL</a>.'; }
+        msg.hidden = false;
+      });
   });
 })();
 </script>
-""".replace("EMAIL", EMAIL)
+""".replace("ENDPOINT", ENDPOINT).replace("EMAIL", EMAIL)
 
 
 def enhance_local():
@@ -283,6 +308,12 @@ def enhance_local():
     assert n == 1, "pick-msg"
 
 
+    # Every "start a Blueprint" button goes to the start page.
+    for label in ("Start a Blueprint", "Start with a Blueprint"):
+        t, k = re.subn(r'href="#blueprint"([^>]*>' + label + ')', lambda m: 'href="start.html"' + m.group(1), t)
+        assert k == 1, label
+    t = rep(t, 'href="mailto:stephens.josef@gmail.com?subject=Blueprint%20for%20%5Byour%20business%5D"', 'href="start.html"')
+
     # Drop-in hours before the contact band.
     t = rep(t, '<section id="contact"', DROPIN + '<section id="contact"')
 
@@ -306,6 +337,8 @@ def enhance_mainframe():
     t = t[:j] + ('\n      <a href="comp3.html" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease">'
                  '<span style="font-family: \'Newsreader\', Georgia, serif; font-size: 26px">Decode a packed field</span>'
                  '<span aria-hidden="true" style="font-family: \'JetBrains Mono\', monospace">→</span></a>') + t[j:]
+    t = rep(t, 'href="mailto:stephens.josef@gmail.com?subject=Briefing%20request%3A%20%5Binstitution%5D"', 'href="briefing.html#ask=briefing"')
+    t = rep(t, 'href="mailto:stephens.josef@gmail.com?subject=Survey%3A%20one%20program%20family"', 'href="briefing.html#ask=survey"')
     body = re.sub(r"<script.*?</script>|<style.*?</style>", "", t, flags=re.S)
     assert not re.search(r"\[[A-Z ,.]{6,}\]", body), "bracket placeholder left in mainframe.html"
     p.write_text(t, encoding="utf-8")
@@ -323,14 +356,23 @@ def fix_linkedin():
         p.write_text(t, encoding="utf-8")
 
 
-def add_decoder():
-    shutil.copy(HERE / "comp3.html", OUT / "comp3.html")
+def add_pages():
+    for f in ("comp3.html", "start.html", "briefing.html"):
+        shutil.copy(HERE / f, OUT / f)
+
+
+def use_hello():
+    # The site's public address is hello@, which forwards to Josef's Gmail.
+    for p in OUT.glob("*.html"):
+        t = p.read_text(encoding="utf-8")
+        p.write_text(t.replace("stephens.josef@gmail.com", EMAIL), encoding="utf-8")
 
 
 fix_linkedin()
 enhance_local()
 enhance_mainframe()
-add_decoder()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html"):
+add_pages()
+use_hello()
+for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html"):
     assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
 print("enhanced")
