@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Mainframe Route · Dragoman's Journey</title>
+<meta name="description" content="I build the harness that proves a migrated system behaves exactly like the original, byte for byte, and I hand your auditors the evidence before anything touches production.">
+<link rel="canonical" href="https://dragomansjourney.com/mainframe.html">
+<meta property="og:title" content="The Mainframe Route · Dragoman's Journey">
+<meta property="og:description" content="I build the harness that proves a migrated system behaves exactly like the original, byte for byte, and I hand your auditors the evidence before anything touches production.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/mainframe.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+<style>
+body{margin:0;background:#F4F1EA}
+a{color:#A93F17}a:hover{color:#12161F}
+*{box-sizing:border-box}
+::selection{background:#E8592B;color:#12161F}
+.mf a:focus-visible,.mf button:focus-visible{outline:2px solid #A93F17;outline-offset:3px}
+.mf button{font:inherit;cursor:pointer}
+.mnav a{color:#3A4252;text-decoration:none}
+.mnav a:hover{color:#A93F17}
+.quiet:hover{background:#12161F;color:#F4F1EA}
+.seal:hover{filter:brightness(1.05);color:#12161F}
+.fade{animation:fade 900ms cubic-bezier(.2,.7,.2,1) both}
+.fade2{animation:fade 900ms 180ms cubic-bezier(.2,.7,.2,1) both}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (max-width:860px){.mnav{display:none!important}}
+@media (prefers-reduced-motion:reduce){.fade,.fade2{animation:none}}
+</style>
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="mf" style="font-family: 'Instrument Sans', 'Helvetica Neue', system-ui, sans-serif; color: #12161F; background: #F4F1EA; font-size: 17px; line-height: 1.65; -webkit-font-smoothing: antialiased">
+
+<!-- ======= LETTERHEAD NAV ======= -->
+<div style="border-bottom: 1px solid #CFC8B8">
+  <nav aria-label="Main" style="max-width: 1240px; margin: 0 auto; padding: 22px clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 28px">
+    <a href="index.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #12161F">
+      <svg aria-hidden="true" width="30" height="30" viewBox="0 0 34 34"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#12161F" stroke-width="1.8" stroke-linejoin="round"></path><circle cx="23" cy="7" r="2.4" fill="#E8592B"></circle></svg>
+      <span style="display: flex; flex-direction: column; line-height: 1.1">
+        <span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; letter-spacing: 0.01em">Dragoman's Journey</span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #5D6576">The Mainframe Route</span>
+      </span>
+    </a>
+    <div class="mnav" style="display: flex; gap: 26px; font-size: 15px">
+      <a href="#s1">§1 The risk</a>
+      <a href="#s2">§2 Exhibits</a>
+      <a href="#s3">§3 Engagement</a>
+      <a href="#s4">§4 Dossier</a>
+      <a href="#s7">§6 Practitioner</a>
+    </div>
+    <a href="#correspondence" class="quiet" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid #12161F; color: #12161F; text-decoration: none; font-size: 15px; font-weight: 500; transition: background 160ms ease, color 160ms ease">Request a briefing</a>
+  </nav>
+</div>
+
+<!-- ======= HERO ======= -->
+<header style="position: relative; overflow: hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0; width: 100%; height: 100%">
+    <path d="M-40 20 C 220 38, 420 2, 700 24 S 1080 43.4, 1260 14 S 1480 2, 1520 20" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 66 C 220 93, 420 39, 700 70 S 1080 101.1, 1260 60 S 1480 39, 1520 66" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 112 C 220 148, 420 76, 700 116 S 1080 158.8, 1260 106 S 1480 76, 1520 112" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 158 C 220 203, 420 113, 700 162 S 1080 216.5, 1260 152 S 1480 113, 1520 158" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 204 C 220 258, 420 150, 700 208 S 1080 274.2, 1260 198 S 1480 150, 1520 204" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 250 C 220 268, 420 232, 700 254 S 1080 273.4, 1260 244 S 1480 232, 1520 250" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 296 C 220 323, 420 269, 700 300 S 1080 331.1, 1260 290 S 1480 269, 1520 296" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 342 C 220 378, 420 306, 700 346 S 1080 388.8, 1260 336 S 1480 306, 1520 342" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 388 C 220 433, 420 343, 700 392 S 1080 446.5, 1260 382 S 1480 343, 1520 388" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 434 C 220 488, 420 380, 700 438 S 1080 504.2, 1260 428 S 1480 380, 1520 434" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 480 C 220 498, 420 462, 700 484 S 1080 503.4, 1260 474 S 1480 462, 1520 480" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 526 C 220 553, 420 499, 700 530 S 1080 561.1, 1260 520 S 1480 499, 1520 526" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 572 C 220 608, 420 536, 700 576 S 1080 618.8, 1260 566 S 1480 536, 1520 572" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 618 C 220 663, 420 573, 700 622 S 1080 676.5, 1260 612 S 1480 573, 1520 618" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 664 C 220 718, 420 610, 700 668 S 1080 734.2, 1260 658 S 1480 610, 1520 664" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 710 C 220 728, 420 692, 700 714 S 1080 733.4, 1260 704 S 1480 692, 1520 710" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 756 C 220 783, 420 729, 700 760 S 1080 791.1, 1260 750 S 1480 729, 1520 756" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 802 C 220 838, 420 766, 700 806 S 1080 848.8, 1260 796 S 1480 766, 1520 802" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 848 C 220 893, 420 803, 700 852 S 1080 906.5, 1260 842 S 1480 803, 1520 848" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path><path d="M-40 894 C 220 948, 420 840, 700 898 S 1080 964.2, 1260 888 S 1480 840, 1520 894" fill="none" stroke="rgba(18,22,31,0.07)" stroke-width="0.8"></path>
+  </svg>
+  <div style="position: relative; max-width: 1240px; margin: 0 auto; padding: clamp(56px, 8vw, 120px) clamp(16px, 4vw, 48px) clamp(64px, 8vw, 112px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(500px, 100%), 1fr)); gap: clamp(40px, 6vw, 88px); align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 28px">
+      <p class="fade" style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #5D6576">AI-assisted COBOL migration · with proof of behavioral equivalence</p>
+      <h1 class="fade" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(46px, 6.2vw, 92px); line-height: 1.0; letter-spacing: -0.025em; text-wrap: balance">The translation was faithful. <em style="font-weight: 400; color: #A93F17">The interest was off by a factor of one hundred.</em></h1>
+      <p class="fade2" style="margin: 0; max-width: 56ch; font-size: clamp(18px, 1.5vw, 20px); color: #3A4252">AI can translate COBOL in an afternoon now. It still can't tell you what a field means when the meaning was never written down. I build the harness that proves a migrated system behaves exactly like the original, byte for byte, and I hand your auditors the evidence before anything touches production.</p>
+      <div class="fade2" style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+        <a href="#correspondence" class="seal" style="display: inline-flex; align-items: center; min-height: 54px; padding: 0 26px; background: #12161F; color: #F4F1EA; text-decoration: none; font-weight: 600; font-size: 16px">Send one program</a>
+        <a href="#s3" style="display: inline-flex; align-items: center; min-height: 54px; padding: 0 6px; color: #12161F; font-weight: 500; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px">Begin with the Survey · fixed fee</a>
+      </div>
+    </div>
+
+    <!-- Exhibit A -->
+    <figure class="fade2" style="margin: 0; background: #FBF9F4; border: 1px solid #12161F; box-shadow: 14px 14px 0 rgba(18,22,31,0.08)">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #12161F; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em">
+        <strong style="font-weight: 700">EXHIBIT A</strong>
+        <span style="color: #5D6576">ACCTPROC · public run · Aug 2026</span>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <pre style="margin: 0; padding: 14px 16px; background: #12161F; color: #E6E2D8; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre">05  APR-RATE  PIC S9(2)V9(5) COMP-3.
+
+COMPUTE WS-MONTHLY-RATE ROUNDED =
+    APR-RATE / 12
+COMPUTE WS-INTEREST ROUNDED =
+    CURR-BAL * WS-MONTHLY-RATE</pre>
+        <p style="margin: 0; font-size: 15px; color: #3A4252">No divide by 100 anywhere. The picture clause accepts two readings. Choose one:</p>
+        <div role="group" aria-label="Reading of APR-RATE" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <button type="button" aria-pressed="false" data-reading="fraction" style="min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: transparent; color: #12161F;">A fraction</button><button type="button" aria-pressed="true" data-reading="percent" style="min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: #12161F; color: #F4F1EA;">A percentage</button>
+        </div>
+        <div style="display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; font-size: 13px">
+          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">Bytes on disk</span><strong id="mf-bytes">03 50 00 0C</strong></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">APR-RATE holds</span><strong id="mf-value">3.50000</strong></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">Monthly rate (7 dp)</span><strong id="mf-rate">0.2916667</strong></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0"><span style="color: #5D6576">Interest on $1,000.00</span><strong id="mf-interest" style="font-size: 20px; color: #A93F17">$291.67</strong></div>
+        </div>
+        <p style="margin: 0; padding-top: 12px; border-top: 1px solid #12161F; font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 18px; line-height: 1.4" id="mf-verdict" aria-live="polite">Faithful to the code, line for line. Wrong by a factor of one hundred.</p>
+      </div>
+    </figure>
+  </div>
+</header>
+
+<!-- ======= THESIS BAND ======= -->
+<section aria-label="Thesis" style="background: #12161F; color: #E6E2D8">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(44px, 6vw, 72px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 64px; align-items: center">
+    <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.15; letter-spacing: -0.01em">Both readings compile, and both pass a test written from the source. <em style="color: #F07A4E">The bytes your business loads into that field are the only thing that settles it.</em></p>
+    <p style="margin: 0; font-size: 17px; color: #B7BDC9">Static analysis can't close that gap, and neither can a tool that checks its translation against the same ambiguous source it translated. The answer sits in production data and in the head of whoever loads that field. The job is finding that answer and proving the new system honors it.</p>
+  </div>
+</section>
+
+<!-- ======= §1 THE RISK ======= -->
+<section id="s1" aria-labelledby="s1-h">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 128px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 28px 56px">
+    <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">§1</span>
+    </div>
+    <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 36px">
+      <h2 id="s1-h" style="margin: 0; max-width: 24ch; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Translation is close to free in 2026, and a wrong migration costs what it always did</h2>
+      <div style="display: flex; flex-direction: column; gap: 18px; max-width: 66ch; font-size: 18px; color: #2C3341">
+        <p style="margin: 0">On February 23, 2026, an AI lab described Claude Code reading and translating COBOL, and IBM had its worst trading day since 2000.<sup style="font-size: 11px; color: #A93F17">1</sup> By then AWS was already offering its own mainframe transformation agent at no charge.<sup style="font-size: 11px; color: #A93F17">2</sup> Turning COBOL into Java stopped being the hard part.</p>
+        <p style="margin: 0">What changed is how migrations fail. A hand migration usually broke where everyone could see it, in code that wouldn't compile. An AI migration compiles, passes the tests the AI wrote for itself, and can still drop a rule the business depends on. It can also add one nobody asked for, which is harder to spot (Exhibit B).</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F; border-bottom: 1px solid #12161F">
+        <div style="padding: 26px 22px 26px 0; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #CFC8B8">
+          <span style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(40px, 4.2vw, 56px); line-height: 1; letter-spacing: -0.03em">97%</span>
+          <span style="font-size: 15px; color: #3A4252">of failed COBOL attempts where the AI agent believed it had succeeded<sup style="font-size: 10px; color: #A93F17">3</sup></span>
+        </div>
+        <div style="padding: 26px 22px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #CFC8B8">
+          <span style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(40px, 4.2vw, 56px); line-height: 1; letter-spacing: -0.03em">34.8%</span>
+          <span style="font-size: 15px; color: #3A4252">the best score any agent posted on the same COBOL benchmark<sup style="font-size: 10px; color: #A93F17">3</sup></span>
+        </div>
+        <div style="padding: 26px 22px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #CFC8B8">
+          <span style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(40px, 4.2vw, 56px); line-height: 1; letter-spacing: -0.03em">&gt;70%</span>
+          <span style="font-size: 15px; color: #3A4252">of 2026 mainframe exits forecast to miss their goals by overestimating gen AI<sup style="font-size: 10px; color: #A93F17">4</sup></span>
+        </div>
+        <div style="padding: 26px 0 26px 22px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(40px, 4.2vw, 56px); line-height: 1; letter-spacing: -0.03em">£48.65M</span>
+          <span style="font-size: 15px; color: #3A4252">in regulator fines for one bank's 2018 migration, before £330M in other costs<sup style="font-size: 10px; color: #A93F17">5</sup></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FOUR VOICES ======= -->
+<section aria-labelledby="voices-h" style="background: #EBE6DA">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 112px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 40px">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 24px 64px; align-items: end">
+      <h2 id="voices-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Every artifact is testimony. <em style="color: #A93F17">The bytes are the arbiter.</em></h2>
+      <p style="margin: 0; font-size: 18px; color: #2C3341">In a real estate the pieces disagree. The source says one thing, the copybook suggests another, the JCL a third, and the production files show something else again, and the engineer who knew why retired a decade ago. A tool that quietly picks one version to believe hides the problem, so every disagreement goes into the ledger as a finding.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 14px">
+      <div style="background: #F4F1EA; border: 1px solid #B9B2A2; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #5D6576">VOICE 1 · SOURCE</span>
+        <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-size: 22px; line-height: 1.3">"Divide the rate by twelve."</p>
+        <p style="margin: 0; font-size: 15px; color: #3A4252">Says what happens. Never says what the number means.</p>
+      </div>
+      <div style="background: #F4F1EA; border: 1px solid #B9B2A2; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #5D6576">VOICE 2 · COPYBOOK</span>
+        <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-size: 22px; line-height: 1.3">"Seven digits, five after the point."</p>
+        <p style="margin: 0; font-size: 15px; color: #3A4252">Wide enough for 0.03500 and for 3.50000. Silent on which.</p>
+      </div>
+      <div style="background: #F4F1EA; border: 1px solid #B9B2A2; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #5D6576">VOICE 3 · DECLARATIONS AND JCL</span>
+        <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-size: 22px; line-height: 1.3">"This file is line sequential."</p>
+        <p style="margin: 0; font-size: 15px; color: #3A4252">One wrong line here sent two AIs to read packed bytes as text. See Exhibit D.</p>
+      </div>
+      <div style="background: #12161F; color: #E6E2D8; border: 1px solid #12161F; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #F07A4E">VOICE 4 · PRODUCTION BYTES</span>
+        <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 22px; line-height: 1.3">00 03 50 0C</p>
+        <p style="margin: 0; font-size: 15px; color: #B7BDC9">The only voice that can't be mistaken about what the business stored.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= §2 EXHIBITS ======= -->
+<section id="s2" aria-labelledby="s2-h">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 128px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 28px 56px">
+    <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">§2</span>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #5D6576">From the public record</span>
+    </div>
+    <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 30px">
+      <h2 id="s2-h" style="margin: 0; max-width: 24ch; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">What two AIs got wrong in a banking program, and why a reviewer would have signed it</h2>
+      <p style="margin: 0; max-width: 66ch; font-size: 18px; color: #2C3341">Two different AIs translated the same banking program with a one-line prompt and no hints. Both handled packed decimal, half-up rounding and the copybook layout correctly on the first pass. What remained were the failures that read as correct. All of it is published, with the code and prompts, so anyone can rerun it.<sup style="font-size: 11px; color: #A93F17">6</sup></p>
+
+      <div role="tablist" aria-label="Exhibits" style="display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid #12161F">
+        <button type="button" role="tab" aria-selected="true" aria-controls="xb-panel" data-ex="b" style="min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid #A93F17; margin-bottom: -1px; font-size: 15px; font-weight: 600; color: #12161F;">Exhibit B · The added rule</button><button type="button" role="tab" aria-selected="false" aria-controls="xb-panel" data-ex="c" style="min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;">Exhibit C · The quiet corruption</button><button type="button" role="tab" aria-selected="false" aria-controls="xb-panel" data-ex="d" style="min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;">Exhibit D · The wrong declaration</button>
+      </div>
+
+      <article id="xb-panel" role="tabpanel" aria-label="Exhibit" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 28px 48px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h3 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 34px; line-height: 1.1" id="xb-title">The rule nobody asked for.</h3>
+          <p style="margin: 0; font-size: 17px; color: #2C3341" id="xb-body">Asked to translate a monthly interest program, one AI added an accumulation into a year-to-date field that the original program never reads and never writes.</p>
+          <p style="margin: 0; padding: 14px 18px; background: #EBE6DA; font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 19px; line-height: 1.45" id="xb-lesson">A dropped rule shows up when output goes missing. An added rule reads as correct, and is probably true somewhere else in the system, just not in this program.</p>
+        </div>
+        <div style="border: 1px solid #12161F; background: #FBF9F4; font-family: 'JetBrains Mono', monospace; font-size: 13px">
+          <div style="padding: 12px 16px; border-bottom: 1px solid #12161F; letter-spacing: 0.12em; font-size: 12px; display: flex; justify-content: space-between; gap: 10px"><strong id="xb-code">EXHIBIT B</strong><span style="color: #5D6576">FINDING</span></div>
+          <div id="xb-rows"><div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 11px 16px; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">Field</span><strong style="text-align: right">DEP-INTEREST-YTD</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 11px 16px; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">Original reads it</span><strong style="text-align: right">No</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 11px 16px; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">Original writes it</span><strong style="text-align: right">No</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 11px 16px; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">Translation 2</span><strong style="text-align: right">Adds to it monthly</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 11px 16px; border-bottom: 1px dotted #B9B2A2"><span style="color: #5D6576">Caught by</span><strong style="text-align: right">Output bytes, not code review</strong></div></div>
+        </div>
+      </article>
+
+      <p style="margin: 0; font-size: 14px; color: #5D6576; max-width: 72ch">Limits, stated plainly: a synthetic single-program fixture, no CICS, DB2 or call graph, one reviewer. The comparison so far is at the code level. A byte-level comparison of all three programs over one shared input file has not been run yet.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======= §3 ENGAGEMENT ======= -->
+<section id="s3" aria-labelledby="s3-h" style="background: #12161F; color: #E6E2D8; position: relative; overflow: hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0; width: 100%; height: 100%">
+    <path d="M-40 20 C 220 38, 420 2, 700 24 S 1080 43.4, 1260 14 S 1480 2, 1520 20" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 66 C 220 93, 420 39, 700 70 S 1080 101.1, 1260 60 S 1480 39, 1520 66" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 112 C 220 148, 420 76, 700 116 S 1080 158.8, 1260 106 S 1480 76, 1520 112" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 158 C 220 203, 420 113, 700 162 S 1080 216.5, 1260 152 S 1480 113, 1520 158" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 204 C 220 258, 420 150, 700 208 S 1080 274.2, 1260 198 S 1480 150, 1520 204" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 250 C 220 268, 420 232, 700 254 S 1080 273.4, 1260 244 S 1480 232, 1520 250" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 296 C 220 323, 420 269, 700 300 S 1080 331.1, 1260 290 S 1480 269, 1520 296" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 342 C 220 378, 420 306, 700 346 S 1080 388.8, 1260 336 S 1480 306, 1520 342" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 388 C 220 433, 420 343, 700 392 S 1080 446.5, 1260 382 S 1480 343, 1520 388" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 434 C 220 488, 420 380, 700 438 S 1080 504.2, 1260 428 S 1480 380, 1520 434" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 480 C 220 498, 420 462, 700 484 S 1080 503.4, 1260 474 S 1480 462, 1520 480" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 526 C 220 553, 420 499, 700 530 S 1080 561.1, 1260 520 S 1480 499, 1520 526" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 572 C 220 608, 420 536, 700 576 S 1080 618.8, 1260 566 S 1480 536, 1520 572" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 618 C 220 663, 420 573, 700 622 S 1080 676.5, 1260 612 S 1480 573, 1520 618" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 664 C 220 718, 420 610, 700 668 S 1080 734.2, 1260 658 S 1480 610, 1520 664" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 710 C 220 728, 420 692, 700 714 S 1080 733.4, 1260 704 S 1480 692, 1520 710" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 756 C 220 783, 420 729, 700 760 S 1080 791.1, 1260 750 S 1480 729, 1520 756" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 802 C 220 838, 420 766, 700 806 S 1080 848.8, 1260 796 S 1480 766, 1520 802" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 848 C 220 893, 420 803, 700 852 S 1080 906.5, 1260 842 S 1480 803, 1520 848" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path><path d="M-40 894 C 220 948, 420 840, 700 898 S 1080 964.2, 1260 888 S 1480 840, 1520 894" fill="none" stroke="rgba(230,226,216,0.06)" stroke-width="0.8"></path>
+  </svg>
+  <div style="position: relative; max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 128px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 48px">
+    <div style="display: flex; flex-wrap: wrap; gap: 28px 56px">
+      <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F07A4E">§3</span>
+      </div>
+      <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+        <h2 id="s3-h" style="margin: 0; max-width: 22ch; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Four stages, each with a fixed scope and a fixed fee</h2>
+        <p style="margin: 0; max-width: 62ch; font-size: 18px; color: #B7BDC9">I don't review somebody's translation by the hour. I build the instrument that proves it, and you keep the instrument. Start with one program family and decide after you've watched it work.</p>
+      </div>
+    </div>
+
+    <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(270px, 100%), 1fr)); gap: 0; border-top: 1px solid #3A4252">
+      <li style="padding: 28px 24px 30px 0; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid #2A3140">
+        <span style="font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 44px; line-height: 1; color: #F07A4E">I.</span>
+        <h3 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1">The Survey</h3>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #9AA3B5">THREE WEEKS · ONE PROGRAM FAMILY</span>
+        <p style="margin: 0; font-size: 16px; color: #C9CED8">I read the source, copybooks, JCL and a sample of real records. You get the source-of-truth ledger, an ambiguity register naming every field whose meaning isn't in the code, and a fixed quote for the harness.</p>
+        <p style="margin: auto 0 0; padding-top: 14px; border-top: 1px solid #2A3140; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #E6E2D8">From $8,000 · credited in full toward stage II</p>
+      </li>
+      <li style="padding: 28px 24px 30px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid #2A3140">
+        <span style="font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 44px; line-height: 1; color: #F07A4E">II.</span>
+        <h3 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1">The Harness</h3>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #9AA3B5">BUILT FOR YOUR ESTATE</span>
+        <p style="margin: 0; font-size: 16px; color: #C9CED8">An equivalence harness that runs the original and the migrated code over the same input files and compares every output byte. Each divergence comes back as a replayable case: the input, the two outputs and the cause.</p>
+        <p style="margin: auto 0 0; padding-top: 14px; border-top: 1px solid #2A3140; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #E6E2D8">From $15,000 · yours to keep and rerun</p>
+      </li>
+      <li style="padding: 28px 24px 30px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid #2A3140">
+        <span style="font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 44px; line-height: 1; color: #F07A4E">III.</span>
+        <h3 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1">The Crossing</h3>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #9AA3B5">TRANSLATION WITH A GATE</span>
+        <p style="margin: 0; font-size: 16px; color: #C9CED8">The migration itself, by your team, your integrator or me, with the tool your security office already approved. Nothing crosses to production until it clears the harness and a named person signs.</p>
+        <p style="margin: auto 0 0; padding-top: 14px; border-top: 1px solid #2A3140; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #E6E2D8">Sprint gate from $5,000/month</p>
+      </li>
+      <li style="padding: 28px 0 30px 24px; display: flex; flex-direction: column; gap: 12px">
+        <span style="font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 44px; line-height: 1; color: #F07A4E">IV.</span>
+        <h3 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1">The Dossier</h3>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #9AA3B5">AT EVERY CROSSING</span>
+        <p style="margin: 0; font-size: 16px; color: #C9CED8">Referenceable behavioral equivalence, finding by finding: a document your model-risk team, internal audit and examiners can read, question and reproduce without me in the room.</p>
+        <p style="margin: auto 0 0; padding-top: 14px; border-top: 1px solid #2A3140; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #E6E2D8">Included with II and III</p>
+      </li>
+    </ol>
+
+    <p style="margin: 0; font-size: 15px; color: #9AA3B5; max-width: 80ch">Already working with an integrator, or running a parallel run of your own? Good. The harness doesn't compete with either. It explains every difference a parallel run finds, and it gates your integrator's output the same way it would gate mine.</p>
+  </div>
+</section>
+
+<!-- ======= §4 DOSSIER ======= -->
+<section id="s4" aria-labelledby="s4-h">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 128px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 28px 56px">
+    <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">§4</span>
+    </div>
+    <div style="flex: 999 1 640px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 32px 56px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 18px">
+        <h2 id="s4-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">The Equivalence Dossier, the document you hand the examiner</h2>
+        <p style="margin: 0; font-size: 18px; color: #2C3341">Every claim in it points to bytes you can produce again on demand. It's built to answer the questions examiners and model-risk teams already ask about software a machine helped write.</p>
+        <p style="margin: 0; font-size: 15px; color: #5D6576">A note on guidance. U.S. model-risk guidance was rewritten in April 2026 and, for now, leaves generative AI out of scope.<sup style="font-size: 10px; color: #A93F17">7</sup> Until that's settled, the dossier follows what examiners already check for: testing, outcomes analysis, reproducibility and a named person at the gate.</p>
+      </div>
+      <div style="border-top: 2px solid #12161F">
+        <div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="true" aria-controls="toc-b-0" data-toc="0" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">01</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">Scope and frozen baseline</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; transform: rotate(45deg);">+</span></button><p id="toc-b-0" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252">Exactly which programs, copybooks, JCL and data are in scope, captured at a fixed point so every later claim refers to the same starting estate.</p></div><div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="false" aria-controls="toc-b-1" data-toc="1" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">02</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">Source-of-truth ledger</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; ">+</span></button><p id="toc-b-1" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252" hidden="">Where source, copybook, declarations and production bytes agree, and every place they don’t, with the bytes that settled it.</p></div><div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="false" aria-controls="toc-b-2" data-toc="2" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">03</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">Ambiguity register</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; ">+</span></button><p id="toc-b-2" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252" hidden="">Every field whose meaning isn’t in the code, the reading chosen, the evidence for it, and the business owner who confirmed it by name.</p></div><div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="false" aria-controls="toc-b-3" data-toc="3" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">04</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">Harness and test corpus</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; ">+</span></button><p id="toc-b-3" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252" hidden="">The harness source and the input files it runs, including edge cases for packed decimal, rounding, sign handling, encoding and sort order.</p></div><div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="false" aria-controls="toc-b-4" data-toc="4" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">05</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">Divergence log</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; ">+</span></button><p id="toc-b-4" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252" hidden="">Each difference between original and migrated output: the replayable input, both outputs, the cause, the fix and who approved it.</p></div><div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="false" aria-controls="toc-b-5" data-toc="5" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">06</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">Reproduction kit</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; ">+</span></button><p id="toc-b-5" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252" hidden="">Model versions, prompts, configuration and rerun instructions, so your team can produce every result again without me.</p></div><div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="false" aria-controls="toc-b-6" data-toc="6" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">07</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">What this does not prove</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; ">+</span></button><p id="toc-b-6" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252" hidden="">Coverage limits and out-of-scope behavior, stated beside the claims rather than buried after them.</p></div><div style="border-bottom: 1px solid #CFC8B8"><button type="button" aria-expanded="false" aria-controls="toc-b-7" data-toc="7" style="width: 100%; min-height: 56px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 12px; align-items: center; padding: 12px 0; background: none; border: 0; text-align: left; color: #12161F"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">08</span><span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; line-height: 1.25">Sign-off</span><span aria-hidden="true" style="font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; ">+</span></button><p id="toc-b-7" style="margin: 0 0 18px 56px; font-size: 16px; color: #3A4252" hidden="">Named people, dated signatures, and the exact build each signature covers.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= §6 WHAT THIS DOES NOT PROVE ======= -->
+<section aria-labelledby="s6-h">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 104px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 28px 56px">
+    <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">§5</span>
+    </div>
+    <div style="flex: 999 1 640px; min-width: 0; border: 1px solid #12161F; padding: clamp(24px, 3vw, 40px); display: flex; flex-direction: column; gap: 16px; background: #FBF9F4">
+      <h2 id="s6-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.1">What a harness does not prove.</h2>
+      <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 17px; color: #2C3341; max-width: 70ch">
+        <li>Behavior on inputs that never appear in the test corpus. Coverage is reported, never implied.</li>
+        <li>What the business intended, where nobody alive can say. Those fields go in the ambiguity register with a named owner, not a guess.</li>
+        <li>Performance, capacity or batch-window timing. Those need their own tests, and the dossier says so.</li>
+        <li>Anything about systems outside the agreed scope.</li>
+      </ul>
+      <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 20px; color: #12161F">Anyone who promises "100% equivalence" without this list is promising something no one can check.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======= §7 PRACTITIONER ======= -->
+<section id="s7" aria-labelledby="s7-h" style="background: #EBE6DA">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 128px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 28px 56px">
+    <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 14px">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">§6</span>
+      <div role="img" aria-label="Portrait of Josef Stephens goes here" style="margin-top: 8px; aspect-ratio: 4 / 5; width: 100%; background: repeating-linear-gradient(135deg, #DED7C7 0 10px, #E5DFD1 10px 20px); border: 1px solid #12161F; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #3A4252">[PORTRAIT, BLACK AND WHITE]</div>
+    </div>
+    <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px; max-width: 70ch">
+      <h2 id="s7-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">One accountable name on the sign-off page.</h2>
+      <p style="margin: 0; font-size: 18px; color: #2C3341">I'm Josef Stephens, an independent practitioner in Santa Rosa, California. I haven't spent thirty years on a mainframe. Since March I've been building the proof layer the field keeps saying is missing, in public, with my misses published next to my results.</p>
+      <p style="margin: 0; font-size: 18px; color: #2C3341">I don't sell a translation tool and no vendor pays me. The harness I build for you reruns without me, because a verifier that's tied to the translator isn't worth much to an auditor.</p>
+      <p style="margin: 0; font-size: 18px; color: #2C3341">I came to this from commission sales and insurance, at State Farm and Allstate. If the Survey finds your migration doesn't need me, it will say that in writing.</p>
+      <dl style="margin: 8px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F; font-size: 15px">
+        <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">PUBLIC RECORD</dt><dd style="margin: 4px 0 0"><a href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Two AI translation runs, findings and prompts</a></dd></div>
+        <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">SPECIALTY</dt><dd style="margin: 4px 0 0">COMP-3, REDEFINES, copybooks, rounding, encoding</dd></div>
+        <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">PLATFORMS</dt><dd style="margin: 4px 0 0">z/OS and distributed COBOL</dd></div>
+        <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">CREDENTIALS</dt><dd style="margin: 4px 0 0">[IBM Z XPLORE BADGE, ONCE EARNED]</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ======= THE OTHER ROUTE ======= -->
+<section aria-labelledby="other-h" style="background: #0E1B17; color: #E9EEE9">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(56px, 7vw, 96px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 28px 64px; align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #F07A4E">The other route</p>
+      <h2 id="other-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(36px, 4.4vw, 60px); line-height: 0.92">The same method, at street level.</h2>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <p style="margin: 0; font-size: 18px; color: #C9D2CB">The harness that guards a bank's interest routine also runs a studio for small businesses and nonprofits in Sonoma County: reels, program apps and workflows, each shipped with its receipts. Small productions keep the method honest. Every week it meets real people who notice when something is off.</p>
+      <a href="local.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; background: #E8592B; color: #0E1B17; text-decoration: none; font-weight: 700">Take the Local Route →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ======= CORRESPONDENCE ======= -->
+<section id="correspondence" aria-labelledby="corr-h">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(80px, 10vw, 140px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 40px 72px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 22px">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #5D6576">Correspondence</span>
+      <h2 id="corr-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(44px, 6vw, 84px); line-height: 1.0; letter-spacing: -0.025em">Send one program <em style="color: #A93F17">and let it make the case</em></h2>
+      <p style="margin: 0; max-width: 54ch; font-size: 18px; color: #2C3341">Write with the program family you're least sure about, roughly how large the estate is, and where the migration stands. I reply personally, and if it isn't a fit, I'll tell you who might be.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 0; border-top: 1px solid #12161F">
+      <a href="mailto:stephens.josef@gmail.com?subject=Briefing%20request%3A%20%5Binstitution%5D" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease"><span style="font-family: 'Newsreader', Georgia, serif; font-size: 26px">Request a briefing</span><span aria-hidden="true" style="font-family: 'JetBrains Mono', monospace">→</span></a>
+      <a href="mailto:stephens.josef@gmail.com?subject=Survey%3A%20one%20program%20family" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease"><span style="font-family: 'Newsreader', Georgia, serif; font-size: 26px">Begin a Survey</span><span aria-hidden="true" style="font-family: 'JetBrains Mono', monospace">→</span></a>
+      <a href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease"><span style="font-family: 'Newsreader', Georgia, serif; font-size: 26px">Read the public findings first</span><span aria-hidden="true" style="font-family: 'JetBrains Mono', monospace">↗</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ======= NOTES ======= -->
+<section aria-labelledby="notes-h" style="border-top: 1px solid #CFC8B8">
+  <div style="max-width: 1240px; margin: 0 auto; padding: 48px clamp(16px, 4vw, 48px) 56px; display: flex; flex-wrap: wrap; gap: 20px 56px">
+    <h2 id="notes-h" style="flex: 1 1 200px; max-width: 260px; margin: 0; font-family: 'JetBrains Mono', monospace; font-weight: 400; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #5D6576">Notes</h2>
+    <ol style="flex: 999 1 640px; min-width: 0; margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #3A4252">
+      <li>Market reaction to Anthropic's COBOL post, Feb 23, 2026. <a href="https://futurumgroup.com/insights/ibm-vs-anthropic-a-tale-of-the-cobol-modernization-tape/">Futurum Group</a>.</li>
+      <li>AWS Transform pricing. <a href="https://aws.amazon.com/transform/pricing/">aws.amazon.com</a>.</li>
+      <li>Factory, Legacy-Bench, Apr 1, 2026. <a href="https://factory.com/news/legacy-bench">factory.com</a>.</li>
+      <li>Gartner forecast, Jun 18, 2026. A prediction, not a measured rate. <a href="https://www.gartner.com/en/newsroom/press-releases/2026-06-18-gartner-predicts-more-than-70-percent-of-mainframe-exit-projects-will-fail-due-to-overestimation-of-generative-ais-capabilities">gartner.com</a>.</li>
+      <li>TSB: FCA and PRA fines, Dec 2022, <a href="https://www.fca.org.uk/news/press-releases/tsb-fined-ps4865m-operational-resilience-failings">fca.org.uk</a>. Post-migration costs, <a href="https://finextra.com/newsarticle/33300/tsb-blames-losses-on-it-meltdown">Finextra</a>.</li>
+      <li>Synthetic fixture and two translations, Aug 2026. <a href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">github.com/stephensjosef-cloud</a>.</li>
+      <li>OCC Bulletin 2026-13 (with SR 26-2), Apr 17, 2026. <a href="https://www.comptrollerofthecurrency.gov/news-issuances/bulletins/2026/bulletin-2026-13.html">occ.gov</a>.</li>
+    </ol>
+  </div>
+</section>
+
+<footer style="background: #12161F; color: #9AA3B5">
+  <div style="max-width: 1240px; margin: 0 auto; padding: 36px clamp(16px, 4vw, 48px) 44px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px 40px; font-size: 14px">
+    <div style="display: flex; flex-direction: column; gap: 6px; max-width: 560px">
+      <span style="font-family: 'Newsreader', Georgia, serif; font-size: 22px; color: #E6E2D8">Dragoman's Journey</span>
+      <span>Dragoman (n.): an interpreter and guide for travelers crossing country where they didn't speak the language.</span>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">Set in Newsreader, Instrument Sans and JetBrains Mono.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: flex-start">
+      <a href="mailto:stephens.josef@gmail.com" style="color: #C9CED8">stephens.josef@gmail.com</a>
+      <a href="[LINKEDIN URL]" style="color: #C9CED8">LinkedIn</a>
+      <a href="https://github.com/stephensjosef-cloud" style="color: #C9CED8">GitHub</a>
+      <span>Santa Rosa, California</span>
+    </div>
+  </div>
+</footer>
+
+</div>
+<script>
+(function () {
+  var D = {"readings": {"percent": {"buttons": [{"on": "false", "style": "min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: transparent; color: #12161F;"}, {"on": "true", "style": "min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: #12161F; color: #F4F1EA;"}], "ex": {"bytes": "03 50 00 0C", "value": "3.50000", "rate": "0.2916667", "interest": "$291.67", "color": "#A93F17", "verdict": "Faithful to the code, line for line. Wrong by a factor of one hundred."}}, "fraction": {"buttons": [{"on": "true", "style": "min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: #12161F; color: #F4F1EA;"}, {"on": "false", "style": "min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: transparent; color: #12161F;"}], "ex": {"bytes": "00 03 50 0C", "value": "0.03500", "rate": "0.0029167", "interest": "$2.92", "color": "#12161F", "verdict": "What the bank means: 3.5% a year, stored as a fraction."}}}, "ex": {"b": {"tabs": [{"on": "true", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid #A93F17; margin-bottom: -1px; font-size: 15px; font-weight: 600; color: #12161F;"}, {"on": "false", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;"}, {"on": "false", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;"}], "xb": {"code": "EXHIBIT B", "title": "The rule nobody asked for.", "body": "Asked to translate a monthly interest program, one AI added an accumulation into a year-to-date field that the original program never reads and never writes.", "lesson": "A dropped rule shows up when output goes missing. An added rule reads as correct, and is probably true somewhere else in the system, just not in this program.", "rows": [{"k": "Field", "v": "DEP-INTEREST-YTD"}, {"k": "Original reads it", "v": "No"}, {"k": "Original writes it", "v": "No"}, {"k": "Translation 2", "v": "Adds to it monthly"}, {"k": "Caught by", "v": "Output bytes, not code review"}]}}, "c": {"tabs": [{"on": "false", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;"}, {"on": "true", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid #A93F17; margin-bottom: -1px; font-size: 15px; font-weight: 600; color: #12161F;"}, {"on": "false", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;"}], "xb": {"code": "EXHIBIT C", "title": "An error that never raises one.", "body": "One translation decoded text as US-ASCII. Any byte above 0x7F in names and account numbers became a replacement character, and nothing complained. The other translation named the encoding as an open decision instead of guessing.", "lesson": "The packed and binary fields were untouched, so the damage landed in exactly the fields nobody checks with arithmetic.", "rows": [{"k": "Translation 1", "v": "Flagged IBM037 vs ISO-8859-1"}, {"k": "Translation 2", "v": "US-ASCII, silently"}, {"k": "Fields affected", "v": "Text only"}, {"k": "Errors raised", "v": "0"}]}}, "d": {"tabs": [{"on": "false", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;"}, {"on": "false", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; font-size: 15px; font-weight: 500; color: #5D6576;"}, {"on": "true", "style": "min-height: 52px; padding: 0 18px; background: none; border: 0; border-bottom: 3px solid #A93F17; margin-bottom: -1px; font-size: 15px; font-weight: 600; color: #12161F;"}], "xb": {"code": "EXHIBIT D", "title": "One line in the ENVIRONMENT DIVISION.", "body": "An early version of the fixture declared the input file LINE SEQUENTIAL. Both AIs honored the declaration, read packed bytes as text, and every field after the account type landed at the wrong offset. Correcting that one line moved both from unusable to substantially correct.", "lesson": "Both tools believed a declaration that was wrong. How accurate a migration comes out depends on the artifacts you hand the tool, which is why the Survey starts there.", "rows": [{"k": "Lines changed", "v": "1"}, {"k": "Translations affected", "v": "2 of 2"}, {"k": "Before the fix", "v": "Wrong offsets"}, {"k": "After the fix", "v": "Substantially correct"}]}}}, "mark": {"open": "font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; transform: rotate(45deg);", "closed": "font-family: JetBrains Mono, monospace; font-size: 20px; color: #A93F17; transition: transform 200ms ease; display: inline-block; "}, "row": "<div style=\"display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding: 11px 16px; border-bottom: 1px dotted #B9B2A2\"><span style=\"color: #5D6576\">{k}</span><strong style=\"text-align: right\">{v}</strong></div>"};
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function $(id) { return document.getElementById(id); }
+
+  // Exhibit A: fraction or percentage reading.
+  var rds = document.querySelectorAll('button[data-reading]');
+  function reading(id) {
+    var v = D.readings[id], ex = v.ex;
+    rds.forEach(function (btn, i) {
+      btn.setAttribute('aria-pressed', v.buttons[i].on);
+      btn.setAttribute('style', v.buttons[i].style);
+    });
+    $('mf-bytes').textContent = ex.bytes;
+    $('mf-value').textContent = ex.value;
+    $('mf-rate').textContent = ex.rate;
+    $('mf-interest').textContent = ex.interest;
+    $('mf-interest').setAttribute('style', 'font-size: 20px; color: ' + ex.color);
+    $('mf-verdict').textContent = ex.verdict;
+  }
+  rds.forEach(function (btn) { btn.addEventListener('click', function () { reading(btn.getAttribute('data-reading')); }); });
+
+  // Exhibit tabs B, C, D.
+  var tabs = document.querySelectorAll('button[data-ex]');
+  function exhibit(id) {
+    var v = D.ex[id], x = v.xb;
+    tabs.forEach(function (btn, i) {
+      btn.setAttribute('aria-selected', v.tabs[i].on);
+      btn.setAttribute('style', v.tabs[i].style);
+    });
+    $('xb-code').textContent = x.code;
+    $('xb-title').textContent = x.title;
+    $('xb-body').textContent = x.body;
+    $('xb-lesson').textContent = x.lesson;
+    $('xb-rows').innerHTML = x.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v)); }).join('');
+  }
+  tabs.forEach(function (btn) { btn.addEventListener('click', function () { exhibit(btn.getAttribute('data-ex')); }); });
+
+  // Dossier table of contents: one open at a time.
+  var toc = document.querySelectorAll('button[data-toc]');
+  var open = 0;
+  function setToc(n) {
+    open = n;
+    toc.forEach(function (btn, i) {
+      var on = i === open;
+      btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+      btn.lastElementChild.setAttribute('style', on ? D.mark.open : D.mark.closed);
+      $('toc-b-' + i).hidden = !on;
+    });
+  }
+  toc.forEach(function (btn, i) { btn.addEventListener('click', function () { setToc(open === i ? -1 : i); }); });
+})();
+</script>
+</body>
+</html>
