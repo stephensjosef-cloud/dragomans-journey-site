@@ -29,7 +29,7 @@ a{color:#A93F17}a:hover{color:#12161F}
 .fade{animation:fade 900ms cubic-bezier(.2,.7,.2,1) both}
 .fade2{animation:fade 900ms 180ms cubic-bezier(.2,.7,.2,1) both}
 @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@media (max-width:860px){.mnav{display:none!important}}
+@media (max-width:1120px){.mnav{display:none!important}}
 @media (prefers-reduced-motion:reduce){.fade,.fade2{animation:none}}
 </style>
 <style>[hidden]{display:none!important}</style>
@@ -52,6 +52,7 @@ a{color:#A93F17}a:hover{color:#12161F}
       <a href="#s2">§2 Exhibits</a>
       <a href="#s3">§3 Engagement</a>
       <a href="#s4">§4 Dossier</a>
+      <a href="#s5">§5 Limits</a>
       <a href="#s7">§6 Practitioner</a>
     </div>
     <a href="#correspondence" class="quiet" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid #12161F; color: #12161F; text-decoration: none; font-size: 15px; font-weight: 500; transition: background 160ms ease, color 160ms ease">Request a briefing</a>
@@ -67,7 +68,7 @@ a{color:#A93F17}a:hover{color:#12161F}
     <div style="display: flex; flex-direction: column; gap: 28px">
       <p class="fade" style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #5D6576">AI-assisted COBOL migration · with proof of behavioral equivalence</p>
       <h1 class="fade" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(46px, 6.2vw, 92px); line-height: 1.0; letter-spacing: -0.025em; text-wrap: balance">The translation was faithful. <em style="font-weight: 400; color: #A93F17">The interest was off by a factor of one hundred.</em></h1>
-      <p class="fade2" style="margin: 0; max-width: 56ch; font-size: clamp(18px, 1.5vw, 20px); color: #3A4252">AI can translate COBOL in an afternoon now. It still can't tell you what a field means when the meaning was never written down. I build the harness that proves a migrated system behaves exactly like the original, byte for byte, and I hand your auditors the evidence before anything touches production.</p>
+      <p class="fade2" style="margin: 0; max-width: 56ch; font-size: clamp(18px, 1.5vw, 20px); color: #3A4252">AI can translate COBOL in an afternoon now. It still can't tell you what a field means when the meaning was never written down. I build the harness that runs the original and the migrated system over the same files and compares every byte they write. Your auditors get the evidence before anything touches production.</p>
       <div class="fade2" style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
         <a href="#correspondence" class="seal" style="display: inline-flex; align-items: center; min-height: 54px; padding: 0 26px; background: #12161F; color: #F4F1EA; text-decoration: none; font-weight: 600; font-size: 16px">Send one program</a>
         <a href="#s3" style="display: inline-flex; align-items: center; min-height: 54px; padding: 0 6px; color: #12161F; font-weight: 500; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px">Begin with the Survey · fixed fee</a>
@@ -149,8 +150,8 @@ COMPUTE WS-INTEREST ROUNDED =
 <section aria-labelledby="voices-h" style="background: #EBE6DA">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 112px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 40px">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 24px 64px; align-items: end">
-      <h2 id="voices-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Every artifact is testimony. <em style="color: #A93F17">The bytes are the arbiter.</em></h2>
-      <p style="margin: 0; font-size: 18px; color: #2C3341">In a real estate the pieces disagree. The source says one thing, the copybook suggests another, the JCL a third, and the production files show something else again, and the engineer who knew why retired a decade ago. A tool that quietly picks one version to believe hides the problem, so every disagreement goes into the ledger as a finding.</p>
+      <h2 id="voices-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Every source has an opinion. <em style="color: #A93F17">The stored bytes settle it.</em></h2>
+      <p style="margin: 0; font-size: 18px; color: #2C3341">In a real mainframe estate the sources disagree. The source says one thing, the copybook suggests another, the JCL a third, and the production files show something else again, and the engineer who knew why retired a decade ago. A tool that quietly picks one version to believe hides the problem, so every disagreement goes into the ledger as a finding.</p>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 14px">
       <div style="background: #F4F1EA; border: 1px solid #B9B2A2; padding: 22px; display: flex; flex-direction: column; gap: 10px">
@@ -221,7 +222,7 @@ COMPUTE WS-INTEREST ROUNDED =
       </div>
       <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
         <h2 id="s3-h" style="margin: 0; max-width: 22ch; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Four stages, each with a fixed scope and a fixed fee</h2>
-        <p style="margin: 0; max-width: 62ch; font-size: 18px; color: #B7BDC9">I don't review somebody's translation by the hour. I build the instrument that proves it, and you keep the instrument. Start with one program family and decide after you've watched it work.</p>
+        <p style="margin: 0; max-width: 62ch; font-size: 18px; color: #B7BDC9">I don't review translations by the hour. I build the instrument that checks them, and you keep it. Start with one program family and decide after you've watched it work.</p>
       </div>
     </div>
 
@@ -251,7 +252,7 @@ COMPUTE WS-INTEREST ROUNDED =
         <span style="font-family: 'Newsreader', Georgia, serif; font-style: italic; font-size: 44px; line-height: 1; color: #F07A4E">IV.</span>
         <h3 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1">The Dossier</h3>
         <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #9AA3B5">AT EVERY CROSSING</span>
-        <p style="margin: 0; font-size: 16px; color: #C9CED8">Referenceable behavioral equivalence, finding by finding: a document your model-risk team, internal audit and examiners can read, question and reproduce without me in the room.</p>
+        <p style="margin: 0; font-size: 16px; color: #C9CED8">Behavioral equivalence written up finding by finding, in a document your model-risk team, internal audit and examiners can read, question and reproduce without me in the room.</p>
         <p style="margin: auto 0 0; padding-top: 14px; border-top: 1px solid #2A3140; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #E6E2D8">Included with II and III</p>
       </li>
     </ol>
@@ -280,7 +281,7 @@ COMPUTE WS-INTEREST ROUNDED =
 </section>
 
 <!-- ======= §6 WHAT THIS DOES NOT PROVE ======= -->
-<section aria-labelledby="s6-h">
+<section id="s5" aria-labelledby="s6-h">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 104px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 28px 56px">
     <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 8px">
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">§5</span>
@@ -328,7 +329,7 @@ COMPUTE WS-INTEREST ROUNDED =
       <h2 id="other-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(36px, 4.4vw, 60px); line-height: 0.92">The same method, at street level.</h2>
     </div>
     <div style="display: flex; flex-direction: column; gap: 16px">
-      <p style="margin: 0; font-size: 18px; color: #C9D2CB">The harness that guards a bank's interest routine also runs a studio for small businesses and nonprofits in Sonoma County: reels, program apps and workflows, each shipped with its receipts. Small productions keep the method honest. Every week it meets real people who notice when something is off.</p>
+      <p style="margin: 0; font-size: 18px; color: #C9D2CB">The method that guards a bank's interest routine also runs a small studio for businesses and nonprofits in Sonoma County: reels, program apps and workflows, each shipped with its run logs. The small jobs keep it honest. Every week real people use what it makes, and they notice when something is off.</p>
       <a href="local.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; background: #E8592B; color: #0E1B17; text-decoration: none; font-weight: 700">Take the Local Route →</a>
     </div>
   </div>
