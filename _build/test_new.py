@@ -121,7 +121,6 @@ with sync_playwright() as p:
     check('start page carries org name', pg2.input_value('#org') == 'Test Kitchen')
 
     check('drop-in section present', pg.locator('#dropin').count() == 1)
-    check('contact links to drop-in', pg.locator('#contact a[href="#dropin"]').count() == 1)
     check('no bracket placeholders visible', '[' not in pg.inner_text('body').replace('[n]', '').replace('[MONTH]', ''), '')
     for w in (390, 768, 1440):
         q = newpage(w); q.goto(BASE + 'local.html'); q.wait_for_timeout(500)
@@ -187,6 +186,53 @@ with sync_playwright() as p:
         q = newpage(w); q.goto(BASE + 'briefing.html'); q.wait_for_timeout(400)
         check(f'briefing no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
         q.screenshot(path=f'{SHOTS}/briefing-{w}.png', full_page=True)
+
+    # ---------------- work, case study, free call
+    pg = newpage(1440)
+    pg.goto(BASE + 'work.html'); pg.wait_for_timeout(300)
+    check('work has 5 cards', pg.locator('#cards .card').count() == 5)
+    pg.click('.filt[data-f="banking"]'); pg.wait_for_timeout(100)
+    check('banking filter shows 2', pg.locator('#cards .card:visible').count() == 2, str(pg.locator('#cards .card:visible').count()))
+    pg.click('.filt[data-f="nonprofit"]'); pg.wait_for_timeout(100)
+    check('nonprofit filter shows 2', pg.locator('#cards .card:visible').count() == 2)
+    check('no CLIENT_ token left on work', 'CLIENT_' not in pg.content())
+    for w in (390, 1440):
+        q = newpage(w); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
+        check(f'work no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        q.screenshot(path=f'{SHOTS}/work-{w}.png', full_page=True)
+        q = newpage(w); q.goto(BASE + 'case-reels.html'); q.wait_for_timeout(400)
+        check(f'case no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        check(f'case client filled at {w}', 'CLIENT_' not in q.content() and "children's nonprofit" in q.inner_text('main'))
+        q.screenshot(path=f'{SHOTS}/case-{w}.png', full_page=True)
+
+    calls = []
+    def mock_old_worker(route):
+        body = _json.loads(route.request.post_data or '{}'); calls.append(body)
+        if body.get('form') == 'call':
+            return route.fulfill(status=400, content_type='application/json', body='{"ok":false,"error":"form"}', headers={'Access-Control-Allow-Origin': '*'})
+        return route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
+    pg = newpage(1440); pg.route('**/dj-intake.stephens-josef.workers.dev/**', mock_old_worker)
+    pg.goto(BASE + 'call.html'); pg.wait_for_timeout(300)
+    check('call success hidden on load', not pg.locator('#cl-done').is_visible())
+    pg.click('.chips[data-key="topic"] .chip >> nth=0'); pg.click('.chips[data-key="days"] .chip >> nth=5')
+    pg.fill('#name', 'Sam Test'); pg.fill('#email', 'sam@example.com'); pg.fill('#note', 'Hi')
+    pg.wait_for_timeout(2600); pg.click('#cl-send'); pg.wait_for_timeout(700)
+    check('call tries call form first', calls and calls[0]['form'] == 'call', str(calls[:1]))
+    check('call falls back to labeled blueprint', len(calls) == 2 and calls[1]['form'] == 'blueprint' and 'CALL REQUEST' in calls[1]['fields'].get('heard', ''), str(calls))
+    check('call shows success', pg.locator('#cl-done').is_visible())
+    calls.clear()
+    pg = newpage(390); pg.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok)
+    pg.goto(BASE + 'call.html'); pg.wait_for_timeout(300)
+    pg.fill('#name', 'Sam'); pg.fill('#email', 'sam@example.com'); pg.click('#cl-send'); pg.wait_for_timeout(500)
+    check('call posts natively when worker knows it', posts and posts[-1]['form'] == 'call', str(posts[-1:]))
+    check('call no overflow at 390', pg.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+    pg.screenshot(path=f'{SHOTS}/call-390.png', full_page=True)
+
+    pg = newpage(1440); pg.goto(BASE + 'index.html'); pg.wait_for_timeout(300)
+    check('front door links work + call', pg.locator('a[href="work.html"]').count() >= 1 and pg.locator('a[href="call.html"]').count() >= 1)
+    pg = newpage(1440); pg.goto(BASE + 'local.html'); pg.wait_for_timeout(300)
+    check('local links work + call', pg.locator('a[href="work.html"]').count() >= 2 and pg.locator('#contact a[href="call.html"]').count() == 1)
+    check('local honesty line', "If I can't show it, it isn't on this site" in pg.inner_text('#proof'))
 
     # ---------------- mainframe
     for w in (390, 1440):

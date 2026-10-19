@@ -19,7 +19,11 @@ DROPIN_DATE = None    # e.g. "Thursday, November 12 · 3 to 5 PM"
 DROPIN_PLACE = None   # e.g. "Santa Rosa Central Library, 211 E Street"
 EMAIL = "hello@dragomansjourney.com"
 ENDPOINT = "https://dj-intake.stephens-josef.workers.dev/"
-LINKEDIN = None      # Josef's profile URL; until then the footer link is left out
+LINKEDIN = None
+# Case-study client. Swap in the real name once Teresa says yes in writing.
+CLIENT_LONG = "A Sonoma County children's nonprofit"
+CLIENT_SHORT = "a Sonoma County children's nonprofit"
+PHOTO = HERE / "assets" / "josef.jpg"   # drop Josef's photo here and rebuild      # Josef's profile URL; until then the footer link is left out
 
 
 def rep(text, old, new, count=1):
@@ -308,6 +312,15 @@ def enhance_local():
     assert n == 1, "pick-msg"
 
 
+    # Receipts rule in one line, plus a way into the full Work page.
+    t = rep(t, "Real numbers from real runs, every one tied to a log. Pick a tab, tap a number, and ask me to open the log on a call.",
+            "Every number here comes from a run I can show you. If I can't show it, it isn't on this site. Pick a tab and tap a number to see where it came from. <a href=\"work.html\" style=\"color: #F07A4E; white-space: nowrap\">See all the work →</a>")
+    t = rep(t, '<a href="#faq">Questions</a>', '<a href="#faq">Questions</a>\n        <a href="work.html">The work</a>')
+    t = rep(t, 'href="#dropin" class="ghost"', 'href="call.html" class="ghost"')
+    t = rep(t, '>Or come to drop-in hours</a>', '>Or grab a free 15-minute call</a>')
+    if PHOTO.exists():
+        t = rep(t, PHOTO_LOCAL, '<img src="josef.jpg" alt="Josef Stephens" style="aspect-ratio: 4 / 5; width: 100%; max-width: 420px; object-fit: cover; border: 2px solid #16201C; display: block">')
+
     # Every "start a Blueprint" button goes to the start page.
     for label in ("Start a Blueprint", "Start with a Blueprint"):
         t, k = re.subn(r'href="#blueprint"([^>]*>' + label + ')', lambda m: 'href="start.html"' + m.group(1), t)
@@ -357,8 +370,22 @@ def fix_linkedin():
 
 
 def add_pages():
-    for f in ("comp3.html", "start.html", "briefing.html"):
-        shutil.copy(HERE / f, OUT / f)
+    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html"):
+        t = (HERE / f).read_text(encoding="utf-8")
+        t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
+        (OUT / f).write_text(t, encoding="utf-8")
+    if PHOTO.exists():
+        shutil.copy(PHOTO, OUT / "josef.jpg")
+
+
+def enhance_index():
+    p = OUT / "index.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, '<span style="font-family: \'JetBrains Mono\', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #5D6576">Josef Stephens · Santa Rosa, California</span>',
+            '<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px">'
+            '<a href="work.html" style="color: #3A4252; text-decoration: none">The work</a>'
+            '<a href="call.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #12161F; color: #12161F; text-decoration: none; font-weight: 600">Free 15-min call</a></span>')
+    p.write_text(t, encoding="utf-8")
 
 
 def use_hello():
@@ -372,7 +399,8 @@ fix_linkedin()
 enhance_local()
 enhance_mainframe()
 add_pages()
+enhance_index()
 use_hello()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html"):
+for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html"):
     assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
 print("enhanced")

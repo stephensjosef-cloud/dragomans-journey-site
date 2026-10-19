@@ -18,7 +18,10 @@ const FORMS = {
     ["name", "Name"], ["email", "Email"], ["role", "Role"], ["org", "Institution"], ["ask", "Asking for"],
     ["family", "Program family"], ["size", "Estate size"], ["stage", "Where the migration stands"],
     ["unsure", "What they're least sure about"], ["phone", "Phone"]] },
-  dropin: { subject: "Drop-in list", need: ["email"], fields: [["name", "Name"], ["email", "Email"], ["org", "Business or program"]] }
+  dropin: { subject: "Drop-in list", need: ["email"], fields: [["name", "Name"], ["email", "Email"], ["org", "Business or program"]] },
+  call: { subject: "Call request", need: ["name", "email"], fields: [
+    ["name", "Name"], ["email", "Email"], ["phone", "Phone"], ["org", "Business or program"],
+    ["topic", "About"], ["days", "Good times"], ["note", "Anything to know first"]] }
 };
 
 function cors(origin) {
@@ -55,7 +58,7 @@ export default {
     const val = (k) => String(f[k] || "").slice(0, 2000).trim();
     for (const k of form.need) if (!val(k)) return reply(origin, 400, { ok: false, error: "missing " + k });
     const email = oneLine(val("email"));
-    if (!/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(email)) return reply(origin, 400, { ok: false, error: "email" });
+    if (!/^[^\s@<>\x22]+@[^\s@<>\x22]+\.[^\s@<>\x22]+$/.test(email)) return reply(origin, 400, { ok: false, error: "email" });
 
     const lines = form.fields.filter(([k]) => val(k)).map(([k, label]) => label + ":\n" + val(k) + "\n");
     const who = oneLine(val("org") || val("name") || email);
