@@ -81,7 +81,7 @@ with sync_playwright() as p:
     pg = newpage(1440)
     pg.goto(BASE + 'local.html'); pg.wait_for_timeout(500)
     btns = pg.locator('#rc-rows .src-btn')
-    check('reels receipt has 6 source buttons', btns.count() == 6, str(btns.count()))
+    check('reels receipt has 5 source buttons', btns.count() == 5, str(btns.count()))
     btns.nth(0).click(); pg.wait_for_timeout(100)
     check('first source note opens', pg.locator('#src-reels-0').is_visible())
     check('reels foot text', 'stay private' in pg.inner_text('#rc-src-foot'))
@@ -92,12 +92,8 @@ with sync_playwright() as p:
     check('method receipt has 4 source buttons', pg.locator('#rc-rows .src-btn').count() == 4)
     check('method link visible', pg.locator('#rc-link').is_visible())
     pg.click('button[data-tab="reels"]'); pg.wait_for_timeout(150)
-    check('back to reels, 6 buttons', pg.locator('#rc-rows .src-btn').count() == 6)
+    check('back to reels, 5 buttons', pg.locator('#rc-rows .src-btn').count() == 5)
 
-    pg.locator('#tl').scroll_into_view_if_needed(); pg.wait_for_timeout(1400)
-    check('timeline animates on', 'on' in (pg.get_attribute('#tl', 'class') or ''))
-    widths = pg.evaluate("Array.from(document.querySelectorAll('.tl-bar')).map(e => e.getBoundingClientRect().width / e.parentElement.getBoundingClientRect().width)")
-    check('timeline bars to scale', abs(widths[0] - 1) < 0.02 and abs(widths[1] - 0.631) < 0.02 and abs(widths[2] - 0.063) < 0.02, str(widths))
 
     check('intake hidden before pick', not pg.locator('#intake').is_visible())
     pg.click('button[data-pick="reels"]'); pg.wait_for_timeout(100)

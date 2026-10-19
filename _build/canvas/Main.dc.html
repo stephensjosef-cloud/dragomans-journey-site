@@ -359,7 +359,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; font-size: 16px">
       <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-10-14</span><span><strong style="color: #F07A4E">Bird League.</strong> Export to eBird goes live, so birders send their sightings to Cornell in one tap.</span></li>
       <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-10-07</span><span><strong style="color: #F07A4E">Program app engine.</strong> Latest release passes 8 of 8 build gates and 324 automated tests.</span></li>
-      <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-08-26</span><span><strong style="color: #F07A4E">Reels Engine.</strong> First run on a real shoot. 21 minutes of raw footage in, an 81-second captioned reel out.</span></li>
+      <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-08-26</span><span><strong style="color: #F07A4E">Reels Engine.</strong> First run on a real shoot, from raw phone clips to a finished, captioned reel.</span></li>
       <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D; border-bottom: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-08-23</span><span><strong style="color: #F07A4E">Proof method, in public.</strong> A second AI translation of a banking program, checked line by line. <a href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence" style="color: #F07A4E">The failures are published next to the wins.</a></span></li>
     </ol>
   </div>
@@ -479,11 +479,10 @@ class Component extends DCLogic {
     }
 
     const heroRows = [
-      { k: 'Raw footage', v: '21:28' },
-      { k: 'Action kept by motion scan', v: '13:33' },
+      { k: 'Clips in a typical class', v: '16 to 20' },
       { k: 'Scan speed', v: '29× realtime' },
-      { k: 'Finished reel', v: '81 sec' },
       { k: 'Captioned steps', v: '9' },
+      { k: 'Reviewer notes turned into rules', v: '3 of 3' },
       { k: 'Machine time, start to finish', v: '~4 min' }
     ];
 
@@ -520,9 +519,8 @@ class Component extends DCLogic {
       reels: {
         head: 'RECEIPT · REELS ENGINE', date: 'AUG 2026', title: 'One shoot, one finished reel',
         rows: [
-          { k: 'Raw phone footage from one cooking-class shoot', v: '21:28' },
-          { k: 'Action kept after the motion scan (cleanup and empty-pot shots dropped)', v: '13:33' },
-          { k: 'Finished vertical reel, house-style captions', v: '81 sec · 9 steps' },
+          { k: 'Clips in a typical cooking-class shoot', v: '16 to 20' },
+          { k: 'Captioned steps in the finished reel', v: '9' },
           { k: 'Machine time for the whole episode', v: '~4 min' },
           { k: 'Defects the client reviewer caught in the first three rounds', v: '3 of 3 fixed' },
           { k: 'Reels posted without the client approving them', v: '0' }

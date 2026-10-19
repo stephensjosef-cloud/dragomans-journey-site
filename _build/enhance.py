@@ -47,31 +47,11 @@ LOCAL_CSS = """<style>
 .src-btn{font:inherit;cursor:pointer;background:none;border:0;padding:0;text-decoration:underline dotted #F07A4E 1.5px;text-underline-offset:5px}
 .src-btn:hover,.src-btn[aria-expanded="true"]{color:#FFFFFF!important}
 .src-note{grid-column:1 / -1;font-family:'Instrument Sans',sans-serif;font-size:14px;line-height:1.5;color:#93A39A;padding:2px 0 4px;border-left:2px solid #F07A4E;padding-left:12px}
-.tl-row{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) 64px;gap:16px;align-items:center}
-.tl-track{height:28px;background:#15261F;border:1px solid #2B3D35;position:relative}
-.tl-bar{position:absolute;inset:0 auto 0 0;width:0;transition:width 1100ms cubic-bezier(.2,.7,.2,1)}
-.tl.on .tl-bar{width:var(--w)}
-@media (max-width:640px){.tl-row{grid-template-columns:minmax(0,1fr) 56px}.tl-row>span:first-child{grid-column:1 / -1}}
-@media (prefers-reduced-motion:reduce){.tl-bar{transition:none}}
 .iq{font:inherit;cursor:pointer;min-height:48px;padding:0 16px;border-radius:2px;border:1.5px solid #3A4D44;background:transparent;color:#E9EEE9;font-size:16px;font-weight:600;text-align:left}
 .iq:hover{border-color:#F07A4E}
 .iq[aria-pressed="true"]{background:#E8592B;border-color:#E8592B;color:#0E1B17}
 #iq-send[disabled]{opacity:.45;cursor:not-allowed}
 </style>"""
-
-TIMELINE = f"""  <div style="max-width: 1240px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px) clamp(72px, 9vw, 120px); display: flex; flex-direction: column; gap: 20px">
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px; border-top: 1px solid #2B3D35; padding-top: 36px">
-      <h3 style="margin: 0; {BIG}; font-size: clamp(30px, 3.4vw, 44px); line-height: 1">Where 21 minutes of footage went</h3>
-      <span style="{MONO}; font-size: 13px; color: #93A39A">The same August shoot · drawn to scale</span>
-    </div>
-    <div class="tl" id="tl" role="img" aria-label="Filmed 21 minutes 28 seconds. Kept by the motion scan 13 minutes 33 seconds. In the finished reel 1 minute 21 seconds." style="display: flex; flex-direction: column; gap: 14px">
-      <div class="tl-row"><span style="{MONO}; font-size: 14px; color: #B5C2BA">Filmed</span><div class="tl-track"><div class="tl-bar" style="--w: 100%; background: #4C5F56"></div></div><strong style="{MONO}; font-size: 17px; text-align: right">21:28</strong></div>
-      <div class="tl-row"><span style="{MONO}; font-size: 14px; color: #B5C2BA">Kept by the motion scan</span><div class="tl-track"><div class="tl-bar" style="--w: 63.1%; background: #93A39A"></div></div><strong style="{MONO}; font-size: 17px; text-align: right">13:33</strong></div>
-      <div class="tl-row"><span style="{MONO}; font-size: 14px; color: #B5C2BA">In the finished reel</span><div class="tl-track"><div class="tl-bar" style="--w: 6.3%; background: #E8592B"></div></div><strong style="{MONO}; font-size: 17px; text-align: right; color: #F07A4E">1:21</strong></div>
-    </div>
-    <p style="margin: 0; max-width: 64ch; font-size: 18px; color: #C9D2CB">About 94 of every 100 seconds filmed never reach the reel. The motion scan drops the cleanup and the empty pots, and the edit keeps the 81 seconds that walk through the recipe one step at a time.</p>
-  </div>
-"""
 
 
 def iq_group(gid, question, options):
@@ -151,9 +131,8 @@ LOCAL_JS = r"""
   // 1. Tap a number on a receipt to see where it comes from.
   var SRC = {
     reels: [
-      "Total running time of the raw clips from the shoot, as the Reels Engine logged them before the scan.",
-      "What the motion scan kept, from the same run log. Cleanup and empty-pot shots are cut automatically.",
-      "The finished file: 1080×1920, 81 seconds, one caption for each recipe step.",
+      "Each class gives 16 to 20 clips, from ten seconds to a couple of minutes each.",
+      "One caption for each recipe step in the finished 1080×1920 reel.",
       "Machine time from the run log, scan through render. The people reviewing it come on top of this.",
       "The client reviewer's three notes from the first rounds. Each one is now an automatic check in the caption code.",
       "Every reel waits for the client's yes before it posts. None has gone out without it."
@@ -220,15 +199,6 @@ LOCAL_JS = r"""
   }
   new MutationObserver(function () { decorate(); }).observe(rowsEl, { childList: true });
   decorate();
-
-  // 2. Timeline bars grow when they come into view.
-  var tl = document.getElementById('tl');
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) { tl.classList.add('on'); io.disconnect(); } });
-    }, { threshold: 0.4 });
-    io.observe(tl);
-  } else { tl.classList.add('on'); }
 
   // 3. The picker opens three more questions, then writes the first email.
   var intake = document.getElementById('intake');
@@ -304,8 +274,6 @@ def enhance_local():
             '>One shoot, one finished reel</h3>\n      <span style="margin-top: -8px; font-size: 13px; color: #93A39A">Tap any orange number to see where it comes from.</span>')
     t = rep(t, '<a id="rc-link"',
             '<p id="rc-src-foot" style="margin: 0; font-family: \'Instrument Sans\', sans-serif; font-size: 14px; color: #93A39A"></p>\n      <a id="rc-link"')
-    t = rep(t, "  </div>\n</section>\n\n<!-- ============ THE ROUTE ============ -->",
-            "  </div>\n" + TIMELINE + "</section>\n\n<!-- ============ THE ROUTE ============ -->")
 
     # Intake quiz under the picker message.
     t, n = re.subn(r'<div id="pick-msg".*?</div>', lambda m: m.group(0) + INTAKE, t, flags=re.S)

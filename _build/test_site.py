@@ -68,7 +68,7 @@ with sync_playwright() as p:
     pg.goto(BASE + 'local.html')
     check('local noJS: picker message hidden', not pg.is_visible('#pick-msg'))
     check('local noJS: reels tab selected', pg.get_attribute('button[data-tab="reels"]', 'aria-selected') == 'true')
-    check('local noJS: 6 receipt rows', pg.locator('#rc-rows > div').count() == 6)
+    check('local noJS: 5 receipt rows', pg.locator('#rc-rows > div').count() == 5)
     check('local noJS: first FAQ open only', pg.is_visible('#faq-a-0') and not pg.is_visible('#faq-a-1'))
     check('local noJS: no YOUR MATCH', pg.locator('[data-match]:visible').count() == 0)
     check('local noJS: clock text', "It's afternoon in Santa Rosa." in pg.inner_text('#contact'))
