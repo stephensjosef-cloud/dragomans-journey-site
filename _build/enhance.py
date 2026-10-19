@@ -263,7 +263,6 @@ def enhance_local():
 
     # Stand-ins for things Josef hasn't sent yet.
     t = rep_re(t, r'<div role="img" aria-label="Photo of Josef goes here".*?\[PHOTO OF JOSEF, OUTSIDE\]</div>', PHOTO_LOCAL)
-    t = rep(t, " [ONE TRUE ALASKA STORY, TWO SENTENCES.]", "")
     t, n = re.subn(r'<a href="\[BOOKING LINK\]"([^>]*)>Or book 15 minutes first</a>',
                    lambda m: '<a href="#dropin"' + m.group(1) + '>Or come to drop-in hours</a>', t)
     assert n == 1, "booking link"
