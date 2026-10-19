@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Local Route · Dragoman's Journey</title>
-<meta name="description" content="I turn what you already have, like the phone videos nobody has time to edit or the lessons living in a binder, into reels, apps and workflows that run without you babysitting them.">
+<meta name="description" content="Reels, apps and workflows for Sonoma County small businesses and nonprofits, made from what you already have and checked by a person before anything reaches your customers.">
 <link rel="canonical" href="https://dragomansjourney.com/local.html">
 <meta property="og:title" content="The Local Route · Dragoman's Journey">
-<meta property="og:description" content="I turn what you already have, like the phone videos nobody has time to edit or the lessons living in a binder, into reels, apps and workflows that run without you babysitting them.">
+<meta property="og:description" content="Reels, apps and workflows for Sonoma County small businesses and nonprofits, made from what you already have and checked by a person before anything reaches your customers.">
 <meta property="og:site_name" content="Dragoman's Journey">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dragomansjourney.com/local.html">
@@ -39,6 +39,21 @@ a{color:#A93F17}a:hover{color:#16201C}
 @media (prefers-reduced-motion:reduce){.rise,.rise2,.rise3,.blink{animation:none}.btn-blaze,.card-lift{transition:none}}
 </style>
 <style>[hidden]{display:none!important}</style>
+<style>
+.src-btn{font:inherit;cursor:pointer;background:none;border:0;padding:0;text-decoration:underline dotted #F07A4E 1.5px;text-underline-offset:5px}
+.src-btn:hover,.src-btn[aria-expanded="true"]{color:#FFFFFF!important}
+.src-note{grid-column:1 / -1;font-family:'Instrument Sans',sans-serif;font-size:14px;line-height:1.5;color:#93A39A;padding:2px 0 4px;border-left:2px solid #F07A4E;padding-left:12px}
+.tl-row{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) 64px;gap:16px;align-items:center}
+.tl-track{height:28px;background:#15261F;border:1px solid #2B3D35;position:relative}
+.tl-bar{position:absolute;inset:0 auto 0 0;width:0;transition:width 1100ms cubic-bezier(.2,.7,.2,1)}
+.tl.on .tl-bar{width:var(--w)}
+@media (max-width:640px){.tl-row{grid-template-columns:minmax(0,1fr) 56px}.tl-row>span:first-child{grid-column:1 / -1}}
+@media (prefers-reduced-motion:reduce){.tl-bar{transition:none}}
+.iq{font:inherit;cursor:pointer;min-height:48px;padding:0 16px;border-radius:2px;border:1.5px solid #3A4D44;background:transparent;color:#E9EEE9;font-size:16px;font-weight:600;text-align:left}
+.iq:hover{border-color:#F07A4E}
+.iq[aria-pressed="true"]{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+#iq-send[disabled]{opacity:.45;cursor:not-allowed}
+</style>
 </head>
 <body>
 <div class="dj" style="font-family: 'Instrument Sans', 'Helvetica Neue', system-ui, sans-serif; color: #16201C; background: #F2EDE1; font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased">
@@ -132,6 +147,23 @@ a{color:#A93F17}a:hover{color:#16201C}
       <button type="button" aria-pressed="false" data-pick="reels" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 104px; padding: 18px 20px; text-align: left; border-radius: 2px; transition: background 160ms ease, transform 160ms ease; background: #1E2C26; color: #E9EEE9; border: 1.5px solid #3A4D44;"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; opacity: 0.8">01</span><span style="font-size: 19px; font-weight: 600; line-height: 1.3">Phone videos nobody has time to edit</span></button><button type="button" aria-pressed="false" data-pick="app" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 104px; padding: 18px 20px; text-align: left; border-radius: 2px; transition: background 160ms ease, transform 160ms ease; background: #1E2C26; color: #E9EEE9; border: 1.5px solid #3A4D44;"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; opacity: 0.8">02</span><span style="font-size: 19px; font-weight: 600; line-height: 1.3">Lessons, recipes or a curriculum</span></button><button type="button" aria-pressed="false" data-pick="flow" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 104px; padding: 18px 20px; text-align: left; border-radius: 2px; transition: background 160ms ease, transform 160ms ease; background: #1E2C26; color: #E9EEE9; border: 1.5px solid #3A4D44;"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; opacity: 0.8">03</span><span style="font-size: 19px; font-weight: 600; line-height: 1.3">A weekly task that eats hours</span></button><button type="button" aria-pressed="false" data-pick="unsure" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 104px; padding: 18px 20px; text-align: left; border-radius: 2px; transition: background 160ms ease, transform 160ms ease; background: #1E2C26; color: #E9EEE9; border: 1.5px solid #3A4D44;"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; opacity: 0.8">04</span><span style="font-size: 19px; font-weight: 600; line-height: 1.3">Honestly, I'm not sure yet</span></button>
     </div>
     <div id="pick-msg" role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border: 1.5px solid #F07A4E; border-radius: 2px" hidden=""><span id="pick-text" style="font-size: 18px; color: #E9EEE9"></span><a id="pick-link" href="#engines" style="color: #F07A4E; font-weight: 700; text-decoration: none"> →</a></div>
+    <div id="intake" hidden="" style="display: flex; flex-direction: column; gap: 20px; padding: clamp(18px, 2.4vw, 28px); border: 1px solid #3A4D44; background: #1A2822; border-radius: 2px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(26px, 2.6vw, 32px); line-height: 1">Want me to write the first email for you?</h3>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A">Three taps. You can change anything before it sends.</span>
+      </div>
+      <div role="group" aria-labelledby="q1-l" style="display: flex; flex-direction: column; gap: 10px"><span id="q1-l" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #93A39A">What do you run?</span><div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" class="iq" data-q="q1" aria-pressed="false">A small business</button><button type="button" class="iq" data-q="q1" aria-pressed="false">A nonprofit</button><button type="button" class="iq" data-q="q1" aria-pressed="false">A school or youth program</button></div></div>
+      <div role="group" aria-labelledby="q2-l" style="display: flex; flex-direction: column; gap: 10px"><span id="q2-l" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #93A39A">Who says yes to spending money?</span><div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" class="iq" data-q="q2" aria-pressed="false">I do</button><button type="button" class="iq" data-q="q2" aria-pressed="false">Me and one other person</button><button type="button" class="iq" data-q="q2" aria-pressed="false">A board or committee</button></div></div>
+      <div role="group" aria-labelledby="q3-l" style="display: flex; flex-direction: column; gap: 10px"><span id="q3-l" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #93A39A">When would you want to start?</span><div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" class="iq" data-q="q3" aria-pressed="false">This month</button><button type="button" class="iq" data-q="q3" aria-pressed="false">In the next few months</button><button type="button" class="iq" data-q="q3" aria-pressed="false">Just looking for now</button></div></div>
+      <label style="display: flex; flex-direction: column; gap: 10px; max-width: 520px">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #93A39A">Name of your business or program (optional)</span>
+        <input id="iq-name" autocomplete="organization" style="min-height: 52px; padding: 10px 14px; border: 1.5px solid #3A4D44; border-radius: 2px; background: #0E1B17; color: #E9EEE9; font: 500 17px 'Instrument Sans', sans-serif">
+      </label>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+        <button type="button" id="iq-send" disabled="" class="btn-blaze" style="min-height: 56px; padding: 0 26px; border: 0; border-radius: 2px; background: #E8592B; color: #0E1B17; font: 700 17px 'Instrument Sans', sans-serif; cursor: pointer">Write my email →</button>
+        <span style="font-size: 15px; color: #93A39A">It opens in your own email app. Nothing sends until you press send.</span>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -211,10 +243,24 @@ a{color:#A93F17}a:hover{color:#16201C}
         <span id="rc-date">AUG 2026</span>
       </div>
       <h3 id="rc-title" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 34px; line-height: 1; color: #E9EEE9">One shoot, one finished reel</h3>
+      <span style="margin-top: -8px; font-size: 13px; color: #93A39A">Tap any orange number to see where it comes from.</span>
       <div id="rc-rows" style="display: flex; flex-direction: column"><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Raw phone footage from one cooking-class shoot</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">21:28</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Action kept after the motion scan (cleanup and empty-pot shots dropped)</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">13:33</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Finished vertical reel, house-style captions</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">81 sec · 9 steps</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Machine time for the whole episode</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">~4 min</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Defects the client reviewer caught in the first three rounds</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">3 of 3 fixed</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Reels posted without the client approving them</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">0</strong></div></div>
       <p style="margin: 0; padding-top: 14px; border-top: 1px dashed #4C5F56; font-family: 'Instrument Sans', sans-serif; font-size: 16px; line-height: 1.55; color: #C9D2CB" id="rc-note">Those three catches were ragged caption boxes, square corners and orphaned words. Each one is now a rule the machine checks on every reel, so nobody has to catch it twice.</p>
+      <p id="rc-src-foot" style="margin: 0; font-family: 'Instrument Sans', sans-serif; font-size: 14px; color: #93A39A"></p>
       <a id="rc-link" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence" style="color: #F07A4E; font-size: 14px; text-decoration: none" hidden="">Open the repo →</a>
     </div>
+  </div>
+  <div style="max-width: 1240px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px) clamp(72px, 9vw, 120px); display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px; border-top: 1px solid #2B3D35; padding-top: 36px">
+      <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(30px, 3.4vw, 44px); line-height: 1">Where 21 minutes of footage went</h3>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A">The same August shoot · drawn to scale</span>
+    </div>
+    <div class="tl" id="tl" role="img" aria-label="Filmed 21 minutes 28 seconds. Kept by the motion scan 13 minutes 33 seconds. In the finished reel 1 minute 21 seconds." style="display: flex; flex-direction: column; gap: 14px">
+      <div class="tl-row"><span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B5C2BA">Filmed</span><div class="tl-track"><div class="tl-bar" style="--w: 100%; background: #4C5F56"></div></div><strong style="font-family: 'JetBrains Mono', monospace; font-size: 17px; text-align: right">21:28</strong></div>
+      <div class="tl-row"><span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B5C2BA">Kept by the motion scan</span><div class="tl-track"><div class="tl-bar" style="--w: 63.1%; background: #93A39A"></div></div><strong style="font-family: 'JetBrains Mono', monospace; font-size: 17px; text-align: right">13:33</strong></div>
+      <div class="tl-row"><span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B5C2BA">In the finished reel</span><div class="tl-track"><div class="tl-bar" style="--w: 6.3%; background: #E8592B"></div></div><strong style="font-family: 'JetBrains Mono', monospace; font-size: 17px; text-align: right; color: #F07A4E">1:21</strong></div>
+    </div>
+    <p style="margin: 0; max-width: 64ch; font-size: 18px; color: #C9D2CB">About 94 of every 100 seconds filmed never reach the reel. The motion scan drops the cleanup and the empty pots, and the edit keeps the 81 seconds that walk through the recipe one step at a time.</p>
   </div>
 </section>
 
@@ -312,12 +358,16 @@ a{color:#A93F17}a:hover{color:#16201C}
 <section id="josef" aria-labelledby="josef-h" style="background: #F2EDE1">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 120px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: clamp(36px, 6vw, 88px); align-items: start">
     <div style="display: flex; flex-direction: column; gap: 16px">
-      <div role="img" aria-label="Photo of Josef goes here" style="aspect-ratio: 4 / 5; width: 100%; max-width: 420px; background: repeating-linear-gradient(135deg, #E3DBC9 0 12px, #EAE3D3 12px 24px); border: 2px solid #16201C; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4A534D">[PHOTO OF JOSEF, OUTSIDE]</div>
+      <div role="img" aria-label="Josef Stephens, Santa Rosa" style="aspect-ratio: 4 / 5; width: 100%; max-width: 420px; background: #16201C; border: 2px solid #16201C; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; color: #E9EEE9">
+        <svg aria-hidden="true" viewBox="0 0 420 525" preserveAspectRatio="none" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.5"><path d="M-10 120 C 90 90, 180 150, 280 110 S 400 90, 430 120" fill="none" stroke="rgba(147,163,154,0.4)"/><path d="M-10 190 C 90 150, 190 230, 290 180 S 400 160, 430 190" fill="none" stroke="rgba(147,163,154,0.4)"/><path d="M-10 260 C 90 210, 200 310, 300 250 S 400 230, 430 260" fill="none" stroke="rgba(240,122,78,0.6)"/><path d="M-10 330 C 90 290, 190 370, 290 320 S 400 300, 430 330" fill="none" stroke="rgba(147,163,154,0.4)"/><path d="M-10 400 C 90 370, 180 430, 280 390 S 400 370, 430 400" fill="none" stroke="rgba(147,163,154,0.4)"/></svg>
+        <span style="position: relative; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #93A39A">38.44° N · 122.71° W</span>
+        <span style="position: relative; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-weight: 900; font-size: clamp(96px, 12vw, 150px); line-height: 0.8">JS</span>
+      </div>
       <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #6B716A">Josef Stephens · Santa Rosa, California · raised in Alaska</p>
     </div>
     <div style="display: flex; flex-direction: column; gap: 20px; max-width: 64ch">
       <h2 id="josef-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.2vw, 72px); line-height: 0.9">Hey, I'm Josef.</h2>
-      <p style="margin: 0; font-size: 19px">I grew up in Alaska and learned to work next to my granny and Leland, two hardcore Alaskans who did not leave a job half done. [ONE TRUE ALASKA STORY, TWO SENTENCES.]</p>
+      <p style="margin: 0; font-size: 19px">I grew up in Alaska and learned to work next to my granny and Leland, two hardcore Alaskans who did not leave a job half done.</p>
       <p style="margin: 0; font-size: 19px">Then came years of commission sales, including insurance at State Farm and Allstate, where I learned that the honest answer sometimes loses you the sale and you give it anyway. If your Blueprint says you don't need me, that is what it will say.</p>
       <p style="margin: 0; font-size: 19px">I taught myself to build software with AI. Bird League, a competitive birding app, went from zero lines of code to real users and an App Store submission. This year a Sonoma County children's nonprofit became my first client, and the tools I built for them are the engines on this page.</p>
       <p style="margin: 0; font-size: 19px">All of it runs on a setup I built for myself: written rules the AI can't argue with, and tests that have to pass before anything ships. Nobody would call it exciting. It's why the reels come out right.</p>
@@ -354,6 +404,23 @@ a{color:#A93F17}a:hover{color:#16201C}
 </section>
 
 <!-- ============ CONTACT ============ -->
+<!-- ============ DROP-IN HOURS ============ -->
+<section id="dropin" aria-labelledby="dropin-h" style="background: #E8E1D1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 104px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: clamp(28px, 5vw, 72px); align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.1em; color: #A93F17">ONCE A MONTH · SANTA ROSA · FREE</span>
+      <h2 id="dropin-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.9; color: #16201C">Bring your pile</h2>
+      <p style="margin: 0; max-width: 54ch; font-size: 19px; color: #3B4540">Bring the binder, the phone full of clips or the spreadsheet you dread. We sit down for twenty minutes and look at it together, and you leave knowing one thing you could do about it that week, with or without me.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: clamp(22px, 3vw, 32px); border: 2px solid #16201C; background: #F2EDE1">
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #6B716A">NEXT DROP-IN</span>
+      <strong style="font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 34px; line-height: 1; color: #16201C">First date coming soon</strong>
+      <span style="font-size: 17px; color: #3B4540">A coffee shop or library in Santa Rosa. I'm setting the first one now, and I'll send the date to anyone who asks.</span>
+      <a href="mailto:stephens.josef@gmail.com?subject=Drop-in%20hours%3A%20send%20me%20the%20date" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; margin-top: 6px; background: #16201C; color: #F2EDE1; text-decoration: none; font-weight: 700; border-radius: 2px">Send me the date →</a>
+    </div>
+  </div>
+</section>
+
 <section id="contact" aria-labelledby="contact-h" style="position: relative; overflow: hidden; background: #0E1B17; color: #E9EEE9">
   <svg aria-hidden="true" viewBox="0 0 1440 820" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.4">
     <path d="M-40 40 C 180 14, 360 66, 600 34 S 980 3.6, 1180 44 S 1460 66, 1520 40" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 94 C 180 57, 360 131, 600 88 S 980 42.2, 1180 98 S 1460 131, 1520 94" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 148 C 180 100, 360 196, 600 142 S 980 80.8, 1180 152 S 1460 196, 1520 148" fill="none" stroke="rgba(240,122,78,0.55)" stroke-width="1.1"></path><path d="M-40 202 C 180 143, 360 261, 600 196 S 980 119.4, 1180 206 S 1460 261, 1520 202" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 256 C 180 230, 360 282, 600 250 S 980 219.6, 1180 260 S 1460 282, 1520 256" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 310 C 180 273, 360 347, 600 304 S 980 258.2, 1180 314 S 1460 347, 1520 310" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 364 C 180 316, 360 412, 600 358 S 980 296.8, 1180 368 S 1460 412, 1520 364" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 418 C 180 359, 360 477, 600 412 S 980 335.4, 1180 422 S 1460 477, 1520 418" fill="none" stroke="rgba(240,122,78,0.55)" stroke-width="1.1"></path><path d="M-40 472 C 180 446, 360 498, 600 466 S 980 435.6, 1180 476 S 1460 498, 1520 472" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 526 C 180 489, 360 563, 600 520 S 980 474.2, 1180 530 S 1460 563, 1520 526" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 580 C 180 532, 360 628, 600 574 S 980 512.8, 1180 584 S 1460 628, 1520 580" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 634 C 180 575, 360 693, 600 628 S 980 551.4, 1180 638 S 1460 693, 1520 634" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 688 C 180 662, 360 714, 600 682 S 980 651.6, 1180 692 S 1460 714, 1520 688" fill="none" stroke="rgba(240,122,78,0.55)" stroke-width="1.1"></path><path d="M-40 742 C 180 705, 360 779, 600 736 S 980 690.2, 1180 746 S 1460 779, 1520 742" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path><path d="M-40 796 C 180 748, 360 844, 600 790 S 980 728.8, 1180 800 S 1460 844, 1520 796" fill="none" stroke="rgba(147,163,154,0.35)" stroke-width="1.1"></path>
@@ -363,7 +430,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <p style="margin: 0; max-width: 56ch; font-size: 20px; color: #C9D2CB">Two lines is plenty: what you run, and the part of it that never gets done. I read every message myself, and if I'm full I'll tell you when the next spot opens.</p>
     <div style="display: flex; flex-wrap: wrap; gap: 14px">
       <a href="mailto:stephens.josef@gmail.com?subject=Blueprint%20for%20%5Byour%20business%5D" class="btn-blaze" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 30px; background: #E8592B; color: #0E1B17; text-decoration: none; font-weight: 700; font-size: 18px; border-radius: 2px">Start a Blueprint · $1,500</a>
-      <a href="[BOOKING LINK]" class="ghost" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 24px; border: 1.5px solid #4C5F56; color: #E9EEE9; text-decoration: none; font-weight: 600; font-size: 18px; border-radius: 2px">Or book 15 minutes first</a>
+      <a href="#dropin" class="ghost" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 24px; border: 1.5px solid #4C5F56; color: #E9EEE9; text-decoration: none; font-weight: 600; font-size: 18px; border-radius: 2px">Or come to drop-in hours</a>
     </div>
     <p style="margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #93A39A">
       <span aria-hidden="true" class="blink" id="sr-dot" style="width: 9px; height: 9px; border-radius: 50%; background: #93A39A"></span>
@@ -393,7 +460,6 @@ a{color:#A93F17}a:hover{color:#16201C}
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: flex-start">
       <a href="mailto:stephens.josef@gmail.com" style="color: #C9D2CB">stephens.josef@gmail.com</a>
-      <a href="[LINKEDIN URL]" style="color: #C9D2CB">LinkedIn</a>
       <a href="https://github.com/stephensjosef-cloud" style="color: #C9D2CB">GitHub</a>
       <span>Made by Josef Stephens in Santa Rosa, California</span>
     </div>
@@ -474,6 +540,128 @@ a{color:#A93F17}a:hover{color:#16201C}
   }
   tick();
   setInterval(tick, 30000);
+})();
+</script>
+
+<script>
+(function () {
+  // 1. Tap a number on a receipt to see where it comes from.
+  var SRC = {
+    reels: [
+      "Total running time of the raw clips from the shoot, as the Reels Engine logged them before the scan.",
+      "What the motion scan kept, from the same run log. Cleanup and empty-pot shots are cut automatically.",
+      "The finished file: 1080×1920, 81 seconds, one caption for each recipe step.",
+      "Machine time from the run log, scan through render. The people reviewing it come on top of this.",
+      "The client reviewer's three notes from the first rounds. Each one is now an automatic check in the caption code.",
+      "Every reel waits for the client's yes before it posts. None has gone out without it."
+    ],
+    app: [
+      "The app's test suite on the latest release, Oct 7, 2026.",
+      "The checks a release has to pass before it ships, all passing on that release.",
+      "A rule in the database itself. A save without a photo is refused.",
+      "Also a database rule. A step marked heat or knife won't save until it says what the grown-up does.",
+      "Families never sign in, and no table stores anything about a child.",
+      "One codebase, laid out for all three screen sizes."
+    ],
+    method: [
+      "Two separate AI translations of the same program, both in the public repo with their prompts.",
+      "Each translation checked against the original program in the findings file. A byte-level run over one shared input file hasn't been done yet.",
+      "The findings file lists the misses beside what each translation got right.",
+      "Code, prompts and findings are on GitHub for anyone to rerun."
+    ]
+  };
+  var FOOT = {
+    reels: "These logs hold a client's footage, so they stay private. I'll open any of them on a call.",
+    app: "This is a client's app, so the repo stays private. I'll share my screen and run the tests while you watch.",
+    method: "All of it is public. Open the repo and check it yourself."
+  };
+  var rowsEl = document.getElementById('rc-rows');
+  var foot = document.getElementById('rc-src-foot');
+  function current() {
+    var on = document.querySelector('button[data-tab][aria-selected="true"]');
+    return on ? on.getAttribute('data-tab') : 'reels';
+  }
+  var busy = false;
+  function decorate() {
+    if (busy) return;
+    busy = true;
+    var tab = current();
+    Array.prototype.forEach.call(rowsEl.children, function (row, i) {
+      var s = (SRC[tab] || [])[i];
+      var strong = row.querySelector('strong');
+      if (!s || !strong) return;
+      var id = 'src-' + tab + '-' + i;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'src-btn';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-controls', id);
+      btn.setAttribute('aria-label', strong.textContent + ', show where this number comes from');
+      btn.setAttribute('style', strong.getAttribute('style'));
+      btn.textContent = strong.textContent;
+      strong.parentNode.replaceChild(btn, strong);
+      var note = document.createElement('span');
+      note.id = id;
+      note.className = 'src-note';
+      note.hidden = true;
+      note.textContent = s;
+      row.appendChild(note);
+      btn.addEventListener('click', function () {
+        var open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+        note.hidden = open;
+      });
+    });
+    foot.textContent = FOOT[tab] || '';
+    busy = false;
+  }
+  new MutationObserver(function () { decorate(); }).observe(rowsEl, { childList: true });
+  decorate();
+
+  // 2. Timeline bars grow when they come into view.
+  var tl = document.getElementById('tl');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { tl.classList.add('on'); io.disconnect(); } });
+    }, { threshold: 0.4 });
+    io.observe(tl);
+  } else { tl.classList.add('on'); }
+
+  // 3. The picker opens three more questions, then writes the first email.
+  var intake = document.getElementById('intake');
+  var pile = '';
+  document.querySelectorAll('button[data-pick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var spans = b.querySelectorAll('span');
+      pile = spans.length ? spans[spans.length - 1].textContent : b.textContent;
+      intake.hidden = false;
+    });
+  });
+  var answers = {};
+  var send = document.getElementById('iq-send');
+  document.querySelectorAll('button.iq').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var q = b.getAttribute('data-q');
+      document.querySelectorAll('button.iq[data-q="' + q + '"]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      answers[q] = b.textContent;
+      send.disabled = !(answers.q1 && answers.q2 && answers.q3);
+    });
+  });
+  send.addEventListener('click', function () {
+    if (send.disabled) return;
+    var name = document.getElementById('iq-name').value.trim();
+    var subject = 'Blueprint question' + (name ? ': ' + name : '');
+    var body = 'Hi Josef,\n\n' +
+      'What I have a pile of: ' + pile + '\n' +
+      'What I run: ' + answers.q1 + (name ? ' (' + name + ')' : '') + '\n' +
+      'Who says yes: ' + answers.q2 + '\n' +
+      'When: ' + answers.q3 + '\n\n' +
+      'The part that never gets done:\n\n\n' +
+      'Thanks,\n';
+    var url = 'mailto:stephens.josef@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    send.setAttribute('data-mailto', url);
+    window.location.href = url;
+  });
 })();
 </script>
 </body>

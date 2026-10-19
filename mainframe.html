@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Mainframe Route · Dragoman's Journey</title>
-<meta name="description" content="I build the harness that proves a migrated system behaves exactly like the original, byte for byte, and I hand your auditors the evidence before anything touches production.">
+<meta name="description" content="An equivalence harness that runs the original and the migrated COBOL system over the same files and compares every byte they write, with evidence your auditors can rerun.">
 <link rel="canonical" href="https://dragomansjourney.com/mainframe.html">
 <meta property="og:title" content="The Mainframe Route · Dragoman's Journey">
-<meta property="og:description" content="I build the harness that proves a migrated system behaves exactly like the original, byte for byte, and I hand your auditors the evidence before anything touches production.">
+<meta property="og:description" content="An equivalence harness that runs the original and the migrated COBOL system over the same files and compares every byte they write, with evidence your auditors can rerun.">
 <meta property="og:site_name" content="Dragoman's Journey">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dragomansjourney.com/mainframe.html">
@@ -108,7 +108,7 @@ COMPUTE WS-INTEREST ROUNDED =
 <section aria-label="Thesis" style="background: #12161F; color: #E6E2D8">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(44px, 6vw, 72px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 64px; align-items: center">
     <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.15; letter-spacing: -0.01em">Both readings compile, and both pass a test written from the source. <em style="color: #F07A4E">The bytes your business loads into that field are the only thing that settles it.</em></p>
-    <p style="margin: 0; font-size: 17px; color: #B7BDC9">Static analysis can't close that gap, and neither can a tool that checks its translation against the same ambiguous source it translated. The answer sits in production data and in the head of whoever loads that field. The job is finding that answer and proving the new system honors it.</p>
+    <p style="margin: 0; font-size: 17px; color: #B7BDC9">Static analysis can't close that gap, and neither can a tool that checks its translation against the same ambiguous source it translated. The answer sits in production data and in the head of whoever loads that field. The job is finding that answer and proving the new system honors it. <a href="comp3.html" style="color: #F07A4E; white-space: nowrap">Decode your own bytes →</a></p>
   </div>
 </section>
 
@@ -304,7 +304,10 @@ COMPUTE WS-INTEREST ROUNDED =
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 128px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 28px 56px">
     <div style="flex: 1 1 200px; max-width: 260px; display: flex; flex-direction: column; gap: 14px">
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17">§6</span>
-      <div role="img" aria-label="Portrait of Josef Stephens goes here" style="margin-top: 8px; aspect-ratio: 4 / 5; width: 100%; background: repeating-linear-gradient(135deg, #DED7C7 0 10px, #E5DFD1 10px 20px); border: 1px solid #12161F; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #3A4252">[PORTRAIT, BLACK AND WHITE]</div>
+      <div role="img" aria-label="Josef Stephens" style="margin-top: 8px; aspect-ratio: 4 / 5; width: 100%; background: #12161F; border: 1px solid #12161F; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; color: #E6E2D8">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #B7BDC9">SIGNATORY</span>
+        <span style="display: flex; flex-direction: column; gap: 6px"><em style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(52px, 5vw, 68px); line-height: 1">J. S.</em><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #B7BDC9">SANTA ROSA, CALIFORNIA</span></span>
+      </div>
     </div>
     <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px; max-width: 70ch">
       <h2 id="s7-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">One accountable name on the sign-off page.</h2>
@@ -315,7 +318,6 @@ COMPUTE WS-INTEREST ROUNDED =
         <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">PUBLIC RECORD</dt><dd style="margin: 4px 0 0"><a href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Two AI translation runs, findings and prompts</a></dd></div>
         <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">SPECIALTY</dt><dd style="margin: 4px 0 0">COMP-3, REDEFINES, copybooks, rounding, encoding</dd></div>
         <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">PLATFORMS</dt><dd style="margin: 4px 0 0">z/OS and distributed COBOL</dd></div>
-        <div style="padding: 14px 16px 14px 0; border-bottom: 1px solid #CFC8B8"><dt style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #5D6576">CREDENTIALS</dt><dd style="margin: 4px 0 0">[IBM Z XPLORE BADGE, ONCE EARNED]</dd></div>
       </dl>
     </div>
   </div>
@@ -347,6 +349,7 @@ COMPUTE WS-INTEREST ROUNDED =
       <a href="mailto:stephens.josef@gmail.com?subject=Briefing%20request%3A%20%5Binstitution%5D" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease"><span style="font-family: 'Newsreader', Georgia, serif; font-size: 26px">Request a briefing</span><span aria-hidden="true" style="font-family: 'JetBrains Mono', monospace">→</span></a>
       <a href="mailto:stephens.josef@gmail.com?subject=Survey%3A%20one%20program%20family" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease"><span style="font-family: 'Newsreader', Georgia, serif; font-size: 26px">Begin a Survey</span><span aria-hidden="true" style="font-family: 'JetBrains Mono', monospace">→</span></a>
       <a href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease"><span style="font-family: 'Newsreader', Georgia, serif; font-size: 26px">Read the public findings first</span><span aria-hidden="true" style="font-family: 'JetBrains Mono', monospace">↗</span></a>
+      <a href="comp3.html" class="quiet" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; padding: 0 4px; border-bottom: 1px solid #12161F; color: #12161F; text-decoration: none; transition: background 160ms ease, color 160ms ease"><span style="font-family: 'Newsreader', Georgia, serif; font-size: 26px">Decode a packed field</span><span aria-hidden="true" style="font-family: 'JetBrains Mono', monospace">→</span></a>
     </div>
   </div>
 </section>
@@ -376,7 +379,6 @@ COMPUTE WS-INTEREST ROUNDED =
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: flex-start">
       <a href="mailto:stephens.josef@gmail.com" style="color: #C9CED8">stephens.josef@gmail.com</a>
-      <a href="[LINKEDIN URL]" style="color: #C9CED8">LinkedIn</a>
       <a href="https://github.com/stephensjosef-cloud" style="color: #C9CED8">GitHub</a>
       <span>Santa Rosa, California</span>
     </div>

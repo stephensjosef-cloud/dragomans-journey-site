@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dragoman's Journey · AI productions that prove themselves</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&amp;display=swap">
+<style>
+body{margin:0;background:#F2EDE1}
+a{color:#A93F17}a:hover{color:#16201C}
+*{box-sizing:border-box}
+::selection{background:#E8592B;color:#0E1B17}
+.dj a:focus-visible,.dj button:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj button{font:inherit;cursor:pointer}
+.tear{-webkit-mask:radial-gradient(circle at 8px 0,transparent 6px,#000 6.5px) -8px 100%/16px 100% repeat-x;mask:radial-gradient(circle at 8px 0,transparent 6px,#000 6.5px) -8px 100%/16px 100% repeat-x}
+.navlinks a{color:#C9D2CB;text-decoration:none}
+.navlinks a:hover{color:#F07A4E}
+.btn-blaze{transition:transform 160ms ease,filter 160ms ease}
+.btn-blaze:hover{transform:translateY(-2px);filter:brightness(1.06);color:#0E1B17}
+.ghost:hover{color:#F07A4E;border-color:#F07A4E}
+.card-lift{transition:transform 220ms ease,box-shadow 220ms ease}
+.rise{animation:rise 700ms cubic-bezier(.2,.7,.2,1) both}
+.rise2{animation:rise 700ms 120ms cubic-bezier(.2,.7,.2,1) both}
+.rise3{animation:rise 800ms 260ms cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.blink{animation:blink 1.6s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (max-width:760px){.navlinks{display:none!important}.hide-sm{display:none!important}}
+@media (prefers-reduced-motion:reduce){.rise,.rise2,.rise3,.blink{animation:none}.btn-blaze,.card-lift{transition:none}}
+</style>
+</helmet>
+
+<div class="dj" style="font-family: 'Instrument Sans', 'Helvetica Neue', system-ui, sans-serif; color: #16201C; background: #F2EDE1; font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased">
+
+<!-- ============ HERO (night) ============ -->
+<header style="position: relative; overflow: hidden; background: #0E1B17; color: #E9EEE9">
+  <svg aria-hidden="true" viewBox="0 0 1440 820" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.55">
+    <sc-for list="{{topo}}" as="p" hint-placeholder-count="12">
+      <path d="{{p.d}}" fill="none" stroke="{{p.stroke}}" stroke-width="1.1"></path>
+    </sc-for>
+  </svg>
+
+  <div style="position: relative; max-width: 1240px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px)">
+    <nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 26px 0">
+      <a href="#top" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #E9EEE9">
+        <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#F07A4E" stroke-width="2.2" stroke-linejoin="round"></path><circle cx="23" cy="7" r="2.4" fill="#F07A4E"></circle></svg>
+        <span style="font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.06em; text-transform: uppercase">Dragoman's Journey</span>
+      </a>
+      <div class="navlinks" style="display: flex; align-items: center; gap: 28px; font-size: 15px; font-weight: 500">
+        <a href="#engines">What I build</a>
+        <a href="#proof">Receipts</a>
+        <a href="#route">How it goes</a>
+        <a href="#josef">About</a>
+        <a href="#faq">Questions</a>
+        <a href="Mainframe.dc.html" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.06em; border: 1px solid #4C5F56; padding: 6px 10px; border-radius: 2px">Mainframe route ↗</a>
+      </div>
+      <a href="#blueprint" class="btn-blaze" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; background: {{accent}}; color: #0E1B17; text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 2px">Start a Blueprint</a>
+    </nav>
+
+    <div id="top" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); gap: clamp(40px, 6vw, 88px); align-items: center; padding: clamp(48px, 8vw, 110px) 0 clamp(72px, 9vw, 128px)">
+      <div style="display: flex; flex-direction: column; gap: 28px">
+        <p class="rise" style="margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #93A39A">Santa Rosa, CA · AI productions for small businesses and nonprofits</p>
+        <h1 class="rise2" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 900; text-transform: uppercase; font-size: clamp(58px, 8.4vw, 124px); line-height: 0.86; letter-spacing: -0.005em; text-wrap: balance">AI that works the first day <span style="color: #F07A4E">and proves it every month</span></h1>
+        <p class="rise3" style="margin: 0; max-width: 54ch; font-size: clamp(18px, 1.6vw, 21px); line-height: 1.55; color: #C9D2CB">I'm Josef. You already have the raw material: phone videos nobody has time to edit, lessons living in a binder. I turn it into reels, apps and workflows that run without babysitting. Each one ships with a way to check it, and nothing reaches your customers until a person has signed off.</p>
+        <div class="rise3" style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+          <a href="#blueprint" class="btn-blaze" style="display: inline-flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 26px; background: {{accent}}; color: #0E1B17; text-decoration: none; font-weight: 700; font-size: 17px; border-radius: 2px">Start with a Blueprint <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 14px">$1,500</span></a>
+          <a href="#proof" class="ghost" style="display: inline-flex; align-items: center; min-height: 56px; padding: 0 22px; border: 1.5px solid #4C5F56; color: #E9EEE9; text-decoration: none; font-weight: 600; font-size: 17px; border-radius: 2px">See the receipts first</a>
+        </div>
+        <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A">Two weeks · fixed price · credited in full toward your build</p>
+      </div>
+
+      <!-- receipt -->
+      <figure class="rise3" style="margin: 0; justify-self: center; width: min(420px, 100%); transform: rotate(-1.6deg)">
+        <div class="tear" style="background: #F6F2E8; color: #16201C; padding: 26px 26px 34px; box-shadow: 0 30px 60px rgba(0,0,0,0.45), 0 2px 0 rgba(0,0,0,0.2); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.5">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1.5px dashed #9AA097; padding-bottom: 12px">
+            <strong style="font-weight: 700; letter-spacing: 0.08em">RUN RECEIPT</strong>
+            <span style="color: #5C625C">REELS ENGINE</span>
+          </div>
+          <p style="margin: 12px 0 14px; color: #3E4640">One cooking-class shoot, one finished reel. A real run from August 2026.</p>
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <sc-for list="{{heroRows}}" as="r" hint-placeholder-count="6">
+              <div style="display: flex; justify-content: space-between; gap: 16px; align-items: baseline">
+                <span style="color: #3E4640">{{r.k}}</span>
+                <span style="flex: 1; border-bottom: 1px dotted #A6AAA2; transform: translateY(-4px)"></span>
+                <strong style="font-weight: 700; color: #16201C; white-space: nowrap">{{r.v}}</strong>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top: 16px; padding-top: 12px; border-top: 1.5px dashed #9AA097; display: flex; justify-content: space-between; gap: 12px; color: #5C625C; font-size: 12px">
+            <span>Client: a Sonoma County children's nonprofit</span>
+            <span>1080×1920</span>
+          </div>
+          <div style="margin-top: 14px; display: inline-block; border: 2px solid #A93F17; color: #A93F17; padding: 3px 10px; font-weight: 700; letter-spacing: 0.1em; transform: rotate(-4deg)">PERSON APPROVED</div>
+        </div>
+      </figure>
+    </div>
+  </div>
+</header>
+
+<!-- ============ THE PROBLEM ============ -->
+<section aria-labelledby="why" style="background: #F2EDE1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 112px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: clamp(32px, 5vw, 72px); align-items: end">
+    <h2 id="why" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(40px, 5.2vw, 72px); line-height: 0.92; text-wrap: balance">Most AI work for small businesses goes wrong around month two</h2>
+    <div style="display: flex; flex-direction: column; gap: 22px">
+      <p style="margin: 0; font-size: 19px; color: #3B4540">By then it has quietly broken, or it has started sounding like nobody you know, and the person paying for it can't say what it does anymore. That's why everything I build comes with a one-page check each month that you can read in a minute.</p>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; border-top: 2px solid #16201C; padding-top: 18px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; font-size: 56px; line-height: 1">32%</span>
+          <span style="font-size: 15px; color: #4A534D">of owners name accuracy as their top AI worry</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; font-size: 56px; line-height: 1">29%</span>
+          <span style="font-size: 15px; color: #4A534D">name losing the human touch. Cost came in at 5%.</span>
+        </div>
+      </div>
+      <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B716A">Source: <a href="https://bluehost.com/state-of-small-business-AI-confidence-2026">Bluehost survey of 350 US small business owners, May 2026</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PICKER ============ -->
+<section aria-labelledby="start" style="background: #16201C; color: #E9EEE9">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(48px, 6vw, 80px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 26px">
+    <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+      <h2 id="start" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(32px, 3.6vw, 48px); line-height: 1">Start here. What do you have a pile of?</h2>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A">Tap one. I'll point you at the right thing.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px">
+      <sc-for list="{{options}}" as="o" hint-placeholder-count="4">
+        <button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; opacity: 0.8">{{o.num}}</span>
+          <span style="font-size: 19px; font-weight: 600; line-height: 1.3">{{o.label}}</span>
+        </button>
+      </sc-for>
+    </div>
+    <sc-if value="{{hasPick}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border: 1.5px solid #F07A4E; border-radius: 2px">
+        <span style="font-size: 18px; color: #E9EEE9">{{pickMsg}}</span>
+        <a href="{{pickHref}}" style="color: #F07A4E; font-weight: 700; text-decoration: none">{{pickCta}} →</a>
+      </div>
+    </sc-if>
+  </div>
+</section>
+
+<!-- ============ ENGINES ============ -->
+<section id="engines" aria-labelledby="engines-h" style="background: #F2EDE1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 120px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 48px">
+    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 760px">
+      <h2 id="engines-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.9">What I build</h2>
+      <p style="margin: 0; font-size: 19px; color: #3B4540">Finished work you can put in front of a customer. It's made on tools I built and test on every job, so you aren't paying me to invent anything from scratch.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 20px; align-items: stretch">
+
+      <article class="card-lift" style="{{cardReels}}">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #6B716A">ENGINE A</span>
+          <sc-if value="{{isReels}}" hint-placeholder-val="{{ false }}"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #A93F17">YOUR MATCH</span></sc-if>
+        </div>
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 40px; line-height: 0.95">The Reels Engine</h3>
+        <p style="margin: 0; font-size: 19px; font-weight: 600; line-height: 1.35">Your phone footage in. A month of finished reels out.</p>
+        <dl style="margin: 0; display: flex; flex-direction: column; gap: 14px; font-size: 16px">
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU HAND OVER</dt><dd style="margin: 2px 0 0">Raw clips from your phone, any length, plus your recipe card, menu or notes.</dd></div>
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU GET</dt><dd style="margin: 2px 0 0">8 or 12 captioned vertical reels a month in your approved style, delivered as one batch by the 5th.</dd></div>
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">PROOF BUILT IN</dt><dd style="margin: 2px 0 0">A person checks every reel against a style sheet you signed, and nothing posts without your yes. The monthly page counts inquiries and bookings. Views are at the bottom.</dd></div>
+        </dl>
+        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>From $800/month</strong> · three-month minimum</p>
+      </article>
+
+      <article class="card-lift" style="{{cardApp}}">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #6B716A">ENGINE B</span>
+          <sc-if value="{{isApp}}" hint-placeholder-val="{{ false }}"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #A93F17">YOUR MATCH</span></sc-if>
+        </div>
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 40px; line-height: 0.95">Program Apps</h3>
+        <p style="margin: 0; font-size: 19px; font-weight: 600; line-height: 1.35">Your curriculum or recipes, as an app your program owns instead of rents.</p>
+        <dl style="margin: 0; display: flex; flex-direction: column; gap: 14px; font-size: 16px">
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU HAND OVER</dt><dd style="margin: 2px 0 0">The content you already teach: lessons, recipes, activities, a resource library.</dd></div>
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU GET</dt><dd style="margin: 2px 0 0">An iPhone, iPad and Android app on a tested engine, published under your own store accounts.</dd></div>
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">PROOF BUILT IN</dt><dd style="margin: 2px 0 0">The database itself refuses bad entries, like a recipe with no photo. The current build runs 324 automated tests, and your staff use it before any family does.</dd></div>
+        </dl>
+        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>Build from $8,000</strong> · then a yearly license and care plan</p>
+      </article>
+
+      <article class="card-lift" style="{{cardFlow}}">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #6B716A">ENGINE C</span>
+          <sc-if value="{{isFlow}}" hint-placeholder-val="{{ false }}"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #A93F17">YOUR MATCH</span></sc-if>
+        </div>
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 40px; line-height: 0.95">Built-to-Prove Workflows</h3>
+        <p style="margin: 0; font-size: 19px; font-weight: 600; line-height: 1.35">The one task that eats your week, rebuilt to run on its own.</p>
+        <dl style="margin: 0; display: flex; flex-direction: column; gap: 14px; font-size: 16px">
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU HAND OVER</dt><dd style="margin: 2px 0 0">The routine, and an hour with whoever does it now.</dd></div>
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU GET</dt><dd style="margin: 2px 0 0">That process running, with a person approving anything that touches a customer or a donor.</dd></div>
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">PROOF BUILT IN</dt><dd style="margin: 2px 0 0">The logic is tested before launch. Each month you get one page showing what ran and anything the gate held back.</dd></div>
+        </dl>
+        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>Build from $3,000</strong> · care plan from $750/month</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECEIPTS ============ -->
+<section id="proof" aria-labelledby="proof-h" style="background: #0E1B17; color: #E9EEE9">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 120px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: clamp(36px, 5vw, 72px); align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 18px">
+      <h2 id="proof-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.9">No client logos yet, so here are the logs</h2>
+      <p style="margin: 0; font-size: 19px; color: #C9D2CB">The business is new, so instead of borrowed credibility, here are real numbers from real runs. I can open the log behind any of them while you watch.</p>
+      <div role="tablist" aria-label="Receipts" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+          <button type="button" role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background: #15261F; border: 1px solid #2B3D35; padding: clamp(22px, 3vw, 36px); display: flex; flex-direction: column; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, monospace">
+      <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 12px; letter-spacing: 0.1em; color: #93A39A">
+        <span>{{rc.head}}</span>
+        <span>{{rc.date}}</span>
+      </div>
+      <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 34px; line-height: 1; color: #E9EEE9">{{rc.title}}</h3>
+      <div style="display: flex; flex-direction: column">
+        <sc-for list="{{rc.rows}}" as="r" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline">
+            <span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">{{r.k}}</span>
+            <strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">{{r.v}}</strong>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; padding-top: 14px; border-top: 1px dashed #4C5F56; font-family: 'Instrument Sans', sans-serif; font-size: 16px; line-height: 1.55; color: #C9D2CB">{{rc.note}}</p>
+      <sc-if value="{{rc.hasLink}}" hint-placeholder-val="{{ false }}">
+        <a href="{{rc.link}}" style="color: #F07A4E; font-size: 14px; text-decoration: none">{{rc.linkLabel}} →</a>
+      </sc-if>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE ROUTE ============ -->
+<section id="route" aria-labelledby="route-h" style="background: #F2EDE1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 120px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 52px">
+    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 800px">
+      <h2 id="route-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.9">How it goes, start to finish</h2>
+      <p style="margin: 0; font-size: 19px; color: #3B4540">Three dates, agreed before we start, so you always know what happens next.</p>
+    </div>
+
+    <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 0; border-top: 3px solid #16201C">
+      <li id="blueprint" style="display: flex; flex-direction: column; gap: 14px; padding: 30px 28px 34px 0; position: relative">
+        <span aria-hidden="true" style="position: absolute; top: -13px; left: 0; width: 22px; height: 22px; border-radius: 50%; background: {{accent}}; border: 3px solid #16201C"></span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #6B716A">DAYS 1 TO 14</span>
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 38px; line-height: 0.95">The Blueprint · $1,500</h3>
+        <p style="margin: 0; color: #3B4540">Fixed price. Credited in full toward the build if you go ahead, and yours to keep if you don't.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 16px">
+          <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px"><strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17; padding-top: 3px">DAY 1</strong><span>I sit in on the real work. In person anywhere in Sonoma County.</span></div>
+          <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px"><strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17; padding-top: 3px">DAY 7</strong><span>A working sample made from your own material. You see real work before you decide anything.</span></div>
+          <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px"><strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17; padding-top: 3px">DAY 14</strong><span>The build spec, a fixed price and a live date. Or a straight answer that you don't need me.</span></div>
+        </div>
+      </li>
+      <li style="display: flex; flex-direction: column; gap: 14px; padding: 30px 28px 34px 0; position: relative">
+        <span aria-hidden="true" style="position: absolute; top: -13px; left: 0; width: 22px; height: 22px; border-radius: 50%; background: #F2EDE1; border: 3px solid #16201C"></span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #6B716A">ON THE DATE IN THE SPEC</span>
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 38px; line-height: 0.95">The Build</h3>
+        <p style="margin: 0; color: #3B4540">A fixed fee, agreed before any work starts. It ships with its tests, the style sheet you signed and a hand-over page in plain English.</p>
+              </li>
+      <li style="display: flex; flex-direction: column; gap: 14px; padding: 30px 0 34px 0; position: relative">
+        <span aria-hidden="true" style="position: absolute; top: -13px; left: 0; width: 22px; height: 22px; border-radius: 50%; background: #16201C; border: 3px solid #16201C"></span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #6B716A">THE 1ST OF EVERY MONTH</span>
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 38px; line-height: 0.95">The Proof Page</h3>
+        <p style="margin: 0; color: #3B4540">One page you can read in a minute and forward to your board: what ran, what it brought in, and anything that broke along with what I did about it.</p>
+
+        <figure style="margin: 4px 0 0; background: #FBF8F1; border: 1.5px solid #16201C; padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 13px; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between; gap: 10px; border-bottom: 1.5px solid #16201C; padding-bottom: 8px"><strong>PROOF PAGE · [MONTH]</strong><span style="color: #6B716A">sample layout</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 10px"><span>Reels posted / planned</span><strong>[n] / [n]</strong></div>
+          <div style="display: flex; justify-content: space-between; gap: 10px"><span>Inquiries traced to reels</span><strong>[n]</strong></div>
+          <div style="display: flex; justify-content: space-between; gap: 10px"><span>Held back at the gate</span><strong>[n]</strong></div>
+          <div style="display: flex; justify-content: space-between; gap: 10px"><span>Broke · fixed · how</span><strong>[n] · [n]</strong></div>
+          <figcaption style="color: #6B716A; font-size: 12px; padding-top: 6px; border-top: 1px dashed #9AA097">Numbers left blank on purpose. Yours go here.</figcaption>
+        </figure>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ COMPARE + FIT ============ -->
+<section aria-labelledby="compare-h" style="background: #E8E1D1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 112px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 40px">
+    <h2 id="compare-h" style="margin: 0; max-width: 900px; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(40px, 5vw, 68px); line-height: 0.92">Where the usual options tend to break</h2>
+    <div style="overflow-x: auto; border: 2px solid #16201C; background: #F2EDE1">
+      <table style="width: 100%; min-width: 760px; border-collapse: collapse; font-size: 16px">
+        <thead>
+          <tr style="text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em">
+            <th scope="col" style="padding: 16px 18px; border-bottom: 2px solid #16201C; width: 24%"></th>
+            <th scope="col" style="padding: 16px 18px; border-bottom: 2px solid #16201C">DIY WITH AI TOOLS</th>
+            <th scope="col" style="padding: 16px 18px; border-bottom: 2px solid #16201C">A TYPICAL AGENCY</th>
+            <th scope="col" style="padding: 16px 18px; border-bottom: 2px solid #16201C; background: #16201C; color: #F07A4E">DRAGOMAN'S JOURNEY</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" style="text-align: left; padding: 16px 18px; border-bottom: 1px solid #C9C1AE; font-weight: 600">Who checks it before a customer sees it</th><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; color: #4A534D">You, when there's time</td><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; color: #4A534D">Depends who's on your account</td><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; background: #F6F2E8; font-weight: 600">A person, every time, by rule</td></tr>
+          <tr><th scope="row" style="text-align: left; padding: 16px 18px; border-bottom: 1px solid #C9C1AE; font-weight: 600">What you own at the end</th><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; color: #4A534D">Some prompts in a chat history</td><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; color: #4A534D">Often less than you'd think</td><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; background: #F6F2E8; font-weight: 600">Your content, accounts and data, in your name, in writing</td></tr>
+          <tr><th scope="row" style="text-align: left; padding: 16px 18px; border-bottom: 1px solid #C9C1AE; font-weight: 600">How you know it still works</th><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; color: #4A534D">A customer tells you</td><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; color: #4A534D">A views dashboard</td><td style="padding: 16px 18px; border-bottom: 1px solid #C9C1AE; background: #F6F2E8; font-weight: 600">A proof page on the 1st of every month</td></tr>
+          <tr><th scope="row" style="text-align: left; padding: 16px 18px; font-weight: 600">What it costs</th><td style="padding: 16px 18px; color: #4A534D">A subscription and your evenings</td><td style="padding: 16px 18px; color: #4A534D">Usually quoted after a few calls</td><td style="padding: 16px 18px; background: #F6F2E8; font-weight: 600">Fixed, and printed on this page</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 20px">
+      <div style="background: #F2EDE1; border: 2px solid #16201C; padding: 26px; display: flex; flex-direction: column; gap: 12px">
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 30px">A good fit</h3>
+        <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px">
+          <li>Small businesses and nonprofits in Sonoma County and the North Bay. Remote works too.</li>
+          <li>You already have the raw material and no time to turn it into anything.</li>
+          <li>One person on your side can say yes.</li>
+          <li>You care more about inquiries than about views.</li>
+        </ul>
+      </div>
+      <div style="background: transparent; border: 2px dashed #6B716A; padding: 26px; display: flex; flex-direction: column; gap: 12px">
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 30px; color: #4A534D">Not a fit</h3>
+        <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: #3B4540">
+          <li>You want me to repair an AI tool another vendor built. I'll quote a rebuild or point you somewhere better.</li>
+          <li>You want a chatbot talking to kids. I don't build those, for anyone.</li>
+          <li>You need it by Friday and nobody has looked at how the work happens now.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LETTER ============ -->
+<section id="josef" aria-labelledby="josef-h" style="background: #F2EDE1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 120px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: clamp(36px, 6vw, 88px); align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div role="img" aria-label="Photo of Josef goes here" style="aspect-ratio: 4 / 5; width: 100%; max-width: 420px; background: repeating-linear-gradient(135deg, #E3DBC9 0 12px, #EAE3D3 12px 24px); border: 2px solid #16201C; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4A534D">[PHOTO OF JOSEF, OUTSIDE]</div>
+      <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #6B716A">Josef Stephens · Santa Rosa, California · raised in Alaska</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px; max-width: 64ch">
+      <h2 id="josef-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.2vw, 72px); line-height: 0.9">Hey, I'm Josef.</h2>
+      <p style="margin: 0; font-size: 19px">I grew up in Alaska and learned to work next to my granny and Leland, two hardcore Alaskans who did not leave a job half done. [ONE TRUE ALASKA STORY, TWO SENTENCES.]</p>
+      <p style="margin: 0; font-size: 19px">Then came years of commission sales, including insurance at State Farm and Allstate, where I learned that the honest answer sometimes loses you the sale and you give it anyway. If your Blueprint says you don't need me, that is what it will say.</p>
+      <p style="margin: 0; font-size: 19px">I taught myself to build software with AI. Bird League, a competitive birding app, went from zero lines of code to real users and an App Store submission. This year a Sonoma County children's nonprofit became my first client, and the tools I built for them are the engines on this page.</p>
+      <p style="margin: 0; font-size: 19px">All of it runs on a setup I built for myself: written rules the AI can't argue with, and tests that have to pass before anything ships. Nobody would call it exciting. It's why the reels come out right.</p>
+      <p style="margin: 8px 0 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 700; font-size: 30px; letter-spacing: 0.02em">Josef</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHIPPED LOG ============ -->
+<section aria-labelledby="log-h" style="background: #16201C; color: #E9EEE9">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 104px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: clamp(32px, 5vw, 72px)">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 id="log-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(40px, 4.8vw, 64px); line-height: 0.92">Recently shipped, with dates you can check</h2>
+    </div>
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; font-size: 16px">
+      <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-10-14</span><span><strong style="color: #F07A4E">Bird League.</strong> Export to eBird goes live, so birders send their sightings to Cornell in one tap.</span></li>
+      <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-10-07</span><span><strong style="color: #F07A4E">Program app engine.</strong> Latest release passes 8 of 8 build gates and 324 automated tests.</span></li>
+      <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-08-26</span><span><strong style="color: #F07A4E">Reels Engine.</strong> First run on a real shoot. 21 minutes of raw footage in, an 81-second captioned reel out.</span></li>
+      <li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid #33463D; border-bottom: 1px solid #33463D"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A; padding-top: 2px">2026-08-23</span><span><strong style="color: #F07A4E">Proof method, in public.</strong> A second AI translation of a banking program, checked line by line. <a href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence" style="color: #F07A4E">The failures are published next to the wins.</a></span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" aria-labelledby="faq-h" style="background: #F2EDE1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 120px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: clamp(32px, 5vw, 72px); align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 id="faq-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.2vw, 72px); line-height: 0.9">Questions worth asking first</h2>
+    </div>
+    <div style="display: flex; flex-direction: column; border-top: 2px solid #16201C">
+      <sc-for list="{{faqs}}" as="f" hint-placeholder-count="8">
+        <div style="border-bottom: 1px solid #C9C1AE">
+          <button type="button" onClick="{{f.toggle}}" aria-expanded="{{f.open}}" style="width: 100%; min-height: 64px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; background: none; border: 0; text-align: left; color: #16201C; font-size: 19px; font-weight: 600">
+            <span>{{f.q}}</span>
+            <span aria-hidden="true" style="{{f.iconStyle}}">+</span>
+          </button>
+          <sc-if value="{{f.open}}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0 0 22px; max-width: 62ch; font-size: 17px; color: #3B4540">{{f.a}}</p>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section id="contact" aria-labelledby="contact-h" style="position: relative; overflow: hidden; background: #0E1B17; color: #E9EEE9">
+  <svg aria-hidden="true" viewBox="0 0 1440 820" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.4">
+    <sc-for list="{{topo}}" as="p" hint-placeholder-count="12">
+      <path d="{{p.d}}" fill="none" stroke="{{p.stroke}}" stroke-width="1.1"></path>
+    </sc-for>
+  </svg>
+  <div style="position: relative; max-width: 1240px; margin: 0 auto; padding: clamp(80px, 10vw, 140px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 28px">
+    <h2 id="contact-h" style="margin: 0; max-width: 14ch; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 900; text-transform: uppercase; font-size: clamp(56px, 8vw, 120px); line-height: 0.86">Tell me what eats your week.</h2>
+    <p style="margin: 0; max-width: 56ch; font-size: 20px; color: #C9D2CB">Two lines is plenty: what you run, and the part of it that never gets done. I read every message myself, and if I'm full I'll tell you when the next spot opens.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 14px">
+      <a href="mailto:stephens.josef@gmail.com?subject=Blueprint%20for%20%5Byour%20business%5D" class="btn-blaze" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 30px; background: {{accent}}; color: #0E1B17; text-decoration: none; font-weight: 700; font-size: 18px; border-radius: 2px">Start a Blueprint · $1,500</a>
+      <a href="[BOOKING LINK]" class="ghost" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 24px; border: 1.5px solid #4C5F56; color: #E9EEE9; text-decoration: none; font-weight: 600; font-size: 18px; border-radius: 2px">Or book 15 minutes first</a>
+    </div>
+    <p style="margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #93A39A">
+      <span aria-hidden="true" class="blink" style="width: 9px; height: 9px; border-radius: 50%; background: {{dot}}"></span>
+      <span>It's {{clock}} in Santa Rosa. {{status}}</span>
+    </p>
+  </div>
+</section>
+
+<section aria-labelledby="other-route" style="background: #F4F1EA; color: #12161F; border-top: 1px solid #CFC8B8">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(48px, 6vw, 80px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 28px 64px; align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #A93F17">The other route</p>
+      <h2 id="other-route" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: clamp(32px, 3.6vw, 48px); line-height: 1.05; letter-spacing: -0.01em">The same rules, carried up to a <em>bank's core systems</em></h2>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <p style="margin: 0; font-size: 18px; color: #3A4252">The rule that stops a kids' recipe from publishing until it names the grown-up's job also stops a migrated interest routine from shipping with an open question. For banks, insurers and agencies moving COBOL with AI, it takes the form of a harness that checks the new system against the old one.</p>
+      <a href="Mainframe.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border: 1.5px solid #12161F; color: #12161F; text-decoration: none; font-weight: 600">Take the Mainframe Route →</a>
+    </div>
+  </div>
+</section>
+
+<footer style="background: #0A1411; color: #93A39A">
+  <div style="max-width: 1240px; margin: 0 auto; padding: 34px clamp(16px, 4vw, 48px) 44px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px 32px; font-size: 14px">
+    <div style="display: flex; flex-direction: column; gap: 6px; max-width: 520px">
+      <span style="font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase; color: #E9EEE9">Dragoman's Journey</span>
+      <span>Dragoman (n.): a guide and interpreter for travelers crossing country where they didn't speak the language.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: flex-start">
+      <a href="mailto:stephens.josef@gmail.com" style="color: #C9D2CB">stephens.josef@gmail.com</a>
+      <a href="[LINKEDIN URL]" style="color: #C9D2CB">LinkedIn</a>
+      <a href="https://github.com/stephensjosef-cloud" style="color: #C9D2CB">GitHub</a>
+      <span>Made by Josef Stephens in Santa Rosa, California</span>
+    </div>
+  </div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#E8592B","options":["#E8592B","#F2A33A","#5FB3A1","#E9EEE9"],"section":"Brand"},"$preview":{"width":1440,"height":8000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pick: null, tab: 'reels', open: 0, clock: '', status: '', dot: '#93A39A' };
+  }
+  componentDidMount() {
+    this.tick();
+    this.timer = setInterval(() => this.tick(), 30000);
+  }
+  componentWillUnmount() { if (this.timer) clearInterval(this.timer); }
+  tick() {
+    try {
+      const now = new Date();
+      const clock = now.toLocaleTimeString('en-US', { timeZone: 'America/Los_Angeles', hour: 'numeric', minute: '2-digit' });
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', hour: 'numeric', hour12: false }).formatToParts(now);
+      const wd = (parts.find(p => p.type === 'weekday') || {}).value || '';
+      const hr = parseInt((parts.find(p => p.type === 'hour') || {}).value || '0', 10);
+      const weekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(wd) !== -1;
+      const working = weekday && hr >= 13 && hr < 18;
+      this.setState({
+        clock: clock,
+        status: working ? "I'm in a work block, so you'll likely hear back today." : "I'm off the clock. Expect a reply the next weekday afternoon.",
+        dot: working ? '#7BD389' : '#93A39A'
+      });
+    } catch (e) { /* clock is decoration only */ }
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#E8592B';
+    const s = this.state;
+
+    const topo = [];
+    for (let i = 0; i < 15; i++) {
+      const y = 40 + i * 54;
+      const a = 26 + (i % 4) * 11;
+      const d = 'M-40 ' + y + ' C 180 ' + (y - a) + ', 360 ' + (y + a) + ', 600 ' + (y - 6) +
+        ' S 980 ' + (y - a * 1.4) + ', 1180 ' + (y + 4) + ' S 1460 ' + (y + a) + ', 1520 ' + y;
+      topo.push({ d: d, stroke: i % 5 === 2 ? 'rgba(240,122,78,0.55)' : 'rgba(147,163,154,0.35)' });
+    }
+
+    const heroRows = [
+      { k: 'Raw footage', v: '21:28' },
+      { k: 'Action kept by motion scan', v: '13:33' },
+      { k: 'Scan speed', v: '29× realtime' },
+      { k: 'Finished reel', v: '81 sec' },
+      { k: 'Captioned steps', v: '9' },
+      { k: 'Machine time, start to finish', v: '~4 min' }
+    ];
+
+    const optDefs = [
+      { id: 'reels', num: '01', label: 'Phone videos nobody has time to edit' },
+      { id: 'app', num: '02', label: 'Lessons, recipes or a curriculum' },
+      { id: 'flow', num: '03', label: 'A weekly task that eats hours' },
+      { id: 'unsure', num: '04', label: "Honestly, I'm not sure yet" }
+    ];
+    const options = optDefs.map((o) => {
+      const on = s.pick === o.id;
+      return {
+        num: o.num, label: o.label, on: on ? 'true' : 'false',
+        pick: () => this.setState({ pick: o.id }),
+        style: 'display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 104px; padding: 18px 20px; text-align: left; border-radius: 2px; transition: background 160ms ease, transform 160ms ease; ' +
+          (on ? 'background: ' + accent + '; color: #0E1B17; border: 1.5px solid ' + accent + '; transform: translateY(-3px);'
+              : 'background: #1E2C26; color: #E9EEE9; border: 1.5px solid #3A4D44;')
+      };
+    });
+    const msgs = {
+      reels: ["That's the Reels Engine: your footage in, a month of reels out.", '#engines', 'See Engine A'],
+      app: ["That's a Program App: your content, as an app you own.", '#engines', 'See Engine B'],
+      flow: ["That's a Built-to-Prove Workflow: one task, rebuilt to run on its own.", '#engines', 'See Engine C'],
+      unsure: ["Then start with the Blueprint. In two weeks you'll know what's worth building.", '#blueprint', 'See the Blueprint']
+    };
+    const m = msgs[s.pick] || ['', '#engines', ''];
+
+    const baseCard = 'display: flex; flex-direction: column; gap: 18px; padding: 30px 28px; background: #FBF8F1; border-radius: 2px; ';
+    const ring = (id) => baseCard + (s.pick === id
+      ? 'border: 3px solid ' + accent + '; box-shadow: 10px 10px 0 #16201C; transform: translateY(-4px);'
+      : 'border: 2px solid #16201C; box-shadow: 6px 6px 0 #16201C;');
+
+    const receipts = {
+      reels: {
+        head: 'RECEIPT · REELS ENGINE', date: 'AUG 2026', title: 'One shoot, one finished reel',
+        rows: [
+          { k: 'Raw phone footage from one cooking-class shoot', v: '21:28' },
+          { k: 'Action kept after the motion scan (cleanup and empty-pot shots dropped)', v: '13:33' },
+          { k: 'Finished vertical reel, house-style captions', v: '81 sec · 9 steps' },
+          { k: 'Machine time for the whole episode', v: '~4 min' },
+          { k: 'Defects the client reviewer caught in the first three rounds', v: '3 of 3 fixed' },
+          { k: 'Reels posted without the client approving them', v: '0' }
+        ],
+        note: 'Those three catches were ragged caption boxes, square corners and orphaned words. Each one is now a rule the machine checks on every reel, so nobody has to catch it twice.',
+        hasLink: false, link: '', linkLabel: ''
+      },
+      app: {
+        head: 'RECEIPT · PROGRAM APPS', date: 'OCT 2026', title: 'A cooking-program app, in build',
+        rows: [
+          { k: 'Automated tests on the latest release', v: '324' },
+          { k: 'Build gates passed', v: '8 of 8' },
+          { k: 'A recipe can publish without a photo', v: 'Never' },
+          { k: 'A step with heat or a knife can publish without naming the grown-up’s job', v: 'Never' },
+          { k: 'Accounts or child data collected', v: 'None' },
+          { k: 'Platforms', v: 'iPhone · iPad · Android' }
+        ],
+        note: 'The database enforces those "never" rows itself. A careless edit at midnight gets refused instead of published.',
+        hasLink: false, link: '', linkLabel: ''
+      },
+      method: {
+        head: 'RECEIPT · PROOF METHOD', date: 'AUG 2026', title: 'Checking an AI’s work, in public',
+        rows: [
+          { k: 'Banking program translated by two different AIs', v: '2 runs' },
+          { k: 'Checked against the original, value by value', v: 'Yes' },
+          { k: 'Failures published next to the wins', v: 'All of them' },
+          { k: 'Code, prompts and findings anyone can rerun', v: 'Public' }
+        ],
+        note: 'This is where the habit started. I checked an AI’s translation of an old banking program against the original and wrote down every miss. Your work gets checked the same way.',
+        hasLink: true, link: 'https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence', linkLabel: 'Open the repo'
+      }
+    };
+    const tabDefs = [
+      { id: 'reels', label: 'Reels' },
+      { id: 'app', label: 'Program apps' },
+      { id: 'method', label: 'Proof method' }
+    ];
+    const tabs = tabDefs.map((t) => {
+      const on = s.tab === t.id;
+      return {
+        label: t.label, on: on ? 'true' : 'false',
+        pick: () => this.setState({ tab: t.id }),
+        style: 'min-height: 48px; padding: 0 20px; border-radius: 2px; font-weight: 600; font-size: 16px; ' +
+          (on ? 'background: ' + accent + '; color: #0E1B17; border: 1.5px solid ' + accent + ';'
+              : 'background: transparent; color: #E9EEE9; border: 1.5px solid #4C5F56;')
+      };
+    });
+
+    const faqDefs = [
+      ['Do I need to understand AI to work with you?', "No. You need to know your own work, which you already do. I handle the AI part and explain what I built in plain English, on one page, before you pay for the build."],
+      ['What happens when it breaks?', "The care plan is set up to catch it before you do, and the next proof page says what broke and what I did about it. You shouldn't hear about it from a customer."],
+      ['Will it sound like a robot?', "Not if it goes through me. You approve a style sheet up front, and nothing goes out until a person has read it and you've said yes."],
+      ['Who owns what?', "Your content, your accounts and your data stay in your name, in writing. The engine underneath is mine and licensed to you for good, which is why a build costs less than starting from zero."],
+      ['What do you do with our data?', "It stays in accounts you own. I don't sell it, and nothing about your customers goes into a tool without you knowing which tool and why. Kids' programs get stricter rules: no accounts and no child data, ever."],
+      ['Can you fix the AI thing someone else built for us?', "I don't do repairs on other people's systems. I'll quote a fixed-price rebuild, or tell you who's a better fit. Forensic hours on a stranger's setup are a bad deal for both of us."],
+      ['What if the Blueprint says we shouldn’t build anything?', "Then that's what it says, and you keep it. Sometimes the right answer is a $20 app you already pay for. You'd rather hear that for $1,500 than learn it for $15,000."],
+      ['Why one person and not an agency?', "You talk to the person who builds it, every time. The engines do the repetitive parts, which is how one person can deliver this without cutting corners. The tradeoff is capacity. I only run a few projects at once."]
+    ];
+    const faqs = faqDefs.map((f, i) => {
+      const open = s.open === i;
+      return {
+        q: f[0], a: f[1], open: open,
+        toggle: () => this.setState({ open: open ? -1 : i }),
+        iconStyle: 'flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1.5px solid #16201C; border-radius: 50%; font-size: 22px; line-height: 1; transition: transform 200ms ease, background 200ms ease; ' +
+          (open ? 'transform: rotate(45deg); background: ' + accent + ';' : 'background: transparent;')
+      };
+    });
+
+    return {
+      accent: accent, topo: topo, heroRows: heroRows, options: options,
+      hasPick: !!s.pick, pickMsg: m[0], pickHref: m[1], pickCta: m[2],
+      isReels: s.pick === 'reels', isApp: s.pick === 'app', isFlow: s.pick === 'flow',
+      cardReels: ring('reels'), cardApp: ring('app'), cardFlow: ring('flow'),
+      tabs: tabs, rc: receipts[s.tab] || receipts.reels,
+      faqs: faqs,
+      clock: s.clock || 'afternoon', status: s.status || '', dot: s.dot
+    };
+  }
+}
+</script>
+</body>
+</html>

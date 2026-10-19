@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Packed-decimal decoder · Dragoman's Journey</title>
+<meta name="description" content="Paste the bytes of a COMP-3 field and its picture clause. See every digit, the sign and the value, and what the number becomes under each reading of a rate. Runs in your browser.">
+<link rel="canonical" href="https://dragomansjourney.com/comp3.html">
+<meta property="og:title" content="Packed-decimal decoder · Dragoman's Journey">
+<meta property="og:description" content="Paste the bytes of a COMP-3 field and its picture clause. See every digit, the sign and the value. Runs in your browser.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/comp3.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F4F1EA}
+*{box-sizing:border-box}
+a{color:#A93F17}a:hover{color:#12161F}
+::selection{background:#E8592B;color:#12161F}
+.mf{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#12161F;background:#F4F1EA;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.mf a:focus-visible,.mf button:focus-visible,.mf input:focus-visible{outline:2px solid #A93F17;outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.serif{font-family:'Newsreader',Georgia,serif}
+.label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5D6576}
+input.field{width:100%;min-height:52px;padding:10px 14px;border:1px solid #12161F;background:#FBF9F4;color:#12161F;font:500 18px/1.3 'JetBrains Mono',monospace;border-radius:0}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 14px;border:1px solid #12161F;background:transparent;color:#12161F;font-size:14px}
+.chip:hover{background:#12161F;color:#F4F1EA}
+.seg{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border:1px solid #12161F;background:transparent;color:#12161F;font-size:15px;font-weight:600}
+.seg[aria-pressed="true"]{background:#12161F;color:#F4F1EA}
+.nib{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:44px}
+.nib b{display:flex;align-items:center;justify-content:center;width:44px;height:52px;border:1px solid #12161F;font:700 22px 'JetBrains Mono',monospace;background:#FBF9F4}
+.nib.sign b{background:#12161F;color:#F4F1EA}
+.nib.pad b{color:#9AA0AC;border-style:dashed}
+.nib.bad b{background:#E8592B;color:#12161F}
+.nib span{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.08em;color:#5D6576;text-transform:uppercase}
+.byte{display:flex;gap:4px;padding:8px;border:1px dashed #CFC8B8}
+dl.facts{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));border-top:1px solid #12161F}
+dl.facts div{padding:14px 16px 14px 0;border-bottom:1px solid #CFC8B8}
+dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-break:break-all}
+.warn{margin:0;padding:12px 16px;border-left:3px solid #E8592B;background:#FBF9F4;font-size:16px}
+.ok{margin:0;padding:12px 16px;border-left:3px solid #5D6576;background:#FBF9F4;font-size:16px}
+.quiet{transition:background 160ms ease,color 160ms ease}
+.quiet:hover{background:#12161F;color:#F4F1EA}
+@media (max-width:640px){.nib{min-width:36px}.nib b{width:36px;height:46px;font-size:19px}}
+</style>
+</head>
+<body>
+<div class="mf">
+
+<header class="wrap" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-top:22px;padding-bottom:22px;border-bottom:1px solid #CFC8B8">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#12161F;text-decoration:none">
+    <svg width="26" height="26" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#12161F" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+    <span class="serif" style="font-size:20px">Dragoman's Journey</span>
+  </a>
+  <a href="mainframe.html" style="display:inline-flex;align-items:center;min-height:44px;color:#3A4252;text-decoration:none;font-size:15px">The Mainframe Route →</a>
+</header>
+
+<main>
+<section class="wrap" style="padding-top:clamp(48px,7vw,96px);padding-bottom:24px;display:flex;flex-direction:column;gap:18px;max-width:1240px">
+  <span class="label" style="color:#A93F17">A free tool · runs in your browser</span>
+  <h1 class="serif" style="margin:0;font-weight:300;font-size:clamp(44px,6vw,84px);line-height:1;letter-spacing:-0.025em">Packed-decimal <em style="color:#A93F17">decoder</em></h1>
+  <p style="margin:0;max-width:60ch;font-size:clamp(18px,1.5vw,20px);color:#3A4252">Paste the bytes of a COMP-3 field and its picture clause. You get every digit, the sign, the value, and what the number turns into under each reading of a rate. Nothing you paste leaves this page.</p>
+</section>
+
+<section class="wrap" aria-label="Decoder" style="padding-top:24px;padding-bottom:clamp(48px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:clamp(28px,4vw,56px);align-items:start">
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <div role="group" aria-label="Direction" style="display:flex;gap:0">
+      <button type="button" class="seg" id="mode-dec" aria-pressed="true">Bytes to value</button>
+      <button type="button" class="seg" id="mode-enc" aria-pressed="false" style="border-left:0">Value to bytes</button>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:8px">
+      <span class="label" id="in-label">Bytes, in hex</span>
+      <input class="field" id="in" autocomplete="off" spellcheck="false" value="03 50 00 0C">
+    </label>
+    <label style="display:flex;flex-direction:column;gap:8px">
+      <span class="label">Picture clause</span>
+      <input class="field" id="pic" autocomplete="off" spellcheck="false" value="S9(2)V9(5)">
+      <span style="font-size:14px;color:#5D6576">Paste it however it appears: <span class="mono">PIC S9(7)V99 COMP-3.</span> works.</span>
+    </label>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span class="label">Try one</span>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button type="button" class="chip" data-b="03 50 00 0C" data-p="S9(2)V9(5)">Exhibit A, read as a percentage</button>
+        <button type="button" class="chip" data-b="00 03 50 0C" data-p="S9(2)V9(5)">Exhibit A, as the bank stored it</button>
+        <button type="button" class="chip" data-b="00 12 34 56 7D" data-p="S9(7)V99">A negative balance</button>
+        <button type="button" class="chip" data-b="03 50 0A 0C" data-p="S9(2)V9(5)">A damaged field</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="out" aria-live="polite" style="display:flex;flex-direction:column;gap:22px;min-width:0"></div>
+</section>
+
+<section style="background:#12161F;color:#E6E2D8">
+  <div class="wrap" style="padding-top:clamp(56px,7vw,96px);padding-bottom:clamp(56px,7vw,96px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:clamp(28px,4vw,56px);align-items:end">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <span class="label" style="color:#B7BDC9">Why this exists</span>
+      <h2 class="serif" style="margin:0;font-weight:300;font-size:clamp(34px,4.2vw,56px);line-height:1.05;letter-spacing:-0.02em">The picture clause tells you where the point goes. <em style="color:#F07A4E">It never tells you what the number means.</em></h2>
+      <p style="margin:0;max-width:58ch;font-size:18px;color:#B7BDC9">In Exhibit A, two AIs translated a banking program that divides a rate by twelve and never by one hundred. Both readings of that field compile and both pass a test written from the source. Only the bytes the business actually stored can settle it, which is where every Survey starts.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;border-top:1px solid #3A4252">
+      <a href="mainframe.html#correspondence" class="quiet" style="display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:72px;padding:0 4px;border-bottom:1px solid #3A4252;color:#E6E2D8;text-decoration:none"><span class="serif" style="font-size:24px">Found a field with two readings?</span><span class="mono" aria-hidden="true">→</span></a>
+      <a href="mainframe.html#s2" class="quiet" style="display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:72px;padding:0 4px;border-bottom:1px solid #3A4252;color:#E6E2D8;text-decoration:none"><span class="serif" style="font-size:24px">See the exhibits</span><span class="mono" aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap" style="padding-top:32px;padding-bottom:40px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5D6576">
+  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <a href="mailto:stephens.josef@gmail.com" style="color:#3A4252">stephens.josef@gmail.com</a>
+</footer>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var mode = 'dec';
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function parsePic(raw) {
+    var s = String(raw).toUpperCase()
+      .replace(/COMPUTATIONAL-3|COMP-3|PACKED-DECIMAL|USAGE|PICTURE|PIC|\bIS\b/g, '')
+      .replace(/[\s.]/g, '');
+    var m = s.match(/^(S)?((?:9(?:\(\d+\))?)+)(?:V((?:9(?:\(\d+\))?)*))?$/);
+    if (!m) return null;
+    function count(part) {
+      if (!part) return 0;
+      var n = 0, re = /9(?:\((\d+)\))?/g, x;
+      while ((x = re.exec(part))) n += x[1] ? parseInt(x[1], 10) : 1;
+      return n;
+    }
+    var i = count(m[2]), f = count(m[3]);
+    if (i + f < 1 || i + f > 31) return null;
+    return { signed: !!m[1], int: i, frac: f, digits: i + f, bytes: Math.floor((i + f) / 2) + 1, text: s };
+  }
+
+  function cleanHex(raw) {
+    var s = String(raw).trim().replace(/^X'(.*)'$/i, '$1').replace(/0x/gi, '').replace(/[\s,:-]/g, '');
+    return s;
+  }
+
+  function placePoint(digits, frac) {
+    var d = digits.replace(/^0+(?=\d)/, '');
+    if (frac === 0) return d;
+    while (d.length <= frac) d = '0' + d;
+    return d.slice(0, d.length - frac) + '.' + d.slice(d.length - frac);
+  }
+
+  // Exact decimal helpers on strings, so nothing drifts through floating point.
+  function toScaled(str, scale) {
+    var neg = str.charAt(0) === '-';
+    var s = str.replace('-', '');
+    var parts = s.split('.');
+    var frac = (parts[1] || '');
+    while (frac.length < scale) frac += '0';
+    return { neg: neg, n: BigInt(parts[0] + frac.slice(0, scale)) };
+  }
+  function money(numer, denom) {
+    // numer/denom dollars, rounded half up to cents
+    var neg = (numer < 0n) !== (denom < 0n);
+    if (numer < 0n) numer = -numer;
+    if (denom < 0n) denom = -denom;
+    var cents = (numer * 100n * 2n + denom) / (denom * 2n);
+    var s = cents.toString();
+    while (s.length < 3) s = '0' + s;
+    var whole = s.slice(0, -2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg && cents !== 0n ? '-' : '') + '$' + whole + '.' + s.slice(-2);
+  }
+
+  function rateBlock(valueStr, frac) {
+    // One month's interest on $1,000.00 under each reading of an annual rate.
+    var v = toScaled(valueStr, frac);
+    var scale = 10n ** BigInt(frac);
+    var signed = v.neg ? -v.n : v.n;
+    var asFraction = money(1000n * signed, scale * 12n);
+    var asPercent = money(1000n * signed, scale * 12n * 100n);
+    return '<div style="display:flex;flex-direction:column;gap:12px">' +
+      '<span class="label">If this field is an annual rate</span>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:12px">' +
+      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">Read as a fraction</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asFraction) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
+      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">Read as a percentage</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asPercent) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
+      '</div><p style="margin:0;font-size:15px;color:#3A4252">Same bytes, same picture clause. The code alone can\'t say which column is right.</p></div>';
+  }
+
+  function nibbleRow(nibs, pic) {
+    var html = '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    var digitCount = nibs.length - 1;
+    var padCount = pic ? Math.max(0, digitCount - pic.digits) : 0;
+    for (var b = 0; b < nibs.length / 2; b++) {
+      html += '<div class="byte">';
+      for (var k = 0; k < 2; k++) {
+        var i = b * 2 + k, n = nibs[i], cls = 'nib', lab;
+        if (i === nibs.length - 1) {
+          cls += ' sign';
+          lab = /[CAEF]/.test(n) ? (n === 'F' ? 'unsigned' : 'plus') : (/[DB]/.test(n) ? 'minus' : 'bad sign');
+          if (!/[A-F]/.test(n)) cls += ' bad';
+        } else if (!/[0-9]/.test(n)) { cls += ' bad'; lab = 'not a digit'; }
+        else if (i < padCount) { cls += ' pad'; lab = 'pad'; }
+        else lab = 'digit';
+        html += '<div class="' + cls + '"><b>' + n + '</b><span>' + lab + '</span></div>';
+      }
+      html += '</div>';
+    }
+    return html + '</div>';
+  }
+
+  function decode() {
+    var pic = parsePic($('pic').value);
+    var hex = cleanHex($('in').value).toUpperCase();
+    var out = [];
+    if (!pic) out.push('<p class="warn">I can\'t read that picture clause. Try something like <span class="mono">S9(7)V99</span>.</p>');
+    if (!hex) { $('out').innerHTML = out.join('') + '<p class="ok">Paste some bytes to start.</p>'; return; }
+    if (!/^[0-9A-F]*$/.test(hex)) { $('out').innerHTML = out.join('') + '<p class="warn">Hex digits only: 0 to 9 and A to F. Spaces are fine.</p>'; return; }
+    if (hex.length % 2) { $('out').innerHTML = out.join('') + '<p class="warn">That\'s an odd number of hex digits. Every byte needs two.</p>'; return; }
+    var nibs = hex.split('');
+    var sign = nibs[nibs.length - 1];
+    var digitNibs = nibs.slice(0, -1);
+    var problems = [];
+    if (pic && hex.length / 2 !== pic.bytes) problems.push('This picture clause packs into ' + pic.bytes + ' byte' + (pic.bytes > 1 ? 's' : '') + '. You pasted ' + hex.length / 2 + '.');
+    var badDigits = digitNibs.filter(function (n) { return !/[0-9]/.test(n); }).length;
+    if (badDigits) problems.push(badDigits + ' digit position' + (badDigits > 1 ? 's hold' : ' holds') + ' a value above 9. Real hardware would raise a data exception (S0C7) on this field.');
+    if (!/[A-F]/.test(sign)) problems.push('The last half-byte should be a sign (C, D or F). This one is ' + sign + '.');
+    if (pic && !pic.signed && /[A-E]/.test(sign)) problems.push('The picture clause is unsigned but the field carries a ' + (/[DB]/.test(sign) ? 'minus' : 'plus') + ' sign. Usually harmless, worth knowing.');
+    if (pic && pic.signed && sign === 'F') problems.push('The picture clause is signed but the sign half-byte is F, the unsigned marker.');
+    var html = '<div style="display:flex;flex-direction:column;gap:10px"><span class="label">Every half-byte</span>' + nibbleRow(nibs, pic) + '</div>';
+    if (pic && !badDigits) {
+      var digits = digitNibs.join('');
+      var lead = digits.slice(0, Math.max(0, digits.length - pic.digits));
+      if (/[1-9]/.test(lead)) problems.push('There are nonzero digits beyond what the picture clause holds. Check the clause or the field length.');
+      var neg = /[DB]/.test(sign);
+      var val = placePoint(digits.slice(-pic.digits) || '0', pic.frac);
+      var shown = (neg && /[1-9]/.test(val) ? '-' : '') + val;
+      html += '<dl class="facts">' +
+        '<div><dt class="label">Value</dt><dd style="font-size:28px;color:#A93F17">' + esc(shown) + '</dd></div>' +
+        '<div><dt class="label">Digits</dt><dd>' + pic.int + ' before the point, ' + pic.frac + ' after</dd></div>' +
+        '<div><dt class="label">Sign</dt><dd>' + (neg ? 'Minus' : (sign === 'F' ? 'None (F)' : 'Plus')) + ' · ' + sign + '</dd></div>' +
+        '<div><dt class="label">Field length</dt><dd>' + pic.bytes + ' bytes</dd></div></dl>';
+      if (pic.frac >= 3 && pic.int <= 3) html += rateBlock(shown, pic.frac);
+    }
+    html = problems.map(function (p) { return '<p class="warn">' + esc(p) + '</p>'; }).join('') + html;
+    if (!problems.length && pic) html = '<p class="ok">Clean field. Every digit position holds 0 to 9 and the sign is valid.</p>' + html;
+    $('out').innerHTML = out.join('') + html;
+  }
+
+  function encode() {
+    var pic = parsePic($('pic').value);
+    var raw = String($('in').value).trim().replace(/[$,\s]/g, '');
+    if (!pic) { $('out').innerHTML = '<p class="warn">I can\'t read that picture clause. Try something like <span class="mono">S9(7)V99</span>.</p>'; return; }
+    var m = raw.match(/^([+-])?(\d*)(?:\.(\d*))?$/);
+    if (!m || (!m[2] && !m[3])) { $('out').innerHTML = '<p class="warn">Type a number, like <span class="mono">-12345.67</span>.</p>'; return; }
+    var neg = m[1] === '-';
+    var ip = (m[2] || '0').replace(/^0+(?=\d)/, ''), fp = m[3] || '';
+    var problems = [];
+    if (fp.length > pic.frac) problems.push('This picture clause keeps ' + pic.frac + ' decimal place' + (pic.frac === 1 ? '' : 's') + '. COBOL would truncate the rest unless the statement says ROUNDED.');
+    if (ip.length > pic.int && /[1-9]/.test(ip.slice(0, ip.length - pic.int))) problems.push('Too many digits before the point. This field holds ' + pic.int + ', so the high-order digits would be lost.');
+    if (neg && !pic.signed) problems.push('The picture clause is unsigned, so the minus sign would be dropped.');
+    while (fp.length < pic.frac) fp += '0';
+    fp = fp.slice(0, pic.frac);
+    var digits = (ip + fp);
+    while (digits.length < pic.digits) digits = '0' + digits;
+    digits = digits.slice(-pic.digits);
+    var nibCount = pic.bytes * 2 - 1;
+    while (digits.length < nibCount) digits = '0' + digits;
+    var sign = pic.signed ? (neg && /[1-9]/.test(digits) ? 'D' : 'C') : 'F';
+    var nibs = (digits + sign).split('');
+    var bytes = [];
+    for (var i = 0; i < nibs.length; i += 2) bytes.push(nibs[i] + nibs[i + 1]);
+    var html = problems.map(function (p) { return '<p class="warn">' + esc(p) + '</p>'; }).join('');
+    html += '<dl class="facts"><div><dt class="label">Bytes on disk</dt><dd style="font-size:28px;color:#A93F17">' + bytes.join(' ') + '</dd></div>' +
+      '<div><dt class="label">Field length</dt><dd>' + pic.bytes + ' bytes</dd></div></dl>';
+    html += '<div style="display:flex;flex-direction:column;gap:10px"><span class="label">Every half-byte</span>' + nibbleRow(nibs, pic) + '</div>';
+    $('out').innerHTML = html;
+  }
+
+  function run() {
+    if (mode === 'dec') decode(); else encode();
+    try {
+      var h = 'm=' + mode + '&v=' + encodeURIComponent($('in').value.trim()) + '&p=' + encodeURIComponent($('pic').value.trim());
+      history.replaceState(null, '', '#' + h);
+    } catch (e) {}
+  }
+
+  function setMode(m, keepInput) {
+    mode = m;
+    $('mode-dec').setAttribute('aria-pressed', m === 'dec');
+    $('mode-enc').setAttribute('aria-pressed', m === 'enc');
+    $('in-label').textContent = m === 'dec' ? 'Bytes, in hex' : 'Value';
+    if (!keepInput) $('in').value = m === 'dec' ? '03 50 00 0C' : '3.5';
+    run();
+  }
+
+  $('mode-dec').addEventListener('click', function () { if (mode !== 'dec') setMode('dec'); });
+  $('mode-enc').addEventListener('click', function () { if (mode !== 'enc') setMode('enc'); });
+  $('in').addEventListener('input', run);
+  $('pic').addEventListener('input', run);
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      $('in').value = c.getAttribute('data-b');
+      $('pic').value = c.getAttribute('data-p');
+      setMode('dec', true);
+    });
+  });
+
+  // Shared links: #m=dec&v=03%2050%2000%200C&p=S9(2)V9(5)
+  try {
+    var q = {};
+    location.hash.replace(/^#/, '').split('&').forEach(function (kv) {
+      var i = kv.indexOf('=');
+      if (i > 0) q[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+    });
+    if (q.v) $('in').value = q.v;
+    if (q.p) $('pic').value = q.p;
+    setMode(q.m === 'enc' ? 'enc' : 'dec', !!q.v);
+  } catch (e) { setMode('dec', true); }
+})();
+</script>
+</body>
+</html>
