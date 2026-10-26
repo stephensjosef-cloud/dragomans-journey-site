@@ -107,7 +107,7 @@ with sync_playwright() as p:
     pg.goto(BASE + 'local.html')
     rc0 = pg.inner_html('#proof')
     faq0 = pg.inner_html('#faq')
-    expect = {'reels': ('See Engine A', '#engines', 0), 'app': ('See Engine B', '#engines', 1), 'flow': ('See Engine C', '#engines', 2), 'unsure': ('See the Blueprint', '#blueprint', None)}
+    expect = {'reels': ('See reels', '#engines', 0), 'app': ('See custom apps', '#engines', 1), 'flow': ('See automation', '#engines', 2), 'unsure': ('See the Blueprint', '#blueprint', None)}
     names = ['reels', 'app', 'flow']
     for k, (cta, href, idx) in expect.items():
         pg.click(f'button[data-pick="{k}"]')
@@ -121,7 +121,7 @@ with sync_playwright() as p:
             check(f'local pick {k}: card ring', 'border: 3px solid #E8592B' in pg.get_attribute(f'[data-card="{names[idx]}"]', 'style'))
         if k == 'app':
             pg.screenshot(path=f'{SHOTS}/local-1440-pick-app.png', full_page=True)
-    for k, rows, title in [('app', 6, 'A cooking-program app, in build'), ('method', 4, 'Checking an AI’s work, in public')]:
+    for k, rows, title in [('app', 6, "A kids' cooking app, in progress"), ('method', 4, 'Checking an AI’s work, in public')]:
         pg.click(f'button[data-tab="{k}"]')
         check(f'local tab {k}: selected', pg.get_attribute(f'button[data-tab="{k}"]', 'aria-selected') == 'true' and pg.locator('button[data-tab][aria-selected="true"]').count() == 1)
         check(f'local tab {k}: rows', pg.locator('#rc-rows > div').count() == rows)

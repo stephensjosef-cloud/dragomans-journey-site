@@ -63,7 +63,7 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
 <section class="wrap" style="padding-top:clamp(48px,7vw,96px);padding-bottom:24px;display:flex;flex-direction:column;gap:18px;max-width:1240px">
   <span class="label" style="color:#A93F17">A free tool · runs in your browser</span>
   <h1 class="serif" style="margin:0;font-weight:300;font-size:clamp(44px,6vw,84px);line-height:1;letter-spacing:-0.025em">Packed-decimal <em style="color:#A93F17">decoder</em></h1>
-  <p style="margin:0;max-width:60ch;font-size:clamp(18px,1.5vw,20px);color:#3A4252">Paste the bytes of a COMP-3 field and its picture clause. You get every digit, the sign, the value, and what the number turns into under each reading of a rate. Nothing you paste leaves this page.</p>
+  <p style="margin:0;max-width:60ch;font-size:clamp(18px,1.5vw,20px);color:#3A4252">Paste the raw bytes of a COMP-3 (packed) number and its PIC line. You see the value, the sign and how a rate reads both ways. Nothing you paste leaves this page.</p>
 </section>
 
 <section class="wrap" aria-label="Decoder" style="padding-top:24px;padding-bottom:clamp(48px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:clamp(28px,4vw,56px);align-items:start">
@@ -100,7 +100,7 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
     <div style="display:flex;flex-direction:column;gap:16px">
       <span class="label" style="color:#B7BDC9">Why this exists</span>
       <h2 class="serif" style="margin:0;font-weight:300;font-size:clamp(34px,4.2vw,56px);line-height:1.05;letter-spacing:-0.02em">The picture clause tells you where the point goes. <em style="color:#F07A4E">It never tells you what the number means.</em></h2>
-      <p style="margin:0;max-width:58ch;font-size:18px;color:#B7BDC9">In Exhibit A, two AIs translated a banking program that divides a rate by twelve and never by one hundred. Both readings of that field compile and both pass a test written from the source. Only the bytes the business actually stored can settle it, which is where every Survey starts.</p>
+      <p style="margin:0;max-width:58ch;font-size:18px;color:#B7BDC9">In Exhibit A, two AIs translated a banking program that divides a rate by twelve and never by one hundred. Both readings run and both pass a test written from the code. Only the data the business actually stored can settle it, so that is where every Survey starts.</p>
     </div>
     <div style="display:flex;flex-direction:column;border-top:1px solid #3A4252">
       <a href="mainframe.html#correspondence" class="quiet" style="display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:72px;padding:0 4px;border-bottom:1px solid #3A4252;color:#E6E2D8;text-decoration:none"><span class="serif" style="font-size:24px">Found a field with two readings?</span><span class="mono" aria-hidden="true">→</span></a>
