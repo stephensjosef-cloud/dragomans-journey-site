@@ -106,7 +106,9 @@ def drop_faq(page, drop_questions, ref):
 drop_faq('local.html', ['What happens when it breaks?', 'Can you fix the AI thing someone else built for us?'], 'L24/L26')
 
 # ---------------- Mainframe (mainframe.html) ----------------
-sub('mainframe.html', r'\s*<div class="mnav"[^>]*>.*?</div>', '', ref='L32')
+# L32 cut all six jump links; the second pass (D3) puts back the three an evaluator scans for.
+sub('mainframe.html', r'(<div class="mnav"[^>]*>).*?(</div>)',
+    r'\1\n      <a href="#s2">Exhibits</a>\n      <a href="#s3">Steps and prices</a>\n      <a href="#s4">The report</a>\n    \2', ref='L32/D3')
 sub('mainframe.html', r'\s*<p class="fade"[^>]*>Moving off COBOL with AI · with proof nothing changed</p>', '', ref='L33')
 for n in range(1, 5):
     sub('mainframe.html', r'(<section id="s%d"(?:(?!</section>).)*?)\s*<span[^>]*>0%d</span>' % (n, n), r'\1', ref='L35')
@@ -123,6 +125,11 @@ sub('mainframe.html', r'\s*<!-- ======= THE OTHER ROUTE ======= -->\s*<section a
 sub('mainframe.html', r'\s*<span[^>]*>Correspondence</span>', '', ref='L44')
 sub('mainframe.html', r'\s*<span[^>]*>Set in Newsreader, Instrument Sans and JetBrains Mono\.</span>', '', ref='L46')
 sub('mainframe.html', r'\s*<span[^>]*>Dragoman \(n\.\): an interpreter and guide for travelers crossing country where they didn\'t speak the language\.</span>', '', ref='L47')
+
+# ---------------- second pass: say it directly (Oct 28, 1:45 PM) ----------------
+text('index.html', "I'll turn it into something that runs on its own, and show you that it works.",
+     "I'll turn it into reels, an app with your name on it, or a chore that runs itself, and show you that it works.", ref='D1')
+text('mainframe.html', 'Start with the Survey · fixed fee', 'Start with the Survey · from $8,000', ref='D2')
 
 # ---------------- Start, briefing, work, case study, decoder, 404 ----------------
 text('start.html', " You don't pay anything today.", '', ref='L48')
