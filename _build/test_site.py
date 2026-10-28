@@ -71,7 +71,7 @@ with sync_playwright() as p:
     check('local noJS: 5 receipt rows', pg.locator('#rc-rows > div').count() == 5)
     check('local noJS: first FAQ open only', pg.is_visible('#faq-a-0') and not pg.is_visible('#faq-a-1'))
     check('local noJS: no YOUR MATCH', pg.locator('[data-match]:visible').count() == 0)
-    check('local noJS: clock text', "It's afternoon in Santa Rosa." in pg.inner_text('#contact'))
+    check('local noJS: reply line kept, clock sentence gone (intent L29)', "in Santa Rosa." not in pg.inner_text('#contact') and pg.locator('#sr-status').count() == 1)
     pg.goto(BASE + 'mainframe.html')
     check('mf noJS: percentage selected', pg.get_attribute('button[data-reading="percent"]', 'aria-pressed') == 'true')
     check('mf noJS: $291.67', pg.inner_text('#mf-interest') == '$291.67')
@@ -86,22 +86,11 @@ with sync_playwright() as p:
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
 
-    # ---------- index interactions
+    # ---------- index (intent pass, Oct 28: the side-by-side table and its toggles are gone)
     pg.goto(BASE + 'index.html')
-    table0 = pg.inner_html('#lineup')
-    pills0 = pg.inner_html('[role="group"]')
-    pg.click('button[data-route="local"]')
-    check('index: local pressed', pg.get_attribute('button[data-route="local"]', 'aria-pressed') == 'true')
-    st = pg.get_attribute('#lineup tbody tr:first-child td[data-col="local"]', 'style')
-    check('index: local column highlighted', 'box-shadow' in st and 'font-weight: 600' in st)
-    check('index: main column dimmed', '#8A8F98' in pg.get_attribute('#lineup tbody tr:first-child td[data-col="main"]', 'style'))
-    check('index: local head orange', '#A93F17' in pg.get_attribute('th[data-col="local"]', 'style'))
-    pg.click('button[data-route="main"]')
-    check('index: main pressed, local unpressed', pg.get_attribute('button[data-route="main"]', 'aria-pressed') == 'true' and pg.get_attribute('button[data-route="local"]', 'aria-pressed') == 'false')
-    check('index: main column highlighted', 'box-shadow' in pg.get_attribute('#lineup tbody tr:nth-child(3) td[data-col="main"]', 'style'))
-    pg.screenshot(path=f'{SHOTS}/index-1440-main-highlight.png', full_page=True)
-    pg.click('button[data-route="main"]')
-    check('index: toggle off restores default markup', pg.inner_html('#lineup') == table0 and pg.inner_html('[role="group"]') == pills0)
+    check('index: no side-by-side table', pg.locator('#lineup').count() == 0 and pg.locator('button[data-route]').count() == 0)
+    check('index: both route cards link', pg.locator('a.route[href="local.html"]').count() == 1 and pg.locator('a.route[href="mainframe.html"]').count() == 1)
+    check('index: Survey card shows its price', 'from $8,000' in pg.inner_text('a.route[href="mainframe.html"]'))
 
     # ---------- local interactions
     pg.goto(BASE + 'local.html')

@@ -228,7 +228,7 @@ with sync_playwright() as p:
     check('front door links work + call', pg.locator('a[href="work.html"]').count() >= 1 and pg.locator('a[href="call.html"]').count() >= 1)
     pg = newpage(1440); pg.goto(BASE + 'local.html'); pg.wait_for_timeout(300)
     check('local links work + call', pg.locator('a[href="work.html"]').count() >= 2 and pg.locator('#contact a[href="call.html"]').count() == 1)
-    check('local honesty line', "If I can't show it, it isn't here" in pg.inner_text('#proof'))
+    check('local results link, no slogan (intent L17)', pg.locator('#proof a[href="work.html"]').count() == 1 and "If I can't show it" not in pg.inner_text('#proof'))
 
     # ---------------- mainframe
     for w in (390, 1440):
