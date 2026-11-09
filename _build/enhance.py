@@ -20,7 +20,7 @@ DROPIN_PLACE = None   # e.g. "Santa Rosa Central Library, 211 E Street"
 EMAIL = "hello@dragomansjourney.com"
 ENDPOINT = "https://dj-intake.stephens-josef.workers.dev/"
 LINKEDIN = None
-# Case-study client. Swap in the real name once Teresa says yes in writing.
+# Case-study client. Swap in the real name once the client says yes in writing.
 CLIENT_LONG = "A Sonoma County children's nonprofit"
 CLIENT_SHORT = "a Sonoma County children's nonprofit"
 PHOTO = HERE / "assets" / "josef.jpg"   # drop Josef's photo here and rebuild      # Josef's profile URL; until then the footer link is left out
@@ -338,13 +338,14 @@ def fix_linkedin():
 
 
 def add_pages():
-    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html"):
+    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html"):
         t = (HERE / f).read_text(encoding="utf-8")
         t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
         (OUT / f).write_text(t, encoding="utf-8")
     if PHOTO.exists():
         shutil.copy(PHOTO, OUT / "josef.jpg")
         shutil.copy(PHOTO.with_name("josef-bw.jpg"), OUT / "josef-bw.jpg")
+    shutil.copy(HERE / "assets" / "bird-league-then-now.jpg", OUT / "bird-league-then-now.jpg")
 
 
 def enhance_index():
@@ -364,12 +365,44 @@ def use_hello():
         p.write_text(t.replace("stephens.josef@gmail.com", EMAIL), encoding="utf-8")
 
 
+# Share cards (T-01, Nov 9, 2026). tools/og.py draws them into assets/og/;
+# the tool pages get their tags from tools/chrome.py.
+OG_PAGES = ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html",
+            "work.html", "case-reels.html", "call.html")
+TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html")
+
+
+def add_og():
+    og_dir = OUT / "og"
+    og_dir.mkdir(exist_ok=True)
+    for png in (HERE / "assets" / "og").glob("*.png"):
+        shutil.copy(png, og_dir / png.name)
+    for f in OG_PAGES:
+        p = OUT / f
+        t = p.read_text(encoding="utf-8")
+        name = f[:-len(".html")]
+        assert (og_dir / f"{name}.png").exists(), "no share card for " + f + ": run tools/og.py"
+        tags = (f'\n<meta property="og:image" content="https://dragomansjourney.com/og/{name}.png">'
+                '\n<meta property="og:image:width" content="1200">'
+                '\n<meta property="og:image:height" content="630">'
+                '\n<meta name="twitter:card" content="summary_large_image">')
+        m = re.findall(r'<meta property="og:url" content="[^"]*">', t)
+        assert len(m) == 1, "og:url in " + f
+        t = t.replace(m[0], m[0] + tags)
+        p.write_text(t, encoding="utf-8")
+    for f in OG_PAGES + TOOL_PAGES:
+        t = (OUT / f).read_text(encoding="utf-8")
+        assert t.count('property="og:image"') == 1, "og:image count in " + f
+        assert (og_dir / (f[:-len(".html")] + ".png")).exists(), "no share card for " + f
+
+
 fix_linkedin()
 enhance_local()
 enhance_mainframe()
 add_pages()
 enhance_index()
 use_hello()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html"):
+add_og()
+for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html"):
     assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
 print("enhanced")

@@ -1,0 +1,43 @@
+{
+  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more.",
+  "hero": {
+    "kicker": "The studio · updated as things ship",
+    "h1": "Built in<br>the open",
+    "lede": "Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first."
+  },
+  "products": [
+    {"id": "birdleague", "name": "Bird League", "status": "In testing on iPhone", "kind": "My own app",
+     "what": "Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.",
+     "proof": "Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.",
+     "image": "bird-league-then-now.jpg", "image_alt": "Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.",
+     "list": {"id": "birdleague", "button": "Get the launch email", "count": 0},
+     "link": null, "gate": null},
+    {"id": "deepcuts", "name": "Deepcuts", "status": "In testing on iPhone", "kind": "My own app",
+     "what": "Indie games matched by how they actually play, not by what's trending.",
+     "proof": null, "image": null, "image_alt": null,
+     "list": {"id": "deepcuts", "button": "Join the beta", "count": 0},
+     "link": null, "gate": null},
+    {"id": "kids", "name": "A kids' cooking app", "status": "Built for a client", "kind": "Client app",
+     "what": "Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program's own cards. iPhone, iPad, Android and the web.",
+     "proof": "535 tests, and every change checked on a real phone before it ships.",
+     "image": null, "image_alt": null, "list": null,
+     "link": {"href": "work.html", "label": "See the work"}, "gate": null},
+    {"id": "cobol", "name": "COBOL, checked in public", "status": "Public", "kind": "Proof",
+     "what": "Two different AIs translated the same COBOL interest program. The code, the prompts and every miss are published for anyone to rerun.",
+     "proof": null, "image": null, "image_alt": null, "list": null,
+     "link": {"href": "https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence", "label": "Open the repo"}, "gate": null},
+    {"id": "tools", "name": "Free tools", "status": "Live", "kind": "Free",
+     "what": "A reel shot list, a caption fitter, a busywork receipt, a recipe scaler and a COBOL field decoder. They run in your browser, and nothing you type leaves the page.",
+     "proof": null, "image": null, "image_alt": null, "list": null,
+     "link": {"href": "work.html#free", "label": "Use them"}, "gate": null},
+    {"id": "chucklefits", "name": "ChuckleFits", "status": "Live", "kind": "My shop",
+     "what": "My humor shirt shop. I write every line on every shirt.",
+     "proof": null, "image": null, "image_alt": null, "list": null,
+     "link": {"href": "https://chucklefits.com", "label": "Visit the shop"}, "gate": null},
+    {"id": "album", "name": "[ALBUM NAME]", "status": "In production", "kind": "Music",
+     "what": "A 15-song rap and R&B album. Every beat rebuilt by hand.",
+     "proof": null, "image": null, "image_alt": null,
+     "list": {"id": "album", "button": "Hear it first", "count": 0},
+     "link": null, "gate": "Josef gives the name he releases under, the album title (or 'untitled'), and says it's OK on this site."}
+  ]
+}

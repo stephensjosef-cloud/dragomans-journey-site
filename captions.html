@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caption Fitter · Dragoman's Journey</title>
+<meta name="description" content="A free check for reel captions: balanced line breaks, no stranded words, clear of each app's buttons, enough time to read, and a see-through PNG to drop on your video.">
+<link rel="canonical" href="https://dragomansjourney.com/captions.html">
+<meta property="og:title" content="Caption Fitter · Dragoman's Journey">
+<meta property="og:description" content="A free check for reel captions: balanced line breaks, no stranded words, clear of each app's buttons, enough time to read, and a see-through PNG to drop on your video.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/captions.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/captions.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F2EDE1}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:#A93F17}a:hover{color:#16201C}
+::selection{background:#E8592B;color:#0E1B17}
+.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
+.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#F07A4E;text-transform:uppercase}
+.panel{background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
+.chip:hover{border-color:#16201C}
+.chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
+.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
+.btn:hover{background:#0E1B17;color:#F2EDE1}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+.btn.ghost{background:transparent;color:#16201C}
+.btn.ghost:hover{background:#EAE3D3;color:#16201C}
+input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
+textarea{min-height:140px;resize:vertical;line-height:1.5}
+.private{font-size:14px;color:#5A635D;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:'in st' 'ck st' 'sc st';gap:24px;align-items:start}
+.lay>.a-in{grid-area:in}.lay>.a-ck{grid-area:ck}.lay>.a-sc{grid-area:sc}.lay>.stage{grid-area:st;align-self:stretch}
+.stage-in{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;align-items:center}
+@media (max-width:860px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'in' 'st' 'ck' 'sc'}.stage-in{position:static}}
+.phone{width:min(340px,100%);aspect-ratio:9/16;border:10px solid #16201C;border-radius:34px;overflow:hidden;background:#3B4540;position:relative}
+.phone canvas{width:100%;height:100%;display:block}
+.row{display:flex;flex-wrap:wrap;gap:22px 32px}
+.row>div{min-width:min(240px,100%)}
+.verdicts{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.verdicts li{display:flex;gap:10px;align-items:flex-start;font-size:16px}
+.dot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:7px}
+.ok{background:#2E7D4F}.warn{background:#D9A520}.bad{background:#C2461B}
+.cards{display:flex;flex-direction:column;gap:10px}
+.cardline{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;background:#fff;border:1.5px solid #CFC6B2;border-radius:2px;cursor:pointer;text-align:left;font:inherit;color:#16201C;width:100%}
+.cardline[aria-pressed="true"]{border-color:#16201C;box-shadow:inset 4px 0 0 #E8592B}
+.cardline .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:#6B716A}
+.cardline .t{white-space:pre-line;font-size:15px;line-height:1.35}
+.cardline .s{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:#5A635D}
+.legend i{display:inline-block;width:12px;height:12px;background:rgba(232,89,43,.45);border:1px dashed #E8592B;margin-right:6px;vertical-align:-1px}
+input[type=file]{padding:8px;min-height:auto;background:transparent;border-style:dashed}
+
+</style>
+</head>
+<body>
+<div class="dj">
+
+<header style="background:#0E1B17;color:#E9EEE9" class="noprint">
+  <div class="wrap">
+    <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+        <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
+      </a>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
+        <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+      </div>
+    </nav>
+    <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
+      <span class="kick">Free tool · runs in your browser</span>
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Will your caption<br>survive the phone?</h1>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Type it once. It breaks the lines evenly, splits long captions into screens, checks whether Instagram, TikTok or YouTube will cover it, times it, and hands you a see-through PNG to drop on your clip.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+
+  <div class="lay">
+      <section class="panel a-in" aria-labelledby="w-h">
+        <h2 id="w-h" class="label">Your caption</h2>
+        <label for="cap" class="label" style="position:absolute;left:-9999px">Caption text</label>
+        <textarea id="cap" spellcheck="true">Fresh sourdough comes out of the oven at 7 every morning. Come early, because the first batch is always gone by 9.</textarea>
+        <div class="row" style="margin-top:18px">
+          <div><p class="label" id="l-size">Text size</p><div class="chips" role="group" aria-labelledby="l-size" id="c-size"></div></div>
+          <div><p class="label" id="l-pos">Where on screen</p><div class="chips" role="group" aria-labelledby="l-pos" id="c-pos"></div></div>
+          <div><p class="label" id="l-box">Box</p><div class="chips" role="group" aria-labelledby="l-box" id="c-box"></div></div>
+          <div><p class="label" id="l-app">Check against</p><div class="chips" role="group" aria-labelledby="l-app" id="c-app"></div></div>
+          <div style="max-width:220px"><label class="label" for="secs" style="display:block">This clip is on screen for</label>
+            <div style="display:flex;gap:8px;align-items:center"><input id="secs" type="number" min="1" max="60" step="0.5" value="5" style="width:96px"><span>seconds</span></div></div>
+          <div style="max-width:300px"><label class="label" for="bg" style="display:block">Try it on your own frame</label>
+            <input id="bg" type="file" accept="image/*"><p class="private" style="margin-top:6px">A screenshot from your video. It stays on your device.</p></div>
+        </div>
+      </section>
+
+      <section class="panel a-ck" aria-labelledby="v-h" aria-live="polite">
+        <h2 id="v-h" style="margin:0 0 12px;font-size:22px">The checkup</h2>
+        <ul class="verdicts" id="verdicts"></ul>
+      </section>
+
+      <section class="panel a-sc" aria-labelledby="k-h">
+        <h2 id="k-h" style="margin:0 0 4px;font-size:22px">Screens</h2>
+        <p class="private" id="k-sub" style="margin-bottom:12px"></p>
+        <div class="cards" id="cards"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px">
+          <button type="button" class="btn" id="png">Download this screen as a PNG</button>
+          <button type="button" class="btn ghost" id="pngall">Download every screen</button>
+          <button type="button" class="btn ghost" id="copy">Copy the line breaks</button>
+        </div>
+        <p class="private" style="margin-top:10px">The PNG is see-through except for the caption, at full phone size (1080 by 1920). Drop it over your clip in CapCut or the Instagram editor and it lands right where you see it here.</p>
+      </section>
+
+    <div class="stage"><div class="stage-in">
+      <div class="phone"><canvas id="cv" width="1080" height="1920" role="img" aria-label="Preview of the caption on a phone screen"></canvas></div>
+      <div class="legend"><span><i></i>Covered by the app's buttons and text (approximate)</span></div>
+      <p class="private" style="text-align:center">Nothing you type or load here leaves this page.</p>
+    </div></div>
+  </div>
+
+  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Rather hand it off?</h2>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">Captions are one step of the reels I make for local businesses and nonprofits. Start with a free 15-minute call.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">Free 15-minute call</a>
+      <a href="work.html#free" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">More free tools</a>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+function djToast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(djToast.t);djToast.t=setTimeout(function(){e.classList.remove('on')},1600)}
+function djCopy(text,label){
+  var done=function(){djToast((label||'Text')+' copied')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
+}
+
+(function(){
+var W=1080,H=1920,MARGIN=96,PADX=34,PADY=22,LH=1.2;
+var SIZES={s:['Small',46],m:['Medium',54],l:['Large',64]};
+var POS={top:['Upper third',0.30],mid:['Middle',0.50],low:['Lower third',0.66]};
+var BOX={dark:['Dark box'],light:['Light box'],none:['No box']};
+/* Approximate covered areas at 1080 x 1920. Apps move these now and then. */
+var APPS={
+ reels:{label:'Instagram Reels',z:[[0,0,1080,210],[0,1500,1080,420],[930,860,150,640]]},
+ tiktok:{label:'TikTok',z:[[0,0,1080,190],[0,1460,1080,460],[920,780,160,720]]},
+ shorts:{label:'YouTube Shorts',z:[[0,0,1080,180],[0,1540,1080,380],[930,900,150,620]]},
+ none:{label:'No app',z:[]}
+};
+var st={size:'m',pos:'low',box:'dark',app:'reels',card:0};
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d'),bgImg=null,cards=[];
+
+function font(){return '700 '+SIZES[st.size][1]+"px 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif"}
+function measure(t){ctx.font=font();return ctx.measureText(t).width}
+function maxW(){var m=W-2*MARGIN-2*PADX;APPS[st.app].z.forEach(function(z){if(z[0]>W/2&&z[1]>200&&z[1]+z[3]<H-200)m=Math.min(m,2*(z[0]-W/2)-2*PADX-20)});return m}
+var MAXW=0;
+function wrap(words,width){
+  var lines=[],cur='';
+  for(var i=0;i<words.length;i++){
+    var tryL=cur?cur+' '+words[i]:words[i];
+    if(measure(tryL)<=width||!cur){cur=tryL}else{lines.push(cur);cur=words[i]}
+  }
+  if(cur)lines.push(cur);return lines;
+}
+/* Same number of lines as a plain wrap, but every line as even as it can be. */
+function balanced(text){
+  var words=text.trim().split(/\s+/).filter(Boolean);if(!words.length)return [];MAXW=maxW();
+  var base=wrap(words,MAXW),n=base.length,lo=0,hi=MAXW;
+  if(n===1)return base;
+  for(var k=0;k<24;k++){var mid=(lo+hi)/2;if(wrap(words,mid).length<=n)hi=mid;else lo=mid}
+  var out=wrap(words,hi);
+  return out.length<=n?out:base;
+}
+var FN=/^(and|but|so|or|because|when|while|then|at|in|on|with|for|to|from|until|before|after|if|which|who|where)$/i;
+var GLUE=/^(of|the|a|an|to|my|your|our|their|this|that|at|in|on|for|and|with)$/i;
+function breakCost(words,j){
+  var prev=words[j-1]||'';
+  if(/[.!?]["')]*$/.test(prev))return 0;
+  if(/[,;:]["')]*$/.test(prev))return 2;
+  if(GLUE.test(prev.replace(/[^A-Za-z]/g,'')))return 30;
+  if(FN.test(words[j].replace(/[^A-Za-z]/g,'')))return 5;
+  return 12;
+}
+/* Few screens, natural breaks: sentence ends, then commas, then before joining words. Never after "of" or "the". */
+function splitCards(text,maxLines){
+  var words=text.replace(/\s+/g,' ').trim().split(' ').filter(Boolean),n=words.length,memo={};
+  function fits(i,j){var k=i+':'+j;if(!(k in memo))memo[k]=balanced(words.slice(i,j).join(' ')).length<=maxLines;return memo[k]}
+  var best=[{cards:0,cost:0,prev:-1}];
+  for(var j=1;j<=n;j++){
+    best[j]=null;
+    for(var i=Math.max(0,j-40);i<j;i++){
+      if(!best[i]||!fits(i,j))continue;
+      var len=j-i,bl=balanced(words.slice(i,j).join(' ')),lone=bl.length>1&&bl[bl.length-1].split(' ').length===1;
+      var inner=0;for(var q=i;q<j-1;q++)if(/[.!?]["')]*$/.test(words[q]))inner+=10;
+      var c=best[i].cost+18+(i>0?breakCost(words,i):0)+(len<3?6:0)+(lone?20:0)+inner;
+      var cand={cards:best[i].cards+1,cost:c,prev:i};
+      if(!best[j]||cand.cost<best[j].cost)best[j]=cand;
+    }
+    if(!best[j])best[j]={cards:best[j-1].cards+1,cost:best[j-1].cost+50,prev:j-1};
+  }
+  var out=[],j2=n;while(j2>0){var i2=best[j2].prev;out.unshift(words.slice(i2,j2).join(' '));j2=i2}
+  return out.map(function(t){return {text:t,lines:balanced(t)}});
+}
+function readSecs(t){var w=t.split(/\s+/).filter(Boolean).length;return Math.max(1.5,Math.round(w/2.8*2)/2)}
+
+function layout(lines){
+  var fs=SIZES[st.size][1],lh=fs*LH,wmax=0;
+  lines.forEach(function(l){wmax=Math.max(wmax,measure(l))});
+  var bw=wmax+2*PADX,bh=lines.length*lh+2*PADY,cx=W/2,cy=H*POS[st.pos][1];
+  return {x:cx-bw/2,y:cy-bh/2,w:bw,h:bh,lh:lh,fs:fs};
+}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function drawCaption(c,lines,L){
+  if(st.box!=='none'){rr(L.x,L.y,L.w,L.h,30);c.fillStyle=st.box==='dark'?'rgba(14,27,23,0.86)':'rgba(251,248,241,0.94)';c.fill()}
+  c.font=font();c.textAlign='center';c.textBaseline='middle';
+  lines.forEach(function(l,i){
+    var y=L.y+PADY+L.lh*(i+.5);
+    if(st.box==='none'){c.lineWidth=10;c.strokeStyle='rgba(14,27,23,0.9)';c.lineJoin='round';c.strokeText(l,W/2,y)}
+    c.fillStyle=st.box==='light'?'#16201C':'#FBF8F1';c.fillText(l,W/2,y);
+  });
+}
+function hit(L,z){return !(L.x+L.w<=z[0]||L.x>=z[0]+z[2]||L.y+L.h<=z[1]||L.y>=z[1]+z[3])}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  if(bgImg){var s=Math.max(W/bgImg.width,H/bgImg.height),iw=bgImg.width*s,ih=bgImg.height*s;ctx.drawImage(bgImg,(W-iw)/2,(H-ih)/2,iw,ih)}
+  else{var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#7C8B7A');g.addColorStop(.55,'#4B5A50');g.addColorStop(1,'#2A332E');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(255,255,255,.08)';for(var i=0;i<6;i++){ctx.beginPath();ctx.arc(200+i*150,700+(i%2)*260,120,0,7);ctx.fill()}}
+  APPS[st.app].z.forEach(function(z){ctx.fillStyle='rgba(232,89,43,0.30)';ctx.fillRect(z[0],z[1],z[2],z[3]);ctx.setLineDash([16,12]);ctx.strokeStyle='#E8592B';ctx.lineWidth=4;ctx.strokeRect(z[0]+2,z[1]+2,z[2]-4,z[3]-4);ctx.setLineDash([])});
+  var c=cards[st.card];if(!c)return null;
+  var L=layout(c.lines);drawCaption(ctx,c.lines,L);return L;
+}
+function chips(id,map,key){document.getElementById(id).innerHTML=Object.keys(map).map(function(k){return '<button type="button" class="chip" data-k="'+key+'" data-v="'+k+'" aria-pressed="'+(st[key]===k)+'">'+(map[k].label||map[k][0])+'</button>'}).join('')}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function render(){
+  chips('c-size',SIZES,'size');chips('c-pos',POS,'pos');chips('c-box',BOX,'box');chips('c-app',APPS,'app');
+  var text=document.getElementById('cap').value.trim();
+  MAXW=maxW();
+  cards=text?splitCards(text,2):[];
+  if(st.card>=cards.length)st.card=0;
+  var secs=parseFloat(document.getElementById('secs').value)||0;
+  var need=cards.reduce(function(a,c){return a+readSecs(c.text)},0);
+  document.getElementById('k-sub').textContent=cards.length>1?('Two lines fit comfortably on a phone, so this caption becomes '+cards.length+' screens. Each one gets the time shown. Tap one to preview it.'):'Fits on one screen. Tap it to preview.';
+  document.getElementById('cards').innerHTML=cards.map(function(c,i){return '<button type="button" class="cardline" data-card="'+i+'" aria-pressed="'+(i===st.card)+'"><span class="n">'+(i+1)+'</span><span class="t">'+esc(c.lines.join('\n'))+'</span><span class="s">'+readSecs(c.text)+' s</span></button>'}).join('');
+  var L=draw(),v=[];
+  if(!cards.length){v.push(['warn','Type a caption to check it.'])}
+  else{
+    var orphan=cards.some(function(c){var l=c.lines;return l.length>1&&l[l.length-1].split(' ').length===1});
+    v.push(orphan?['warn','One screen ends on a single word. Add or trim a word in that sentence.']:['ok','No line is stranded on its own. Lines are balanced to even widths and kept clear of the app\'s side buttons.']);
+    var hits=[];cards.forEach(function(c,i){var Lc=layout(c.lines);APPS[st.app].z.forEach(function(z){if(hit(Lc,z))hits.push(i+1)})});
+    hits=hits.filter(function(x,i,a){return a.indexOf(x)===i});
+    if(st.app==='none')v.push(['warn','No app picked. Pick the one you post to and this checks whether its buttons cover your words.']);
+    else v.push(hits.length?['bad','On '+APPS[st.app].label+', the app\'s own text or buttons cover screen '+hits.join(', ')+'. Move it to the middle or use a smaller size.']:['ok','Clear of the buttons and caption area on '+APPS[st.app].label+'.']);
+    if(secs){v.push(need>secs?['bad','Reading all of it takes about '+need+' seconds and the clip is '+secs+'. Cut words or hold the clip longer, or people scroll before they finish.']:['ok','About '+need+' seconds to read, and the clip runs '+secs+'. Time to spare.'])}
+    var big=cards.some(function(c){return c.lines.some(function(l){return measure(l)>MAXW+1})});
+    if(big)v.push(['bad','One word is too wide for the screen at this size. Pick a smaller size.']);
+    if(st.size==='s')v.push(['warn','Small text reads fine on a big phone and poorly on a small one. Medium is the safer bet.']);
+  }
+  document.getElementById('verdicts').innerHTML=v.map(function(x){return '<li><span class="dot '+x[0]+'" aria-hidden="true"></span><span>'+x[1]+'</span></li>'}).join('');
+}
+function pngFor(i,cb){
+  var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+  var save=ctx;ctx=x;var L=layout(cards[i].lines);drawCaption(x,cards[i].lines,L);ctx=save;
+  c.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='caption-'+(i+1)+'.png';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);cb&&cb()},'image/png');
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('.chip[data-k]');if(b){st[b.dataset.k]=b.dataset.v;render();return}
+  var k=e.target.closest('[data-card]');if(k){st.card=+k.dataset.card;render();return}
+});
+document.getElementById('cap').addEventListener('input',function(){clearTimeout(render.t);render.t=setTimeout(render,120)});
+document.getElementById('secs').addEventListener('input',render);
+document.getElementById('bg').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var img=new Image();img.onload=function(){bgImg=img;render()};img.src=URL.createObjectURL(f)});
+document.getElementById('png').addEventListener('click',function(){if(cards.length)pngFor(st.card)});
+document.getElementById('pngall').addEventListener('click',function(){var i=0;(function next(){if(i<cards.length)pngFor(i++,function(){setTimeout(next,350)})})()});
+document.getElementById('copy').addEventListener('click',function(){djCopy(cards.map(function(c){return c.lines.join('\n')}).join('\n\n'),'Captions')});
+render();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(render);
+})();
+
+</script>
+</body>
+</html>

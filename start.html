@@ -11,6 +11,10 @@
 <meta property="og:site_name" content="Dragoman's Journey">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dragomansjourney.com/start.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/start.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
@@ -232,6 +236,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       if (i < 1) return;
       var k = kv.slice(0, i), v = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' '));
       if (k === 'org') document.getElementById('org').value = v;
+      else if (k === 'never') document.getElementById('never').value = v;
       else preselect(k, v);
     });
   } catch (e) {}

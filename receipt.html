@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Busywork Receipt · Dragoman's Journey</title>
+<meta name="description" content="A free calculator for small businesses and nonprofits: ring up the chores that eat your week and see what they cost in a year, and which ones could honestly come back.">
+<link rel="canonical" href="https://dragomansjourney.com/receipt.html">
+<meta property="og:title" content="Busywork Receipt · Dragoman's Journey">
+<meta property="og:description" content="A free calculator for small businesses and nonprofits: ring up the chores that eat your week and see what they cost in a year, and which ones could honestly come back.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/receipt.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/receipt.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F2EDE1}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:#A93F17}a:hover{color:#16201C}
+::selection{background:#E8592B;color:#0E1B17}
+.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
+.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#F07A4E;text-transform:uppercase}
+.panel{background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
+.chip:hover{border-color:#16201C}
+.chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
+.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
+.btn:hover{background:#0E1B17;color:#F2EDE1}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+.btn.ghost{background:transparent;color:#16201C}
+.btn.ghost:hover{background:#EAE3D3;color:#16201C}
+input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
+textarea{min-height:140px;resize:vertical;line-height:1.5}
+.private{font-size:14px;color:#5A635D;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}
+@media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr)}}
+.line{display:grid;grid-template-columns:minmax(0,1fr) 84px 168px 44px;gap:8px;align-items:center;padding:10px 0;border-top:1px solid #DDD5C3}
+.line:first-child{border-top:0}
+.line input,.line select{min-height:44px;padding:8px 10px}
+.line .v{grid-column:1/-1;font-size:13px;color:#5A635D;margin-top:-2px}
+.line .x{font:inherit;cursor:pointer;min-height:44px;border:1.5px solid #CFC6B2;background:transparent;border-radius:2px;font-size:20px;line-height:1;color:#5A635D}
+.line .x:hover{border-color:#16201C;color:#16201C}
+@media (max-width:560px){.line{grid-template-columns:minmax(0,1fr) 80px 44px}.line .per{grid-column:1/3}}
+.chip.add::before{content:'+ ';font-weight:700}
+.chip.used{opacity:.45}
+.paper{background:#FFFDF7;color:#16201C;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;line-height:1.55;padding:28px 26px 34px;box-shadow:0 24px 48px rgba(22,32,28,.18),0 2px 0 rgba(22,32,28,.08);position:relative;
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 12px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 12px repeat-x;
+  mask:linear-gradient(#000 0 0) top/100% calc(100% - 12px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 12px repeat-x}
+.paper h2{font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:.14em;text-align:center;margin:0}
+.paper .c{text-align:center;color:#5A635D;margin:2px 0 0}
+.paper hr{border:0;border-top:1.5px dashed #9AA097;margin:14px 0}
+.rl{display:flex;justify-content:space-between;gap:12px}
+.rl span:first-child{min-width:0;overflow-wrap:anywhere}
+.rl span:last-child{white-space:nowrap;text-align:right}
+.rs{color:#5A635D;font-size:12.5px;margin:0 0 8px}
+.tot{font-weight:700;font-size:17px}
+.big2{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:44px;line-height:1;color:#C2461B;text-align:center;margin:6px 0 2px}
+.tag2{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border:1px solid currentColor;border-radius:2px;margin-top:2px}
+.t-draft{color:#1F4FA8}.t-form{color:#2E7D4F}.t-connect{color:#7A4FB0}.t-tool{color:#A93F17}.t-human{color:#5A635D}.t-look{color:#8A6A12}
+@media print{.noprint{display:none!important}body{background:#fff}.lay{display:block}.paper{box-shadow:none;-webkit-mask:none;mask:none;border:1px dashed #999;max-width:440px;margin:0 auto}}
+
+</style>
+</head>
+<body>
+<div class="dj">
+
+<header style="background:#0E1B17;color:#E9EEE9" class="noprint">
+  <div class="wrap">
+    <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+        <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
+      </a>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
+        <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+      </div>
+    </nav>
+    <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
+      <span class="kick">Free tool · runs in your browser</span>
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Ring up your<br>busywork</h1>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Tap the chores that eat your week. You get a receipt for a year of them: the hours, the dollars, the day you'd finish if you did them all in a row, and an honest read on which ones could come back. Some of them should stay human.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+
+  <div class="lay">
+    <div style="display:flex;flex-direction:column;gap:24px;min-width:0" class="noprint">
+      <section class="panel" aria-labelledby="a-h">
+        <h2 id="a-h" class="label">Tap the chores that eat your week</h2>
+        <div class="chips" id="presets"></div>
+      </section>
+      <section class="panel" aria-labelledby="b-h">
+        <h2 id="b-h" class="label">How long, how often</h2>
+        <p class="private" style="margin-bottom:6px">Guess. Close is good enough. Change any name to match how you'd say it.</p>
+        <div id="lines"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-top:16px">
+          <button type="button" class="btn ghost" id="addown">+ Something else</button>
+          <label style="display:flex;flex-direction:column;gap:6px;max-width:260px"><span class="label" style="margin:0">What an hour of it is worth</span>
+            <span style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">$</span><input id="rate" type="number" min="0" step="1" value="30" style="width:110px"><span>an hour</span></span></label>
+        </div>
+        <p class="private" style="margin-top:8px">Their pay if staff do it. Yours if you do it, which is usually more than you think.</p>
+      </section>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;position:sticky;top:16px">
+      <div class="paper" id="paper" aria-live="polite"></div>
+      <div class="noprint" style="display:flex;flex-wrap:wrap;gap:10px">
+        <a class="btn hot" id="bring" href="start.html">Bring this receipt to a Blueprint</a>
+        <button type="button" class="btn ghost" id="copy">Copy it</button>
+        <button type="button" class="btn ghost" id="print">Print it</button>
+      </div>
+      <p class="private noprint">The "can come back" numbers are a rough rule of thumb for each kind of chore, not a promise. Day 1 of a Blueprint is where the real numbers come from. Nothing you type here leaves this page unless you press the orange button.</p>
+    </div>
+  </div>
+
+  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Want the real numbers?</h2>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <a href="start.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">Start a Blueprint →</a>
+      <a href="work.html#free" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">More free tools</a>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+function djToast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(djToast.t);djToast.t=setTimeout(function(){e.classList.remove('on')},1600)}
+function djCopy(text,label){
+  var done=function(){djToast((label||'Text')+' copied')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
+}
+
+(function(){
+var V={
+ draft:['AI drafts it, you approve',0.6],
+ form:['A form or a setting fixes it. No AI needed.',0.75],
+ connect:['Connect the apps you already have',0.7],
+ tool:['A one-time build',0.7],
+ human:['Keep this human. It is the job.',0],
+ look:['Worth a look on Day 1',0.3]
+};
+var PRESETS=[
+ ['Answering the same questions',30,'day','draft'],
+ ['Booking and rescheduling',20,'day','form'],
+ ['Copying info between apps',30,'day','connect'],
+ ['Writing social posts',90,'week','draft'],
+ ['Editing videos or photos',120,'week','tool'],
+ ['Invoices and chasing payments',60,'week','form'],
+ ['Staff or volunteer schedules',60,'week','form'],
+ ['Inventory counts and reorders',60,'week','connect'],
+ ['Meeting notes and follow-ups',45,'week','draft'],
+ ['The newsletter',120,'month','draft'],
+ ['Grant or donor reports',360,'month','draft'],
+ ['Talking with customers and families',60,'day','human']
+];
+var PER={day:['a workday',250],week:['a week',50],month:['a month',12]};
+var lines=[];
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function money(n){return '$'+Math.round(n).toLocaleString('en-US')}
+function hrs(n){return (n<10?(Math.round(n*10)/10):Math.round(n)).toLocaleString('en-US')+' hr'}
+function addPreset(i){var p=PRESETS[i];lines.push({name:p[0],min:p[1],per:p[2],v:p[3],pi:i});renderLines();renderReceipt()}
+function renderPresets(){
+  document.getElementById('presets').innerHTML=PRESETS.map(function(p,i){var used=lines.some(function(l){return l.pi===i});
+    return '<button type="button" class="chip add'+(used?' used':'')+'" data-p="'+i+'" '+(used?'aria-disabled="true"':'')+'>'+esc(p[0])+'</button>'}).join('');
+}
+function renderLines(){
+  renderPresets();
+  var el=document.getElementById('lines');
+  if(!lines.length){el.innerHTML='<p class="private" style="padding:12px 0">Tap a chore above to start your receipt.</p>';return}
+  el.innerHTML=lines.map(function(l,i){
+    return '<div class="line" data-i="'+i+'"><input aria-label="Chore" data-f="name" value="'+esc(l.name)+'">'+
+      '<input aria-label="Minutes" type="number" min="0" step="5" data-f="min" value="'+l.min+'">'+
+      '<select class="per" aria-label="How often" data-f="per">'+Object.keys(PER).map(function(k){return '<option value="'+k+'"'+(l.per===k?' selected':'')+'>min '+PER[k][0]+'</option>'}).join('')+'</select>'+
+      '<button type="button" class="x" data-del="'+i+'" aria-label="Remove '+esc(l.name)+'">×</button>'+
+      '<span class="v">'+(l.pi==null?'<label>What fixes it? <select data-f="v" aria-label="What fixes it">'+Object.keys(V).map(function(k){return '<option value="'+k+'"'+(l.v===k?' selected':'')+'>'+V[k][0]+'</option>'}).join('')+'</select></label>':'<span class="tag2 t-'+l.v+'">'+V[l.v][0]+'</span>')+'</span></div>';
+  }).join('');
+}
+function calc(){
+  var rate=parseFloat(document.getElementById('rate').value)||0,tot=0,back=0;
+  var rows=lines.map(function(l){var h=(parseFloat(l.min)||0)/60*PER[l.per][1];var b=h*V[l.v][1];tot+=h;back+=b;return {l:l,h:h,b:b}});
+  return {rows:rows,tot:tot,back:back,rate:rate};
+}
+function finishDate(h){var d=new Date(new Date().getFullYear()+1,0,1),left=h;while(left>0){var w=d.getDay();if(w>0&&w<6)left-=8;if(left>0)d.setDate(d.getDate()+1)}return d}
+function receiptText(c){
+  var out=['BUSYWORK RECEIPT','dragomansjourney.com/receipt.html',''];
+  c.rows.forEach(function(r){out.push(r.l.name+': '+hrs(r.h)+' a year, '+money(r.h*c.rate)+' ('+V[r.l.v][0]+')')});
+  out.push('','Total: '+hrs(c.tot)+' a year, '+money(c.tot*c.rate),'Could come back: about '+hrs(c.back)+' ('+money(c.back*c.rate)+')');
+  return out.join('\n');
+}
+function renderReceipt(){
+  var c=calc(),p=document.getElementById('paper'),d=new Date();
+  var head='<h2>BUSYWORK RECEIPT</h2><p class="c">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · 1 year of it</p><hr>';
+  if(!c.rows.length){p.innerHTML=head+'<p class="c" style="padding:24px 0">Nothing rung up yet.</p>';updateBring(c);return}
+  var body=c.rows.map(function(r){return '<div class="rl"><span>'+esc(r.l.name)+'</span><span>'+money(r.h*c.rate)+'</span></div><p class="rs">'+hrs(r.h)+' a year · <span class="t-'+r.l.v+'">'+V[r.l.v][0]+'</span></p>'}).join('');
+  var weeks=c.tot/40, fin=finishDate(c.tot);
+  var backWeek=c.back*c.rate/50, payback=backWeek>0?Math.ceil(1500/backWeek):0;
+  var foot='<hr><div class="rl tot"><span>TOTAL</span><span>'+money(c.tot*c.rate)+'</span></div><div class="rl"><span>Hours</span><span>'+hrs(c.tot)+'</span></div>'+
+    '<div class="rl"><span>Full work weeks</span><span>'+(Math.round(weeks*10)/10)+'</span></div><hr>'+
+    '<p style="margin:0">Done all at once, starting New Year\'s Day, you\'d finish on</p><p class="big2">'+fin.toLocaleDateString('en-US',{month:'long',day:'numeric'})+'</p><hr>'+
+    '<div class="rl tot"><span>COULD COME BACK</span><span>'+money(c.back*c.rate)+'</span></div><div class="rl"><span>Hours</span><span>'+hrs(c.back)+'</span></div>'+
+    (payback?'<p style="margin:10px 0 0">At that pace, a $1,500 Blueprint pays for itself in about <b>'+payback+' week'+(payback===1?'':'s')+'</b>.</p>':'')+
+    '<hr><p class="c">KEEP THIS RECEIPT<br>THANK YOU FOR COUNTING</p>';
+  p.innerHTML=head+body+foot;updateBring(c);
+}
+function updateBring(c){
+  var a=document.getElementById('bring');
+  if(!c.rows.length){a.href='start.html';return}
+  var top=c.rows.slice().sort(function(x,y){return y.h-x.h}).slice(0,4).map(function(r){return r.l.name.toLowerCase()+' ('+hrs(r.h)+' a year)'});
+  var never='From my busywork receipt: '+top.join(', ')+'. About '+hrs(c.tot)+' a year in all.';
+  a.href='start.html#pile='+encodeURIComponent('A weekly task that eats hours')+'&never='+encodeURIComponent(never);
+}
+document.addEventListener('click',function(e){
+  var p=e.target.closest('[data-p]');if(p&&!p.hasAttribute('aria-disabled')){addPreset(+p.dataset.p);return}
+  var x=e.target.closest('[data-del]');if(x){lines.splice(+x.dataset.del,1);renderLines();renderReceipt();return}
+});
+document.getElementById('lines').addEventListener('input',function(e){
+  var row=e.target.closest('.line');if(!row)return;var l=lines[+row.dataset.i],f=e.target.dataset.f;if(!f)return;
+  l[f]=e.target.value;if(f==='v'){renderLines()}renderReceipt();
+});
+document.getElementById('lines').addEventListener('change',function(e){if(e.target.dataset.f==='per'||e.target.dataset.f==='v')renderReceipt()});
+document.getElementById('rate').addEventListener('input',renderReceipt);
+document.getElementById('addown').addEventListener('click',function(){lines.push({name:'Something else',min:30,per:'week',v:'look',pi:null});renderLines();renderReceipt();var ins=document.querySelectorAll('#lines .line input[data-f=name]');var last=ins[ins.length-1];if(last){last.focus();last.select()}});
+document.getElementById('copy').addEventListener('click',function(){djCopy(receiptText(calc()),'Receipt')});
+document.getElementById('print').addEventListener('click',function(){window.print()});
+[0,2,3].forEach(function(i){var p=PRESETS[i];lines.push({name:p[0],min:p[1],per:p[2],v:p[3],pi:i})});
+renderLines();renderReceipt();
+})();
+
+</script>
+</body>
+</html>

@@ -4,13 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Work · Dragoman's Journey</title>
-<meta name="description" content="Things Josef Stephens has built with AI, each with the number that matters and the run behind it: reels, a program app, a public COBOL proof method, Bird League and a free decoder.">
+<meta name="description" content="Things Josef Stephens has built with AI, each with the number that matters and the run behind it: reels, a program app, a public COBOL proof method, Bird League, and free tools for local businesses and COBOL teams.">
 <link rel="canonical" href="https://dragomansjourney.com/work.html">
 <meta property="og:title" content="The Work · Dragoman's Journey">
 <meta property="og:description" content="Things I've built with AI, each with the number that matters and the run behind it.">
 <meta property="og:site_name" content="Dragoman's Journey">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dragomansjourney.com/work.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/work.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
@@ -39,6 +43,9 @@ a{color:#A93F17}a:hover{color:#16201C}
 .card p{margin:0;font-size:16px;color:#3B4540}
 .card a.go{margin-top:auto;padding-top:8px;font-weight:700;text-decoration:none;color:#16201C}
 .card a.go:hover{color:#A93F17}
+.card.feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
+.card.feature .fb{display:flex;flex-direction:column;gap:12px}
+@media (min-width:800px){.card.feature{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
 </style>
 </head>
@@ -100,12 +107,15 @@ a{color:#A93F17}a:hover{color:#16201C}
       <a class="go" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Open the repo ↗</a>
     </article>
 
-    <article class="card" data-k="own">
+    <article class="card feature" data-k="own">
+      <img src="bird-league-then-now.jpg" width="1200" height="1331" loading="lazy" alt="Two phone screens side by side. Then: an early Bird League screen that still says mock data, real API coming next. Now: build 49's life list wall, 139 of 1,123 birds." style="width:100%;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6">
+      <div class="fb">
       <div class="tags"><span class="tag">My own build</span><span class="tag">App</span></div>
       <p class="num">0 → real users</p>
       <h2>Bird League</h2>
-      <p>A competitive birding app I built from zero lines of code. It has real players, and birders can now send their sightings to eBird in one tap.</p>
+      <p>A competitive birding app I built from zero lines of code. Its first sound screen ran on mock data. Build 49 names birds from a photo or a song, has real players, and sends sightings to eBird in one tap.</p>
       <a class="go" href="local.html#josef">More about how I work →</a>
+      </div>
     </article>
 
     <article class="card" data-k="free banking">
@@ -114,6 +124,38 @@ a{color:#A93F17}a:hover{color:#16201C}
       <h2>COBOL field decoder</h2>
       <p>A free tool for COBOL teams. Paste a packed number and see what it really says. Runs in your browser.</p>
       <a class="go" href="comp3.html">Try the decoder →</a>
+    </article>
+
+    <article class="card" data-k="free">
+      <div class="tags"><span class="tag">Free tool</span><span class="tag">Reels</span></div>
+      <p class="num">10 clips</p>
+      <h2>Reel shot list</h2>
+      <p>Pick what you run and what the reel should do. Get the 10 clips to film, how long each lasts, and the order to shoot them in one lap of the room.</p>
+      <a class="go" href="shotlist.html">Plan your reel →</a>
+    </article>
+
+    <article class="card" data-k="free">
+      <div class="tags"><span class="tag">Free tool</span><span class="tag">Reels</span></div>
+      <p class="num">0 stranded words</p>
+      <h2>Caption fitter</h2>
+      <p>Type a caption once. It breaks the lines evenly, splits it into screens, checks it against each app's buttons, times it, and hands you a see-through PNG.</p>
+      <a class="go" href="captions.html">Fit a caption →</a>
+    </article>
+
+    <article class="card" data-k="free">
+      <div class="tags"><span class="tag">Free tool</span><span class="tag">Busywork</span></div>
+      <p class="num">1 year, rung up</p>
+      <h2>Busywork receipt</h2>
+      <p>Tap the chores that eat your week and get a receipt for a year of them, with an honest read on which ones could come back and which should stay human.</p>
+      <a class="go" href="receipt.html">Ring it up →</a>
+    </article>
+
+    <article class="card" data-k="free nonprofit">
+      <div class="tags"><span class="tag">Free tool</span><span class="tag">Kitchens</span></div>
+      <p class="num">×3, measurable</p>
+      <h2>Recipe scaler</h2>
+      <p>Paste any ingredient list, count grown-ups and kids, and get amounts you can actually measure, eggs rounded up, and a heads-up when it's time to cook in batches.</p>
+      <a class="go" href="scaler.html">Scale a recipe →</a>
     </article>
   </div>
 
@@ -139,6 +181,7 @@ a{color:#A93F17}a:hover{color:#16201C}
   var btns = document.querySelectorAll('.filt');
   var cards = document.querySelectorAll('#cards .card');
   btns.forEach(function (b) {
+    if (location.hash === '#' + b.getAttribute('data-f')) setTimeout(function () { b.click(); }, 0);
     b.addEventListener('click', function () {
       var f = b.getAttribute('data-f');
       btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });

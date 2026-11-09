@@ -232,6 +232,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       if (i < 1) return;
       var k = kv.slice(0, i), v = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' '));
       if (k === 'org') document.getElementById('org').value = v;
+      else if (k === 'never') document.getElementById('never').value = v;
       else preselect(k, v);
     });
   } catch (e) {}

@@ -186,11 +186,15 @@ with sync_playwright() as p:
     # ---------------- work, case study, free call
     pg = newpage(1440)
     pg.goto(BASE + 'work.html'); pg.wait_for_timeout(300)
-    check('work has 5 cards', pg.locator('#cards .card').count() == 5)
+    check('work has 9 cards', pg.locator('#cards .card').count() == 9)
     pg.click('.filt[data-f="banking"]'); pg.wait_for_timeout(100)
     check('banking filter shows 2', pg.locator('#cards .card:visible').count() == 2, str(pg.locator('#cards .card:visible').count()))
     pg.click('.filt[data-f="nonprofit"]'); pg.wait_for_timeout(100)
-    check('nonprofit filter shows 2', pg.locator('#cards .card:visible').count() == 2)
+    check('nonprofit filter shows 3 (two jobs + the recipe scaler)', pg.locator('#cards .card:visible').count() == 3)
+    pg.click('.filt[data-f="free"]'); pg.wait_for_timeout(100)
+    check('free tools filter shows 5', pg.locator('#cards .card:visible').count() == 5)
+    q = newpage(1440); q.goto(BASE + 'work.html#free'); q.wait_for_timeout(300)
+    check('work.html#free opens on free tools', q.locator('#cards .card:visible').count() == 5)
     check('no CLIENT_ token left on work', 'CLIENT_' not in pg.content())
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
@@ -237,6 +241,64 @@ with sync_playwright() as p:
         check(f'mainframe decoder links at {w}', q.locator('a[href="comp3.html"]').count() == 2)
         check(f'mainframe no placeholders at {w}', '[' not in q.inner_text('#s7'))
         q.locator('#s7').screenshot(path=f'{SHOTS}/mf-s7-{w}.png')
+
+    # ---------------- free tools (Nov 8, 2026)
+    for w in (390, 1440):
+        for t in ('shotlist', 'captions', 'receipt', 'scaler'):
+            q = newpage(w); q.goto(BASE + t + '.html'); q.wait_for_timeout(500)
+            check(f'{t} no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+            q.screenshot(path=f'{SHOTS}/{t}-{w}.png', full_page=True)
+    q = newpage(1440); q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
+    check('shot list has 10 clips', q.locator('#edit .clip').count() == 10)
+    secs = q.eval_on_selector_all('#edit .sec', 'e => e.reduce((a, x) => a + parseFloat(x.textContent), 0)')
+    check('shot list seconds add up to 30', abs(secs - 30) < 0.01, str(secs))
+    q.click('.chip[data-v="15"]'); q.wait_for_timeout(100)
+    secs = q.eval_on_selector_all('#edit .sec', 'e => e.reduce((a, x) => a + parseFloat(x.textContent), 0)')
+    check('shot list seconds add up to 15', abs(secs - 15) < 0.01, str(secs))
+    check('shoot order covers all 10 clips', q.locator('#shoot li').count() == 10)
+    q = newpage(1440); q.goto(BASE + 'captions.html'); q.wait_for_timeout(400)
+    check('captions split into screens', q.locator('#cards .cardline').count() >= 2)
+    q.fill('#cap', 'New fall sweaters just landed.'); q.wait_for_timeout(300)
+    check('short caption is one screen', q.locator('#cards .cardline').count() == 1)
+    q = newpage(1440); q.goto(BASE + 'receipt.html'); q.wait_for_timeout(300)
+    check('receipt starts with 3 lines', q.locator('#lines .line').count() == 3)
+    check('receipt default total $9,750', '$9,750' in q.inner_text('#paper'), q.inner_text('#paper')[:300])
+    q.click('[data-p="11"]'); q.wait_for_timeout(100)
+    check('keep-human chore adds nothing to come back', '$6,225' in q.inner_text('#paper'))
+    href = q.get_attribute('#bring', 'href')
+    check('receipt hands off to start with never=', href.startswith('start.html#pile=') and '&never=' in href, href[:80])
+    q.goto(BASE + href); q.wait_for_timeout(300)
+    check('start form takes the receipt', 'busywork receipt' in q.input_value('#never'))
+    q = newpage(1440); q.goto(BASE + 'scaler.html'); q.wait_for_timeout(300)
+    out = q.inner_text('#out')
+    check('scaler default x3', q.inner_text('#fac').strip() == '\u00d73', q.inner_text('#fac'))
+    check('scaler 1/2 cup milk x3 = 1 1/2 cups', '1 1/2 cups' in out, out[:300])
+    check('scaler 1 1/2 tbsp x3 = 4 1/2 tbsp', '4 1/2 tbsp' in out, out[:300])
+    q.fill('#kids', '40'); q.wait_for_timeout(100)
+    check('scaler warns about batches past x3', 'batches' in q.inner_text('#warn'))
+
+    # ---------------- share cards (T-01, Nov 9, 2026)
+    import re as _re, struct as _struct
+    from urllib.request import urlopen
+    SHARED = ('index', 'local', 'mainframe', 'work', 'comp3', 'shotlist', 'captions', 'receipt',
+              'scaler', 'start', 'call', 'case-reels', 'briefing')
+    for name in SHARED:
+        src = urlopen(BASE + name + '.html').read().decode('utf-8')
+        imgs = _re.findall(r'<meta property="og:image" content="([^"]*)">', src)
+        check(f'{name} has exactly one og:image', len(imgs) == 1, str(imgs))
+        if len(imgs) != 1:
+            continue
+        check(f'{name} og:image is its own absolute card', imgs[0] == f'https://dragomansjourney.com/og/{name}.png', imgs[0])
+        check(f'{name} card size tags and large twitter card',
+              '<meta property="og:image:width" content="1200">' in src and '<meta property="og:image:height" content="630">' in src
+              and src.count('<meta name="twitter:card" content="summary_large_image">') == 1)
+        try:
+            png = urlopen(BASE + 'og/' + imgs[0].rsplit('/', 1)[1]).read()
+            size = _struct.unpack('>II', png[16:24]) if png[:8] == b'\x89PNG\r\n\x1a\n' else None
+        except Exception as e:
+            size = str(e)
+        check(f'{name} card file exists in out/og at 1200x630', size == (1200, 630), str(size))
+    check('404 page carries no share card', 'og:image' not in urlopen(BASE + '404.html').read().decode('utf-8'))
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
