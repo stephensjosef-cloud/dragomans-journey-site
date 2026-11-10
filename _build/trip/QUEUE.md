@@ -8,7 +8,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ## House rules for every item
 
-1. **Never push to `main`.** `main` is the live site (GitHub Pages). Each item commits to its own branch `trip/T-0N`, cut from the newest DONE `trip/` branch (or `main` if there is none), so the branches stack in a line and the newest one holds everything. Going live is Josef saying "push it" to Claude in chat.
+1. **Never push to `main`.** `main` is the live site (GitHub Pages). Each item commits to its own branch `trip/T-0N`, cut from the `trip/` branch on origin with the most recent commit date (or `main` if there is none), so the branches stack in a line and the newest one holds everything. Going live is Josef saying "push it" to Claude in chat.
 2. **Use the pipeline.** Edit `_build/` sources (templates, `enhance.py`, `build.py`, `_build/tools/*.py`), never only the root files. Rebuild with the 6 steps in `_build/README.md`, copy `out/*` to the repo root, and confirm with `cmp` that pages you didn't mean to touch are byte-for-byte unchanged.
 3. **Test.** Serve `out/` on port 8765 and run `python3 _build/test_new.py http://localhost:8765/ /tmp/shots`. If Chromium isn't at `/opt/pw-browsers`, run a copy with `exe = None` and `p.chromium.launch()`; never edit the test's expectations to make a failure pass, only to describe a change the item asked for. Add checks for anything new.
 4. **Look.** Screenshot every page you changed at 390 and 1440 wide and open the screenshots. No sideways scroll at 390.
@@ -57,6 +57,58 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 4. Tests: every page's nav has `work.html#free`; local.html has 4 tool links in the new section.
 
 **Done when:** tested and looked at on both widths.
+
+**Receipt:**
+
+---
+
+## T-11 · Facts a machine can read · READY
+
+**Why:** people now ask AI tools who to hire nearby, and those tools read plain facts and structured data off a page. `local.html` and `mainframe.html` carry none. `index.html` has a small block (the site and Josef) that stays as it is.
+
+**Build:**
+1. Add a new last build step, `_build/final.py out`, run after `intent.py` (make it step 6b in `_build/README.md`, and say that `tools/og.py` is not affected by it). It reads the finished pages, so its words always match what each page says after the plain and intent passes. Do not put this in `enhance.py`: `intent.py` needs each of its edits to match an exact number of times, and a second copy of a page's words inside a script tag would break that.
+2. `local.html` gets one `<script type="application/ld+json">` just before `</head>`, holding an `@graph` with:
+   - a `ProfessionalService`: name "Dragoman's Journey", url `https://dragomansjourney.com/local.html`, email `hello@dragomansjourney.com`, founder (a `Person` named Josef Stephens), address with only `addressLocality` Santa Rosa, `addressRegion` CA, `addressCountry` US, `areaServed` "Sonoma County, California", `description` copied from the page's own meta description, and `sameAs` with the same GitHub link `index.html` uses.
+   - `makesOffer`: one `Offer` for the Blueprint and one for each of the three things the page sells, each with its name and its price. Read every name and price from the finished page at build time. Never type a price into `final.py`. The price is the first dollar amount inside the card's `<strong>`. A "from" price uses `PriceSpecification` with `minPrice`; if the amount is followed by `/month`, add `unitText` "month". `priceCurrency` is USD. The rest of the card's price line goes in the Offer's `description`, word for word. If a price can't be found on the page, the build fails with a message that names it.
+   - a `FAQPage`: every question and answer in the page's FAQ, read from the `data-faq` buttons and their `faq-a-N` paragraphs, as plain text.
+3. `mainframe.html` gets one block the same way: a `Service` named "The Mainframe Route", `provider` Dragoman's Journey (with Josef Stephens as founder), `description` from the page's meta description, and, under `offers`, one `Offer` per step that prints a price. Names and prices are read from the page: the price is the first dollar amount in the step's last `<p>`, with the same rules as on `local.html`.
+4. Never add a rating, a review, opening hours, a phone number, a street address, or any fact the page itself doesn't state.
+5. Tests (add to `test_new.py`): each block parses as JSON; every price inside it appears in that page's text with the tags stripped (FAQ answers are hidden until tapped, so don't use rendered text); the FAQ count equals the number of `data-faq` buttons; `index.html`'s block is unchanged; no long dash.
+
+**Done when:** tests pass, and a diff of each rebuilt page against the previous build shows only the added head tag on `local.html` and `mainframe.html`. Every other root file is byte for byte the same. Nothing visible changes, so one screenshot of each page at 390 and 1440 is enough to confirm that.
+
+**Receipt:**
+
+---
+
+## T-12 · Count visits · READY (build), GATED (token)
+
+**Why:** the site has no visit counter. Nobody can tell whether a post or a text sent anyone to it, or which free tool gets used.
+
+**Build:**
+1. Read Cloudflare's current docs first, not memory: start at `https://developers.cloudflare.com/web-analytics/get-started/`, its "Data origin and collection" page, `https://developers.cloudflare.com/speed/observatory/rum-beacon/` and `https://www.cloudflare.com/web-analytics/` (the last two are where cookies are covered). In the receipt, write what the beacon sends and whether it sets cookies, with the page each fact came from.
+2. In `_build/final.py` add `CF_BEACON_TOKEN = ""` at the top. While it is empty, nothing is added anywhere. When it is set, add Cloudflare's Web Analytics snippet, in the exact form the docs give, just before `</body>` on every `.html` page in the output folder except `comp3.html` (see step 3). The visit counter sends nothing a visitor types, so it is allowed under house rule 6.
+3. Keep the tools' promise true. The tool pages say "Nothing you type here leaves this page." Cloudflare's docs don't say whether the beacon sends the part of an address after the `#`, so treat it as sent. Three pages carry visitor text there. `receipt.html` hands text to `start.html` (`never=`), and the quiz on `local.html` hands the typed business name to `start.html` (`org=`): make `start.html` read its hash and then clear it from the address bar with `history.replaceState`, before the beacon script runs. Update the existing check in `test_new.py` that expects `start.html#` in the address, and add a test that the hash is gone after load and the form is still prefilled. `comp3.html` keeps pasted bytes in its own hash on purpose (that is its share link), so it gets no beacon at all.
+4. Words, only when the token is set and only if the docs confirm no cookies: at the end of the `local.html` FAQ answer to "What do you do with our data?", add exactly: "This site counts page visits with Cloudflare Web Analytics, which uses no cookies." Make that edit in `final.py` before the T-11 block is built, so the `FAQPage` data carries the same sentence. If the docs don't confirm it, add no sentence and write the question in the receipt.
+5. Tests: with the token empty, no page has the beacon or the new sentence. In a temp copy with a made-up token, every page except `comp3.html` has exactly one beacon, `comp3.html` has none, and `local.html` has the sentence once.
+
+**Gate for the token:** Josef gets it from the Cloudflare dashboard (Web Analytics, add the site `dragomansjourney.com`, then copy the JS snippet) and pastes the snippet to Claude in chat. Write the exact numbered steps in the receipt from the docs as they read today. The token is public by design (it sits in every page's source), so it can live in this repository. Then Claude sets `CF_BEACON_TOKEN`, rebuilds, and Josef says "push it".
+
+**Receipt:**
+
+---
+
+## T-14 · One new line on the Mainframe page · READY
+
+**Why:** in October 2026 OpenAI reported a model passing 97.9% of its own COBOL migration test, and did not publish the test cases. That is this page's argument with a fresh number: translating is no longer the hard part, and a score nobody can inspect is not proof about your programs.
+
+**Build:**
+1. Check the source before writing a word. Open OpenAI's own post, "Advancing coding in low-resource programming languages" (`https://openai.com/index/low-resource-programming-languages/`). Confirm three things there: the 97.9% figure and what it measures; that the COBOL test cases are not published; and OpenAI's own statement that production use still needs expert review and testing. A news article is not good enough. If the post can't be opened from this session, set this item's status to BLOCKED (question) and write in the receipt: "Josef: paste the text of OpenAI's post to Claude in chat." If any of the three reads differently, do the same and write what you found.
+2. In the first section of `mainframe.html`, right after the sentence "Turning COBOL into Java stopped being the hard part.", add: "In October 2026, OpenAI reported one of its models passing 97.9% of its own COBOL migration test.<sup style="font-size: 11px; color: #A93F17">3</sup> The test cases aren't public, and OpenAI says real use still needs expert review." Change the wording only as far as the source requires, and say in the receipt what you changed and why.
+3. Make the edit in `_build/final.py`, after `intent.py` has run. Do not touch `intent.py`: it renumbers the page's notes with exact matches, and a note added earlier in the pipeline breaks it. The finished page has six notes (sup numbers 1, 2, 3, 3, 4, 5, 6 in reading order) and a six-item Notes list. The new note is number 3. Renumber the existing sups in this order so nothing collides: 6 to 7, 5 to 6, 4 to 5, then both 3s to 4. Add the new source as the third item in the Notes list, in the same format as the others, linking OpenAI's post with its date. If T-11 is not built yet, create `final.py` as T-11 step 1 describes.
+4. The stats band keeps its three numbers.
+5. Tests: the sentence appears once; the sup numbers in reading order are 1, 2, 3, 4, 4, 5, 6, 7; the Notes list has seven items and the third links to `openai.com`; no long dash. Look at the section and the Notes list at 390 and 1440.
 
 **Receipt:**
 
@@ -145,7 +197,62 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 6. Until the Worker is live, the page must say "Coming this week" and not show the box. Make that one constant at the top of the script: `CHECKUP_URL = ''`.
 7. Tests: unit-test the safety checks and the link classifier with Node (no network). The page test checks the "coming this week" state.
 
+**Added Nov 9: the checkup also answers "Can AI find you?"** Build this as part of T-04, in the same Worker and the same page.
+
+8. The Worker also fetches `/robots.txt` on the same host, under the same safety rules, and adds to its report:
+   a. Whether the site turns AI readers away. Take the current crawler names from OpenAI's, Anthropic's, Perplexity's and Google's own docs, not from memory, and list in the receipt the names you used and where each came from. Those companies run two kinds: crawlers that collect training data, and crawlers that fetch pages to answer a question or a search. Report the two kinds separately, and say a site "turns AI readers away" only when it blocks the answer or search kind. Blocking only the training kind is a choice, not a fault: say so in one plain line. Also report a `User-agent: *` with `Disallow: /`, a `noindex` meta tag, and an `X-Robots-Tag` header whose value contains `noindex` or `none`.
+   b. Structured data: whether the page has a JSON-LD block that describes a business or organization, its `@type`, and which of name, address, telephone, opening hours and url it carries.
+   c. Facts in the raw page text, with scripts and styles stripped and JavaScript not run: a phone number, opening hours (day names near times), and a street address (an `<address>` tag, a structured-data address, or a US street pattern). Say "found" or "I couldn't find", never "missing", because a pattern can miss.
+   d. How much readable text the raw page holds. Under 600 characters, on a page that answered 200 and was not cut off at the 1.5 MB limit, say: "Your page holds almost no text a machine can read without running scripts or reading images."
+   e. If the phone number in the structured data and the one in the page text differ (compare digits only), say so.
+9. On `checkup.html`, a second report card under the first, headed "Can AI find you?". Its first line, exactly: "This doesn't tell you what ChatGPT says about you. It checks whether a machine can read the facts it would need." Findings use the same shape as the first card: the worst first, what it costs, how hard it is to fix. It ends with a small card, "The facts a machine reads off your page", listing the name, phone, address and hours as found, and the line: "Check these against your Google Business Profile, letter for letter. I can't see your listing from here."
+10. A number, only if you can prove it: if you can open BrightLocal's own 2026 Local Consumer Review Survey page and it states the share of people who use AI tools to find local businesses, add one line above the second card with that number, its year, and a tap-to-see-source link, in the source's own meaning. If you can't open it or the meaning is unclear, add no number.
+11. Unit tests with small made-up HTML and robots.txt strings for each of 8a to 8e (no network).
+12. If T-11 is DONE on the branch you cut from, also run `local.html` from `out/` through the 8b check in a test: it must find the business block.
+
 **Gate for deploy:** Josef deploys it himself. Write exact steps in the receipt: Cloudflare dashboard, Workers and Pages, Create, name `dj-checkup`, paste the file, Deploy, copy the workers.dev address, paste it to Claude in chat. Then Claude sets `CHECKUP_URL`, rebuilds, and he says "push it".
+
+**Receipt:**
+
+---
+
+## T-15 · Host on Cloudflare, with a preview link per branch · READY (build), GATED (switch)
+
+**Why:** GitHub Pages only serves this repository while it is public, and on Nov 9 it left a publish stuck in its queue for five hours. Cloudflare already holds the domain and the intake Worker. Hosting there lets the repository go private, and gives every `trip/` branch its own preview address that Josef can open on his phone before he says "push it".
+
+**Build (this changes nothing live; GitHub Pages keeps serving the site until the switch):**
+1. Read Cloudflare's current docs first, not memory. Settings and commands changed during 2026. Start at `https://developers.cloudflare.com/workers/static-assets/` (and its HTML handling and custom 404 pages), `https://developers.cloudflare.com/workers/ci-cd/builds/` (and its configuration and build branches pages), and the Workers previews docs. List in the receipt each page you relied on.
+2. `_build/publish.sh` (plain `sh`): makes a folder `dist/` that holds exactly the public site, which is every git-tracked file outside `_build/` except `CNAME`, `wrangler.jsonc`, and any file or folder whose name starts with a dot or an underscore. It also writes one extra file, `dist/_redirects`, holding the single line `/ /index.html 200` (step 3 says why). It fails loudly if `dist/` would be empty or if anything from `_build/` lands in it.
+3. `wrangler.jsonc` at the repository root: a Worker that serves static files only (no script), named `dragomans-journey`, serving `./dist`, with `html_handling` set to `none`, `not_found_handling` set to `404-page`, and the `previews` setting the docs describe. Every address that works today must keep working unchanged: `/local.html` must answer 200 at that exact address and must not redirect to `/local` (the default setting redirects it). With `none`, `/` stops finding `index.html`, which is what the `_redirects` line in step 2 fixes. If the docs or the local test in step 5 disagree with any of this, stop and write the options in the receipt.
+4. Create `.gitignore` (there isn't one) with `dist/`, `.wrangler/` and `node_modules/`.
+5. Prove it locally. Run `publish.sh` and compare the file list in `dist/` with the rule in step 2. Serve `dist/` with wrangler's local server and check: `/` and `/local.html` answer 200 with no redirect; `/og/index.png` is a PNG; `/nope` answers 404 with the body of `404.html`; `/_build/README.md`, `/wrangler.jsonc`, `/CNAME` and `/_redirects` answer 404. Then run `test_new.py` against that server.
+6. GitHub Pages must not notice: every existing root file stays byte for byte the same. `wrangler.jsonc` will be reachable on the old host until the switch, so it must hold no secret (it won't: a name and a folder).
+7. Add a short "Hosting" section to `_build/README.md`.
+
+**Gate for the switch:** Josef does it at his desk, with Claude in chat, in one sitting. In the receipt, write exact numbered steps, taken from the docs as they read today, for each of these:
+   a. Creating the Worker from this GitHub repository: the Worker's name must equal the `name` in `wrangler.jsonc`, the production branch is `main`, the build command is `sh _build/publish.sh`.
+   b. Turning on preview builds for other branches, where a branch's preview address shows up, and what the address looks like for a branch named like `trip/T-11`. Say whether preview addresses are public, and whether connecting a private GitHub repository works (if the docs don't say, write that down as a thing to confirm at the desk before step f).
+   c. Checking the Worker's own address on a phone before touching the domain.
+   d. The switch. First write down every current web record for `dragomansjourney.com` and `www` (that list is the way back). Remove only those web records. Never touch the MX and TXT records: the site's email addresses run on them. Then add both names to the Worker as custom domains, with `www` sending visitors on to `dragomansjourney.com` as it does today (write how).
+   e. Checking the live site, the forms, and one share card. Also say whether the Worker's own `workers.dev` address can be switched off after the move without losing branch previews, so a second copy of the site isn't left open to search engines.
+   f. On GitHub: unpublish Pages, then make the repository private.
+   g. Web Analytics after the move: make sure each page carries one beacon, not two (Cloudflare can add its own on proxied sites).
+   h. The way back if anything looks wrong: remove the custom domains and put the written-down records back.
+   Also say plainly in the receipt: forms on a preview address or on the Worker's own `workers.dev` address will not send, because the intake Worker only accepts the real site's address. That is expected. Do not add preview addresses or wildcards to the intake Worker.
+
+**Receipt:**
+
+---
+
+## T-13 · The first drop-in date · GATED
+
+**Gate:** Josef gives Claude the date, the hours and the place.
+
+**Build:**
+1. `plain.py` rewrites the two no-date lines of the drop-in card ("The list hears first" and "Twenty minutes, your pile...") and fails the build if they're absent, which they are once a date is set. Move those two rewrites out of `plain.py` and into the no-date branch in `enhance.py` as its final wording, so the no-date page comes out word for word as it is live today. Prove that first: with no date set, every rebuilt root file is byte for byte unchanged.
+2. Set `DROPIN_DATE` and `DROPIN_PLACE` at the top of `enhance.py` in the format its comments show. Keep the button as "Put me on the list →" in both states: nothing on the site holds a seat, and the message after signing up talks about the list.
+3. Add `DROPIN_ENDS` (an ISO date, the day after the drop-in). A build on or after that day, in America/Los_Angeles, uses the no-date wording. A static page can't change itself, so the receipt must tell Josef: "The day after the drop-in, ask Claude to rebuild and push."
+4. Rerun `tools/og.py` only if a headline or description changed. Tests: the dated state, and the fallback with the date moved into the past in a temp copy. Look at the drop-in section at 390 and 1440.
 
 **Receipt:**
 
