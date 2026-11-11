@@ -68,8 +68,8 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 - **Looked at:** all 13 headers at 390 and 1440, the new local section at both widths, and the tool line at both widths. Two fixes after looking: the local heading now wraps evenly ("Free tools / for your pile", not "pile" alone), and the tool line has more room between links for thumbs.
 - **Worth knowing:** on phones the `local.html` header hides its text links (it already did, under 760px wide), so there the new section is the way in. On `work` and the tool pages at 390, the header now wraps "Free 15-min call" to its own row. Nothing overflows.
 - **Josef, by hand:**
-  1. Look at the branch. "Free tools" now sits in the Mainframe page header and on `start.html` too, because the item says every page. If you'd rather not have it on either, say so and Claude takes it off before going live.
-  2. When happy, say "push it" to Claude in chat. That merges this into `main` and the site goes live.
+  1. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
+- **Decided Nov 10:** Josef said keep "Free tools" in every header, the Mainframe page and `start.html` included.
 
 ---
 
