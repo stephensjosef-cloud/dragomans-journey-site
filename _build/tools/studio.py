@@ -21,6 +21,12 @@ Rules:
 - A join list opens a mailto with the subject "List: <product name>" until the
   real join lists (T-10) are live. Its count shows only at 10 or more.
 
+Product pages (T-09): each open product with a join list also gets
+studio-<id>.html: its name, status, what, proof, image, all of its log lines
+that show, and one join box. Its card links there ("See it move"). A page whose
+product is gated or loses its list is deleted here. og.py, build.py (sitemap)
+and enhance.py all take the page list from product_pages().
+
 enhance.py copies studio.html into the site, and refuses to if either JSON
 file changed since this script last ran. enhance.py also uses visible() and
 LABELS here for the band on the home page.
@@ -42,6 +48,8 @@ RECENT_DAYS = 30
 FIRST = 8
 COUNT_FROM = 10
 SITE_LABEL = "dragomansjourney.com"      # label for project "site": the site's own address
+MOVE = "See it move"                     # a card's link to its product page (T-09)
+JOIN_LINE = "One email when it's out. No newsletter."   # under the join box on a product page (T-09)
 
 
 def la_today():
@@ -129,11 +137,29 @@ def a(s):
     return html.escape(s, quote=False).replace('"', "&quot;")
 
 
-def log_item(r, today, more=False):
+def log_item(r, today, more=False, label=True):
     return (f'\n      <li{" hidden data-more" if more else ""}>'
             f'<time class="mono" datetime="{r["date"]}">{short_date(r["day"], today)}</time>'
-            f'<span class="proj">{t(r["label"])}</span>'
-            f'<span class="line">{t(r["line"])}</span></li>')
+            + (f'<span class="proj">{t(r["label"])}</span>' if label else '')
+            + f'<span class="line">{t(r["line"])}</span></li>')
+
+
+def page_slug(p):
+    """Each open product with a join list gets its own page (T-09). None for the rest."""
+    return f'studio-{p["id"]}.html' if p.get("gate") is None and p.get("list") else None
+
+
+def product_pages(studio):
+    return [(page_slug(p), p) for p in studio["products"] if page_slug(p)]
+
+
+def join_button(p):
+    lst = p["list"]
+    subject = quote(f'List: {p["name"]}', safe="")
+    out = [f'<a class="btn hot" data-list="{a(lst["id"])}" href="mailto:{EMAIL}?subject={subject}">{t(lst["button"])}</a>']
+    if lst.get("count", 0) >= COUNT_FROM:
+        out.append(f'<span class="count">{lst["count"]} people on the list</span>')
+    return out
 
 
 def product_card(p):
@@ -148,12 +174,10 @@ def product_card(p):
         href = p["link"]["href"]
         arrow = "↗" if href.startswith("http") else "→"
         acts.append(f'<a class="go" href="{a(href)}">{t(p["link"]["label"])} {arrow}</a>')
-    lst = p.get("list")
-    if lst:
-        subject = quote(f'List: {p["name"]}', safe="")
-        acts.append(f'<a class="btn hot" data-list="{a(lst["id"])}" href="mailto:{EMAIL}?subject={subject}">{t(lst["button"])}</a>')
-        if lst.get("count", 0) >= COUNT_FROM:
-            acts.append(f'<span class="count">{lst["count"]} people on the list</span>')
+    if page_slug(p):
+        acts.append(f'<a class="go" data-page href="{page_slug(p)}">{MOVE} →</a>')
+    if p.get("list"):
+        acts += join_button(p)
     if acts:
         parts.append('<div class="acts">' + "".join(acts) + '</div>')
     body = "\n        ".join(parts)
@@ -232,6 +256,44 @@ def build(studio, shipped, today):
     return strip + log + prods + "\n"
 
 
+PAGE_CSS = r"""
+.kick a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:underline;text-underline-offset:3px}
+.kick a:hover{color:#E9EEE9}
+.hero-pill{align-self:flex-start;display:inline-flex;align-items:center;min-height:30px;padding:0 14px;border-radius:999px;background:#E9EEE9;color:#0E1B17;font-size:14px;font-weight:700}
+.top{display:grid;grid-template-columns:minmax(0,1fr);gap:24px 40px;align-items:start}
+.top .proof{margin:0;font-size:clamp(20px,2vw,24px);line-height:1.4}
+.top img{width:100%;max-width:560px;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
+@media (min-width:800px){.top.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.log.solo li{grid-template-columns:5.5em minmax(0,1fr)}
+@media (max-width:760px){.log.solo li{grid-template-columns:4.2em minmax(0,1fr);gap:4px 12px}.log.solo .line{grid-column:auto}}
+.join{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:24px;max-width:560px}
+.join .acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+"""
+
+
+def product_page(p, rows, today, stamp):
+    """One product's page (T-09): name, status, what, proof, image, its own log, one join box."""
+    parts = [stamp]
+    proof = f'<p class="proof"><strong>{t(p["proof"])}</strong></p>' if p.get("proof") else ""
+    img = (f'<img src="{a(p["image"])}" width="1200" height="1331" alt="{a(p["image_alt"] or "")}">'
+           if p.get("image") else "")
+    if proof or img:
+        parts.append(f'\n  <div class="top{" has-img" if img else ""}">'
+                     + (f'\n    {proof}' if proof else "") + (f'\n    {img}' if img else "") + '\n  </div>')
+    mine = [r for r in rows if r["project"] == p["id"]]
+    if mine:
+        items = "".join(log_item(r, today, label=False) for r in mine)
+        parts.append(f'\n  <section class="sec" aria-labelledby="log-h">'
+                     f'\n    <h2 id="log-h" class="big">Shipped lately</h2>'
+                     f'\n    <ol class="log solo" id="log">{items}\n    </ol>'
+                     '\n  </section>')
+    parts.append(f'\n  <section class="join panel" id="join">'
+                 f'\n    <div class="acts">{"".join(join_button(p))}</div>'
+                 f'\n    <p class="private">{t(JOIN_LINE)}</p>'
+                 '\n  </section>\n')
+    return "".join(parts)
+
+
 def main(out_dir):
     studio, shipped = load()
     today = la_today()
@@ -239,13 +301,31 @@ def main(out_dir):
     body = build(studio, shipped, today)
     kicker = hero["kicker"]
     lede = hero_lede(studio)
-    body = f'<!-- studio.py {today.isoformat()} {fingerprint()} -->' + body
+    stamp = f'<!-- studio.py {today.isoformat()} {fingerprint()} -->'
     from chrome import write
     write(out_dir, "studio.html",
           title=kicker.split(" · ")[0],                       # "The studio", from the kicker
           description=lede.replace('"', "&quot;"),
           kicker=t(kicker), h1=hero["h1"], lede=t(lede),
-          css=CSS, body=body, script=SCRIPT, more="")
+          css=CSS, body=stamp + body, script=SCRIPT, more="")
+    # One page per open product with a join list (T-09). A page whose product
+    # closed or lost its list is removed, so it can't be copied into the site.
+    rows = visible(studio, shipped, today)
+    keep = set()
+    for slug, p in product_pages(studio):
+        keep.add(slug)
+        write(out_dir, slug,
+              title=t(p["name"]),
+              description=a(p["what"]),
+              kicker=f'<a href="studio.html">{t(kicker.split(" · ")[0])}</a> · {t(p["kind"])}',
+              h1=t(p["name"]),
+              badge=f'\n      <span class="hero-pill">{t(p["status"])}</span>',
+              lede=t(p["what"]),
+              css=CSS + PAGE_CSS, body=product_page(p, rows, today, stamp), more="")
+    for old in pathlib.Path(out_dir).glob("studio-*.html"):
+        if old.name not in keep:
+            old.unlink()
+            print("removed", old)
 
 
 if __name__ == "__main__":

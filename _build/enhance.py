@@ -25,6 +25,8 @@ CLIENT_LONG = "A Sonoma County children's nonprofit"
 CLIENT_SHORT = "a Sonoma County children's nonprofit"
 sys.path.insert(0, str(HERE / "tools"))
 import studio as STUDIO   # the Studio page and its build log (T-08)
+# One page per open product with a join list, written by tools/studio.py (T-09).
+STUDIO_PAGES = ("studio.html",) + tuple(slug for slug, _ in STUDIO.product_pages(STUDIO.load()[0]))
 PHOTO = HERE / "assets" / "josef.jpg"   # drop Josef's photo here and rebuild      # Josef's profile URL; until then the footer link is left out
 
 
@@ -340,10 +342,12 @@ def fix_linkedin():
 
 
 def add_pages():
-    mark = re.search(r"<!-- studio\.py (\S+) (\S+) -->", (HERE / "studio.html").read_text(encoding="utf-8"))
-    assert mark and mark.group(2) == STUDIO.fingerprint(), \
-        "studio.html is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
-    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "studio.html"):
+    for f in STUDIO_PAGES:
+        src = HERE / f
+        mark = re.search(r"<!-- studio\.py (\S+) (\S+) -->", src.read_text(encoding="utf-8")) if src.exists() else None
+        assert mark and mark.group(2) == STUDIO.fingerprint(), \
+            f"{f} is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
+    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html") + STUDIO_PAGES:
         t = (HERE / f).read_text(encoding="utf-8")
         t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
         (OUT / f).write_text(t, encoding="utf-8")
@@ -489,7 +493,7 @@ def use_hello():
 # the tool pages get their tags from tools/chrome.py.
 OG_PAGES = ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html",
             "work.html", "case-reels.html", "call.html")
-TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "studio.html")   # tags from tools/chrome.py
+TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html") + STUDIO_PAGES   # tags from tools/chrome.py
 
 
 def add_og():
@@ -525,6 +529,6 @@ add_free_tools()
 add_studio_band()
 use_hello()
 add_og()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "studio.html"):
+for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html") + STUDIO_PAGES:
     assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
 print("enhanced")

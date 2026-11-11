@@ -512,6 +512,10 @@ def build_extras(fork_helmet):
     (OUT / "CNAME").write_text("dragomansjourney.com", encoding="utf-8")
     (OUT / "robots.txt").write_text("User-agent: *\nAllow: /\n\nSitemap: https://dragomansjourney.com/sitemap.xml\n", encoding="utf-8")
     urls = [SITE, SITE + "local.html", SITE + "mainframe.html", SITE + "comp3.html", SITE + "start.html", SITE + "briefing.html", SITE + "work.html", SITE + "case-reels.html", SITE + "call.html", SITE + "shotlist.html", SITE + "captions.html", SITE + "receipt.html", SITE + "scaler.html", SITE + "studio.html"]
+    # The Studio product pages (T-09), the same list tools/studio.py writes.
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "tools"))
+    import studio
+    urls += [SITE + slug for slug, _ in studio.product_pages(studio.load()[0])]
     (OUT / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls)

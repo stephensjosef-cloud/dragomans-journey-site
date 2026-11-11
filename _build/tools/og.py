@@ -31,6 +31,10 @@ DEST = HERE / "assets" / "og"
 
 PAGES = ["index", "local", "mainframe", "work", "comp3", "shotlist", "captions",
          "receipt", "scaler", "start", "call", "case-reels", "briefing", "studio"]
+# Plus one card per Studio product page (T-09), the same list studio.py writes.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import studio  # noqa: E402
+PAGES += [slug[:-len(".html")] for slug, _ in studio.product_pages(studio.load()[0])]
 
 W, H = 1200, 630
 S = 2                      # draw at 2x, then scale down for clean edges

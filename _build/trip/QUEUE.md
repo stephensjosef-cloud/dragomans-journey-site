@@ -206,7 +206,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-09 · Product pages that make people want in · READY
+## T-09 · Product pages that make people want in · DONE
 
 **Why:** a card says what a thing is. A page per product shows it's real and moving, and gives one obvious way in.
 
@@ -218,6 +218,25 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 5. Tests: one page per eligible product; each page's log matches `shipped.json` for that project.
 
 **Receipt:**
+- **Branch:** `trip/T-09`, cut from `origin/trip/T-08` (the `trip/` branch with the newest commit). First commit `fcc4e97` is the approved Studio hero fix (noted in T-08's receipt); the T-09 work and this receipt are in the commit after it. Nothing pushed to `main`.
+- **What's built:**
+  - `tools/studio.py` also writes `studio-birdleague.html` and `studio-deepcuts.html`: one per product with no gate and a join list. Top to bottom: "The studio · <kind>" (with "The studio" linking back), the product's name big, its status pill, "what"; then the proof line in bold and the image when the JSON has them (Bird League: both; Deepcuts: neither); then "Shipped lately" with every line of that project, newest first, with dates; then one join box: the list's own button (mailto, subject "List: <name>", same as T-08) and under it "One email when it's out. No newsletter." The count rule is the same as on the cards (10 or more).
+  - Each of those two Studio cards now has "See it move →" to its page, before the join button. The other four cards have no page and no link.
+  - The page list comes from one place, `product_pages()` in `studio.py`; `enhance.py` (copy, freshness stamp, share-card tags, dash check), `build.py` (sitemap) and `tools/og.py` (cards) all read it. When the album's gate clears, `studio-album.html` appears on the next build with no other code change. A page whose product loses its list or gets a gate is deleted by `studio.py`.
+  - `tools/chrome.py` has an empty slot under the `<h1>` for the status pill; the four tool pages are byte for byte unchanged.
+  - Share cards drawn by `og.py`: "BIRD LEAGUE / Fantasy sports for birders." and "DEEPCUTS / Indie games matched by how they actually play, not by what's trending." The other 14 cards weren't redrawn.
+  - `_build/README.md` step 4d says how the pages come and go.
+- **Choices the item left open (mechanical, no new words):**
+  1. "All its log lines" uses the same rules as the Studio page: lines older than 120 days drop off. Today that drops nothing (6 Bird League lines, 4 Deepcuts lines).
+  2. No project label on each line, since the whole page is one project.
+  3. Kicker is the Studio kicker's first part plus the product's kind, both from `studio.json`. Page title is the product name; meta description is "what".
+  4. Until T-10 there's no email field, only the button, as step 2 says.
+- **Pipeline:** the unchanged pipeline rebuilt every root file byte for byte first. After the change, `cmp` shows only `studio.html` (the two card links) and `sitemap.xml` (two lines) differ, plus the new two pages and two cards. `plain.py`, `intent.py` and `final.py` leave the new pages exactly as `studio.py` wrote them.
+- **Tests:** `test_new.py` **511/511 passed**: 9 for the hero fix (both album states, built from `studio.py` in a temp copy) and 77 for T-09 (one page per eligible product and none for the others or the gated album; sitemap; card links; name, pill under it, what, kicker link, proof, image; each page's log matches `shipped.json` for its project, newest first, with dates, all showing, no other project's lines; one join box with the right subject, button words and line, after the log; count rule; no sideways scroll at 390 and 1440; the product pages also run through the share-card, nav, Studio-link, beacon and no-sideways-scroll checks every page gets; a product gets a page once its gate clears). Run on Windows as a copy with `exe = None` and `p.chromium.launch()`, Playwright 1.65, per house rule 3. `test_site.py` not run.
+- **Looked at:** both product pages at 390 and 1440, the Studio cards at both widths, the Studio hero at both widths, and both new share cards. Two fixes after looking: the log dates now sit in one even column on phones, and at 1440 the proof line sits at the top beside the Bird League image and the join box is narrower.
+- **Josef, by hand:**
+  1. Open `studio-birdleague.html` and `studio-deepcuts.html` from this branch (or the screenshots in chat) and read them.
+  2. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
 
 ---
 

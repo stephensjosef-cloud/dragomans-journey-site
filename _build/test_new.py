@@ -286,6 +286,9 @@ with sync_playwright() as p:
     from urllib.request import urlopen
     SHARED = ('index', 'local', 'mainframe', 'work', 'comp3', 'shotlist', 'captions', 'receipt',
               'scaler', 'start', 'call', 'case-reels', 'briefing', 'studio')
+    # Plus a page per open Studio product with a join list (T-09).
+    SHARED += tuple('studio-' + x['id'] for x in _json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'studio.json'), encoding='utf-8'))['products']
+                    if x.get('gate') is None and x.get('list'))
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         imgs = _re.findall(r'<meta property="og:image" content="([^"]*)">', src)
@@ -686,6 +689,79 @@ with sync_playwright() as p:
         check('enhance.py stops when studio.html is older than shipped.json', r.returncode != 0 and 'studio.html is older' in r.stdout + r.stderr, (r.stdout + r.stderr)[-200:])
     finally:
         _shutil.rmtree(tmp, ignore_errors=True)
+
+    # ---------------- a page per Studio product (T-09, Nov 11, 2026)
+    page_p = [x for x in open_p if x.get('list')]
+    check('one page per open product with a join list', [x['id'] for x in page_p] == ['birdleague', 'deepcuts'], str([x['id'] for x in page_p]))
+    sitemap = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
+    for x in STUDIO_J['products']:
+        slug = f'studio-{x["id"]}.html'
+        if x in page_p:
+            continue
+        try:
+            urlopen(BASE + slug); served = True
+        except Exception:
+            served = False
+        check(f'no page for {x["id"]} ({"gated" if x.get("gate") else "no join list"})', not served and slug not in sitemap)
+    q = newpage(1440); q.goto(BASE + 'studio.html'); q.wait_for_timeout(300)
+    for x in open_p:
+        mv = q.locator(f'#products article[data-id="{x["id"]}"] a[data-page]')
+        if x in page_p:
+            check(f'studio card {x["id"]} links "See it move →" to its page',
+                  mv.count() == 1 and mv.inner_text().strip() == 'See it move →' and mv.get_attribute('href') == f'studio-{x["id"]}.html')
+        else:
+            check(f'studio card {x["id"]} has no page link', mv.count() == 0)
+    for x in page_p:
+        slug = f'studio-{x["id"]}.html'
+        src = urlopen(BASE + slug).read().decode('utf-8')
+        check(f'{slug} in the sitemap', f'https://dragomansjourney.com/{slug}' in sitemap)
+        check(f'{slug} has no long dash', '—' not in src and '–' not in src)
+        check(f'{slug} title and meta description from the JSON',
+              f'<title>{_html.escape(x["name"], quote=False)} · Dragoman\'s Journey</title>' in src
+              and _html.unescape(_re.search(r'<meta name="description" content="([^"]*)"', src).group(1)) == x['what'])
+        q = newpage(1440); q.goto(BASE + slug); q.wait_for_timeout(300)
+        hd = q.locator('header')
+        check(f'{slug}: the name big', q.locator('h1').count() == 1 and q.inner_text('h1').strip().upper() == x['name'].upper())
+        check(f'{slug}: status pill under the name', hd.locator('.hero-pill').inner_text() == x['status']
+              and hd.locator('.hero-pill').bounding_box()['y'] > q.locator('h1').bounding_box()['y'])
+        check(f'{slug}: what, from the JSON', x['what'] in hd.inner_text())
+        check(f'{slug}: kicker links back to the studio', hd.locator('.kick a[href="studio.html"]').count() == 1
+              and x['kind'].upper() in hd.locator('.kick').inner_text().upper())
+        main_ = q.locator('main')
+        if x.get('proof'):
+            check(f'{slug}: proof line in bold', main_.locator('strong', has_text=x['proof']).count() == 1)
+        else:
+            check(f'{slug}: no proof line when the JSON has none', main_.locator('.proof').count() == 0)
+        if x.get('image'):
+            check(f'{slug}: image', main_.locator(f'img[src="{x["image"]}"]').get_attribute('alt') == x['image_alt'])
+        else:
+            check(f'{slug}: no image when the JSON has none', main_.locator('img').count() == 0)
+        mine = [e for e in rows if e['project'] == x['id']]
+        lis = q.locator('#log li')
+        got = [[lis.nth(i).locator('time').get_attribute('datetime'), lis.nth(i).locator('time').inner_text(),
+                lis.nth(i).locator('.line').inner_text()] for i in range(lis.count())]
+        want = [[e['date'], short(_dt.date.fromisoformat(e['date']), today), e['line']] for e in mine]
+        check(f'{slug}: log matches shipped.json for {x["id"]}, newest first, with dates', got == want and len(want) > 0, str(got[:2]))
+        check(f'{slug}: every log line shows', q.locator('#log li:visible').count() == len(mine) and q.locator('#log-all').count() == 0)
+        check(f'{slug}: "Shipped lately" heading', q.locator('#log-h').inner_text().strip().lower() == 'shipped lately')
+        check(f'{slug}: no other project\'s lines', not any(e['line'] in src for e in SHIPPED_J['entries'] if e['project'] != x['id']))
+        jb = q.locator('#join a[data-list]')
+        href = jb.get_attribute('href') if jb.count() == 1 else ''
+        check(f'{slug}: one join box, mailing "List: {x["name"]}"', q.locator('#join').count() == 1 and q.locator('a[data-list]').count() == 1
+              and jb.inner_text() == x['list']['button'] and href.startswith('mailto:hello@dragomansjourney.com?subject=')
+              and _unquote(href.split('subject=', 1)[1]) == 'List: ' + x['name'], href)
+        check(f'{slug}: the line under the join box', q.locator('#join p').inner_text().strip() == "One email when it's out. No newsletter.")
+        check(f'{slug}: join box comes last, after the log', q.locator('#join').bounding_box()['y'] > q.locator('#log').bounding_box()['y'])
+        check(f'{slug}: list count shows only at 10 or more', ('people on the list' in q.inner_text('#join')) == (x['list'].get('count', 0) >= 10))
+        for w in (390, 1440):
+            q.set_viewport_size({'width': w, 'height': 900}); q.wait_for_timeout(200)
+            check(f'{slug}: no sideways scroll at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+            q.screenshot(path=f'{SHOTS}/t09-{x["id"]}-{w}.png', full_page=True)
+    # The page list follows the JSON: a product that loses its gate and has a list gets a page.
+    sj = _json.loads(_json.dumps(STUDIO_J))
+    for x in sj['products']:
+        x['gate'] = None
+    check('a product gets a page once its gate clears', [s for s, _ in _studio.product_pages(sj)] == ['studio-birdleague.html', 'studio-deepcuts.html', 'studio-album.html'])
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

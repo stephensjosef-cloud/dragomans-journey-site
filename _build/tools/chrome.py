@@ -76,7 +76,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
     </nav>
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <span class="kick">{kicker}</span>
-      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">{h1}</h1>
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">{h1}</h1>{badge}
       <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">{lede}</p>
     </div>
   </div>
@@ -131,7 +131,7 @@ TAIL = """  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:
 
 
 def page(**k):
-    for key in ("css", "script"):
+    for key in ("css", "script", "badge"):          # badge: right under the h1 (a Studio product's status, T-09)
         k.setdefault(key, "")
     k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
     k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
