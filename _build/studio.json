@@ -1,9 +1,10 @@
 {
-  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more.",
+  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero uses lede_album_gated while the album card is hidden, so it names the album only when the album shows.",
   "hero": {
     "kicker": "The studio · updated as things ship",
     "h1": "Built in<br>the open",
-    "lede": "Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first."
+    "lede": "Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first.",
+    "lede_album_gated": "Everything I'm building right now, and the date each piece shipped. Apps, free tools and shirts, made with AI and a lot of real-phone testing. Get on a list and you hear first."
   },
   "products": [
     {"id": "birdleague", "name": "Bird League", "status": "In testing on iPhone", "kind": "My own app",

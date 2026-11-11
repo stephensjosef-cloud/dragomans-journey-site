@@ -551,7 +551,41 @@ with sync_playwright() as p:
     stats = [_re.sub(r'\s+', ' ', s) for s in stats]
     check('studio strip matches shipped.json', stats == [f'{N} things shipped since {short(oldest, today)}', f'{M} in the last 30 days', f'{K} projects'], str(stats))
     check('studio shows the hero from studio.json', q.inner_text('h1').replace('\n', ' ').upper() == _re.sub(r'<br\s*/?>', ' ', STUDIO_J['hero']['h1']).upper()
-          and STUDIO_J['hero']['lede'] in q.inner_text('header') and q.locator('header .kick').inner_text().upper() == STUDIO_J['hero']['kicker'].upper())
+          and q.locator('header .kick').inner_text().upper() == STUDIO_J['hero']['kicker'].upper())
+    # The hero names the album only while the album card shows (fix approved Nov 11, 2026).
+    HIDDEN_LEDE = "Everything I'm building right now, and the date each piece shipped. Apps, free tools and shirts, made with AI and a lot of real-phone testing. Get on a list and you hear first."
+    SHOWN_LEDE = "Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first."
+    album_hidden = any(x['id'] == 'album' for x in gated_p)
+    hero_p = q.locator('header p').last.inner_text().strip()
+    check('studio hero names the album only when its card shows', hero_p == (HIDDEN_LEDE if album_hidden else SHOWN_LEDE), hero_p)
+    check('studio meta description matches the hero', _html.unescape(_re.search(r'<meta name="description" content="([^"]*)"', src).group(1)) == hero_p)
+    if album_hidden:
+        check('studio says no "album" while the album is hidden', 'album' not in q.inner_text('body').lower() and 'album' not in src.split('<style>')[0].lower())
+    # Both states, from studio.py in a temp copy: the album hidden, then shown.
+    tmp = _tmp.mkdtemp()
+    try:
+        bd = os.path.join(tmp, '_build')
+        os.makedirs(bd)
+        _shutil.copytree(os.path.join(here, 'tools'), os.path.join(bd, 'tools'), ignore=_shutil.ignore_patterns('__pycache__'))
+        _shutil.copy(os.path.join(here, 'shipped.json'), bd)
+        for state in ('hidden', 'shown'):
+            sj = _json.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+            for x in sj['products']:
+                if x['id'] == 'album':
+                    x['gate'] = 'test gate' if state == 'hidden' else None
+            _json.dump(sj, open(os.path.join(bd, 'studio.json'), 'w', encoding='utf-8'))
+            r = _sp.run([sys.executable, 'studio.py', '..'], cwd=os.path.join(bd, 'tools'), capture_output=True, text=True)
+            page_src = open(os.path.join(bd, 'studio.html'), encoding='utf-8').read() if r.returncode == 0 else ''
+            hero_txt = _re.search(r'<p style="margin:0;max-width:56ch[^"]*">([^<]*)</p>', page_src)
+            hero_txt = _html.unescape(hero_txt.group(1)) if hero_txt else ''
+            meta = _re.search(r'<meta name="description" content="([^"]*)"', page_src)
+            want_lede = HIDDEN_LEDE if state == 'hidden' else SHOWN_LEDE
+            check(f'album {state}: hero reads as approved', hero_txt == want_lede, (r.stderr or hero_txt)[-200:])
+            check(f'album {state}: meta description matches', bool(meta) and _html.unescape(meta.group(1)) == want_lede)
+            check(f'album {state}: album card ' + ('absent' if state == 'hidden' else 'present'),
+                  ('data-id="album"' in page_src) == (state == 'shown'))
+    finally:
+        _shutil.rmtree(tmp, ignore_errors=True)
     check('studio "Shipped lately" heading', q.locator('#log-h').inner_text().strip().lower() == 'shipped lately')
     lis = q.locator('#log li')
     check('studio log holds every line that should show', lis.count() == N, f'{lis.count()} vs {N}')

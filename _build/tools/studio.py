@@ -16,6 +16,8 @@ Rules:
 - "Shipped lately" shows the 8 newest; "See all <N>" reveals the rest in place.
 - Each log line carries a small label: its project's product name, or the
   site's own address for project "site".
+- The hero names the album only while the album card shows: "lede" then,
+  "lede_album_gated" while the album has a gate.
 - A join list opens a mailto with the subject "List: <product name>" until the
   real join lists (T-10) are live. Its count shows only at 10 or more.
 
@@ -76,6 +78,16 @@ def labels(studio):
 
 def gated(studio):
     return {p["id"] for p in studio["products"] if p.get("gate") is not None}
+
+
+def album_shown(studio):
+    return any(p["id"] == "album" and p.get("gate") is None for p in studio["products"])
+
+
+def hero_lede(studio):
+    """The hero names the album only while the album card shows (approved Nov 11, 2026)."""
+    hero = studio["hero"]
+    return hero["lede"] if album_shown(studio) else hero["lede_album_gated"]
 
 
 def visible(studio, shipped, today):
@@ -226,12 +238,13 @@ def main(out_dir):
     hero = studio["hero"]
     body = build(studio, shipped, today)
     kicker = hero["kicker"]
+    lede = hero_lede(studio)
     body = f'<!-- studio.py {today.isoformat()} {fingerprint()} -->' + body
     from chrome import write
     write(out_dir, "studio.html",
           title=kicker.split(" · ")[0],                       # "The studio", from the kicker
-          description=hero["lede"].replace('"', "&quot;"),
-          kicker=t(kicker), h1=hero["h1"], lede=t(hero["lede"]),
+          description=lede.replace('"', "&quot;"),
+          kicker=t(kicker), h1=hero["h1"], lede=t(lede),
           css=CSS, body=body, script=SCRIPT, more="")
 
 
