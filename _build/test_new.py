@@ -300,6 +300,53 @@ with sync_playwright() as p:
         check(f'{name} card file exists in out/og at 1200x630', size == (1200, 630), str(size))
     check('404 page carries no share card', 'og:image' not in urlopen(BASE + '404.html').read().decode('utf-8'))
 
+    # ---------------- free tools, findable (T-02, Nov 10, 2026)
+    TOOLS = {'shotlist.html': 'Reel shot list', 'captions.html': 'Caption fitter',
+             'receipt.html': 'Busywork receipt', 'scaler.html': 'Recipe scaler'}
+    for name in SHARED:
+        src = urlopen(BASE + name + '.html').read().decode('utf-8')
+        # The header nav: <nav> where the page has one, else its <header>, else the home page's letterhead bar.
+        top = (_re.search(r'<nav aria-label="Main".*?</nav>', src, _re.S) or _re.search(r'<!-- letterhead -->.*?<!-- hero -->', src, _re.S)
+               or _re.search(r'<header.*?</header>', src, _re.S))
+        top = top.group(0) if top else ''
+        links = _re.findall(r'<a href="work\.html#free"[^>]*>([^<]*)</a>', top)
+        check(f'{name} nav links Free tools to work.html#free', links == ['Free tools'], str(links))
+        if 'Free 15-min call' in top:
+            check(f'{name} Free tools sits before the free call', -1 < top.find('work.html#free') < top.index('Free 15-min call'))
+    q = newpage(1440); q.goto(BASE + 'work.html#free'); q.wait_for_timeout(300)
+    check('work.html#free opens on the free tools', q.get_attribute('.filt[data-f="free"]', 'aria-pressed') == 'true'
+          and q.locator('#cards .card:visible').count() == q.locator('#cards .card[data-k~="free"]').count())
+    src = urlopen(BASE + 'local.html').read().decode('utf-8')
+    sec = _re.search(r'<section id="tools".*?</section>', src, _re.S)
+    sec = sec.group(0) if sec else ''
+    check('local free tools section sits right before contact', bool(sec) and bool(_re.search(_re.escape(sec) + r'\s*<section id="contact"', src)))
+    check('local free tools heading', '>Free tools for your pile</h2>' in sec)
+    check('local free tools section links the 4 tools', sorted(_re.findall(r'href="([a-z]+\.html)"', sec)) == sorted(TOOLS), sec[:200])
+    work = urlopen(BASE + 'work.html').read().decode('utf-8')
+    for href, title in TOOLS.items():
+        para = _re.search(r'<h2>' + title + r'</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + href, work)
+        check(f'local card for {href} matches the work page', bool(para) and f'>{title}</h3>' in sec and f'>{para.group(1)}</p>' in sec)
+    for w in (390, 1440):
+        q = newpage(w); q.goto(BASE + 'local.html'); q.wait_for_timeout(300)
+        xs = q.eval_on_selector_all('#tools article', 'e => e.map(a => Math.round(a.getBoundingClientRect().left))')
+        check(f'local free tools: {"one column" if w == 390 else "one row of four"} at {w}',
+              len(xs) == 4 and (len(set(xs)) == 1 if w == 390 else len(set(xs)) == 4), str(xs))
+    for href in TOOLS:
+        q = newpage(1440); q.goto(BASE + href); q.wait_for_timeout(300)
+        line = q.locator('main > p', has_text='More free tools:')
+        got = line.locator('a').evaluate_all('e => e.map(a => [a.getAttribute("href"), a.textContent])') if line.count() == 1 else []
+        check(f'{href} links the other three tools by name', sorted(got) == sorted([k, v] for k, v in TOOLS.items() if k != href), str(got))
+        if line.count() == 1:
+            check(f'{href} more-tools line sits above the dark panel',
+                  line.bounding_box()['y'] < q.locator('#more-h').bounding_box()['y'])
+    for name in SHARED:
+        q = newpage(390); q.goto(BASE + name + '.html'); q.wait_for_timeout(300)
+        sw = q.evaluate('document.documentElement.scrollWidth')
+        check(f'{name} has no sideways scroll at 390', sw <= 390, str(sw))
+        for w in (390, 1440):
+            q.set_viewport_size({'width': w, 'height': 900}); q.wait_for_timeout(150)
+            q.screenshot(path=f'{SHOTS}/t02-{name}-{w}.png', full_page=True)
+
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
 

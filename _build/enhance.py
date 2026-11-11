@@ -358,6 +358,87 @@ def enhance_index():
     p.write_text(t, encoding="utf-8")
 
 
+# Free tools, findable from every page (T-02, Nov 10, 2026). The tool pages
+# get their nav link and "More free tools" line from tools/chrome.py.
+FREE_TOOLS = ("shotlist.html", "captions.html", "receipt.html", "scaler.html")
+
+
+def nav_pair(t, link_rx, ft):
+    """Group a header's last link with a "Free tools" link placed before it."""
+    rx = re.compile(link_rx, re.S)
+    found = rx.findall(t)
+    assert len(found) == 1, f"expected 1 of /{link_rx[:60]}/, found {len(found)}"
+    return rx.sub(lambda m: '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px">' + ft + m.group(0) + '</div>', t)
+
+
+def tool_cards():
+    """The four tool cards, read from the work page so the words always match it."""
+    work = (OUT / "work.html").read_text(encoding="utf-8")
+    cards = []
+    articles = re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', work, re.S)
+    for href in FREE_TOOLS:
+        m = [re.search(r'<h2>([^<]*)</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + re.escape(href) + r'">([^<]*)</a>', a)
+             for a in articles]
+        m = [x for x in m if x]
+        assert len(m) == 1, "work page card for " + href
+        h, p, go = m[0].groups()
+        cards.append(f"""
+      <article style="display: flex; flex-direction: column; gap: 10px; padding: clamp(18px, 2vw, 24px); background: #FBF8F1; border: 1.5px solid #CFC6B2; border-radius: 2px">
+        <h3 style="margin: 0; font-size: 20px; line-height: 1.25; font-weight: 700; color: #16201C">{h}</h3>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">{p}</p>
+        <a href="{href}" style="margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: #16201C; text-decoration: none">{go}</a>
+      </article>""")
+    return "".join(cards)
+
+
+def add_free_tools():
+    light = "display:inline-flex;align-items:center;min-height:44px;color:#C9D2CB;text-decoration:none;font-size:15px"
+    paper = "display:inline-flex;align-items:center;min-height:44px;color:#3A4252;text-decoration:none;font-size:15px"
+
+    p = OUT / "index.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, '>The work</a><a href="call.html"',
+            '>The work</a><a href="work.html#free" style="color: #3A4252; text-decoration: none">Free tools</a><a href="call.html"')
+    p.write_text(t, encoding="utf-8")
+
+    p = OUT / "work.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, '\n        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;',
+            '\n        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>'
+            '\n        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;')
+    p.write_text(t, encoding="utf-8")
+
+    p = OUT / "local.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, '<a href="work.html">The work</a>', '<a href="work.html">The work</a>\n        <a href="work.html#free">Free tools</a>')
+    t = rep(t, '<section id="contact"', f"""<!-- ============ FREE TOOLS ============ -->
+<section id="tools" aria-labelledby="tools-h" style="background: #F2EDE1">
+  <div style="max-width: 1240px; margin: 0 auto; padding: clamp(56px, 7vw, 88px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(22px, 3vw, 32px)">
+    <h2 id="tools-h" style="margin: 0; {BIG}; font-size: clamp(40px, 4.8vw, 64px); line-height: 0.9; text-wrap: balance; color: #16201C">Free tools for your pile</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px">{tool_cards()}
+    </div>
+  </div>
+</section>
+
+<section id="contact\"""")
+    p.write_text(t, encoding="utf-8")
+
+    p = OUT / "mainframe.html"
+    t = p.read_text(encoding="utf-8")
+    t = nav_pair(t, r'<a href="#correspondence" class="quiet"[^>]*>Request a briefing</a>(?=\s*</nav>)',
+                  '<a href="work.html#free" style="display: inline-flex; align-items: center; min-height: 44px; color: #3A4252; text-decoration: none; font-size: 15px">Free tools</a>')
+    p.write_text(t, encoding="utf-8")
+
+    for f, last, style in (("call.html", "See the work", light), ("case-reels.html", "← All the work", light),
+                           ("start.html", "← Back to the Local Route", light),
+                           ("briefing.html", "← The Mainframe Route", paper), ("comp3.html", "The Mainframe Route →", paper)):
+        p = OUT / f
+        t = p.read_text(encoding="utf-8")
+        t = nav_pair(t, r'<a href="[a-z]+\.html" style="' + re.escape(style) + r'">' + re.escape(last) + '</a>',
+                      f'<a href="work.html#free" style="{style}">Free tools</a>')
+        p.write_text(t, encoding="utf-8")
+
+
 def use_hello():
     # The site's public address is hello@, which forwards to Josef's Gmail.
     for p in OUT.glob("*.html"):
@@ -401,6 +482,7 @@ enhance_local()
 enhance_mainframe()
 add_pages()
 enhance_index()
+add_free_tools()
 use_hello()
 add_og()
 for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html"):

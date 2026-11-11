@@ -69,6 +69,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
         <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
+        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
       </div>
     </nav>
@@ -82,6 +83,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
 {body}
+  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: {more}</p>
   <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">{cta_h}</h2>
@@ -113,13 +115,22 @@ function djCopy(text,label){{
 </html>
 """
 
+# The four tools, by the names the work page gives them (T-02). Each tool page links the other three.
+TOOLS = (("shotlist.html", "Reel shot list"), ("captions.html", "Caption fitter"),
+         ("receipt.html", "Busywork receipt"), ("scaler.html", "Recipe scaler"))
+
+
+def more_tools(slug):
+    return " · ".join(f'<a href="{href}">{name}</a>' for href, name in TOOLS if href != slug)
+
+
 def page(**k):
     for key in ("css", "script"):
         k.setdefault(key, "")
     return HEAD.format(**k)
 
 def write(out_dir, slug, **k):
-    html = page(slug=slug, og=slug[:-len(".html")], **k)   # share card from tools/og.py
+    html = page(slug=slug, og=slug[:-len(".html")], more=more_tools(slug), **k)   # share card from tools/og.py
     assert "—" not in html, "em dash in " + slug
     p = pathlib.Path(out_dir) / slug
     p.write_text(html, encoding="utf-8")
