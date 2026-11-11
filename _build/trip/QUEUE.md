@@ -73,7 +73,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-11 · Facts a machine can read · READY
+## T-11 · Facts a machine can read · DONE
 
 **Why:** people now ask AI tools who to hire nearby, and those tools read plain facts and structured data off a page. `local.html` and `mainframe.html` carry none. `index.html` has a small block (the site and Josef) that stays as it is.
 
@@ -90,6 +90,18 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 **Done when:** tests pass, and a diff of each rebuilt page against the previous build shows only the added head tag on `local.html` and `mainframe.html`. Every other root file is byte for byte the same. Nothing visible changes, so one screenshot of each page at 390 and 1440 is enough to confirm that.
 
 **Receipt:**
+- **Branch:** `trip/T-11`, cut from `origin/trip/T-02` (the `trip/` branch with the newest commit). Work commit `121b33b`, receipt in the commit after it. Nothing pushed to `main`.
+- **What's built:** `_build/final.py`, run as step 6b after `intent.py` (in `_build/README.md`, which also says `tools/og.py` is not affected). It reads the finished pages and adds one `<script type="application/ld+json">` just before `</head>`. It refuses to run twice on the same page.
+- **local.html:** an `@graph` with a `ProfessionalService` (name, url, email, founder Josef Stephens, Santa Rosa / CA / US, area served, the meta description, and the GitHub link read from `index.html`'s own block) and a `FAQPage` with all 6 questions and answers as plain text. Four offers, all read from the page: The Blueprint (fixed $1,500, from the heading "The Blueprint · $1,500", since its card has no price in a `<strong>`; nothing else on that line, so no description), Reels from your phone videos (from $800/month, "three-month minimum"), Your own app (from $8,000, "then a yearly fee for updates and support"), Busywork, automated (from $3,000, "support from $750/month").
+- **mainframe.html:** a `Service` "The Mainframe Route", provider Dragoman's Journey with Josef Stephens as founder, the meta description, the page's own url, and three offers: The Survey (from $8,000, "counts toward step II"), The Checker (from $15,000, "yours to keep and rerun"), The Move (from $5,000/month, "Ongoing checks"). The Audit Report prints no price ("Included with II and III"), so it has no offer.
+- **One technical choice:** the two monthly prices use `UnitPriceSpecification`, which is the kind of `PriceSpecification` that schema.org allows `unitText` on. A plain `PriceSpecification` with `unitText` would be flagged by validators. The rest is as written: `minPrice`, `unitText` "month", `priceCurrency` USD.
+- **No invented facts:** no rating, review, hours, phone, street address or postal code (a test checks each). A missing price stops the build and names it: tried in a copy with one price removed, it printed `local.html: no price found for "Your own app"` and wrote nothing.
+- **Pipeline:** the unchanged pipeline rebuilt every root file byte for byte first. After the change, `cmp` shows only `local.html` and `mainframe.html` differ, and `git diff` on them is additions only (123 and 53 lines, the head tag). The other 32 files, `og/` included, are byte for byte the same.
+- **Tests:** `test_new.py` **277/277 passed** (67 new: one block per page, just before `</head>`, parses as JSON; every price and every dollar amount in it is in the page's text with scripts and tags stripped, monthly ones with `/month`; offer names and descriptions word for word on the page; USD; FAQ count equals the 6 `data-faq` buttons and every Q and A is the page's own words; the business facts; one offer per priced Mainframe step; description equals the meta description; `index.html`'s block unchanged; no long dash; none of the forbidden facts). Against the old build, the new checks fail as they should (211/217: no block on either page). Run on Windows with Playwright's Chromium headless shell and real Google Fonts, as a copy with `exe = None`, per house rule 3.
+- **Looked at:** `local.html` and `mainframe.html` at 390 and 1440. Nothing visible changed; no sideways scroll at 390 (tested on all 13 pages).
+- **Josef, by hand:**
+  1. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
+  2. Optional, after it's live: open https://validator.schema.org/, paste `https://dragomansjourney.com/local.html`, press Run test, and check it shows no errors. Do the same for `mainframe.html`.
 
 ---
 
