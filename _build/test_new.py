@@ -347,6 +347,115 @@ with sync_playwright() as p:
             q.set_viewport_size({'width': w, 'height': 900}); q.wait_for_timeout(150)
             q.screenshot(path=f'{SHOTS}/t02-{name}-{w}.png', full_page=True)
 
+    # ---------------- facts a machine can read (T-11, Nov 11, 2026)
+    import json as _json, html as _html
+
+    def ld_blocks(src):
+        return _re.findall(r'<script type="application/ld\+json">(.*?)</script>', src, _re.S)
+
+    def page_text(src):
+        # The page's words with the tags stripped: scripts and styles out first, so the block can't vouch for itself.
+        src = _re.sub(r'<(script|style)\b.*?</\1>', ' ', src, flags=_re.S)
+        return _re.sub(r'\s+', ' ', _html.unescape(_re.sub(r'<[^>]+>', ' ', src)))
+
+    def walk(node):
+        yield node
+        for v in (node.values() if isinstance(node, dict) else node if isinstance(node, list) else ()):
+            yield from walk(v)
+
+    def dollars(n):
+        return '$' + f'{n:,}'
+
+    LD = {}
+    for name in ('local', 'mainframe'):
+        src = urlopen(BASE + name + '.html').read().decode('utf-8')
+        blocks = ld_blocks(src)
+        check(f'{name} has exactly one ld+json block', len(blocks) == 1, str(len(blocks)))
+        check(f'{name} ld+json sits just before </head>', _re.search(r'</script>\s*</head>', src) is not None
+              and src.index('application/ld+json') < src.index('</head>'))
+        try:
+            data = _json.loads(blocks[0]) if blocks else None
+        except ValueError as e:
+            data = None
+            check(f'{name} ld+json parses as JSON', False, str(e))
+        else:
+            check(f'{name} ld+json parses as JSON', data is not None)
+        LD[name] = data
+        if data is None:
+            continue
+        text = page_text(src)
+        nodes = list(walk(data))
+        prices = [n.get('price', n.get('minPrice')) for n in nodes if isinstance(n, dict) and n.get('@type') in ('Offer', 'PriceSpecification', 'UnitPriceSpecification')]
+        prices = [p for p in prices if p is not None]
+        check(f'{name} ld+json carries prices', len(prices) >= 3, str(prices))
+        for pr in prices:
+            check(f'{name} price {dollars(pr)} is in the page text', dollars(pr) in text)
+        for n in nodes:
+            if isinstance(n, dict) and n.get('unitText') == 'month':
+                check(f'{name} monthly price {dollars(n["minPrice"])}/month is in the page text', dollars(n['minPrice']) + '/month' in text)
+        for s in (n for n in nodes if isinstance(n, str)):
+            for amt in _re.findall(r'\$[\d,]+', s):
+                check(f'{name} amount {amt} in the block is in the page text', amt in text)
+        for n in nodes:
+            if isinstance(n, dict) and n.get('@type') == 'Offer':
+                check(f'{name} offer "{n["name"]}" is named on the page', n['name'] in text)
+                if 'description' in n:
+                    check(f'{name} offer "{n["name"]}" description is word for word', n['description'] in text, n['description'])
+                cur = [n.get('priceCurrency')] + [n['priceSpecification'].get('priceCurrency')] if 'priceSpecification' in n else [n.get('priceCurrency')]
+                check(f'{name} offer "{n["name"]}" is in USD', set(cur) == {'USD'}, str(cur))
+        check(f'{name} ld+json has no long dash', '—' not in blocks[0] and '–' not in blocks[0])
+        flat = _json.dumps(data)
+        for word in ('aggregateRating', 'review', 'openingHours', 'telephone', 'streetAddress', 'postalCode'):
+            check(f'{name} ld+json has no {word}', f'"{word}' not in flat)
+        desc = _re.search(r'<meta name="description" content="([^"]*)">', src).group(1)
+        top = data['@graph'][0] if '@graph' in data else data
+        check(f'{name} ld+json description is the meta description', top.get('description') == _html.unescape(desc))
+
+    if LD.get('local'):
+        src = urlopen(BASE + 'local.html').read().decode('utf-8')
+        biz = next((n for n in LD['local'].get('@graph', []) if n.get('@type') == 'ProfessionalService'), {})
+        faq = next((n for n in LD['local'].get('@graph', []) if n.get('@type') == 'FAQPage'), {})
+        check('local business facts', biz.get('name') == "Dragoman's Journey" and biz.get('url') == 'https://dragomansjourney.com/local.html'
+              and biz.get('email') == 'hello@dragomansjourney.com' and biz.get('founder') == {'@type': 'Person', 'name': 'Josef Stephens'}
+              and biz.get('areaServed') == 'Sonoma County, California'
+              and biz.get('address') == {'@type': 'PostalAddress', 'addressLocality': 'Santa Rosa', 'addressRegion': 'CA', 'addressCountry': 'US'}, str(biz)[:300])
+        check('local email is on the page', 'hello@dragomansjourney.com' in src)
+        index_ld = _json.loads(ld_blocks(urlopen(BASE + 'index.html').read().decode('utf-8'))[0])
+        gh = [u for n in index_ld['@graph'] for u in n.get('sameAs', [])]
+        check('local sameAs is the GitHub link index uses', biz.get('sameAs') == gh, str(biz.get('sameAs')))
+        offers = biz.get('makesOffer', [])
+        check('local has the Blueprint and the three cards as offers', [o.get('name') for o in offers][:1] == ['The Blueprint'] and len(offers) == 4
+              and [o.get('name') for o in offers][1:] == [_html.unescape(_re.sub(r'<[^>]+>', '', h)) for h in
+                                                         _re.findall(r'data-card="[^"]+".*?<h3[^>]*>(.*?)</h3>', src, _re.S)], str([o.get('name') for o in offers]))
+        check('local Blueprint is a fixed $1,500 as the page says', offers and offers[0].get('price') == 1500 and '>The Blueprint · $1,500</h3>' in src, str(offers[:1]))
+        qs = faq.get('mainEntity', [])
+        nbtn = len(_re.findall(r'<button[^>]*data-faq="', src))
+        check('local FAQ count equals the data-faq buttons', len(qs) == nbtn and nbtn > 0, f'{len(qs)} vs {nbtn}')
+        text = page_text(src)
+        check('local FAQ questions and answers are the page\'s own words',
+              all(q['name'] in text and q['acceptedAnswer']['text'] in text for q in qs) and all('<' not in q['acceptedAnswer']['text'] for q in qs))
+    if LD.get('mainframe'):
+        svc = LD['mainframe']
+        src = urlopen(BASE + 'mainframe.html').read().decode('utf-8')
+        check('mainframe service facts', svc.get('@type') == 'Service' and svc.get('name') == 'The Mainframe Route'
+              and svc.get('provider', {}).get('name') == "Dragoman's Journey"
+              and svc.get('provider', {}).get('founder') == {'@type': 'Person', 'name': 'Josef Stephens'}, str(svc)[:300])
+        steps = _re.search(r'id="s3-h".*?<ol.*?</ol>', src, _re.S).group(0)
+        priced = [_re.sub(r'<[^>]+>', '', _re.search(r'<h3[^>]*>(.*?)</h3>', li, _re.S).group(1)) for li in _re.findall(r'<li.*?</li>', steps, _re.S)
+                  if '$' in _re.findall(r'<p[^>]*>(.*?)</p>', li, _re.S)[-1]]
+        check('mainframe has one offer per step that prints a price', [o.get('name') for o in svc.get('offers', [])] == priced, str(priced))
+    idx = ld_blocks(urlopen(BASE + 'index.html').read().decode('utf-8'))
+    check('index ld+json block is unchanged', len(idx) == 1 and _json.loads(idx[0]) == {
+        '@context': 'https://schema.org', '@graph': [
+            {'@type': 'WebSite', 'name': "Dragoman's Journey", 'alternateName': "Dragoman's Journey · Josef Stephens", 'url': 'https://dragomansjourney.com/'},
+            {'@type': 'Person', 'name': 'Josef Stephens', 'jobTitle': "Founder, Dragoman's Journey",
+             'address': {'@type': 'PostalAddress', 'addressLocality': 'Santa Rosa', 'addressRegion': 'CA'},
+             'sameAs': ['https://github.com/stephensjosef-cloud']}]})
+    for name in ('local', 'mainframe'):
+        for w in (390, 1440):
+            q = newpage(w); q.goto(BASE + name + '.html'); q.wait_for_timeout(300)
+            q.screenshot(path=f'{SHOTS}/t11-{name}-{w}.png')
+
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
 
