@@ -46,7 +46,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-02 · Make the free tools findable · READY
+## T-02 · Make the free tools findable · DONE
 
 **Why:** right now the tools are only reachable from the work page.
 
@@ -59,6 +59,17 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 **Done when:** tested and looked at on both widths.
 
 **Receipt:**
+- **Branch:** `trip/T-02`, cut from `origin/trip/Q-02` (the only `trip/` branch on origin). Work commit `0a91b98`, receipt in the commit after it. Nothing pushed to `main`.
+- **Nav (step 1):** "Free tools" → `work.html#free` on all 13 public pages. Where the header has "Free 15-min call" (`index`, `work`, the four tools) it sits right before it. The other headers have no call link, so it sits before the header's last link: `local` (inside its link group, after "The work"), `mainframe` (before "Request a briefing", outside the jump links that `intent.py` rewrites), `call`, `case-reels`, `start`, `briefing`, `comp3`. Same style as each header's own quiet links. Pipeline pages in `enhance.py` (`add_free_tools()`), tools in `tools/chrome.py`. `404.html` left as it is (logo only, noindex, same as T-01).
+- **local.html (step 2):** "Free tools for your pile" section between drop-in hours and contact. The four cards (title, the work page's one-line description, the work page's link text) are read from the work page at build time, so they always match it. No new words. Four in a row at 1440, one column at 390.
+- **Tool pages (step 3):** "More free tools:" then the other three by their work-page names (Reel shot list, Caption fitter, Busywork receipt, Recipe scaler), under the tool and above the dark panel.
+- **Pipeline:** the unchanged pipeline rebuilt every root file byte for byte first. After the change, `cmp` shows only the 13 pages differ. The diffs are only the added links, the section and the line. `404.html`, `sitemap.xml`, `robots.txt`, `CNAME`, `favicon.svg`, images and `og/` are unchanged.
+- **Tests:** `test_new.py` **210/210 passed** (50 new: every page's nav has exactly one "Free tools" link to `work.html#free`, before the call link where there is one; `work.html#free` opens on the free filter; the local section has the heading, sits right before contact, links the 4 tools, and each card matches the work page; one column at 390 and four across at 1440; each tool page links the other three by name above the dark panel; no sideways scroll at 390 on all 13 pages). Against the old build the new checks fail as they should (174/206; some checks only run when the link exists). Run on Windows with Playwright's own Chromium headless shell and real Google Fonts, as a copy, per house rule 3. `test_site.py` times out waiting for `networkidle` on `index.html` here too, the same as T-01 recorded on the untouched build.
+- **Looked at:** all 13 headers at 390 and 1440, the new local section at both widths, and the tool line at both widths. Two fixes after looking: the local heading now wraps evenly ("Free tools / for your pile", not "pile" alone), and the tool line has more room between links for thumbs.
+- **Worth knowing:** on phones the `local.html` header hides its text links (it already did, under 760px wide), so there the new section is the way in. On `work` and the tool pages at 390, the header now wraps "Free 15-min call" to its own row. Nothing overflows.
+- **Josef, by hand:**
+  1. Look at the branch. "Free tools" now sits in the Mainframe page header and on `start.html` too, because the item says every page. If you'd rather not have it on either, say so and Claude takes it off before going live.
+  2. When happy, say "push it" to Claude in chat. That merges this into `main` and the site goes live.
 
 ---
 
