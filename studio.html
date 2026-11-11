@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The studio · Dragoman's Journey</title>
+<meta name="description" content="Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first.">
+<link rel="canonical" href="https://dragomansjourney.com/studio.html">
+<meta property="og:title" content="The studio · Dragoman's Journey">
+<meta property="og:description" content="Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/studio.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/studio.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F2EDE1}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:#A93F17}a:hover{color:#16201C}
+::selection{background:#E8592B;color:#0E1B17}
+.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
+.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#F07A4E;text-transform:uppercase}
+.panel{background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
+.chip:hover{border-color:#16201C}
+.chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
+.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
+.btn:hover{background:#0E1B17;color:#F2EDE1}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+.btn.ghost{background:transparent;color:#16201C}
+.btn.ghost:hover{background:#EAE3D3;color:#16201C}
+input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
+textarea{min-height:140px;resize:vertical;line-height:1.5}
+.private{font-size:14px;color:#5A635D;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:2px solid #16201C;border-bottom:1px solid #CFC6B2}
+.stats p{margin:0;padding:18px 20px 18px 0;font-size:17px;color:#3B4540}
+.stats p+p{border-left:1px solid #CFC6B2;padding-left:20px}
+.stats strong{display:block;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(48px,5.4vw,68px);line-height:.9;color:#C2461B}
+@media (max-width:760px){.stats p{padding:14px 10px 14px 0;font-size:14px;line-height:1.35}.stats p+p{padding-left:10px}}
+.sec{display:flex;flex-direction:column;gap:18px;margin-top:24px}
+.sec h2.big{font-size:clamp(38px,4.6vw,60px)}
+.log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
+.log li{display:grid;grid-template-columns:5.5em 13em minmax(0,1fr);gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid #DDD5C3}
+.log time{font-size:14px;color:#6B716A;white-space:nowrap}
+.log .proj{justify-self:start;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:3px 9px;background:#EAE3D3;color:#3B4540;border-radius:2px}
+.log .line{font-size:17px}
+@media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr)}.log .line{grid-column:1/-1}}
+#log-all{align-self:flex-start}
+.prods{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:800px){.prods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.prod{display:flex;flex-direction:column;gap:12px;padding:clamp(22px,2.6vw,30px);background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px}
+.prod h2{margin:0;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(34px,3.4vw,44px);line-height:.95}
+.prod p{margin:0;font-size:16px;color:#3B4540}
+.prod .proof strong{color:#16201C}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.pill{display:inline-flex;align-items:center;min-height:28px;padding:0 12px;border-radius:999px;background:#16201C;color:#F2EDE1;font-size:13px;font-weight:600}
+.kind{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6B716A}
+.acts{margin-top:auto;padding-top:8px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+.prod a.go{display:inline-flex;align-items:center;min-height:44px;font-weight:700;text-decoration:none;color:#16201C}
+.prod a.go:hover{color:#A93F17}
+.count{font-size:14px;color:#5A635D}
+.prod.feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
+.prod.feature .fb{display:flex;flex-direction:column;gap:12px}
+.prod.feature .acts{margin-top:8px}
+.prod.feature img{width:100%;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
+@media (min-width:800px){.prod.feature{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+
+</style>
+</head>
+<body>
+<div class="dj">
+
+<header style="background:#0E1B17;color:#E9EEE9" class="noprint">
+  <div class="wrap">
+    <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+        <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
+      </a>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
+        <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
+        <a href="studio.html" style="color:#C9D2CB;text-decoration:none" aria-current="page">Studio</a>
+        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+      </div>
+    </nav>
+    <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
+      <span class="kick">The studio · updated as things ship</span>
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Built in<br>the open</h1>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+<!-- studio.py 2026-11-11 fa9db432d4061707 -->
+  <div class="stats" id="stats" data-built="2026-11-11">
+    <p><strong>17</strong> things shipped since Oct 6</p>
+    <p><strong>13</strong> in the last 30 days</p>
+    <p><strong>4</strong> projects</p>
+  </div>
+  <section class="sec" aria-labelledby="log-h">
+    <h2 id="log-h" class="big">Shipped lately</h2>
+    <ol class="log" id="log">
+      <li><time class="mono" datetime="2026-11-08">Nov 8</time><span class="proj">A kids' cooking app</span><span class="line">The kids' cooking app got its new logo, everywhere in the app.</span></li>
+      <li><time class="mono" datetime="2026-11-05">Nov 5</time><span class="proj">A kids' cooking app</span><span class="line">Build 2 of the kids' cooking app, checked screen by screen on a real phone.</span></li>
+      <li><time class="mono" datetime="2026-11-04">Nov 4</time><span class="proj">Deepcuts</span><span class="line">Deepcuts got its new look, built and walked through on iPhone.</span></li>
+      <li><time class="mono" datetime="2026-11-04">Nov 4</time><span class="proj">Bird League</span><span class="line">Bird League build 50 runs on Apple's newest tools.</span></li>
+      <li><time class="mono" datetime="2026-11-04">Nov 4</time><span class="proj">Deepcuts</span><span class="line">Deepcuts build 4 works end to end on iPhone.</span></li>
+      <li><time class="mono" datetime="2026-11-02">Nov 2</time><span class="proj">Bird League</span><span class="line">Bird League build 49: the map crash fixed, new stats cards, sharper art.</span></li>
+      <li><time class="mono" datetime="2026-11-02">Nov 2</time><span class="proj">Deepcuts</span><span class="line">The first Deepcuts build went up to the App Store.</span></li>
+      <li><time class="mono" datetime="2026-10-28">Oct 28</time><span class="proj">dragomansjourney.com</span><span class="line">Every word on dragomansjourney.com rechecked: if it isn't there for a reader, it's gone.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-27">Oct 27</time><span class="proj">A kids' cooking app</span><span class="line">The program's real recipes went live in the kids' cooking app, with printing.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-26">Oct 26</time><span class="proj">Bird League</span><span class="line">Bird League's sound ID now runs on its own, and newcomers get a trophy ceremony.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-18">Oct 18</time><span class="proj">dragomansjourney.com</span><span class="line">dragomansjourney.com went live.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-15">Oct 15</time><span class="proj">Bird League</span><span class="line">Duel medals went live in Bird League.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-14">Oct 14</time><span class="proj">Bird League</span><span class="line">Bird League players can now send their sightings to eBird in one tap.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-08">Oct 8</time><span class="proj">Deepcuts</span><span class="line">The Deepcuts iPhone app was built overnight.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-08">Oct 8</time><span class="proj">Bird League</span><span class="line">Bird League got The Almanac and a trophy ceremony.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-07">Oct 7</time><span class="proj">A kids' cooking app</span><span class="line">Step-by-step videos and a full Spanish version went into the kids' cooking app.</span></li>
+      <li hidden data-more><time class="mono" datetime="2026-10-06">Oct 6</time><span class="proj">A kids' cooking app</span><span class="line">The kids' cooking app runs on Android as well as iPhone and iPad.</span></li>
+    </ol>
+    <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false">See all 17</button>
+  </section>
+  <div class="sec prods" id="products">
+    <article class="prod feature" data-id="birdleague">
+      <div class="fb">
+        <h2>Bird League</h2>
+        <div class="meta"><span class="pill">In testing on iPhone</span><span class="kind mono">My own app</span></div>
+        <p>Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.</p>
+        <p class="proof"><strong>Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.</strong></p>
+        <div class="acts"><a class="btn hot" data-list="birdleague" href="mailto:hello@dragomansjourney.com?subject=List%3A%20Bird%20League">Get the launch email</a></div>
+      </div>
+      <img src="bird-league-then-now.jpg" width="1200" height="1331" loading="lazy" alt="Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.">
+    </article>
+    <article class="prod" data-id="deepcuts">
+        <h2>Deepcuts</h2>
+        <div class="meta"><span class="pill">In testing on iPhone</span><span class="kind mono">My own app</span></div>
+        <p>Indie games matched by how they actually play, not by what's trending.</p>
+        <div class="acts"><a class="btn hot" data-list="deepcuts" href="mailto:hello@dragomansjourney.com?subject=List%3A%20Deepcuts">Join the beta</a></div>
+    </article>
+    <article class="prod" data-id="kids">
+        <h2>A kids' cooking app</h2>
+        <div class="meta"><span class="pill">Built for a client</span><span class="kind mono">Client app</span></div>
+        <p>Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program's own cards. iPhone, iPad, Android and the web.</p>
+        <p class="proof"><strong>535 tests, and every change checked on a real phone before it ships.</strong></p>
+        <div class="acts"><a class="go" href="work.html">See the work →</a></div>
+    </article>
+    <article class="prod" data-id="cobol">
+        <h2>COBOL, checked in public</h2>
+        <div class="meta"><span class="pill">Public</span><span class="kind mono">Proof</span></div>
+        <p>Two different AIs translated the same COBOL interest program. The code, the prompts and every miss are published for anyone to rerun.</p>
+        <div class="acts"><a class="go" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Open the repo ↗</a></div>
+    </article>
+    <article class="prod" data-id="tools">
+        <h2>Free tools</h2>
+        <div class="meta"><span class="pill">Live</span><span class="kind mono">Free</span></div>
+        <p>A reel shot list, a caption fitter, a busywork receipt, a recipe scaler and a COBOL field decoder. They run in your browser, and nothing you type leaves the page.</p>
+        <div class="acts"><a class="go" href="work.html#free">Use them →</a></div>
+    </article>
+    <article class="prod" data-id="chucklefits">
+        <h2>ChuckleFits</h2>
+        <div class="meta"><span class="pill">Live</span><span class="kind mono">My shop</span></div>
+        <p>My humor shirt shop. I write every line on every shirt.</p>
+        <div class="acts"><a class="go" href="https://chucklefits.com">Visit the shop ↗</a></div>
+    </article>
+  </div>
+
+</main>
+
+<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+function djToast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(djToast.t);djToast.t=setTimeout(function(){e.classList.remove('on')},1600)}
+function djCopy(text,label){
+  var done=function(){djToast((label||'Text')+' copied')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
+}
+
+(function(){
+var b=document.getElementById('log-all');
+if(!b)return;
+b.addEventListener('click',function(){
+  document.querySelectorAll('#log li[data-more]').forEach(function(li){li.hidden=false});
+  b.setAttribute('aria-expanded','true');
+  b.hidden=true;
+});
+})();
+
+</script>
+</body>
+</html>

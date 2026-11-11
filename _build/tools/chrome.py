@@ -69,6 +69,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
         <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
+        <a href="studio.html" style="color:#C9D2CB;text-decoration:none"{studio_cur}>Studio</a>
         <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
       </div>
@@ -83,18 +84,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
 {body}
-  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: {more}</p>
-  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">{cta_h}</h2>
-      <p style="margin:0;font-size:18px;color:#C9D2CB">{cta_p}</p>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:12px">
-      <a href="{cta_href}" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">{cta_btn}</a>
-      <a href="work.html#free" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">More free tools</a>
-    </div>
-  </section>
-</main>
+{tail}</main>
 
 <footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
   <span>Dragoman's Journey · Santa Rosa, California</span>
@@ -124,13 +114,32 @@ def more_tools(slug):
     return " · ".join(f'<a href="{href}">{name}</a>' for href, name in TOOLS if href != slug)
 
 
+# Under the tool: the line to the other tools and the dark panel. A page without
+# cta_h (the Studio page, T-08) gets neither.
+TAIL = """  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: {more}</p>
+  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">{cta_h}</h2>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">{cta_p}</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <a href="{cta_href}" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">{cta_btn}</a>
+      <a href="work.html#free" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">More free tools</a>
+    </div>
+  </section>
+"""
+
+
 def page(**k):
     for key in ("css", "script"):
         k.setdefault(key, "")
+    k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
+    k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
     return HEAD.format(**k)
 
 def write(out_dir, slug, **k):
-    html = page(slug=slug, og=slug[:-len(".html")], more=more_tools(slug), **k)   # share card from tools/og.py
+    k.setdefault("more", more_tools(slug))
+    html = page(slug=slug, og=slug[:-len(".html")], **k)   # share card from tools/og.py
     assert "—" not in html, "em dash in " + slug
     p = pathlib.Path(out_dir) / slug
     p.write_text(html, encoding="utf-8")

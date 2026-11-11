@@ -30,7 +30,7 @@ FONTS = HERE / "assets" / "fonts"
 DEST = HERE / "assets" / "og"
 
 PAGES = ["index", "local", "mainframe", "work", "comp3", "shotlist", "captions",
-         "receipt", "scaler", "start", "call", "case-reels", "briefing"]
+         "receipt", "scaler", "start", "call", "case-reels", "briefing", "studio"]
 
 W, H = 1200, 630
 S = 2                      # draw at 2x, then scale down for clean edges

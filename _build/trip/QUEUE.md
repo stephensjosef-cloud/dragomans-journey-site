@@ -145,7 +145,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-14 · One new line on the Mainframe page · READY
+## T-14 · One new line on the Mainframe page · GATED (skipped by Josef, Nov 11)
 
 **Why:** in October 2026 OpenAI reported a model passing 97.9% of its own COBOL migration test, and did not publish the test cases. That is this page's argument with a fresh number: translating is no longer the hard part, and a score nobody can inspect is not proof about your programs.
 
@@ -157,10 +157,11 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 5. Tests: the sentence appears once; the sup numbers in reading order are 1, 2, 3, 4, 4, 5, 6, 7; the Notes list has seven items and the third links to `openai.com`; no long dash. Look at the section and the Notes list at 390 and 1440.
 
 **Receipt:**
+- Skipped on Josef's word, Nov 11. Nothing was built.
 
 ---
 
-## T-08 · The Studio page and the public build log · READY
+## T-08 · The Studio page and the public build log · DONE
 
 **Why:** Josef wants everything he's building on the site, packaged so people feel they're missing out if they aren't involved. The honest way: show real, dated momentum. He ruled Nov 9: a new Studio section; Dragoman's Journey stays the front door for clients.
 
@@ -179,6 +180,28 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 **Done when:** tested, screenshots looked at, and the receipt says how a new log line gets added (Claude appends to `shipped.json` and rebuilds; Josef never edits it).
 
 **Receipt:**
+- **Branch:** `trip/T-08`, cut from `origin/trip/T-12` (the `trip/` branch with the newest commit). Work and receipt in one commit, with T-14 marked skipped. Nothing pushed to `main`.
+- **What's built:**
+  - `_build/tools/studio.py` writes `_build/studio.html` from `studio.json` and `shipped.json`, with the header and footer from `chrome.py`. `chrome.py` now leaves out the "More free tools" line and the dark panel on a page that has no panel words, so the Studio page carries nothing that isn't in the JSON. The four tool pages change only by the new nav link.
+  - Top to bottom: the hero from `studio.json`; the numbers strip ("17 things shipped since Oct 6", "13 in the last 30 days", "4 projects"), counted at build time; "Shipped lately" with the 8 newest lines, each with its date, a small project label and the line, and a "See all 17" button that shows the rest in place and then goes away; then the six open products as cards in the JSON's order (name, status pill, kind, what, proof in bold, image, link and/or join button). Two columns at 1440, one at 390, Bird League across the full width with its image.
+  - Join buttons open `mailto:hello@dragomansjourney.com?subject=List: <product name>` with the JSON's button words. Counts show only at 10 or more ("41 people on the list"); all are 0 today, so none shows.
+  - Header "Studio" link before "Free tools" on all 14 public pages (pipeline pages in `enhance.py`, tool pages and the Studio page in `chrome.py`). `404.html` left as it is, as in T-01 and T-02.
+  - Home page: a slim "Shipped lately" band between the hero and the two routes, with the newest 3 lines and "See everything I'm building →" to `studio.html`, built in `enhance.py` from `shipped.json` by the same rules as the Studio page.
+  - `studio.html` is in `enhance.py` (both page lists), the sitemap (`build.py`) and `tools/og.py`, which drew its share card ("Built in the open"). The other 13 cards weren't redrawn.
+  - `enhance.py` stops the build if `studio.json` or `shipped.json` changed since `studio.py` last ran, so the page can't go out stale.
+- **Choices the item left open (all mechanical, no new words):**
+  1. The album is gated, so its card doesn't show, and neither does its log line ("All 15 songs on the album are written..."). The counts leave it out too (17 lines, 4 projects, not 18 and 5). When the gate clears, both appear on the next build. The hero's own words still mention an album, as `studio.json` has them.
+  2. Project labels are the product's name from `studio.json`. Project `site` has no product, so its label is the site's own address, `dragomansjourney.com`, which its lines already use.
+  3. Lines older than 120 days drop off before anything is counted, so the strip and the "See all" number always agree with the list.
+  4. Page title "The studio" (the first part of the kicker); meta description is the lede.
+  5. No heading over the product cards, since the JSON has none.
+- **How a new log line gets added:** Claude adds one line at the top of `shipped.json` (`date`, `project`, `line`: plain words for a stranger, no client names), runs `cd _build/tools && python3 studio.py ..`, rebuilds, tests and commits. Josef never edits it. A new project needs a product in `studio.json` with the same `id`, or the build stops and names it. The counts are as of the day `studio.py` runs, so Claude reruns it before each push. Written in `_build/README.md` step 4d.
+- **Pipeline:** the unchanged pipeline rebuilt every root file byte for byte first. After the change, `cmp` shows only the 14 public pages and `sitemap.xml` differ, plus the new `studio.html` and `og/studio.png`. Every page's diff is the added nav link; `index.html` also has the band, `sitemap.xml` one line. `404.html`, `robots.txt`, `CNAME`, `favicon.svg`, images and the other 13 cards are unchanged. `plain.py`, `intent.py` and `final.py` leave `studio.html` exactly as `studio.py` wrote it.
+- **Tests:** `test_new.py` **425/425 passed** (84 new: the strip matches `shipped.json` as of the page's build date; all 17 lines, dates and labels in order, 8 showing, "See all 17" reveals the rest in place; every open product renders in order with its JSON words, the gated album doesn't, and nor do its log lines; proof in bold, image and alt, links; each join button mails "List: <name>"; the count rule at 41 and 9; two columns at 1440 with Bird League full width, one column at 390; the home band sits between hero and routes and shows the newest 3; "Studio" before "Free tools" in every header; sitemap; share card; no sideways scroll; a temp copy proves `enhance.py` stops on a stale `studio.html`; the T-12 beacon checks now cover `studio.html` too). Against the old build the run stops at the first `studio.html` fetch (404), as it should. Run on Windows as a copy with `exe = None` and `p.chromium.launch()`, per house rule 3. `test_site.py` not run.
+- **Looked at:** `studio.html` at 390 and 1440 (closed and open log), the home band at both widths, every changed header at both widths, and the share card. Two fixes after looking: the Bird League button now sits under its text instead of at the bottom of the card, and the numbers strip stays three across on phones. Worth knowing: on `work.html` at 390 the header now wraps "Free tools" and the call button to a second row; nothing overflows.
+- **Josef, by hand:**
+  1. Open `studio.html` from this branch (or the screenshots in chat) and read the labels and counts.
+  2. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
 
 ---
 

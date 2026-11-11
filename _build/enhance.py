@@ -23,6 +23,8 @@ LINKEDIN = None
 # Case-study client. Swap in the real name once the client says yes in writing.
 CLIENT_LONG = "A Sonoma County children's nonprofit"
 CLIENT_SHORT = "a Sonoma County children's nonprofit"
+sys.path.insert(0, str(HERE / "tools"))
+import studio as STUDIO   # the Studio page and its build log (T-08)
 PHOTO = HERE / "assets" / "josef.jpg"   # drop Josef's photo here and rebuild      # Josef's profile URL; until then the footer link is left out
 
 
@@ -338,7 +340,10 @@ def fix_linkedin():
 
 
 def add_pages():
-    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html"):
+    mark = re.search(r"<!-- studio\.py (\S+) (\S+) -->", (HERE / "studio.html").read_text(encoding="utf-8"))
+    assert mark and mark.group(2) == STUDIO.fingerprint(), \
+        "studio.html is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
+    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "studio.html"):
         t = (HERE / f).read_text(encoding="utf-8")
         t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
         (OUT / f).write_text(t, encoding="utf-8")
@@ -398,19 +403,21 @@ def add_free_tools():
     p = OUT / "index.html"
     t = p.read_text(encoding="utf-8")
     t = rep(t, '>The work</a><a href="call.html"',
-            '>The work</a><a href="work.html#free" style="color: #3A4252; text-decoration: none">Free tools</a><a href="call.html"')
+            '>The work</a><a href="studio.html" style="color: #3A4252; text-decoration: none">Studio</a>'
+            '<a href="work.html#free" style="color: #3A4252; text-decoration: none">Free tools</a><a href="call.html"')
     p.write_text(t, encoding="utf-8")
 
     p = OUT / "work.html"
     t = p.read_text(encoding="utf-8")
     t = rep(t, '\n        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;',
+            '\n        <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>'
             '\n        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>'
             '\n        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;')
     p.write_text(t, encoding="utf-8")
 
     p = OUT / "local.html"
     t = p.read_text(encoding="utf-8")
-    t = rep(t, '<a href="work.html">The work</a>', '<a href="work.html">The work</a>\n        <a href="work.html#free">Free tools</a>')
+    t = rep(t, '<a href="work.html">The work</a>', '<a href="work.html">The work</a>\n        <a href="studio.html">Studio</a>\n        <a href="work.html#free">Free tools</a>')
     t = rep(t, '<section id="contact"', f"""<!-- ============ FREE TOOLS ============ -->
 <section id="tools" aria-labelledby="tools-h" style="background: #F2EDE1">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(56px, 7vw, 88px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(22px, 3vw, 32px)">
@@ -426,6 +433,7 @@ def add_free_tools():
     p = OUT / "mainframe.html"
     t = p.read_text(encoding="utf-8")
     t = nav_pair(t, r'<a href="#correspondence" class="quiet"[^>]*>Request a briefing</a>(?=\s*</nav>)',
+                  '<a href="studio.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #3A4252; text-decoration: none; font-size: 15px">Studio</a>'
                   '<a href="work.html#free" style="display: inline-flex; align-items: center; min-height: 44px; color: #3A4252; text-decoration: none; font-size: 15px">Free tools</a>')
     p.write_text(t, encoding="utf-8")
 
@@ -435,8 +443,39 @@ def add_free_tools():
         p = OUT / f
         t = p.read_text(encoding="utf-8")
         t = nav_pair(t, r'<a href="[a-z]+\.html" style="' + re.escape(style) + r'">' + re.escape(last) + '</a>',
-                      f'<a href="work.html#free" style="{style}">Free tools</a>')
+                      f'<a href="studio.html" style="{style}">Studio</a><a href="work.html#free" style="{style}">Free tools</a>')
         p.write_text(t, encoding="utf-8")
+
+
+# The Studio (T-08, Nov 11, 2026): a slim band under the home page's hero with
+# the newest 3 lines of the build log, read from shipped.json by the same rules
+# as the Studio page (tools/studio.py).
+def add_studio_band():
+    studio, shipped = STUDIO.load()
+    today = STUDIO.la_today()
+    rows = STUDIO.visible(studio, shipped, today)[:3]
+    assert len(rows) == 3, "shipped.json: fewer than 3 lines to show on the home page"
+    items = "".join(
+        f'\n        <li style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px">'
+        f'<time datetime="{r["date"]}" style="{MONO}; font-size: 13px; color: #5D6576; white-space: nowrap">{STUDIO.short_date(r["day"], today)}</time>'
+        f'<span style="{MONO}; font-size: 12px; padding: 2px 8px; background: #E6E0D2; color: #3A4252">{STUDIO.t(r["label"])}</span>'
+        f'<span style="flex-basis: 100%; font-size: 16px; line-height: 1.45">{STUDIO.t(r["line"])}</span></li>'
+        for r in rows)
+    band = f"""<!-- shipped lately (T-08) -->
+  <section id="shipped" aria-labelledby="shipped-h" style="max-width: 1240px; margin: 0 auto; padding: 16px clamp(16px, 4vw, 48px) 0">
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 20px 0; border-top: 1px solid #12161F; border-bottom: 1px solid #CFC8B8">
+      <h2 id="shipped-h" style="margin: 0; {MONO}; font-weight: 400; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #A93F17">Shipped lately</h2>
+      <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px 32px">{items}
+      </ol>
+      <a href="studio.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; color: #12161F; font-weight: 600; text-decoration: none; border-bottom: 1px solid #12161F">See everything I'm building →</a>
+    </div>
+  </section>
+
+  <!-- the two routes -->"""
+    p = OUT / "index.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, "<!-- the two routes -->", band)
+    p.write_text(t, encoding="utf-8")
 
 
 def use_hello():
@@ -450,7 +489,7 @@ def use_hello():
 # the tool pages get their tags from tools/chrome.py.
 OG_PAGES = ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html",
             "work.html", "case-reels.html", "call.html")
-TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html")
+TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "studio.html")   # tags from tools/chrome.py
 
 
 def add_og():
@@ -483,8 +522,9 @@ enhance_mainframe()
 add_pages()
 enhance_index()
 add_free_tools()
+add_studio_band()
 use_hello()
 add_og()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html"):
+for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "studio.html"):
     assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
 print("enhanced")

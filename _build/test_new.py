@@ -285,7 +285,7 @@ with sync_playwright() as p:
     import re as _re, struct as _struct
     from urllib.request import urlopen
     SHARED = ('index', 'local', 'mainframe', 'work', 'comp3', 'shotlist', 'captions', 'receipt',
-              'scaler', 'start', 'call', 'case-reels', 'briefing')
+              'scaler', 'start', 'call', 'case-reels', 'briefing', 'studio')
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         imgs = _re.findall(r'<meta property="og:image" content="([^"]*)">', src)
@@ -514,6 +514,142 @@ with sync_playwright() as p:
             others = [n for n in names if n != 'local.html']
             check('no other page has the counter sentence', not any(COUNTER_LINE in open(os.path.join(out, n), encoding='utf-8').read() for n in others))
             check('the counter adds no long dash', '—' not in COUNTER_LINE and '–' not in COUNTER_LINE)
+    finally:
+        _shutil.rmtree(tmp, ignore_errors=True)
+
+    # ---------------- the Studio page and the public build log (T-08, Nov 11, 2026)
+    import datetime as _dt
+    from urllib.parse import unquote as _unquote
+    STUDIO_J = _json.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+    SHIPPED_J = _json.load(open(os.path.join(here, 'shipped.json'), encoding='utf-8'))
+    open_p = [x for x in STUDIO_J['products'] if x.get('gate') is None]
+    gated_p = [x for x in STUDIO_J['products'] if x.get('gate') is not None]
+    label_of = dict({x['id']: x['name'] for x in open_p}, site='dragomansjourney.com')
+
+    def short(d, today):
+        s = d.strftime('%b') + ' ' + str(d.day)
+        return s if d.year == today.year else f'{s}, {d.year}'
+
+    src = urlopen(BASE + 'studio.html').read().decode('utf-8')
+    check('sitemap lists studio.html', 'https://dragomansjourney.com/studio.html' in urlopen(BASE + 'sitemap.xml').read().decode('utf-8'))
+    check('studio has no long dash', '—' not in src and '–' not in src)
+    built = _re.search(r'id="stats" data-built="(\d{4}-\d\d-\d\d)"', src)
+    check('studio numbers strip says its build date', bool(built))
+    today = _dt.date.fromisoformat(built.group(1)) if built else _dt.date.today()
+    # The log lines that should show: not from a gated product, not older than 120 days, newest first.
+    hide = {x['id'] for x in gated_p}
+    rows = [e for e in SHIPPED_J['entries'] if e['project'] not in hide
+            and _dt.date.fromisoformat(e['date']) >= today - _dt.timedelta(days=120)]
+    rows.sort(key=lambda e: e['date'], reverse=True)
+    N = len(rows)
+    M = sum(1 for e in rows if _dt.date.fromisoformat(e['date']) > today - _dt.timedelta(days=30))
+    K = len({e['project'] for e in rows})
+    oldest = min(_dt.date.fromisoformat(e['date']) for e in rows)
+
+    q = newpage(1440); q.goto(BASE + 'studio.html'); q.wait_for_timeout(400)
+    stats = [s.strip() for s in q.locator('#stats p').all_inner_texts()]
+    stats = [_re.sub(r'\s+', ' ', s) for s in stats]
+    check('studio strip matches shipped.json', stats == [f'{N} things shipped since {short(oldest, today)}', f'{M} in the last 30 days', f'{K} projects'], str(stats))
+    check('studio shows the hero from studio.json', q.inner_text('h1').replace('\n', ' ').upper() == _re.sub(r'<br\s*/?>', ' ', STUDIO_J['hero']['h1']).upper()
+          and STUDIO_J['hero']['lede'] in q.inner_text('header') and q.locator('header .kick').inner_text().upper() == STUDIO_J['hero']['kicker'].upper())
+    check('studio "Shipped lately" heading', q.locator('#log-h').inner_text().strip().lower() == 'shipped lately')
+    lis = q.locator('#log li')
+    check('studio log holds every line that should show', lis.count() == N, f'{lis.count()} vs {N}')
+    check('studio log shows the 8 newest first', q.locator('#log li:visible').count() == min(8, N), str(q.locator('#log li:visible').count()))
+    got = [[lis.nth(i).locator('time').get_attribute('datetime'), lis.nth(i).locator('time').inner_text(),
+            lis.nth(i).locator('.proj').inner_text(), lis.nth(i).locator('.line').inner_text()] for i in range(lis.count())]
+    want = [[e['date'], short(_dt.date.fromisoformat(e['date']), today), label_of[e['project']], e['line']] for e in rows]
+    check('studio log lines, dates and labels match shipped.json, newest first', got == want, str(got[:2]))
+    check('studio log leaves out gated products', not any(e['project'] in hide and e['line'] in src for e in SHIPPED_J['entries']))
+    btn = q.locator('#log-all')
+    check('studio "See all" names the count', btn.count() == 1 and btn.inner_text().strip() == f'See all {N}', btn.inner_text() if btn.count() else 'none')
+    if btn.count():
+        btn.click(); q.wait_for_timeout(150)
+        check('studio "See all" reveals the rest in place', q.locator('#log li:visible').count() == N and not btn.is_visible() and q.url.endswith('studio.html'))
+    arts = q.locator('#products article')
+    check('studio renders every open product, in order', arts.evaluate_all('e => e.map(a => a.dataset.id)') == [x['id'] for x in open_p],
+          str(arts.evaluate_all('e => e.map(a => a.dataset.id)')))
+    for x in gated_p:
+        check(f'studio leaves out gated product {x["id"]}', f'data-id="{x["id"]}"' not in src and x['name'] not in src and x['what'] not in src)
+    for x in open_p:
+        card = q.locator(f'#products article[data-id="{x["id"]}"]')
+        txt = card.inner_text()
+        check(f'studio card {x["id"]}: name, status, kind and what from the JSON',
+              card.locator('h2').inner_text().upper() == x['name'].upper() and card.locator('.pill').inner_text() == x['status']
+              and card.locator('.kind').inner_text().upper() == x['kind'].upper() and x['what'] in txt)
+        if x.get('proof'):
+            check(f'studio card {x["id"]}: proof line in bold', card.locator('strong', has_text=x['proof']).count() == 1)
+        if x.get('image'):
+            check(f'studio card {x["id"]}: image', card.locator(f'img[src="{x["image"]}"]').get_attribute('alt') == x['image_alt'])
+        if x.get('link'):
+            lk = card.locator(f'a[href="{x["link"]["href"]}"]')
+            check(f'studio card {x["id"]}: link', lk.count() == 1 and lk.inner_text().startswith(x['link']['label']))
+        if x.get('list'):
+            jb = card.locator('a[data-list]')
+            href = jb.get_attribute('href') if jb.count() == 1 else ''
+            check(f'studio card {x["id"]}: join button mails "List: {x["name"]}"',
+                  jb.count() == 1 and jb.inner_text() == x['list']['button'] and href.startswith('mailto:hello@dragomansjourney.com?subject=')
+                  and _unquote(href.split('subject=', 1)[1]) == 'List: ' + x['name'], href)
+            check(f'studio card {x["id"]}: list count shows only at 10 or more',
+                  ('people on the list' in txt) == (x['list'].get('count', 0) >= 10))
+    # The count rule, on a made-up count either side of 10.
+    sys.path.insert(0, os.path.join(here, 'tools'))
+    import studio as _studio
+    p41 = dict(open_p[0], list=dict(open_p[0].get('list') or {'id': 'x', 'button': 'b'}, count=41))
+    p9 = dict(p41, list=dict(p41['list'], count=9))
+    check('a list of 41 says "41 people on the list"', '>41 people on the list<' in _studio.product_card(p41))
+    check('a list of 9 shows no count', 'on the list' not in _studio.product_card(p9))
+    for w in (390, 1440):
+        q = newpage(w); q.goto(BASE + 'studio.html'); q.wait_for_timeout(400)
+        check(f'studio no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        boxes = q.locator('#products article').evaluate_all('e => e.map(a => [a.dataset.id, Math.round(a.getBoundingClientRect().left), Math.round(a.getBoundingClientRect().width)])')
+        grid_w = round(q.locator('#products').bounding_box()['width'])
+        full = [b_[0] for b_ in boxes if abs(b_[2] - grid_w) <= 2]
+        if w == 390:
+            check('studio products in one column at 390', len({b_[1] for b_ in boxes}) == 1 and len(full) == len(boxes), str(boxes))
+        else:
+            check('studio products in two columns at 1440', len({b_[1] for b_ in boxes}) == 2, str(boxes))
+            check('Bird League spans the full width at 1440', full == ['birdleague'], str(full))
+        q.screenshot(path=f'{SHOTS}/t08-studio-{w}.png', full_page=True)
+
+    # Home band: the newest 3 lines and the way in.
+    src = urlopen(BASE + 'index.html').read().decode('utf-8')
+    band = _re.search(r'<section id="shipped".*?</section>', src, _re.S)
+    band = band.group(0) if band else ''
+    check('home band sits between the hero and the routes', bool(band) and src.index('<!-- hero -->') < src.index(band) < src.index('<!-- the two routes -->'))
+    lines = [_html.unescape(x) for x in _re.findall(r'<span style="flex-basis: 100%[^"]*">([^<]*)</span>', band)]
+    check('home band shows the newest 3 log lines', lines == [e['line'] for e in rows[:3]], str(lines))
+    check('home band dates and labels', _re.findall(r'<time datetime="([^"]+)"', band) == [e['date'] for e in rows[:3]]
+          and [_html.unescape(x) for x in _re.findall(r'padding: 2px 8px[^"]*">([^<]*)</span>', band)] == [label_of[e['project']] for e in rows[:3]])
+    check('home band links to the studio', '<a href="studio.html"' in band and "See everything I'm building →" in _html.unescape(band))
+    for w in (390, 1440):
+        q = newpage(w); q.goto(BASE + 'index.html'); q.wait_for_timeout(300)
+        check(f'home no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        q.locator('#shipped').screenshot(path=f'{SHOTS}/t08-home-band-{w}.png')
+
+    # Studio in every header, before Free tools.
+    for name in SHARED:
+        src = urlopen(BASE + name + '.html').read().decode('utf-8')
+        top = (_re.search(r'<nav aria-label="Main".*?</nav>', src, _re.S) or _re.search(r'<!-- letterhead -->.*?<!-- hero -->', src, _re.S)
+               or _re.search(r'<header.*?</header>', src, _re.S))
+        top = top.group(0) if top else ''
+        links = _re.findall(r'<a href="studio\.html"[^>]*>([^<]*)</a>', top)
+        check(f'{name} nav links Studio', links == ['Studio'], str(links))
+        check(f'{name} Studio sits before Free tools', -1 < top.find('href="studio.html"') < top.find('work.html#free'))
+
+    # enhance.py refuses a studio.html that is older than its JSON.
+    tmp = _tmp.mkdtemp()
+    try:
+        bd = os.path.join(tmp, '_build')
+        _shutil.copytree(here, bd, ignore=_shutil.ignore_patterns('out', 'vals.json', '__pycache__', 'trip', 'worker'))
+        with open(os.path.join(bd, 'shipped.json'), 'a', encoding='utf-8') as f:
+            f.write('\n')
+        r = None
+        for st in ([['node', 'dump.js', 'canvas', 'vals.json'], [sys.executable, 'build.py', 'canvas', 'out', 'vals.json'], [sys.executable, 'enhance.py', 'out']]):
+            r = _sp.run(st, cwd=bd, capture_output=True, text=True)
+            if r.returncode:
+                break
+        check('enhance.py stops when studio.html is older than shipped.json', r.returncode != 0 and 'studio.html is older' in r.stdout + r.stderr, (r.stdout + r.stderr)[-200:])
     finally:
         _shutil.rmtree(tmp, ignore_errors=True)
 
