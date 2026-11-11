@@ -13,6 +13,19 @@ Adds one <script type="application/ld+json"> just before </head> on:
   mainframe.html  Service "The Mainframe Route" (with one offer per priced step)
 index.html keeps its own block as it is.
 
+T-12 (Nov 11 2026), the visit counter: CF_BEACON_TOKEN below. While it is
+empty, nothing is added anywhere. When it holds the token from Cloudflare's Web
+Analytics snippet, two things happen:
+  1. The local.html FAQ answer "What do you do with our data?" gets one more
+     sentence, before the structured data is built, so the FAQPage carries it.
+  2. Cloudflare's beacon, in the form its docs give, goes just before </body>
+     on every .html page in the output, except comp3.html: that page keeps
+     pasted bytes in its own address (its share link), so it gets no beacon.
+Cloudflare's docs say the beacon sets no cookies and uses no storage
+(developers.cloudflare.com/speed/observatory/rum-beacon/, "Data processing";
+cloudflare.com/web-analytics/). They don't say whether the part of the address
+after # is sent, so start.html clears its own # before the beacon runs.
+
 This is not in enhance.py on purpose: intent.py needs each edit to match an
 exact number of times, and a second copy of a page's words inside a script
 tag would break that.
@@ -23,12 +36,25 @@ import re
 import sys
 from pathlib import Path
 
+# The site token from Cloudflare's Web Analytics snippet (the part inside
+# data-cf-beacon='{"token": "..."}'). Public by design: it sits in every page.
+CF_BEACON_TOKEN = ""
+
 OUT = Path(sys.argv[1])
 SITE = 'https://dragomansjourney.com/'
 NAME = "Dragoman's Journey"
 FOUNDER = {'@type': 'Person', 'name': 'Josef Stephens'}
 problems = []
-pages = {n: (OUT / n).read_text(encoding='utf-8') for n in ('index.html', 'local.html', 'mainframe.html')}
+pages = {f.name: f.read_text(encoding='utf-8') for f in sorted(OUT.glob('*.html'))}
+before = dict(pages)
+
+# The Web Analytics snippet, in the form Cloudflare's docs give it
+# (developers.cloudflare.com/web-analytics/faq/, with type="module" as they say).
+BEACON = ('<script\n\ttype="module"\n\tsrc="https://static.cloudflareinsights.com/beacon.min.js"\n'
+          '\tdata-cf-beacon=\'{"token": "%s"}\'\n></script>\n')
+NO_BEACON = ('comp3.html',)  # keeps pasted bytes in its own address on purpose
+DATA_Q = 'What do you do with our data?'
+COUNTER_LINE = 'This site counts page visits with Cloudflare Web Analytics, which uses no cookies.'
 
 
 def plain(fragment):
@@ -176,8 +202,46 @@ def add(page, data):
     pages[page] = pages[page].replace('</head>', '<script type="application/ld+json">\n%s\n</script>\n</head>' % body)
 
 
+def counter_line():
+    """T-12 step 4: one sentence at the end of the local.html data answer."""
+    page = 'local.html'
+    s = pages[page]
+    i = one(page, r'aria-controls="faq-a-(\d+)"[^>]*><span>' + re.escape(DATA_Q) + '</span>', 'FAQ "%s"' % DATA_Q)
+    if not i:
+        return
+    pat = r'(<p id="faq-a-%s"[^>]*>)(.*?)(</p>)' % i
+    m = re.findall(pat, s, flags=re.S)
+    if len(m) != 1:
+        problems.append('%s: found %d answers faq-a-%s, expected 1' % (page, len(m), i))
+        return
+    if COUNTER_LINE in s:
+        problems.append('%s: already says "%s"' % (page, COUNTER_LINE))
+        return
+    pages[page] = re.sub(pat, lambda m: m.group(1) + m.group(2).rstrip() + ' ' + COUNTER_LINE + m.group(3), s, flags=re.S)
+
+
+def beacon(token):
+    """T-12 step 2: the visit counter, just before </body>, on every page but comp3.html."""
+    if not re.fullmatch(r'[A-Za-z0-9]+', token):
+        problems.append('CF_BEACON_TOKEN must be the token only (letters and digits), not the whole snippet')
+        return
+    for name in pages:
+        if name in NO_BEACON:
+            continue
+        if 'cloudflareinsights.com' in pages[name]:
+            problems.append('%s: already has a beacon' % name)
+        elif pages[name].count('</body>') != 1:
+            problems.append('%s: expected one </body>' % name)
+        else:
+            pages[name] = pages[name].replace('</body>', BEACON % token + '</body>')
+
+
+if CF_BEACON_TOKEN:
+    counter_line()
 add('local.html', local())
 add('mainframe.html', mainframe())
+if CF_BEACON_TOKEN:
+    beacon(CF_BEACON_TOKEN)
 
 # ---------------- write ----------------
 if problems:
@@ -185,6 +249,11 @@ if problems:
     for p in problems:
         print('  ' + p)
     sys.exit(1)
-for name in ('local.html', 'mainframe.html'):
-    (OUT / name).write_text(pages[name], encoding='utf-8')
+for name in pages:
+    if pages[name] != before[name]:
+        (OUT / name).write_text(pages[name], encoding='utf-8')
 print('final: structured data on local.html and mainframe.html')
+if CF_BEACON_TOKEN:
+    print('final: visit counter on %d pages (not %s)' % (len(pages) - len(NO_BEACON), ', '.join(NO_BEACON)))
+else:
+    print('final: no visit counter (CF_BEACON_TOKEN is empty)')

@@ -236,6 +236,9 @@ a{color:#A93F17}a:hover{color:#16201C}
       else preselect(k, v);
     });
   } catch (e) {}
+  // The form is filled now. Take the words out of the address bar, so nothing a
+  // visitor typed on another page sits in this page's address.
+  try { if (location.hash) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
 
   function fields() {
     var f = {};

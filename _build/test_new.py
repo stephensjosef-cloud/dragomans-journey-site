@@ -111,7 +111,8 @@ with sync_playwright() as p:
         pg2.click(f'button.iq[data-q="{q}"]:has-text("{txt}")')
     pg2.fill('#iq-name', 'Test Kitchen')
     pg2.click('#iq-send'); pg2.wait_for_timeout(600)
-    check('quiz hands off to start page', 'start.html#' in pg2.url, pg2.url)
+    # T-12: start.html reads its # and then clears it, so the typed business name isn't left in the address.
+    check('quiz hands off to start page, # cleared after load', pg2.url.endswith('/start.html'), pg2.url)
     check('start page preselects pile', pg2.locator('.chips[data-key="pile"] .chip[aria-pressed="true"]').inner_text() == 'Lessons, recipes or a curriculum')
     check('start page preselects run/yes/when', pg2.locator('.chip[aria-pressed="true"]').count() == 4, str(pg2.locator('.chip[aria-pressed="true"]').count()))
     check('start page carries org name', pg2.input_value('#org') == 'Test Kitchen')
@@ -269,6 +270,9 @@ with sync_playwright() as p:
     check('receipt hands off to start with never=', href.startswith('start.html#pile=') and '&never=' in href, href[:80])
     q.goto(BASE + href); q.wait_for_timeout(300)
     check('start form takes the receipt', 'busywork receipt' in q.input_value('#never'))
+    check('start clears the receipt text from the address after load', q.url.endswith('/start.html') and '#' not in q.url, q.url[:120])
+    check('start keeps the receipt pick after clearing the address',
+          q.locator('.chips[data-key="pile"] .chip[aria-pressed="true"]').count() == 1)
     q = newpage(1440); q.goto(BASE + 'scaler.html'); q.wait_for_timeout(300)
     out = q.inner_text('#out')
     check('scaler default x3', q.inner_text('#fac').strip() == '\u00d73', q.inner_text('#fac'))
@@ -455,6 +459,63 @@ with sync_playwright() as p:
         for w in (390, 1440):
             q = newpage(w); q.goto(BASE + name + '.html'); q.wait_for_timeout(300)
             q.screenshot(path=f'{SHOTS}/t11-{name}-{w}.png')
+
+    # ---------------- visit counter (T-12, Nov 11, 2026)
+    import shutil as _shutil, subprocess as _sp, tempfile as _tmp
+    COUNTER_LINE = 'This site counts page visits with Cloudflare Web Analytics, which uses no cookies.'
+    ALL_HTML = [n + '.html' for n in SHARED] + ['404.html']
+    for name in ALL_HTML:
+        src = urlopen(BASE + name).read().decode('utf-8')
+        check(f'{name} has no beacon while the token is empty', 'cloudflareinsights' not in src)
+        check(f'{name} has no counter sentence while the token is empty', COUNTER_LINE not in src)
+    # A temp copy of the pipeline with a made-up token: build it all, then count.
+    here = os.path.dirname(os.path.abspath(__file__))
+    tmp = _tmp.mkdtemp()
+    try:
+        bd = os.path.join(tmp, '_build')
+        _shutil.copytree(here, bd, ignore=_shutil.ignore_patterns('out', 'vals.json', '__pycache__', 'trip', 'worker'))
+        fp = os.path.join(bd, 'final.py')
+        fsrc = open(fp, encoding='utf-8').read()
+        check('final.py starts with the token empty', fsrc.count('\nCF_BEACON_TOKEN = ""\n') == 1)
+        open(fp, 'w', encoding='utf-8').write(fsrc.replace('\nCF_BEACON_TOKEN = ""\n', '\nCF_BEACON_TOKEN = "0123456789abcdef0123456789abcdef"\n', 1))
+        steps = [['node', 'dump.js', 'canvas', 'vals.json'], [sys.executable, 'build.py', 'canvas', 'out', 'vals.json'],
+                 [sys.executable, 'enhance.py', 'out'], [sys.executable, 'plain.py', 'out'],
+                 [sys.executable, 'intent.py', 'out'], [sys.executable, 'final.py', 'out']]
+        built = True
+        for st in steps:
+            r = _sp.run(st, cwd=bd, capture_output=True, text=True)
+            if r.returncode:
+                built = False
+                check('temp build with a made-up token runs', False, ' '.join(st[1:2]) + ': ' + (r.stdout + r.stderr)[-300:])
+                break
+        if built:
+            out = os.path.join(bd, 'out')
+            names = sorted(f for f in os.listdir(out) if f.endswith('.html'))
+            check('temp build has every page', sorted(ALL_HTML) == names, str(names))
+            for name in names:
+                src = open(os.path.join(out, name), encoding='utf-8').read()
+                n = src.count('https://static.cloudflareinsights.com/beacon.min.js')
+                if name == 'comp3.html':
+                    check('comp3.html gets no beacon with a token set', n == 0 and 'cloudflareinsights' not in src, str(n))
+                else:
+                    check(f'{name} has exactly one beacon with a token set', n == 1, str(n))
+                    check(f'{name} beacon is the docs\' form, just before </body>',
+                          _re.search(r'<script\n\ttype="module"\n\tsrc="https://static\.cloudflareinsights\.com/beacon\.min\.js"\n'
+                                     r'\tdata-cf-beacon=\'\{"token": "0123456789abcdef0123456789abcdef"\}\'\n></script>\n</body>', src) is not None)
+            loc = open(os.path.join(out, 'local.html'), encoding='utf-8').read()
+            check('local.html has the counter sentence once on the page', page_text(loc).count(COUNTER_LINE) == 1)
+            a = _re.search(r'<p id="faq-a-3"[^>]*>(.*?)</p>', loc, _re.S)
+            check('counter sentence ends the "What do you do with our data?" answer',
+                  'What do you do with our data?</span>' in loc and a is not None and a.group(1).endswith(' ' + COUNTER_LINE))
+            ld = _json.loads(ld_blocks(loc)[0])
+            faq = next(n for n in ld['@graph'] if n.get('@type') == 'FAQPage')['mainEntity']
+            data_a = [x['acceptedAnswer']['text'] for x in faq if x['name'] == 'What do you do with our data?']
+            check('FAQPage data carries the counter sentence too', len(data_a) == 1 and data_a[0].endswith(' ' + COUNTER_LINE), str(data_a)[:200])
+            others = [n for n in names if n != 'local.html']
+            check('no other page has the counter sentence', not any(COUNTER_LINE in open(os.path.join(out, n), encoding='utf-8').read() for n in others))
+            check('the counter adds no long dash', '—' not in COUNTER_LINE and '–' not in COUNTER_LINE)
+    finally:
+        _shutil.rmtree(tmp, ignore_errors=True)
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

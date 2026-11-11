@@ -105,7 +105,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-12 · Count visits · READY (build), GATED (token)
+## T-12 · Count visits · DONE (build), GATED (token)
 
 **Why:** the site has no visit counter. Nobody can tell whether a post or a text sent anyone to it, or which free tool gets used.
 
@@ -119,6 +119,29 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 **Gate for the token:** Josef gets it from the Cloudflare dashboard (Web Analytics, add the site `dragomansjourney.com`, then copy the JS snippet) and pastes the snippet to Claude in chat. Write the exact numbered steps in the receipt from the docs as they read today. The token is public by design (it sits in every page's source), so it can live in this repository. Then Claude sets `CF_BEACON_TOKEN`, rebuilds, and Josef says "push it".
 
 **Receipt:**
+- **Branch:** `trip/T-12`, cut from `origin/trip/T-11` (the `trip/` branch with the newest commit). Work and receipt in one commit. Nothing pushed to `main`. Build part only; the token is still gated.
+- **What the docs say (read Nov 11, 2026):**
+  - *What the beacon sends:* `pageloadId`, `referrer`, `startTime`, `memory`, `timings`, `timingV2`, `firstPaint`, `firstContentfulPaint`, `FCP`, `LCP`, `CLS`, `TTFB`, `INP` and `landingPath` (the landing page URL). It's performance data from the browser's own timing APIs. The IP address arrives with the request; Cloudflare says it discards it at the nearest data center and does not store it in its databases or logs. Source: `developers.cloudflare.com/speed/observatory/rum-beacon/` (field table and "Data processing").
+  - *Where it goes:* `cloudflareinsights.com/cdn-cgi/rum` for a manual snippet, or the site's own `/cdn-cgi/rum` when Cloudflare injects it. It sends only timing metrics and doesn't track people across sites. Source: `developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/` and `developers.cloudflare.com/web-analytics/faq/`.
+  - *Query strings:* "do not log query strings". Source: the FAQ page. *The part after `#`:* none of the four pages mentions it, and `landingPath` is a full URL, so it's treated as sent (step 3).
+  - *Cookies:* none. The beacon "does not store any data in the browser or access any storage data, such as cookies, localStorage, sessionStorage" (`developers.cloudflare.com/speed/observatory/rum-beacon/`), and Web Analytics "does not use any client-side state, such as cookies or localStorage" (`www.cloudflare.com/web-analytics/`). That confirms it, so step 4's sentence is built (it shows only once the token is set).
+  - *Snippet form:* the FAQ page gives `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "$SITE_TOKEN"}'></script>`, and says a manual embed must add `type="module"` itself. `final.py` uses exactly that, with the docs' line breaks.
+- **What's built:**
+  - `final.py`: `CF_BEACON_TOKEN = ""` at the top. Empty means nothing is added: a rebuild matches the old build byte for byte except `start.html`. When it's set, the FAQ sentence goes in first, then the T-11 block is built (so the `FAQPage` data carries the sentence too), then the beacon goes just before `</body>` on every `.html` in the output (`404.html` included) except `comp3.html`. If the token isn't plain letters and digits (for example the whole snippet pasted in), if a page already has a beacon, or if the FAQ answer can't be found, the build stops and says why.
+  - `start.html`: after the form reads its `#`, it clears the `#` with `history.replaceState`. The address bar then shows only `start.html`, and the form stays filled. The beacon is a module script, so it runs after this. This covers the quiz on `local.html` (`org=`) and the receipt (`never=`).
+  - `_build/README.md`: step 6b and the settings line describe the token.
+- **Pipeline:** the unchanged pipeline rebuilt every root file byte for byte first. After the change, `cmp` shows only `start.html` differs (3 added lines in its script). The other 33 files, `og/` included, are unchanged. A temp copy built with a made-up token adds exactly one beacon to each of 13 pages, none to `comp3.html`, and the sentence once in the `local.html` FAQ.
+- **Tests:** `test_new.py` **341/341 passed** (64 new: no beacon and no sentence on any of the 14 pages while the token is empty; a full rebuild in a temp copy with a made-up token gives every page except `comp3.html` exactly one beacon, in the docs' form, just before `</body>`; `comp3.html` gets none; the sentence appears once on the page, ends the data answer, and is also in the `FAQPage` data; no other page has it; the quiz and the receipt hand-offs land on `start.html` with no `#`, and the form keeps the business name, the receipt text and the pick). The existing check that expected `start.html#` in the address now expects no `#`. Against the old build, the two hand-off checks fail as they should (339/341). Run on Windows as a copy with `exe = None` and `p.chromium.launch()`, with Playwright 1.65 in a scratch virtual environment, per house rule 3.
+- **Looked at:** `start.html` arriving from the receipt link, at 390 and 1440: address cleared, receipt text and pick still in the form, no sideways scroll. The `local.html` FAQ answer with the sentence, from the made-up-token build, at 390 and 1440: it reads as the answer's last sentence and fits.
+- **Josef, by hand (the token gate):**
+  1. Open the Cloudflare dashboard and go to **Web Analytics**.
+  2. Select **Add a site**.
+  3. If a box says **Set up hostname**, type `dragomansjourney.com`, select the message box that appears to choose it, and select **Done**. If you get a drop-down of hostnames instead (Cloudflare proxies the site), pick `dragomansjourney.com` and select **Done**. Then open **Manage site** and choose **Enable with JS Snippet installation**, so Cloudflare doesn't add a second beacon of its own.
+  4. In **Manage site**, copy the JS snippet.
+  5. Paste the snippet to Claude in chat. Claude puts the token into `CF_BEACON_TOKEN` in `_build/final.py`, rebuilds, tests, and commits.
+  6. Say "push it" to Claude in chat. That merges this into `main` and the site goes live with the counter.
+  7. A day later, open **Web Analytics** in Cloudflare and check that visits show up for `dragomansjourney.com`.
+- **Worth knowing:** until the token is set, the only live change is that `start.html` tidies its own address. It's safe to push on its own.
 
 ---
 
