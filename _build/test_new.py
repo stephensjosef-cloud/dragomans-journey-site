@@ -750,7 +750,7 @@ with sync_playwright() as p:
         check(f'{slug}: one join box, mailing "List: {x["name"]}"', q.locator('#join').count() == 1 and q.locator('a[data-list]').count() == 1
               and jb.inner_text() == x['list']['button'] and href.startswith('mailto:hello@dragomansjourney.com?subject=')
               and _unquote(href.split('subject=', 1)[1]) == 'List: ' + x['name'], href)
-        check(f'{slug}: the line under the join box', q.locator('#join p').inner_text().strip() == "One email when it's out. No newsletter.")
+        check(f'{slug}: the line under the join box', q.locator('#join p').inner_text().strip() == x['list']['line'])
         check(f'{slug}: join box comes last, after the log', q.locator('#join').bounding_box()['y'] > q.locator('#log').bounding_box()['y'])
         check(f'{slug}: list count shows only at 10 or more', ('people on the list' in q.inner_text('#join')) == (x['list'].get('count', 0) >= 10))
         for w in (390, 1440):

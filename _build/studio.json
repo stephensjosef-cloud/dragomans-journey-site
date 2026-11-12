@@ -11,12 +11,12 @@
      "what": "Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.",
      "proof": "Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.",
      "image": "bird-league-then-now.jpg", "image_alt": "Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.",
-     "list": {"id": "birdleague", "button": "Get the launch email", "count": 0},
+     "list": {"id": "birdleague", "button": "Get the launch email", "line": "One email when it's out. No newsletter.", "count": 0},
      "link": null, "gate": null},
     {"id": "deepcuts", "name": "Deepcuts", "status": "In testing on iPhone", "kind": "My own app",
      "what": "Indie games matched by how they actually play, not by what's trending.",
      "proof": null, "image": null, "image_alt": null,
-     "list": {"id": "deepcuts", "button": "Join the beta", "count": 0},
+     "list": {"id": "deepcuts", "button": "Join the beta", "line": "One email when a tester spot opens. No newsletter.", "count": 0},
      "link": null, "gate": null},
     {"id": "kids", "name": "A kids' cooking app", "status": "Built for a client", "kind": "Client app",
      "what": "Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program's own cards. iPhone, iPad, Android and the web.",
@@ -38,7 +38,7 @@
     {"id": "album", "name": "[ALBUM NAME]", "status": "In production", "kind": "Music",
      "what": "A 15-song rap and R&B album. Every beat rebuilt by hand.",
      "proof": null, "image": null, "image_alt": null,
-     "list": {"id": "album", "button": "Hear it first", "count": 0},
+     "list": {"id": "album", "button": "Hear it first", "line": "One email when it's out. No newsletter.", "count": 0},
      "link": null, "gate": "Josef gives the name he releases under, the album title (or 'untitled'), and says it's OK on this site."}
   ]
 }

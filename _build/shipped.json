@@ -8,7 +8,7 @@
     {"date": "2026-11-04", "project": "deepcuts", "line": "Deepcuts build 4 works end to end on iPhone."},
     {"date": "2026-11-03", "project": "album", "line": "All 15 songs on the album are written. Production started."},
     {"date": "2026-11-02", "project": "birdleague", "line": "Bird League build 49: the map crash fixed, new stats cards, sharper art."},
-    {"date": "2026-11-02", "project": "deepcuts", "line": "The first Deepcuts build went up to the App Store."},
+    {"date": "2026-11-02", "project": "deepcuts", "line": "The first Deepcuts build went up to TestFlight, Apple's testing app."},
     {"date": "2026-10-28", "project": "site", "line": "Every word on dragomansjourney.com rechecked: if it isn't there for a reader, it's gone."},
     {"date": "2026-10-27", "project": "kids", "line": "The program's real recipes went live in the kids' cooking app, with printing."},
     {"date": "2026-10-26", "project": "birdleague", "line": "Bird League's sound ID now runs on its own, and newcomers get a trophy ceremony."},

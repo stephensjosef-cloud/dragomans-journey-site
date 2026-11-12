@@ -23,7 +23,8 @@ Rules:
 
 Product pages (T-09): each open product with a join list also gets
 studio-<id>.html: its name, status, what, proof, image, all of its log lines
-that show, and one join box. Its card links there ("See it move"). A page whose
+that show, and one join box with the line from its list ("line"). Its card
+links there ("See it move"). A page whose
 product is gated or loses its list is deleted here. og.py, build.py (sitemap)
 and enhance.py all take the page list from product_pages().
 
@@ -49,7 +50,6 @@ FIRST = 8
 COUNT_FROM = 10
 SITE_LABEL = "dragomansjourney.com"      # label for project "site": the site's own address
 MOVE = "See it move"                     # a card's link to its product page (T-09)
-JOIN_LINE = "One email when it's out. No newsletter."   # under the join box on a product page (T-09)
 
 
 def la_today():
@@ -289,7 +289,7 @@ def product_page(p, rows, today, stamp):
                      '\n  </section>')
     parts.append(f'\n  <section class="join panel" id="join">'
                  f'\n    <div class="acts">{"".join(join_button(p))}</div>'
-                 f'\n    <p class="private">{t(JOIN_LINE)}</p>'
+                 f'\n    <p class="private">{t(p["list"]["line"])}</p>'
                  '\n  </section>\n')
     return "".join(parts)
 
