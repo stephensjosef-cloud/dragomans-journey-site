@@ -18,14 +18,17 @@ Rules:
   site's own address for project "site".
 - The hero names the album only while the album card shows: "lede" then,
   "lede_album_gated" while the album has a gate.
-- A join list opens a mailto with the subject "List: <product name>" until the
-  real join lists (T-10) are live. Its count shows only at 10 or more.
+- A join list is a small form (T-10): an email field and the list's button.
+  It posts {form: "list", fields: {email, list}} to the intake Worker the same
+  way start.html does (honeypot, time since load), says "You're on the list"
+  when the Worker answers ok, and otherwise opens the mailto it used before,
+  subject "List: <product name>". That mailto is also the form's action, so
+  the box still works with scripts off. Its count shows only at 10 or more.
 
 Product pages (T-09): each open product with a join list also gets
 studio-<id>.html: its name, status, what, proof, image, all of its log lines
 that show, and one join box with the line from its list ("line"). Its card
-links there ("See it move"). A page whose
-product is gated or loses its list is deleted here. og.py, build.py (sitemap)
+links there ("See it move"). A page whose product is gated or loses its list is deleted here. og.py, build.py (sitemap)
 and enhance.py all take the page list from product_pages().
 
 enhance.py copies studio.html into the site, and refuses to if either JSON
@@ -50,6 +53,8 @@ FIRST = 8
 COUNT_FROM = 10
 SITE_LABEL = "dragomansjourney.com"      # label for project "site": the site's own address
 MOVE = "See it move"                     # a card's link to its product page (T-09)
+ENDPOINT = "https://dj-intake.stephens-josef.workers.dev/"   # the intake Worker, same as start.html (T-10)
+JOINED = "You're on the list"            # a join box after the Worker says ok (T-10)
 
 
 def la_today():
@@ -154,9 +159,14 @@ def product_pages(studio):
 
 
 def join_button(p):
+    """The join box (T-10): email field and the list's button, posted by JOIN_SCRIPT."""
     lst = p["list"]
     subject = quote(f'List: {p["name"]}', safe="")
-    out = [f'<a class="btn hot" data-list="{a(lst["id"])}" href="mailto:{EMAIL}?subject={subject}">{t(lst["button"])}</a>']
+    out = [f'<form class="jf" data-list="{a(lst["id"])}" action="mailto:{EMAIL}?subject={subject}" method="post" enctype="text/plain">'
+           '<div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>'
+           '<label class="jf-e"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>'
+           f'<button type="submit" class="btn hot">{t(lst["button"])}</button>'
+           '<div class="jf-ok" role="status"></div></form>']
     if lst.get("count", 0) >= COUNT_FROM:
         out.append(f'<span class="count">{lst["count"]} people on the list</span>')
     return out
@@ -202,6 +212,14 @@ CSS = r"""
 .log .line{font-size:17px}
 @media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr)}.log .line{grid-column:1/-1}}
 #log-all{align-self:flex-start}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.jf{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px}
+.jf-e{flex:1 1 220px;max-width:340px;display:flex;flex-direction:column;gap:6px}
+.jf-e span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A}
+.jf-e input{min-height:48px}
+.jf-ok{flex:1 1 100%;font-weight:700;color:#16201C}
+.jf-ok:empty{display:none}
+.jf.done .jf-e,.jf.done button{display:none}
 .prods{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
 @media (min-width:800px){.prods{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .prod{display:flex;flex-direction:column;gap:12px;padding:clamp(22px,2.6vw,30px);background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px}
@@ -222,6 +240,44 @@ CSS = r"""
 @media (min-width:800px){.prod.feature{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
 """
 
+# The join boxes (T-10): post to the intake Worker the way start.html does, with
+# its honeypot and its time since load; on any failure, open the box's mailto.
+JOIN_SCRIPT = r"""
+(function(){
+var ENDPOINT='%s';
+var loaded=Date.now();
+document.querySelectorAll('form.jf').forEach(function(f){
+  f.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var em=f.querySelector('input[name="email"]');
+    em.value=em.value.trim();
+    if(!f.reportValidity())return;
+    var btn=f.querySelector('button');
+    var label=btn.textContent;
+    btn.disabled=true;
+    btn.textContent='Sending…';
+    fetch(ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({form:'list',fields:{email:em.value,list:f.getAttribute('data-list')},website:f.querySelector('input[name="website"]').value,ms:Date.now()-loaded})
+    }).then(function(r){return r.json().then(function(j){return{ok:r.ok&&j.ok};});})
+      .catch(function(){return{ok:false};})
+      .then(function(res){
+        btn.disabled=false;
+        btn.textContent=label;
+        if(res.ok){f.classList.add('done');f.querySelector('.jf-ok').textContent=%s;return;}
+        var m=document.createElement('a');
+        m.href=f.getAttribute('action');
+        m.hidden=true;
+        document.body.appendChild(m);
+        m.click();
+        m.remove();
+      });
+  });
+});
+})();
+""" % (ENDPOINT, json.dumps(JOINED))
+
 SCRIPT = r"""
 (function(){
 var b=document.getElementById('log-all');
@@ -232,7 +288,7 @@ b.addEventListener('click',function(){
   b.hidden=true;
 });
 })();
-"""
+""" + JOIN_SCRIPT
 
 
 def build(studio, shipped, today):
@@ -321,7 +377,7 @@ def main(out_dir):
               h1=t(p["name"]),
               badge=f'\n      <span class="hero-pill">{t(p["status"])}</span>',
               lede=t(p["what"]),
-              css=CSS + PAGE_CSS, body=product_page(p, rows, today, stamp), more="")
+              css=CSS + PAGE_CSS, body=product_page(p, rows, today, stamp), script=JOIN_SCRIPT, more="")
     for old in pathlib.Path(out_dir).glob("studio-*.html"):
         if old.name not in keep:
             old.unlink()

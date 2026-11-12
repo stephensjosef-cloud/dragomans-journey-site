@@ -241,7 +241,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-10 · Real join lists · READY (build), GATED (deploy)
+## T-10 · Real join lists · DONE (build), GATED (deploy)
 
 **Why:** the lists have to work without Josef touching them.
 
@@ -254,6 +254,24 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 **Gate for deploy:** Josef pastes the new `intake.deployed.js` over the old one in the Cloudflare dashboard (Workers and Pages, `dj-intake`, Edit code, paste, Deploy). Exact numbered steps go in the receipt. Until then the mailto fallback works, so nothing is broken in the meantime.
 
 **Receipt:**
+- **Branch:** `trip/T-10`, cut from `origin/trip/T-09` (the `trip/` branch with the newest commit). First commit `79f9d59` is the two word fixes approved Nov 11 (noted in T-09's receipt); the T-10 work and this receipt are in the commit after it. Nothing pushed to `main`. Build part only; the Worker deploy is still gated.
+- **The Worker (step 1):** `worker/intake.js` gets a `list` form: `email` and `list` required, `name` optional, `list` must be one of `birdleague`, `deepcuts`, `album`, `spots-feb` (anything else gets a 400). Subject `List: <list> · <email>`, for example "List: deepcuts · fan@example.com". Same origins, honeypot and 2.5-second minimum as the other forms; the email body lists List, Email and Name, and Reply-To is the visitor. The rest of the file is unchanged except the subject line, which now picks the list subject for this one form. `worker/intake.deployed.js` has the same three changes in its one-line format; everything else in it is byte for byte the same.
+- **Worker check:** new `worker/test_intake.mjs` (`node test_intake.mjs`, no network, no Cloudflare) runs both files side by side with a stand-in email binding: 34/34 pass. Both files give the same answer and the same email for every case, the four old forms (blueprint, briefing, call, drop-in) send exactly what they sent before, and against the old Worker the list cases fail as they should (20/34).
+- **The join boxes (step 2):** every join button on `studio.html` (Bird League and Deepcuts cards) and on both product pages is now a small form, written by `tools/studio.py`: an "Email" field (the word `start.html` uses), the list's own button, and the same off-screen "Website" honeypot as `start.html`. Pressing the button posts `{form: "list", fields: {email, list}, website, ms}` to the same Worker address as `start.html`, with its fetch and timing code. When the Worker says ok, the field and button give way to "You're on the list". When it says no or can't be reached, the box opens the same mailto as before (`List: <product name>`) and stays ready to try again. That mailto is also the form's own action, so it works with scripts off. An empty or broken email is stopped by the browser's own check, so no new words. Today the live Worker doesn't know the `list` form, so every press ends in the mailto, as before, until the deploy below.
+- **Choices the item left open (no new words):** the boxes ask for email only, no name, as T-09 step 2 describes the box ("email field + the list's button"); the Worker still takes a name if a later form sends one. The button shows "Sending…" while it waits, as on `start.html`.
+- **Counting (step 3):** no database. When Claude next updates the site, it counts the `List:` emails in Josef's Gmail and writes the numbers into each list's `count` in `studio.json`, then rebuilds (counts show at 10 or more). Count both kinds of subject: "List: <list> · <email>" from the Worker, and "List: <product name>" from the mailto (before the deploy, or when a send fails). Count each email address once per list.
+- **Pipeline:** the pipeline rebuilt every root file byte for byte first (after the word fixes). After the change, `cmp` shows only `studio.html`, `studio-birdleague.html` and `studio-deepcuts.html` differ: the join box markup, its CSS and the join script. Every other root file, `og/` included, is unchanged. No headline or description changed, so no share card was redrawn.
+- **Tests:** `test_new.py` **568/568 passed** (57 new, plus the T-08 and T-09 join checks rewritten to describe the form instead of the old link). New: `node test_intake.mjs` passes from inside the run; the Worker's four lists are the item's four and every Studio list is one of them; the join boxes post to the same Worker address as `start.html`; on the Studio cards and both product pages, with the Worker intercepted in Playwright (nothing sent): the field is required, type email, labeled; the honeypot is off screen; an empty email sends nothing; a real one posts `form=list` with the trimmed email, the right list, an empty honeypot and at least 2.5 seconds; success says "You're on the list" in a status line, hides the field and button and opens no mailto; an error answer and a dropped connection each open the box's mailto once and leave the box ready; no sideways scroll at 390 and 1440. Against the pages from before this item, the run stops at the first join box (there's no form to press), as it should. Run on Windows as a copy with `exe = None` and `p.chromium.launch()`, Playwright 1.65, per house rule 3. `test_site.py` not run.
+- **Looked at:** both product pages at 390 and 1440, the Studio cards at 390 and 1440, the success state at both widths, and the failure state at 390. Nothing overflows.
+- **Josef, by hand (the deploy gate):**
+  1. On this branch, open `_build/worker/intake.deployed.js` and copy all of it (it's one line).
+  2. Open the Cloudflare dashboard and go to **Workers & Pages**.
+  3. Select the Worker **dj-intake**.
+  4. Select **Edit code**.
+  5. Select all the code in the editor, delete it, and paste the copied file in its place.
+  6. Select **Deploy**, and confirm if it asks.
+  7. Say "push it" to Claude in chat. That merges this into `main` and the site goes live with the new join boxes. (The order doesn't matter: before the deploy the boxes fall back to the mailto, as today.)
+  8. Once both are done, open https://dragomansjourney.com/studio-deepcuts.html on your phone, type your own email, and press **Join the beta**. It should say "You're on the list", and Gmail should get "List: deepcuts · <your email>". If it opened your mail app instead, the deploy didn't take: tell Claude.
 
 ---
 

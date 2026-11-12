@@ -21,8 +21,11 @@ const FORMS = {
   dropin: { subject: "Drop-in list", need: ["email"], fields: [["name", "Name"], ["email", "Email"], ["org", "Business or program"]] },
   call: { subject: "Call request", need: ["name", "email"], fields: [
     ["name", "Name"], ["email", "Email"], ["phone", "Phone"], ["org", "Business or program"],
-    ["topic", "About"], ["days", "Good times"], ["note", "Anything to know first"]] }
+    ["topic", "About"], ["days", "Good times"], ["note", "Anything to know first"]] },
+  list: { subject: "List", need: ["email", "list"], fields: [["list", "List"], ["email", "Email"], ["name", "Name"]] }
 };
+// The join lists on the Studio pages (T-10), and the February spots list (T-03).
+const LISTS = ["birdleague", "deepcuts", "album", "spots-feb"];
 
 function cors(origin) {
   const h = { "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Vary": "Origin" };
@@ -59,10 +62,12 @@ export default {
     for (const k of form.need) if (!val(k)) return reply(origin, 400, { ok: false, error: "missing " + k });
     const email = oneLine(val("email"));
     if (!/^[^\s@<>\x22]+@[^\s@<>\x22]+\.[^\s@<>\x22]+$/.test(email)) return reply(origin, 400, { ok: false, error: "email" });
+    if (data.form === "list" && !LISTS.includes(val("list"))) return reply(origin, 400, { ok: false, error: "list" });
 
     const lines = form.fields.filter(([k]) => val(k)).map(([k, label]) => label + ":\n" + val(k) + "\n");
     const who = oneLine(val("org") || val("name") || email);
-    const subject = form.subject + ": " + who;
+    // A list signup's subject is "List: <list> · <email>", so the lists can be counted in the inbox.
+    const subject = data.form === "list" ? "List: " + val("list") + " · " + email : form.subject + ": " + who;
     const body = lines.join("\n") + "\nSent from dragomansjourney.com, " + new Date().toUTCString() + "\nReply to this email to answer them directly.\n";
     const wrapped = b64(body).replace(/.{76}/g, "$&\r\n");
     const raw = [

@@ -622,10 +622,12 @@ with sync_playwright() as p:
             lk = card.locator(f'a[href="{x["link"]["href"]}"]')
             check(f'studio card {x["id"]}: link', lk.count() == 1 and lk.inner_text().startswith(x['link']['label']))
         if x.get('list'):
-            jb = card.locator('a[data-list]')
-            href = jb.get_attribute('href') if jb.count() == 1 else ''
-            check(f'studio card {x["id"]}: join button mails "List: {x["name"]}"',
-                  jb.count() == 1 and jb.inner_text() == x['list']['button'] and href.startswith('mailto:hello@dragomansjourney.com?subject=')
+            # T-10: the join button sits in a small form; its mailto is the form's action and the fallback.
+            jf = card.locator('form.jf[data-list]')
+            href = jf.get_attribute('action') if jf.count() == 1 else ''
+            check(f'studio card {x["id"]}: join box for list {x["list"]["id"]}, mailto "List: {x["name"]}" as its fallback',
+                  jf.count() == 1 and jf.get_attribute('data-list') == x['list']['id'] and jf.locator('button').inner_text() == x['list']['button']
+                  and href.startswith('mailto:hello@dragomansjourney.com?subject=')
                   and _unquote(href.split('subject=', 1)[1]) == 'List: ' + x['name'], href)
             check(f'studio card {x["id"]}: list count shows only at 10 or more',
                   ('people on the list' in txt) == (x['list'].get('count', 0) >= 10))
@@ -745,10 +747,11 @@ with sync_playwright() as p:
         check(f'{slug}: every log line shows', q.locator('#log li:visible').count() == len(mine) and q.locator('#log-all').count() == 0)
         check(f'{slug}: "Shipped lately" heading', q.locator('#log-h').inner_text().strip().lower() == 'shipped lately')
         check(f'{slug}: no other project\'s lines', not any(e['line'] in src for e in SHIPPED_J['entries'] if e['project'] != x['id']))
-        jb = q.locator('#join a[data-list]')
-        href = jb.get_attribute('href') if jb.count() == 1 else ''
-        check(f'{slug}: one join box, mailing "List: {x["name"]}"', q.locator('#join').count() == 1 and q.locator('a[data-list]').count() == 1
-              and jb.inner_text() == x['list']['button'] and href.startswith('mailto:hello@dragomansjourney.com?subject=')
+        jf = q.locator('#join form.jf[data-list]')
+        href = jf.get_attribute('action') if jf.count() == 1 else ''
+        check(f'{slug}: one join box, mailto "List: {x["name"]}" as its fallback', q.locator('#join').count() == 1 and q.locator('form.jf').count() == 1
+              and jf.get_attribute('data-list') == x['list']['id']
+              and jf.locator('button').inner_text() == x['list']['button'] and href.startswith('mailto:hello@dragomansjourney.com?subject=')
               and _unquote(href.split('subject=', 1)[1]) == 'List: ' + x['name'], href)
         check(f'{slug}: the line under the join box', q.locator('#join p').inner_text().strip() == x['list']['line'])
         check(f'{slug}: join box comes last, after the log', q.locator('#join').bounding_box()['y'] > q.locator('#log').bounding_box()['y'])
@@ -762,6 +765,71 @@ with sync_playwright() as p:
     for x in sj['products']:
         x['gate'] = None
     check('a product gets a page once its gate clears', [s for s, _ in _studio.product_pages(sj)] == ['studio-birdleague.html', 'studio-deepcuts.html', 'studio-album.html'])
+
+    # ---------------- real join lists (T-10, Nov 11, 2026)
+    # The Worker, with no network: intake.js and intake.deployed.js agree, the list form works, the old forms don't change.
+    r = _sp.run(['node', 'test_intake.mjs'], cwd=os.path.join(here, 'worker'), capture_output=True, text=True)
+    check('worker: node test_intake.mjs passes', r.returncode == 0 and ' passed' in r.stdout, (r.stdout + r.stderr)[-400:])
+    wk = open(os.path.join(here, 'worker', 'intake.js'), encoding='utf-8').read()
+    check('worker: the four lists, as the item names them', 'const LISTS = ["birdleague", "deepcuts", "album", "spots-feb"];' in wk)
+    check('worker: every Studio join list is one the Worker takes',
+          all(x['list']['id'] in ('birdleague', 'deepcuts', 'album', 'spots-feb') for x in STUDIO_J['products'] if x.get('list')))
+    start_ep = _re.search(r"var ENDPOINT = '([^']+)'", open(os.path.join(here, 'start.html'), encoding='utf-8').read()).group(1)
+    check('join boxes post to the same Worker as start.html', _studio.ENDPOINT == start_ep, _studio.ENDPOINT)
+    # Catch the fallback mailto instead of letting the browser open a mail app.
+    CATCH_MAILTO = ("window.__mailto = []; document.addEventListener('click', function (e) {"
+                    " var a = e.target.closest && e.target.closest('a[href^=\"mailto:\"]');"
+                    " if (a && a.hidden) { window.__mailto.push(a.getAttribute('href')); e.preventDefault(); } }, true);")
+
+    def mock_abort(route):
+        return route.abort()
+    join_pages = [('studio.html', x) for x in open_p if x.get('list')] + [(f'studio-{x["id"]}.html', x) for x in page_p]
+    for slug, x in join_pages:
+        box = (f'#products article[data-id="{x["id"]}"] ' if slug == 'studio.html' else '#join ') + 'form.jf'
+        tag = f'{slug} ({x["id"]})' if slug == 'studio.html' else slug
+        shoot = slug != 'studio.html' or x['id'] == 'deepcuts'
+        # Success: the right fields go to the Worker, and the box says so.
+        q = newpage(1440); q.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok); q.add_init_script(CATCH_MAILTO)
+        q.goto(BASE + slug); q.wait_for_timeout(300)
+        f = q.locator(box)
+        check(f'{tag}: email field is required, type email, labeled "Email"',
+              f.locator('input[name="email"][type="email"][required]').count() == 1 and f.locator('label.jf-e span').inner_text().strip().lower() == 'email')
+        check(f'{tag}: honeypot is there and off screen', f.locator('.hp input[name="website"]').count() == 1
+              and f.locator('.hp').bounding_box()['x'] < -1000)
+        n0 = len(posts)
+        f.locator('button').click(); q.wait_for_timeout(300)
+        check(f'{tag}: an empty email sends nothing', len(posts) == n0 and q.evaluate('window.__mailto.length') == 0)
+        f.locator('input[name="email"]').fill('  fan@example.com '); q.wait_for_timeout(2700)
+        f.locator('button').click(); q.wait_for_timeout(600)
+        sent = posts[-1] if len(posts) == n0 + 1 else {}
+        check(f'{tag}: posts form=list with the email and list {x["list"]["id"]}, honeypot and time',
+              sent.get('form') == 'list' and sent.get('fields') == {'email': 'fan@example.com', 'list': x['list']['id']}
+              and sent.get('website') == '' and sent.get('ms', 0) >= 2500, str(sent))
+        check(f'{tag}: success says "You\'re on the list"', f.locator('.jf-ok').inner_text().strip() == "You're on the list"
+              and f.locator('.jf-ok').get_attribute('role') == 'status')
+        check(f'{tag}: success hides the field and the button', not f.locator('input[name="email"]').is_visible() and not f.locator('button').is_visible())
+        check(f'{tag}: success opens no mailto', q.evaluate('window.__mailto.length') == 0)
+        for w in (390, 1440):
+            q.set_viewport_size({'width': w, 'height': 900}); q.wait_for_timeout(200)
+            check(f'{tag}: no sideways scroll after success at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+            if shoot:
+                f.scroll_into_view_if_needed(); q.screenshot(path=f'{SHOTS}/t10-{slug[:-5]}-ok-{w}.png')
+        # Failure (the Worker says no, or can't be reached): the mailto opens, the box stays as it was.
+        for how, mock in (('an error answer', mock_fail), ('no connection', mock_abort)):
+            q = newpage(390); q.route('**/dj-intake.stephens-josef.workers.dev/**', mock); q.add_init_script(CATCH_MAILTO)
+            q.goto(BASE + slug); q.wait_for_timeout(300)
+            f = q.locator(box)
+            f.locator('input[name="email"]').fill('fan@example.com'); q.wait_for_timeout(2700)
+            f.locator('button').click(); q.wait_for_timeout(600)
+            got = q.evaluate('window.__mailto')
+            check(f'{tag}: on {how}, falls back to the mailto "List: {x["name"]}"', len(got) == 1 and got[0] == f.get_attribute('action')
+                  and _unquote(got[0].split('subject=', 1)[1]) == 'List: ' + x['name'], str(got))
+            check(f'{tag}: on {how}, the box stays ready to try again', f.locator('input[name="email"]').is_visible()
+                  and f.locator('button').is_enabled() and f.locator('button').inner_text() == x['list']['button']
+                  and f.locator('.jf-ok').inner_text().strip() == '')
+            if how == 'an error answer' and shoot:
+                f.scroll_into_view_if_needed(); q.screenshot(path=f'{SHOTS}/t10-{slug[:-5]}-fail-390.png')
+    check('join boxes: no long dash in the join script', '—' not in _studio.JOIN_SCRIPT and '–' not in _studio.JOIN_SCRIPT)
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

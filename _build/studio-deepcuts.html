@@ -63,6 +63,14 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .log .line{font-size:17px}
 @media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr)}.log .line{grid-column:1/-1}}
 #log-all{align-self:flex-start}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.jf{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px}
+.jf-e{flex:1 1 220px;max-width:340px;display:flex;flex-direction:column;gap:6px}
+.jf-e span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A}
+.jf-e input{min-height:48px}
+.jf-ok{flex:1 1 100%;font-weight:700;color:#16201C}
+.jf-ok:empty{display:none}
+.jf.done .jf-e,.jf.done button{display:none}
 .prods{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
 @media (min-width:800px){.prods{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .prod{display:flex;flex-direction:column;gap:12px;padding:clamp(22px,2.6vw,30px);background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px}
@@ -135,7 +143,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
     </ol>
   </section>
   <section class="join panel" id="join">
-    <div class="acts"><a class="btn hot" data-list="deepcuts" href="mailto:hello@dragomansjourney.com?subject=List%3A%20Deepcuts">Join the beta</a></div>
+    <div class="acts"><form class="jf" data-list="deepcuts" action="mailto:hello@dragomansjourney.com?subject=List%3A%20Deepcuts" method="post" enctype="text/plain"><div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div><label class="jf-e"><span>Email</span><input name="email" type="email" autocomplete="email" required></label><button type="submit" class="btn hot">Join the beta</button><div class="jf-ok" role="status"></div></form></div>
     <p class="private">One email when a tester spot opens. No newsletter.</p>
   </section>
 
@@ -154,6 +162,40 @@ function djCopy(text,label){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
   function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
 }
+
+(function(){
+var ENDPOINT='https://dj-intake.stephens-josef.workers.dev/';
+var loaded=Date.now();
+document.querySelectorAll('form.jf').forEach(function(f){
+  f.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var em=f.querySelector('input[name="email"]');
+    em.value=em.value.trim();
+    if(!f.reportValidity())return;
+    var btn=f.querySelector('button');
+    var label=btn.textContent;
+    btn.disabled=true;
+    btn.textContent='Sending…';
+    fetch(ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({form:'list',fields:{email:em.value,list:f.getAttribute('data-list')},website:f.querySelector('input[name="website"]').value,ms:Date.now()-loaded})
+    }).then(function(r){return r.json().then(function(j){return{ok:r.ok&&j.ok};});})
+      .catch(function(){return{ok:false};})
+      .then(function(res){
+        btn.disabled=false;
+        btn.textContent=label;
+        if(res.ok){f.classList.add('done');f.querySelector('.jf-ok').textContent="You're on the list";return;}
+        var m=document.createElement('a');
+        m.href=f.getAttribute('action');
+        m.hidden=true;
+        document.body.appendChild(m);
+        m.click();
+        m.remove();
+      });
+  });
+});
+})();
 
 </script>
 </body>
