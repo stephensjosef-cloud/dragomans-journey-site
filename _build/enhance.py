@@ -347,7 +347,7 @@ def add_pages():
         mark = re.search(r"<!-- studio\.py (\S+) (\S+) -->", src.read_text(encoding="utf-8")) if src.exists() else None
         assert mark and mark.group(2) == STUDIO.fingerprint(), \
             f"{f} is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
-    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html") + STUDIO_PAGES:
+    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES:
         t = (HERE / f).read_text(encoding="utf-8")
         t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
         (OUT / f).write_text(t, encoding="utf-8")
@@ -369,7 +369,7 @@ def enhance_index():
 
 # Free tools, findable from every page (T-02, Nov 10, 2026). The tool pages
 # get their nav link and "More free tools" line from tools/chrome.py.
-FREE_TOOLS = ("shotlist.html", "captions.html", "receipt.html", "scaler.html")
+FREE_TOOLS = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html")
 
 
 def nav_pair(t, link_rx, ft):
@@ -381,7 +381,7 @@ def nav_pair(t, link_rx, ft):
 
 
 def tool_cards():
-    """The four tool cards, read from the work page so the words always match it."""
+    """The tool cards, read from the work page so the words always match it."""
     work = (OUT / "work.html").read_text(encoding="utf-8")
     cards = []
     articles = re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', work, re.S)
@@ -426,7 +426,7 @@ def add_free_tools():
 <section id="tools" aria-labelledby="tools-h" style="background: #F2EDE1">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(56px, 7vw, 88px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(22px, 3vw, 32px)">
     <h2 id="tools-h" style="margin: 0; {BIG}; font-size: clamp(40px, 4.8vw, 64px); line-height: 0.9; text-wrap: balance; color: #16201C">Free tools for your pile</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px">{tool_cards()}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 16px">{tool_cards()}
     </div>
   </div>
 </section>
@@ -493,7 +493,7 @@ def use_hello():
 # the tool pages get their tags from tools/chrome.py.
 OG_PAGES = ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html",
             "work.html", "case-reels.html", "call.html")
-TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html") + STUDIO_PAGES   # tags from tools/chrome.py
+TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES   # tags from tools/chrome.py
 
 
 def add_og():
@@ -529,6 +529,6 @@ add_free_tools()
 add_studio_band()
 use_hello()
 add_og()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html") + STUDIO_PAGES:
+for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES:
     assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
 print("enhanced")

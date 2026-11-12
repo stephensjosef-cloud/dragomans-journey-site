@@ -105,9 +105,11 @@ function djCopy(text,label){{
 </html>
 """
 
-# The four tools, by the names the work page gives them (T-02). Each tool page links the other three.
+# The tools, by the names the work page gives them (T-02). Each tool page links the others.
+# Website checkup added Nov 12, 2026 (T-04).
 TOOLS = (("shotlist.html", "Reel shot list"), ("captions.html", "Caption fitter"),
-         ("receipt.html", "Busywork receipt"), ("scaler.html", "Recipe scaler"))
+         ("receipt.html", "Busywork receipt"), ("scaler.html", "Recipe scaler"),
+         ("checkup.html", "Website checkup"))
 
 
 def more_tools(slug):

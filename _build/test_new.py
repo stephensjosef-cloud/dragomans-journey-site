@@ -187,15 +187,15 @@ with sync_playwright() as p:
     # ---------------- work, case study, free call
     pg = newpage(1440)
     pg.goto(BASE + 'work.html'); pg.wait_for_timeout(300)
-    check('work has 9 cards', pg.locator('#cards .card').count() == 9)
+    check('work has 10 cards (T-04 adds the Website checkup)', pg.locator('#cards .card').count() == 10)
     pg.click('.filt[data-f="banking"]'); pg.wait_for_timeout(100)
     check('banking filter shows 2', pg.locator('#cards .card:visible').count() == 2, str(pg.locator('#cards .card:visible').count()))
     pg.click('.filt[data-f="nonprofit"]'); pg.wait_for_timeout(100)
     check('nonprofit filter shows 3 (two jobs + the recipe scaler)', pg.locator('#cards .card:visible').count() == 3)
     pg.click('.filt[data-f="free"]'); pg.wait_for_timeout(100)
-    check('free tools filter shows 5', pg.locator('#cards .card:visible').count() == 5)
+    check('free tools filter shows 6', pg.locator('#cards .card:visible').count() == 6)
     q = newpage(1440); q.goto(BASE + 'work.html#free'); q.wait_for_timeout(300)
-    check('work.html#free opens on free tools', q.locator('#cards .card:visible').count() == 5)
+    check('work.html#free opens on free tools', q.locator('#cards .card:visible').count() == 6)
     check('no CLIENT_ token left on work', 'CLIENT_' not in pg.content())
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
@@ -245,7 +245,7 @@ with sync_playwright() as p:
 
     # ---------------- free tools (Nov 8, 2026)
     for w in (390, 1440):
-        for t in ('shotlist', 'captions', 'receipt', 'scaler'):
+        for t in ('shotlist', 'captions', 'receipt', 'scaler', 'checkup'):
             q = newpage(w); q.goto(BASE + t + '.html'); q.wait_for_timeout(500)
             check(f'{t} no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
             q.screenshot(path=f'{SHOTS}/{t}-{w}.png', full_page=True)
@@ -285,7 +285,7 @@ with sync_playwright() as p:
     import re as _re, struct as _struct
     from urllib.request import urlopen
     SHARED = ('index', 'local', 'mainframe', 'work', 'comp3', 'shotlist', 'captions', 'receipt',
-              'scaler', 'start', 'call', 'case-reels', 'briefing', 'studio')
+              'scaler', 'start', 'call', 'case-reels', 'briefing', 'studio', 'checkup')
     # Plus a page per open Studio product with a join list (T-09).
     SHARED += tuple('studio-' + x['id'] for x in _json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'studio.json'), encoding='utf-8'))['products']
                     if x.get('gate') is None and x.get('list'))
@@ -309,7 +309,7 @@ with sync_playwright() as p:
 
     # ---------------- free tools, findable (T-02, Nov 10, 2026)
     TOOLS = {'shotlist.html': 'Reel shot list', 'captions.html': 'Caption fitter',
-             'receipt.html': 'Busywork receipt', 'scaler.html': 'Recipe scaler'}
+             'receipt.html': 'Busywork receipt', 'scaler.html': 'Recipe scaler', 'checkup.html': 'Website checkup'}
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         # The header nav: <nav> where the page has one, else its <header>, else the home page's letterhead bar.
@@ -328,7 +328,7 @@ with sync_playwright() as p:
     sec = sec.group(0) if sec else ''
     check('local free tools section sits right before contact', bool(sec) and bool(_re.search(_re.escape(sec) + r'\s*<section id="contact"', src)))
     check('local free tools heading', '>Free tools for your pile</h2>' in sec)
-    check('local free tools section links the 4 tools', sorted(_re.findall(r'href="([a-z]+\.html)"', sec)) == sorted(TOOLS), sec[:200])
+    check('local free tools section links the 5 tools', sorted(_re.findall(r'href="([a-z]+\.html)"', sec)) == sorted(TOOLS), sec[:200])
     work = urlopen(BASE + 'work.html').read().decode('utf-8')
     for href, title in TOOLS.items():
         para = _re.search(r'<h2>' + title + r'</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + href, work)
@@ -336,13 +336,13 @@ with sync_playwright() as p:
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'local.html'); q.wait_for_timeout(300)
         xs = q.eval_on_selector_all('#tools article', 'e => e.map(a => Math.round(a.getBoundingClientRect().left))')
-        check(f'local free tools: {"one column" if w == 390 else "one row of four"} at {w}',
-              len(xs) == 4 and (len(set(xs)) == 1 if w == 390 else len(set(xs)) == 4), str(xs))
+        check(f'local free tools: {"one column" if w == 390 else "one row of five"} at {w}',
+              len(xs) == 5 and (len(set(xs)) == 1 if w == 390 else len(set(xs)) == 5), str(xs))
     for href in TOOLS:
         q = newpage(1440); q.goto(BASE + href); q.wait_for_timeout(300)
         line = q.locator('main > p', has_text='More free tools:')
         got = line.locator('a').evaluate_all('e => e.map(a => [a.getAttribute("href"), a.textContent])') if line.count() == 1 else []
-        check(f'{href} links the other three tools by name', sorted(got) == sorted([k, v] for k, v in TOOLS.items() if k != href), str(got))
+        check(f'{href} links the other tools by name', sorted(got) == sorted([k, v] for k, v in TOOLS.items() if k != href), str(got))
         if line.count() == 1:
             check(f'{href} more-tools line sits above the dark panel',
                   line.bounding_box()['y'] < q.locator('#more-h').bounding_box()['y'])
@@ -830,6 +830,122 @@ with sync_playwright() as p:
             if how == 'an error answer' and shoot:
                 f.scroll_into_view_if_needed(); q.screenshot(path=f'{SHOTS}/t10-{slug[:-5]}-fail-390.png')
     check('join boxes: no long dash in the join script', '—' not in _studio.JOIN_SCRIPT and '–' not in _studio.JOIN_SCRIPT)
+
+    # ---------------- website checkup (T-04, Nov 12, 2026)
+    # The Worker, with no network: safety rules, link classifier, 8a to 8e, and local.html through 8b (step 12).
+    import tempfile as _tf
+    lp = os.path.join(_tf.mkdtemp(), 'local.html')
+    open(lp, 'w', encoding='utf-8').write(urlopen(BASE + 'local.html').read().decode('utf-8'))
+    r = _sp.run(['node', 'test_checkup.mjs', lp], cwd=os.path.join(here, 'worker'), capture_output=True, text=True)
+    check('checkup worker: node test_checkup.mjs passes (with local.html from the build)', r.returncode == 0 and ' passed' in r.stdout, (r.stdout + r.stderr)[-600:])
+    check('checkup worker: local.html ran through the 8b check', 'FAIL local.html' not in r.stdout and r.stdout.strip().split('/')[0] == r.stdout.strip().split('/')[1].split()[0])
+    ck = open(os.path.join(here, 'worker', 'checkup.js'), encoding='utf-8').read()
+    check('checkup worker: separate from intake (no email, no intake code)', 'cloudflare:email' not in ck and 'SEB' not in ck)
+    check('checkup worker: CORS for the same origins as intake', _re.search(r'const ORIGINS = \[[^\]]*\];', ck).group(0) == _re.search(r'const ORIGINS = \[[^\]]*\];', wk).group(0))
+    check('checkup worker: no long dash', '—' not in ck and '–' not in ck)
+    SAMPLE = _json.loads(_sp.run(['node', 'test_checkup.mjs', '--sample'], cwd=os.path.join(here, 'worker'), capture_output=True, text=True).stdout)
+
+    src = urlopen(BASE + 'checkup.html').read().decode('utf-8')
+    check('checkup: sitemap lists it', 'https://dragomansjourney.com/checkup.html' in urlopen(BASE + 'sitemap.xml').read().decode('utf-8'))
+    check('checkup: CHECKUP_URL is one empty constant at the top of the script', src.count("var CHECKUP_URL = '';") == 1
+          and _re.search(r"<script>\s*function djToast[\s\S]*?\n\s*var CHECKUP_URL = '';", src) is not None)
+    check('checkup: the line under the box', "This checks your public page the way a visitor's phone would. Nothing is stored." in src)
+    check('checkup: no long dash', '—' not in src and '–' not in src)
+    work = urlopen(BASE + 'work.html').read().decode('utf-8')
+    card = _re.search(r'<article class="card" data-k="([^"]*)">((?:(?!</article>).)*href="checkup\.html"(?:(?!</article>).)*)</article>', work, _re.S)
+    check('checkup: a fifth tool card on the work page, data-k free, "25 links", "Website checkup"', bool(card) and card.group(1) == 'free'
+          and '<p class="num">25 links</p>' in card.group(2) and '<h2>Website checkup</h2>' in card.group(2))
+
+    # Until the Worker is live: "Coming this week", no box, nothing sent.
+    sent = []
+    for w in (390, 1440):
+        q = newpage(w); q.on('request', lambda rq: sent.append(rq.url) if 'checkup' in rq.url and not rq.url.startswith(BASE) else None)
+        q.goto(BASE + 'checkup.html'); q.wait_for_timeout(400)
+        check(f'checkup: says "Coming this week" at {w}', q.locator('#soon').is_visible() and q.inner_text('#soon').strip().upper() == 'COMING THIS WEEK')
+        check(f'checkup: no box while CHECKUP_URL is empty at {w}', not q.locator('#ask').is_visible() and not q.locator('#site').is_visible() and not q.locator('#go').is_visible())
+        check(f'checkup: no report cards before a check at {w}', not q.locator('#rep1').is_visible() and not q.locator('#rep2').is_visible() and not q.locator('#stat').is_visible())
+        check(f'checkup: no sideways scroll, coming soon, at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        q.screenshot(path=f'{SHOTS}/t04-soon-{w}.png', full_page=True)
+    check('checkup: nothing sent while it says coming this week', not sent, str(sent))
+
+    # With a Worker address set (in the browser only, the file is untouched) and the Worker answering the sample.
+    def live_page(w, answer):
+        q = newpage(w, 1000)
+        calls = []
+        def page_route(route):
+            body = route.fetch().text().replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1)
+            route.fulfill(status=200, content_type='text/html', body=body)
+        def worker(route):
+            calls.append(route.request.url)
+            route.fulfill(status=200 if answer.get('ok') else 400, content_type='application/json', body=_json.dumps(answer), headers={'Access-Control-Allow-Origin': '*'})
+        q.route(BASE + 'checkup.html', page_route)
+        q.route('https://dj-checkup.test/**', worker)
+        q.goto(BASE + 'checkup.html'); q.wait_for_timeout(400)
+        return q, calls
+    q, calls = live_page(1440, SAMPLE)
+    check('checkup live: the box shows, coming soon hides', q.locator('#site').is_visible() and q.inner_text('#go') == 'Check it' and not q.locator('#soon').is_visible())
+    check('checkup live: nothing sent before the button', calls == [])
+    q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
+    check('checkup live: one GET with the address', len(calls) == 1 and calls[0] == 'https://dj-checkup.test/?url=crumb.example', str(calls))
+    heads = q.locator('#finds1 .find h3').all_inner_texts()
+    levels = q.eval_on_selector_all('#finds1 .find', 'e => e.map(x => x.classList.contains("bad") ? 0 : x.classList.contains("warn") ? 1 : 2)')
+    check('checkup live: the worst finding first', heads[:1] == ['Your "Book Now" button leads to an error page'], str(heads))
+    check('checkup live: worst to mildest, all the way down', levels == sorted(levels), str(levels))
+    first = q.locator('#finds1 .find').first.inner_text()
+    check('checkup live: a finding says what it costs and how hard it is to fix', "People who tap it can't book." in first and 'A five-minute fix in your site builder' in first, first)
+    check('checkup live: the "#" Donate button goes nowhere', 'Your "Donate" button goes nowhere' in heads)
+    check('checkup live: no phone layout, no tap-to-call, no description, http not sent on', all(h in heads for h in (
+        "Your page isn't set up for phones", "Your phone number can't be tapped to call", 'Your page has no description',
+        "The plain http address doesn't send people on to https")), str(heads))
+    check('checkup live: what works is listed', '1 button works: "Order online".' in q.inner_text('#oks1'), q.inner_text('#oks1'))
+    rep1 = q.locator('#rep1')
+    check('checkup live: ends with "Want me to fix it?" to call.html', rep1.locator('a').last.get_attribute('href') == 'call.html'
+          and rep1.locator('a').last.inner_text().startswith('Want me to fix it?')
+          and q.evaluate("document.querySelector('#rep1').lastElementChild.getAttribute('href')") == 'call.html')
+    st = q.locator('#stat')
+    check('checkup live: the BrightLocal line sits above the second card, with its year and source', st.is_visible()
+          and '45%' in st.inner_text() and '2026' in st.inner_text() and 'BrightLocal' in st.inner_text()
+          and st.locator('a').get_attribute('href') == 'https://www.brightlocal.com/research/local-consumer-review-survey/'
+          and st.bounding_box()['y'] < q.locator('#rep2').bounding_box()['y'] and q.locator('#rep1').bounding_box()['y'] < st.bounding_box()['y'])
+    check('checkup live: second card heading', q.inner_text('#rep2-h') == 'Can AI find you?')
+    check('checkup live: its first line, exactly', q.locator('#rep2 > p').first.inner_text() ==
+          "This doesn't tell you what ChatGPT says about you. It checks whether a machine can read the facts it would need.")
+    heads2 = q.locator('#finds2 .find h3').all_inner_texts()
+    levels2 = q.eval_on_selector_all('#finds2 .find', 'e => e.map(x => x.classList.contains("bad") ? 0 : x.classList.contains("warn") ? 1 : 2)')
+    check('checkup live: blocking a search crawler turns AI readers away, worst first', heads2[:1] == ['Your site turns AI readers away']
+          and 'OAI-SearchBot' in q.locator('#finds2 .find').first.inner_text() and levels2 == sorted(levels2), str(heads2))
+    check('checkup live: blocking only training is a choice, in one plain line',
+          'Your robots.txt keeps GPTBot from collecting your pages for AI training. That\'s a choice, not a fault.' in heads2
+          and not any('GPTBot' in h for h in heads2[:1]), str(heads2))
+    check('checkup live: two phone numbers are flagged', 'Your page gives two different phone numbers' in heads2)
+    check('checkup live: hours not found, said as "I couldn\'t find"', "I couldn't find your opening hours in your page text" in heads2)
+    check('checkup live: never says "missing"', 'missing' not in q.inner_text('#rep2').lower() and 'missing' not in q.inner_text('#rep1').lower())
+    facts = dict(zip(q.locator('#facts dt').all_text_contents(), q.locator('#facts dd').all_text_contents()))
+    check('checkup live: the facts card, as found', q.inner_text('#rep2 .facts h3') == 'The facts a machine reads off your page'
+          and list(facts) == ['Name', 'Phone', 'Address', 'Hours'] and facts['Name'] == 'Crumb Bakery' and facts['Phone'] == '(707) 555-0134'
+          and facts['Address'] == '12 Main St, Santa Rosa, CA' and facts['Hours'] == "I couldn't find it", str(facts))
+    check('checkup live: the facts card ends with the profile line', q.locator('#rep2 .facts p').last.inner_text() ==
+          "Check these against your Google Business Profile, letter for letter. I can't see your listing from here.")
+    for w in (390, 1440):
+        q.set_viewport_size({'width': w, 'height': 1000}); q.wait_for_timeout(200)
+        check(f'checkup live: no sideways scroll with both reports at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        q.evaluate('scrollTo(0, 0)'); q.wait_for_timeout(100)
+        q.screenshot(path=f'{SHOTS}/t04-report-{w}.png', full_page=True)
+    # 8d's exact sentence, on a page with almost no readable text.
+    thin = _json.loads(_json.dumps(SAMPLE)); thin['facts']['textLength'] = 120
+    q, calls = live_page(390, thin)
+    q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
+    check('checkup live: almost no readable text, in the item\'s words', "Your page holds almost no text a machine can read without running scripts or reading images." in q.locator('#finds2 .find h3').all_inner_texts())
+    thin['cut'] = True
+    q, calls = live_page(390, thin)
+    q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
+    check('checkup live: no text warning when the page was cut at 1.5 MB', not any('almost no text' in h for h in q.locator('#finds2 .find h3').all_inner_texts()))
+    # A refused address: a plain answer, no report.
+    q, calls = live_page(390, {'ok': False, 'error': 'private-name'})
+    q.fill('#site', 'printer.local'); q.click('#go'); q.wait_for_timeout(600)
+    check('checkup live: a refused address gets a plain answer and no report', 'inside a home or office network' in q.inner_text('#msg')
+          and not q.locator('#rep1').is_visible() and q.inner_text('#go') == 'Check it')
+    q.screenshot(path=f'{SHOTS}/t04-refused-390.png', full_page=True)
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website Checkup · Dragoman's Journey</title>
+<meta name="description" content="A free check for small businesses and nonprofits: paste your site's address and get a plain report of what's broken, and whether a machine can read your facts.">
+<link rel="canonical" href="https://dragomansjourney.com/checkup.html">
+<meta property="og:title" content="Website Checkup · Dragoman's Journey">
+<meta property="og:description" content="A free check for small businesses and nonprofits: paste your site's address and get a plain report of what's broken, and whether a machine can read your facts.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/checkup.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/checkup.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F2EDE1}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:#A93F17}a:hover{color:#16201C}
+::selection{background:#E8592B;color:#0E1B17}
+.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
+.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#F07A4E;text-transform:uppercase}
+.panel{background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
+.chip:hover{border-color:#16201C}
+.chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
+.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
+.btn:hover{background:#0E1B17;color:#F2EDE1}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+.btn.ghost{background:transparent;color:#16201C}
+.btn.ghost:hover{background:#EAE3D3;color:#16201C}
+input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
+textarea{min-height:140px;resize:vertical;line-height:1.5}
+.private{font-size:14px;color:#5A635D;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.box{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
+.box input{flex:1 1 260px;width:auto;font-size:18px}
+.box .btn{flex:0 0 auto}
+.soon{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(40px,5vw,64px);line-height:.9;margin:0}
+.rep h2{margin:0;font-size:24px;line-height:1.2}
+.rep .label{margin-bottom:6px}
+.addr{font-family:'JetBrains Mono',monospace;font-size:14px;color:#5A635D;margin:6px 0 0;overflow-wrap:anywhere}
+.finds{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.find{border-left:4px solid #D9A520;background:#F9EEDA;padding:12px 14px}
+.find.bad{border-left-color:#C2461B;background:#F8E3DA}
+.find.info{border-left-color:#8A8F87;background:#EFEBE1}
+.find h3{margin:0;font-size:18px;line-height:1.35}
+.find p{margin:4px 0 0;font-size:16px;line-height:1.5}
+.find .fix{font-size:15px;color:#3B4540}
+.find .fix b{font-weight:600}
+.oks{margin:18px 0 0;padding:0 0 0 20px;font-size:16px;line-height:1.7;color:#3B4540}
+.note{font-size:15px;color:#5A635D;margin:14px 0 0}
+.facts{margin-top:18px;background:#fff;border:1.5px solid #CFC6B2;padding:14px 16px}
+.facts h3{margin:0 0 8px;font-size:18px}
+.facts dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:16px}
+.facts dt{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6B716A;padding-top:4px}
+.facts dd{margin:0;overflow-wrap:anywhere}
+.facts dd.none{color:#8A8F87}
+.stat{font-size:16px;margin:0}
+.stat a{font-size:14px}
+.fixit{display:inline-flex;align-items:center;min-height:48px;margin-top:18px;font-weight:700;color:#16201C;font-size:18px}
+@media (max-width:560px){.facts dl{grid-template-columns:minmax(0,1fr)}.facts dt{padding-top:6px}}
+
+</style>
+</head>
+<body>
+<div class="dj">
+
+<header style="background:#0E1B17;color:#E9EEE9" class="noprint">
+  <div class="wrap">
+    <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+        <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
+      </a>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
+        <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
+        <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+      </div>
+    </nav>
+    <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
+      <span class="kick">Free tool · checks your public page</span>
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Website<br>checkup</h1>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Paste your site's address. You get a plain report of what's broken, worst first: what it costs you and how hard it is to fix. Then whether AI tools can read the facts about your business.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+
+  <section class="panel" id="soon" aria-labelledby="soon-h">
+    <p class="soon" id="soon-h">Coming this week</p>
+  </section>
+
+  <section class="panel" id="ask" aria-labelledby="ask-h" hidden>
+    <h2 id="ask-h" class="label">Your website's address</h2>
+    <form id="form" class="box" novalidate>
+      <label for="site" style="position:absolute;left:-9999px">Your website's address</label>
+      <input id="site" name="site" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="yourbusiness.com" required>
+      <button type="submit" class="btn hot" id="go">Check it</button>
+    </form>
+    <p class="private" style="margin-top:10px">This checks your public page the way a visitor's phone would. Nothing is stored.</p>
+    <p class="stat" id="msg" role="status" aria-live="polite" style="margin-top:10px"></p>
+  </section>
+
+  <section class="panel rep" id="rep1" aria-labelledby="rep1-h" hidden>
+    <p class="label">Website checkup</p>
+    <h2 id="rep1-h"></h2>
+    <p class="addr" id="rep1-url"></p>
+    <ul class="finds" id="finds1"></ul>
+    <ul class="oks" id="oks1"></ul>
+    <p class="note" id="note1"></p>
+    <a class="fixit" href="call.html">Want me to fix it? →</a>
+  </section>
+
+  <p class="stat" id="stat" hidden>45% of people now use ChatGPT and other AI tools for local recommendations, up from 6% a year before (BrightLocal, 2026). <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener">See the source</a></p>
+
+  <section class="panel rep" id="rep2" aria-labelledby="rep2-h" hidden>
+    <h2 id="rep2-h">Can AI find you?</h2>
+    <p style="margin:8px 0 0">This doesn't tell you what ChatGPT says about you. It checks whether a machine can read the facts it would need.</p>
+    <ul class="finds" id="finds2"></ul>
+    <div class="facts">
+      <h3>The facts a machine reads off your page</h3>
+      <dl id="facts"></dl>
+      <p class="note" style="margin-top:12px">Check these against your Google Business Profile, letter for letter. I can't see your listing from here.</p>
+    </div>
+  </section>
+
+  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="shotlist.html">Reel shot list</a> · <a href="captions.html">Caption fitter</a> · <a href="receipt.html">Busywork receipt</a> · <a href="scaler.html">Recipe scaler</a></p>
+  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Rather hand it off?</h2>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">Start with a free 15-minute call.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">Free 15-minute call</a>
+      <a href="work.html#free" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">More free tools</a>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+function djToast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(djToast.t);djToast.t=setTimeout(function(){e.classList.remove('on')},1600)}
+function djCopy(text,label){
+  var done=function(){djToast((label||'Text')+' copied')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
+}
+
+var CHECKUP_URL = '';   // the dj-checkup Worker's address; empty until it's live (then the box shows)
+
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  if (!CHECKUP_URL) return;                        // "Coming this week" stays, no box
+  $('soon').hidden = true; $('ask').hidden = false;
+
+  var started = Date.now();
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); };
+  var host = function (u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
+  var list = function (a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; };
+
+  // What each kind of button costs when it fails.
+  var LOSS = {
+    book: "people who tap it can't book", order: "people who tap it can't order", contact: "people who tap it can't reach you",
+    donate: "people who tap it can't give", menu: "people who tap it can't see your menu", schedule: "people who tap it can't find a time",
+    appointment: "people who tap it can't make an appointment", reserve: "people who tap it can't reserve"
+  };
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+
+  var ERR = {
+    empty: "Type your website's address first.",
+    'not-a-url': "That doesn't look like a web address. Try something like yourbusiness.com.",
+    scheme: 'Only web addresses that start with http or https can be checked.',
+    port: "That address uses an unusual port. I only check ordinary web addresses.",
+    credentials: "Leave out the name and password, and I'll check the public page.",
+    ip: "I only check addresses with a name, like yourbusiness.com, not a number.",
+    'private-name': "That looks like an address inside a home or office network. I only check public sites.",
+    'no-host': "That doesn't look like a web address. Try something like yourbusiness.com.",
+    'private-ip': "That name points inside a private network, so I won't check it.",
+    'no-such-host': "I couldn't find a site at that address. Check the spelling.",
+    'dns-failed': "I couldn't look up that address just now. Try again in a minute.",
+    timeout: "Your site took more than 8 seconds to answer. A visitor's phone would likely give up too.",
+    unreachable: "Your site didn't answer. It may be down, or blocking checks like this one.",
+    'too-many-redirects': 'Your address sends visitors through more than 3 redirects, so I stopped following them.',
+    budget: "That took more checking than I can do at once. Try again in a minute.",
+    wait: 'One check every 20 seconds. Try again in a moment.'
+  };
+
+  function finding(level, title, cost, fix) { return {level: level, title: title, cost: cost, fix: fix}; }
+  var RANK = {bad: 0, warn: 1, info: 2};
+  function render(ul, fs) {
+    fs.sort(function (a, b) { return RANK[a.level] - RANK[b.level]; });
+    ul.innerHTML = fs.map(function (f) {
+      return '<li class="find ' + f.level + '"><h3>' + esc(f.title) + '</h3>' + (f.cost ? '<p>' + esc(f.cost) + '</p>' : '') +
+        (f.fix ? '<p class="fix"><b>Fix:</b> ' + esc(f.fix) + '</p>' : '') + '</li>';
+    }).join('');
+  }
+
+  function siteCard(r) {
+    var f = [], good = [];
+    if (r.status >= 400) f.push(finding('bad', 'Your page answers with an error (' + r.status + ')',
+      'Anyone who opens this address sees an error instead of your page.',
+      'Often quick once you find it: check the address, or ask whoever hosts your site.'));
+    var broken = r.links.filter(function (l) { return l.status === 'broken'; });
+    var nowhere = r.links.filter(function (l) { return l.status === 'nowhere'; });
+    var working = r.links.filter(function (l) { return l.status === 'working'; });
+    var seen = {};
+    broken.forEach(function (l) {
+      var k = 'b' + l.label + l.url; if (seen[k]) return; seen[k] = 1;
+      f.push(finding('bad', 'Your "' + l.label + '" button ' + (l.code ? 'leads to an error page' : "leads to a page that doesn't load"),
+        cap(LOSS[l.kind]) + '.', 'A five-minute fix in your site builder: point the button at the right page.'));
+    });
+    nowhere.forEach(function (l) {
+      var k = 'n' + l.label; if (seen[k]) return; seen[k] = 1;
+      f.push(finding('bad', 'Your "' + l.label + '" button goes nowhere',
+        "Unless a script on your page catches the tap, " + LOSS[l.kind] + '.',
+        'A five-minute fix in your site builder: give the button a real address.'));
+    });
+    if (!r.https) f.push(finding('bad', "Your site isn't on https",
+      'Phones mark it "Not secure", and anything typed into a form on it can be read on the way.',
+      'Usually free, and a few minutes with your host or site builder.'));
+    else if (r.httpToHttps === false) f.push(finding('warn', "The plain http address doesn't send people on to https",
+      'Anyone who types your address without https may land on a page marked "Not secure".',
+      'Usually one setting with your host or site builder.'));
+    if (!r.viewport) f.push(finding('bad', "Your page isn't set up for phones",
+      'On a phone it shows as a tiny desktop page, and people pinch, zoom or leave.',
+      'One line in your page, often a theme setting. A short fix for whoever built the site.'));
+    if (!r.tel) f.push(r.facts.phone
+      ? finding('warn', "Your phone number can't be tapped to call", 'On a phone, people have to copy it by hand.', 'A five-minute fix: make the number a phone link.')
+      : finding('warn', "I couldn't find a phone number to tap", 'People who would rather call have to go looking.', 'A five-minute fix in your site builder: add your number as a phone link.'));
+    if (!r.email && !r.contactForm) f.push(finding('warn', "I couldn't find an email address or a contact form",
+      'People with a question have no easy way to write to you from this page.',
+      'A short fix: add your email as a link, or a contact form.'));
+    if (!r.title) f.push(finding('warn', 'Your page has no title',
+      "Search results and browser tabs show your address instead of your name.",
+      "A five-minute fix in your site builder's page settings."));
+    if (!r.description) f.push(finding('warn', 'Your page has no description',
+      'Search results and shared links make one up from whatever text they find first.',
+      "A five-minute fix in your site builder's page settings, often called SEO."));
+    if (r.cut) f.push(finding('warn', 'Your page is over 1.5 MB before any pictures',
+      'It loads slowly on a phone with a weak signal. I only read the first 1.5 MB.',
+      'Takes some digging, usually an add-on or pasted-in code. An hour with whoever built it.'));
+    else if (r.bytes > 1048576) f.push(finding('warn', 'Your page is heavy: ' + (r.bytes / 1048576).toFixed(1) + ' MB before any pictures',
+      'It loads slowly on a phone with a weak signal.',
+      'Takes some digging, usually an add-on or pasted-in code. An hour with whoever built it.'));
+
+    if (r.status < 400) good.push('Your page answers.');
+    if (r.https) good.push('It uses https' + (r.httpToHttps ? ', and the plain http address sends people there.' : '.'));
+    if (r.viewport) good.push("It's set up for phones.");
+    if (r.tel) good.push('Your phone number can be tapped to call.');
+    if (r.email || r.contactForm) good.push(r.contactForm ? 'It has a contact form.' : 'It has an email address.');
+    if (r.title && r.description) good.push('It has a title and a description.');
+    if (working.length) good.push(working.length + (working.length === 1 ? ' button works: ' : ' buttons work: ') +
+      list(working.slice(0, 4).map(function (l) { return '"' + l.label + '"'; })) + (working.length > 4 ? ' and more' : '') + '.');
+    if (!r.cut && r.bytes <= 1048576) good.push('It weighs ' + Math.max(1, Math.round(r.bytes / 1024)) + ' KB before pictures.');
+    render($('finds1'), f);
+    $('oks1').innerHTML = good.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('');
+    var looked = r.links.length;
+    var untested = r.links.filter(function (l) { return l.status === 'script' || l.status === 'unchecked' || l.status === 'refused'; }).length;
+    $('note1').textContent = looked
+      ? 'I tried every button and link that looks like booking, ordering, contact, donate, menu, schedule, appointment or reserve: ' + looked + ' in all' +
+        (untested ? ', ' + untested + " of them I couldn't test from here" : '') + '.'
+      : "I couldn't find a button for booking, ordering, contact, donating, a menu, a schedule, appointments or reservations on this page.";
+    return f.length;
+  }
+
+  function aiCard(r) {
+    var f = [], a = r.ai, s = r.structured, x = r.facts;
+    var bots = function (names) { return a.bots.filter(function (b) { return names.indexOf(b.name) > -1; }); };
+    if (a.starBlocksAll) f.push(finding('bad', 'Your robots.txt asks every crawler to stay out',
+      "Search engines and AI tools that follow it won't read any page on your site.",
+      'A five-minute fix, unless it was put there on purpose: remove "Disallow: /" under "User-agent: *" in robots.txt.'));
+    if (a.answerBlocked.length) f.push(finding('bad', 'Your site turns AI readers away',
+      'Your robots.txt asks ' + list(a.answerBlocked) + ' to stay out, so ' + list(bots(a.answerBlocked).map(function (b) { return b.what; })) +
+      " can't read this page to answer questions about you.",
+      'A five-minute fix: remove those lines from robots.txt.'));
+    if (a.noindexMeta) f.push(finding('bad', 'Your page tells search engines not to list it',
+      "Google, and AI tools that search the web, leave out a page marked noindex.",
+      "A five-minute fix, unless it's on purpose: turn off \"hide from search engines\" in your page settings."));
+    if (a.noindexHeader) f.push(finding('bad', 'Your server tells search engines not to list this page',
+      "Google, and AI tools that search the web, leave out a page marked noindex.",
+      'Needs whoever runs your hosting: the setting is called X-Robots-Tag.'));
+    if (r.status === 200 && !r.cut && x.textLength < 600) f.push(finding('bad',
+      'Your page holds almost no text a machine can read without running scripts or reading images.',
+      "Tools that don't run scripts see an almost empty page, so they can't tell what you do or where.",
+      'Takes some work: put your key facts on the page as plain text, not only in pictures or widgets.'));
+    if (x.phoneMismatch) f.push(finding('warn', 'Your page gives two different phone numbers',
+      'The number in your structured data, ' + x.structuredPhone + ", isn't the one in your page text, " + list(x.phones) + '. A machine has to guess which is right.',
+      'A five-minute fix: make them match.'));
+    if (!s.business) f.push(finding('warn', "Your page doesn't describe your business in structured data",
+      'Structured data is a short block of plain facts made for machines. Without it, they guess your name, address and hours from the page text.',
+      'Under an hour. Many site builders add it from a business info setting.'));
+    else {
+      var miss = [['name', 'name'], ['address', 'address'], ['telephone', 'phone number'], ['openingHours', 'opening hours'], ['url', 'web address']]
+        .filter(function (k) { return !s.business.has[k[0]]; }).map(function (k) { return k[1]; });
+      if (miss.length) f.push(finding('warn', 'Your structured data leaves out your ' + list(miss),
+        'Your page describes itself as a ' + s.business.type + ' for machines, but without those facts.',
+        'A short fix, wherever that block is set up.'));
+    }
+    if (!x.phone) f.push(finding('warn', "I couldn't find a phone number in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
+    if (!x.hours) f.push(finding('warn', "I couldn't find your opening hours in your page text", 'A machine reading the page may not find them either.', 'A five-minute fix: put them on the page as plain text, with the day names.'));
+    if (!x.address) f.push(finding('warn', "I couldn't find a street address in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
+    if (typeof a.robotsStatus !== 'number' || a.robotsStatus >= 500) f.push(finding('info', "I couldn't read your robots.txt", '', ''));
+    if (a.trainingBlocked.length) f.push(finding('info', 'Your robots.txt keeps ' + list(a.trainingBlocked) +
+      " from collecting your pages for AI training. That's a choice, not a fault.", '', ''));
+    render($('finds2'), f);
+
+    var none = "I couldn't find it";
+    var name = (s.business && s.business.name) || r.siteName || '';
+    var rows = [['Name', name], ['Phone', x.phone || (s.business && s.business.telephone) || ''], ['Address', x.address || ''],
+      ['Hours', x.hours || (s.business && s.business.openingHours) || '']];
+    $('facts').innerHTML = rows.map(function (row) {
+      return '<dt>' + row[0] + '</dt><dd' + (row[1] ? '>' + esc(row[1]) : ' class="none">' + none) + '</dd>';
+    }).join('');
+  }
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = $('site').value.trim(), go = $('go'), msg = $('msg');
+    if (!v) { msg.textContent = ERR.empty; $('site').focus(); return; }
+    go.disabled = true; go.textContent = 'Checking…'; msg.textContent = 'Checking ' + v + '. This can take up to 30 seconds.';
+    fetch(CHECKUP_URL + '?url=' + encodeURIComponent(v), {method: 'GET', mode: 'cors', credentials: 'omit'})
+      .then(function (res) { return res.json().catch(function () { return {ok: false, error: 'failed'}; }); })
+      .then(function (r) {
+        if (!r.ok) { msg.textContent = ERR[r.error] || "Something went wrong on my side. Try again in a minute."; return; }
+        msg.textContent = '';
+        $('rep1-h').textContent = host(r.finalUrl);
+        $('rep1-url').textContent = r.finalUrl;
+        var n = siteCard(r);
+        aiCard(r);
+        $('rep1').hidden = false; $('stat').hidden = false; $('rep2').hidden = false;
+        $('rep1-h').textContent = (n ? n + (n === 1 ? ' thing to fix on ' : ' things to fix on ') : 'Nothing broken on ') + host(r.finalUrl);
+        $('rep1').scrollIntoView({behavior: 'smooth', block: 'start'});
+      })
+      .catch(function () { msg.textContent = "I couldn't reach the checker just now. Try again in a minute."; })
+      .then(function () { go.disabled = false; go.textContent = 'Check it'; });
+  });
+})();
+
+</script>
+</body>
+</html>
