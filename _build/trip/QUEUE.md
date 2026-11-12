@@ -354,7 +354,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-15 · Host on Cloudflare, with a preview link per branch · READY (build), GATED (switch)
+## T-15 · Host on Cloudflare, with a preview link per branch · BLOCKED (question)
 
 **Why:** GitHub Pages only serves this repository while it is public, and on Nov 9 it left a publish stuck in its queue for five hours. Cloudflare already holds the domain and the intake Worker. Hosting there lets the repository go private, and gives every `trip/` branch its own preview address that Josef can open on his phone before he says "push it".
 
@@ -379,6 +379,20 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
    Also say plainly in the receipt: forms on a preview address or on the Worker's own `workers.dev` address will not send, because the intake Worker only accepts the real site's address. That is expected. Do not add preview addresses or wildcards to the intake Worker.
 
 **Receipt:**
+- **Status: BLOCKED (question), Nov 12, 2026.** Branch `trip/T-15`, cut from `origin/trip/T-04` (the `trip/` branch with the newest commit). Nothing pushed to `main`. Step 3 says: if the docs or the local test disagree, stop and write the options. They disagree on one point, below. Steps 1, 2, 4, 5 and 6 are done and committed here, so the next run only has to apply the answer, then do step 7 and the switch steps.
+- **The question, for Josef:** today GitHub Pages answers an address without `.html` too: `https://dragomansjourney.com/local` and `/work` both answer 200 (checked Nov 12), and `www` sends people on to the same address without www (301). With the settings the item gives (`html_handling: "none"` and the one `/ /index.html 200` line), `/local.html` stays exactly as it is, but `/local`, `/work` and the like answer 404 after the switch. No page, link or sitemap line on the site uses those short addresses; someone could still have typed or shared one. Which do you want?
+  1. **Keep the short addresses working (my pick).** `publish.sh` writes one more line per page into `dist/_redirects` (`/local /local.html 200`, 16 pages, made from the file list, nothing typed by hand). Tested on wrangler's local server: `/local` and `/local.html` both answer 200 with the same page and no redirect, `/local/` stays 404 as it is today. 17 of the 18 pages already name their `.html` address as canonical, so search engines keep the `.html` one.
+  2. **Let them answer 404**, exactly as the item is written. Simplest; anyone with a short address gets the site's 404 page.
+  3. **Cloudflare's default** (`auto-trailing-slash`): `/local` works, but `/local.html` answers with a redirect to `/local`, which the item rules out.
+  Answer in chat with 1, 2 or 3. Then set this item back to READY (build), GATED (switch).
+- **Built and proven so far:**
+  - `_build/publish.sh` (plain `sh`) makes `dist/`: every git-tracked file outside `_build/` except `CNAME`, `wrangler.jsonc` and dot or underscore names, plus `dist/_redirects` with `/ /index.html 200`. Today that's 41 files plus `_redirects`; compared with the rule worked out separately from `git ls-files`, the lists match, and every file is byte for byte its root file. It fails loudly (exit 1, a message) when `dist/` would be empty, and when anything from `_build/` lands in it (both tried).
+  - `wrangler.jsonc`: `name` "dragomans-journey", `assets.directory` "./dist", `html_handling` "none", `not_found_handling` "404-page", `"previews": {}` (the Previews docs say the block is required and can be empty), `compatibility_date` 2026-11-12. No script, no secret.
+  - `.gitignore`: `dist/`, `.wrangler/`, `node_modules/`.
+  - Step 5 on wrangler 4.161.0's local server (`wrangler dev`, port 8765): `/` and `/local.html` answer 200 with no redirect; `/og/index.png` is a PNG; `/nope` answers 404 with the body of `404.html`; `/_build/README.md`, `/wrangler.jsonc`, `/CNAME` and `/_redirects` answer 404. `test_new.py` against that server: **630/630 passed** (run as a copy with `exe = None` and `p.chromium.launch()`, per house rule 3).
+  - Step 6: every existing root file is unchanged; this item adds only `wrangler.jsonc` and `.gitignore` at the root.
+- **Docs read so far (Nov 12, 2026), for the switch steps:** `developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/` (the default redirects `/file.html` to `/file`; `none` turns that off), `.../static-assets/redirects/` (`_redirects` is supported, a 200 line is a supported proxy for addresses on the same site, the file itself is never served), `.../static-assets/routing/static-site-generation/` (`404-page` serves the nearest `404.html` with status 404), `.../ci-cd/builds/` (Create application, GitHub, pick the repo, Save and Deploy; the Worker's name must match `name` in the config or the build fails), `.../ci-cd/builds/configuration/` (Build command, Deploy command `npx wrangler deploy`, Preview command `npx wrangler preview`, production branch), `.../ci-cd/builds/build-branches/` ("Enable Preview Builds" under Settings, Build, Branch control; pull request comments for other branches), `.../workers/previews/` and its configuration, get-started and custom-domains pages (Preview address `<preview-name>-dragomans-journey.<subdomain>.workers.dev`, public by default unless Cloudflare Access is added, can also live on a custom domain so `workers.dev` isn't required), `.../configuration/routing/custom-domains/` (the zone must be on Cloudflare; an existing CNAME on the name must be deleted first; `www` to the bare domain is a Redirect Rule). Not in the docs, to confirm at the desk: how a branch name with a slash and capitals (`trip/T-11`) becomes the preview name, and whether a private GitHub repository works.
+- **Still to do after the answer:** apply it in `publish.sh`, rerun step 5, step 7 (Hosting in `_build/README.md`), and the receipt's numbered switch steps a to h.
 
 ---
 

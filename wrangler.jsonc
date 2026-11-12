@@ -1,0 +1,17 @@
+// Cloudflare hosting for dragomansjourney.com (T-15, Nov 12, 2026).
+// Static files only, no script. _build/publish.sh makes ./dist from the
+// repository; see the Hosting section of _build/README.md. No secrets here.
+{
+  "name": "dragomans-journey",
+  "compatibility_date": "2026-11-12",
+  "assets": {
+    "directory": "./dist",
+    // Every address that works today keeps working: /local.html answers at
+    // /local.html instead of redirecting to /local. "/" finds index.html
+    // through the one line in dist/_redirects.
+    "html_handling": "none",
+    "not_found_handling": "404-page"
+  },
+  // A preview address for every branch other than main.
+  "previews": {}
+}
