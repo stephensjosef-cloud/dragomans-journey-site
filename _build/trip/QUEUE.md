@@ -354,7 +354,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-15 · Host on Cloudflare, with a preview link per branch · BLOCKED (question)
+## T-15 · Host on Cloudflare, with a preview link per branch · DONE (build), GATED (switch)
 
 **Why:** GitHub Pages only serves this repository while it is public, and on Nov 9 it left a publish stuck in its queue for five hours. Cloudflare already holds the domain and the intake Worker. Hosting there lets the repository go private, and gives every `trip/` branch its own preview address that Josef can open on his phone before he says "push it".
 
@@ -379,7 +379,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
    Also say plainly in the receipt: forms on a preview address or on the Worker's own `workers.dev` address will not send, because the intake Worker only accepts the real site's address. That is expected. Do not add preview addresses or wildcards to the intake Worker.
 
 **Receipt:**
-- **Status: BLOCKED (question), Nov 12, 2026, second run.** Branch `trip/T-15`, cut from `origin/trip/T-04` (the `trip/` branch with the newest commit). Nothing pushed to `main`. The first question (short addresses) is answered and applied: steps 1 to 7 are done and the switch steps a to h are written below. A second question came up while writing step d of the switch, because Cloudflare's docs describe `www` differently from the item. It's below; the build doesn't depend on it.
+- **Status: DONE (build), GATED (switch), Nov 12, 2026.** Branch `trip/T-15`, cut from `origin/trip/T-04` (the `trip/` branch with the newest commit). Nothing pushed to `main`. Both questions are answered. Work commit `72d51da`; the second answer is recorded in the commit after it. Steps 1 to 7 are done; the switch steps a to h are written below, with step d as the docs describe it (the answer to the second question). The switch is Josef's, at the desk.
 - **The question, for Josef:** today GitHub Pages answers an address without `.html` too: `https://dragomansjourney.com/local` and `/work` both answer 200 (checked Nov 12), and `www` sends people on to the same address without www (301). With the settings the item gives (`html_handling: "none"` and the one `/ /index.html 200` line), `/local.html` stays exactly as it is, but `/local`, `/work` and the like answer 404 after the switch. No page, link or sitemap line on the site uses those short addresses; someone could still have typed or shared one. Which do you want?
   1. **Keep the short addresses working (my pick).** `publish.sh` writes one more line per page into `dist/_redirects` (`/local /local.html 200`, 16 pages, made from the file list, nothing typed by hand). Tested on wrangler's local server: `/local` and `/local.html` both answer 200 with the same page and no redirect, `/local/` stays 404 as it is today. 17 of the 18 pages already name their `.html` address as canonical, so search engines keep the `.html` one.
   2. **Let them answer 404**, exactly as the item is written. Simplest; anyone with a short address gets the site's 404 page.
@@ -411,13 +411,14 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
   1. **The docs' way (my pick).** Only `dragomansjourney.com` is a custom domain on the Worker. `www` gets the placeholder record and the redirect rule. The switch steps below are written this way.
   2. **The item's way.** `www` is a second custom domain on the Worker, plus the same redirect rule. At the desk, open `https://www.dragomansjourney.com/local.html`: if it lands on `https://dragomansjourney.com/local.html`, keep it; if it shows the page at `www`, remove the `www` custom domain and do option 1.
   Answer in chat with 1 or 2. The next run records the answer here, changes step d if it's 2, and sets this item to DONE (build), GATED (switch).
+  Answer (Josef, Nov 12, 2026): 1. The docs' way. Step d below already follows it, so nothing else changed.
 - **What a visitor's address does today** (checked Nov 12 from here, for the checks in step e): `https://dragomansjourney.com/local` answers 200; `/local/` answers 404; `http://dragomansjourney.com/local.html`, `http://www...` and `https://www.dragomansjourney.com/local.html` each send people to `https://dragomansjourney.com/local.html` in one step (301). Public DNS shows `dragomansjourney.com` as four GitHub Pages A records and `www` as a CNAME to the GitHub Pages host. That isn't the full record list; step d1 writes that down from the dashboard.
 - **Forms, said plainly:** forms on a preview address or on the Worker's own `workers.dev` address will not send, because the intake Worker only accepts the real site's address. That is expected. Do not add preview addresses or wildcards to the intake Worker.
 - **Still to confirm at the desk** (the docs read today don't answer these):
   1. How a branch name like `trip/T-11` (a slash and a capital letter) becomes a preview name. The docs say only that the name "defaults to the current git branch". Read the real address off the Worker's Previews section after the first `trip/` branch builds (step b3).
   2. Whether a private GitHub repository works with Workers Builds. The docs say only that you see the repositories you can access on GitHub. Checked at step f3, with a way back.
   3. Which Wrangler version Workers Builds uses. The repository has no `package.json`, and the docs say only that Builds uses the version in `package.json`. Previews need Wrangler 4.135.0 or later. Read it in the first build log (step a8).
-- **Switch steps for Josef** (at the desk, with Claude in chat, in one sitting; taken from the docs listed at the end, read Nov 12, 2026; step d follows option 1 of the second question):
+- **Switch steps for Josef** (at the desk, with Claude in chat, in one sitting; taken from the docs listed at the end, read Nov 12, 2026; step d follows the answer to the second question, the docs' way):
   - **Before you start:** the Worker builds from `main`, so `wrangler.jsonc` and `_build/publish.sh` must be on `main` first. They get there when you say "push it" for this branch. The `trip/` branches stack, so that also puts every earlier `trip/` item that isn't live yet on the live site. GitHub Pages keeps serving the site the whole time until step d; `wrangler.jsonc` is a name and a folder, no secret. If `main` doesn't have them, the first build in step a fails; that's harmless, but wait until they're there.
   - **a. Create the Worker from GitHub**
     1. Open the Cloudflare dashboard and go to **Workers & Pages**.
