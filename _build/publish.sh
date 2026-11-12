@@ -7,6 +7,12 @@
 # with the line "/ /index.html 200": wrangler.jsonc sets html_handling to
 # "none" so /local.html stays /local.html, and that line lets "/" still find
 # index.html. Cloudflare reads _redirects and never serves it.
+# Short addresses (answer from Josef, Nov 12, 2026: keep them working):
+# GitHub Pages also answers /local for /local.html, so _redirects gets one
+# line per page, "/local /local.html 200". The lines come from the
+# git-tracked .html files at the root, so a new page gets its line on its
+# own. index.html is left out (the "/" line covers it), and so is 404.html.
+# A 200 line serves the page at the short address; it does not redirect.
 # Fails loudly if dist/ would be empty or if anything from _build/ lands in it.
 set -eu
 
@@ -40,4 +46,17 @@ if [ ! -f dist/index.html ] || [ ! -f dist/404.html ]; then
 fi
 
 printf '/ /index.html 200\n' > dist/_redirects
-echo "publish.sh: $n files in dist/, plus dist/_redirects"
+pages=0
+root_pages=$(git -c core.quotepath=off ls-files -- '*.html' | grep -v / || true)
+while IFS= read -r f; do
+  case "$f" in
+    '' | index.html | 404.html) continue ;;
+  esac
+  [ -f "dist/$f" ] || continue          # only pages that are published
+  printf '/%s /%s 200\n' "${f%.html}" "$f" >> dist/_redirects
+  pages=$((pages + 1))
+done <<EOF
+$root_pages
+EOF
+
+echo "publish.sh: $n files in dist/, plus dist/_redirects ($pages short addresses)"

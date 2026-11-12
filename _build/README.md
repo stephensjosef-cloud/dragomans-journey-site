@@ -20,3 +20,13 @@ Jekyll skips folders that start with an underscore, so nothing in `_build/` is s
 7. Serve `out/` locally and run `test_site.py` and `test_new.py`. `test_new.py` also runs `node worker/test_intake.mjs`.
 
 Settings at the top of `enhance.py`: `DROPIN_DATE`, `DROPIN_PLACE`, `LINKEDIN`. Fill them in and rebuild. Setting at the top of `final.py`: `CF_BEACON_TOKEN` (step 6b).
+
+## Hosting
+
+Today GitHub Pages serves the repository root. Cloudflare hosting is built but not switched on yet (T-15, Nov 12, 2026; the switch steps are in T-15's Receipt in `trip/QUEUE.md`).
+
+- `sh _build/publish.sh` makes `dist/`, exactly the public site: every git-tracked file outside `_build/`, except `CNAME`, `wrangler.jsonc`, and any name starting with a dot or an underscore. It fails loudly if `dist/` would be empty or if anything from `_build/` lands in it. `dist/` is in `.gitignore`.
+- It also writes `dist/_redirects`. Cloudflare reads that file and never serves it. The first line, `/ /index.html 200`, lets `/` find the home page. Then comes one line per page, like `/local /local.html 200`. GitHub Pages answers `/local` as well as `/local.html`, and these lines keep those short addresses working after the switch. A `200` line serves the page at the short address; it doesn't redirect. The lines are made from the git-tracked `.html` files at the root, so a new page gets its line on its own. `index.html` (the `/` line covers it) and `404.html` get none.
+- `wrangler.jsonc` at the root: a Worker named `dragomans-journey` that serves `./dist` and runs no script. `html_handling` is `none`, so `/local.html` answers at that exact address instead of redirecting to `/local`. `not_found_handling` is `404-page`, so a missing address gets `404.html` with status 404. `"previews": {}` gives every branch other than `main` its own preview address. It holds no secret.
+- To check it locally: `sh _build/publish.sh`, then `npx wrangler dev --port 8765`, then run `test_new.py` against `http://127.0.0.1:8765/`.
+- Forms don't send from a preview address or from the Worker's own `workers.dev` address, because the intake Worker only accepts the real site's address. That's expected.
