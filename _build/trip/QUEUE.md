@@ -558,7 +558,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-17 · Voice pass: Home · READY
+## T-17 · Voice pass: Home · DONE
 
 **Why:** Josef, Nov 12, 2026: the site has to sound like him, warm, safe and compelling. He approved these exact lines, word for word. Home goes first.
 
@@ -573,6 +573,27 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 - If the longer Local card makes the two cards badly uneven at 1440, change no words: say so here with the screenshot and stop.
 
 **Receipt:**
+- **Branch:** `trip/T-17`, cut from `origin/trip/T-16` (the `trip/` branch with the newest commit, `f781096`). Work commit `1a9b2cf`; this receipt is in the commit after it. Nothing pushed to `main`.
+- **Pipeline:** the unchanged pipeline first rebuilt every root file byte for byte. Then `_build/voice2.py` was added as step 6a in `_build/README.md` (after `intent.py`, before `final.py`). After the full rebuild, `cmp` of every file in `out/` (and `out/og/`) against the root shows `index.html` is the only file that differs. Title, meta description and share card are untouched, so `tools/og.py` wasn't run. `voice2.py` was also run a second time on finished pages, where all six edits miss: it printed each ID that missed, exited 1 and wrote nothing.
+- **Each change** (all in `index.html`, all by `voice2.py`, words as approved, no em dash on the page):
+  - **V1** the intro under the title is the new paragraph.
+  - **V2** the Local Route card's paragraph is the new paragraph.
+  - **V3** item 1: "Nothing goes out until a person has looked at it." / "First me, then you."
+  - **V4** item 2: "You never have to take my word for it." / "The checks stay with you, and you can run them again any time."
+  - **V5** item 3: bold line unchanged / "And if you don't need me, I'll tell you. I sold insurance for years and learned to give the honest answer even when it cost me the sale."
+  - **V6** item 4: bold line unchanged / "Your accounts, your data, and it's in the contract."
+  - V3 to V6 each match the bold line and the line under it as one pair, so neither half can change alone.
+- **Intent report.** Lines added, with reader and job: (1) V1 intro: a visitor who just landed and is wary of AI, so they know who's talking, that they can relax, and what to hand over. (2) V2 card: a shop or nonprofit owner deciding whether this route is theirs, so they recognize their own pile of work and know they see it work before they decide on the build. (3) V3: anyone worried about AI sending something out on its own, so they know a person checks first, then them. (4) V4: a careful buyer, so they know they can check the work without trusting Josef. (5) V5 second line: someone afraid of being sold, so they know the honest answer comes first and why to believe it. (6) V6 second line: an owner worried about their data, so they know it stays theirs, in writing. Lines removed: the old intro (V1), the old Local card paragraph (V2), the old bold lines of items 1 and 2 (V3, V4) and the old second lines of all four items (V3 to V6), all replaced by Josef's own words for the same reader at the same spot. Nothing else added or removed.
+- **Tests updated:** no test expected any of the old home page lines, so no expectation was changed. New in `test_new.py` (T-17 block): each of the ten new strings (V1, V2, and both lines of V3 to V6) is on the home page exactly once; none of the eight old lines remains; no em dash on the home page; the four "How I work" items are each a bold line over its second line, in order; the title, card headings, both "Begins with" lines, both route links, the rules heading and the Mainframe card's paragraph are each still there once; at 320, 390 and 1440, no sideways scroll, neither route card spills, and none of the four items spills; at 1440 both cards share a top and height, the four items share a row and height, and both "Begins with" lines sit level (within 1 px, because the Mainframe card has a 1 px border and the Local card has none; the first run asked for 0 px and failed at 993 vs 992, which is that border); at 320 and 390 the cards stack in one column.
+- **Tests:** `test_new.py` **753/753 passed** (711 before this item). Run on Windows as a copy with `exe = None`, `p.chromium.launch()` and real Google Fonts, Playwright 1.65 in a scratch virtual environment, against `out/` served on port 8765. `node _build/worker/test_intake.mjs` **34/34**, `node _build/worker/test_checkup.mjs` **147/147**. `test_site.py` not run.
+- **Looked at** (in `C:\Users\Josef\AppData\Local\Temp\claude\7cefe3eb597c3ae7\c9f08650-02f9-46f1-a35d-4ddf14a8e279\scratchpad\shots`: `t17-home-<width>.png` full pages, and `t17-home-hero-`, `t17-home-routes-`, `t17-home-rules-<width>.png` regions, at 320, 390 and 1440):
+  - **1440:** the title, then the new intro in three centered lines. The two route cards sit side by side at the same height: the Local paragraph runs six lines and the Mainframe one five, and both "Begins with" lines and both buttons sit level. They sit well together; nothing to rule on. "How I work" reads as four columns under one rule. Item 3 runs five lines and item 1 one line, and the dividers run the full height, so they still read as a set.
+  - **390:** the intro in four lines, then the Local card (paragraph in nine lines), then the Mainframe card, stacked. Nothing cut off, nothing floating, every button sits on its own card. The four items read in order, each bold line over its own second line.
+  - **320:** the same, longer. The Local paragraph runs eleven lines and sits cleanly in the card. No sideways scroll.
+  - **Worth knowing, not changed here** (styling from before this item, which only changed words): on phones, "How I work" items 2 to 4 sit 22 px further in than item 1, and a thin line runs down the right edge of items 1 to 3. Those are the desktop columns' padding and dividers, which stay on when the items stack. At 320, "Take the Mainframe Route →" wraps to two lines inside its button.
+- **Josef, by hand:**
+  1. Read the home page from this branch (or the screenshots).
+  2. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
 
 ---
 
