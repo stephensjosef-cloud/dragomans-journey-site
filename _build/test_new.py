@@ -1095,6 +1095,66 @@ with sync_playwright() as p:
                 check(f'T-16: {n} has no sideways scroll at {w}', sw <= w, str(sw))
             q.screenshot(path=f'{SHOTS}/t16-{n}-{w}.png', full_page=True)
 
+    # ---------------- T-17: voice pass, home (voice2.py V1 to V6)
+    src = _html.unescape(urlopen(BASE + 'index.html').read().decode('utf-8'))
+    V_NEW = {
+        'V1': "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here.",
+        'V2': "For shops and nonprofits around Sonoma County. Maybe it's a phone full of videos you'll never edit. Maybe it's a binder of lessons, or the one chore that eats every Thursday. Hand it over. You get back finished reels, an app with your name on it, or a chore that does itself, and you watch it work before you decide on the build.",
+        'V3 bold': "Nothing goes out until a person has looked at it.",
+        'V3 line': "First me, then you.",
+        'V4 bold': "You never have to take my word for it.",
+        'V4 line': "The checks stay with you, and you can run them again any time.",
+        'V5 bold': "The first step is small and the price is fixed.",
+        'V5 line': "And if you don't need me, I'll tell you. I sold insurance for years and learned to give the honest answer even when it cost me the sale.",
+        'V6 bold': "What's yours stays yours.",
+        'V6 line': "Your accounts, your data, and it's in the contract.",
+    }
+    V_OLD = {
+        'V1': "I'm Josef. I build AI tools that take real work off your plate, and I explain every one of them in plain English. Pick the one that sounds like you, and I'll take it from here.",
+        'V2': "For small businesses and nonprofits in Sonoma County. Hand me the videos you never get to, the lessons in a binder or the chore that eats your week. I'll turn it into reels, an app with your name on it, or a chore that runs itself, and show you that it works.",
+        'V3 bold': "A person checks everything first.",
+        'V3 line': "Nothing reaches your customers or your live systems until a real person has looked at it.",
+        'V4 bold': "You can check my work without me.",
+        'V4 line': "The tests stay with you, so you can rerun them any time you like.",
+        'V5 line': "If the honest answer is that you don't need me, that's the answer you get.",
+        'V6 line': "Your data stays in your own accounts, and the contract says so.",
+    }
+    for k, v in V_NEW.items():
+        check(f'T-17 {k}: new line on the home page exactly once', src.count(v) == 1, str(src.count(v)))
+    for k, v in V_OLD.items():
+        check(f'T-17 {k}: old line gone from the home page', v not in src)
+    check('T-17: no em dash on the home page', '—' not in src)
+    pairs = _re.findall(r'<li[^>]*><strong[^>]*>([^<]*)</strong><span[^>]*>([^<]*)</span></li>', src)
+    check('T-17: "How I work" is four items, each a bold line over its second line, in order',
+          pairs == [(V_NEW[f'V{i} bold'], V_NEW[f'V{i} line']) for i in (3, 4, 5, 6)], str(pairs))
+    for keep in ('AI that works the first day', 'Proof your new system', 'The Blueprint · $1,500 · two weeks · counts toward the build',
+                 'The Survey · one group of programs · from $8,000 · counts toward the next step', 'Take the Local Route →',
+                 'Take the Mainframe Route →', 'How I work, on either side',
+                 'For banks, insurers and agencies moving off COBOL with AI.'):
+        check(f'T-17: home keeps "{keep[:40]}"', src.count(keep) == 1)
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'index.html'); q.wait_for_timeout(400)
+        sw = q.evaluate('document.documentElement.scrollWidth')
+        check(f'T-17: home has no sideways scroll at {w}', sw <= w, str(sw))
+        cards = q.locator('a.route').evaluate_all('e => e.map(a => { const r = a.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.height), a.scrollHeight - a.clientHeight, a.scrollWidth - a.clientWidth] })')
+        check(f'T-17: neither route card spills at {w}', len(cards) == 2 and all(c[3] <= 0 and c[4] <= 0 for c in cards), str(cards))
+        lis = q.locator('#rules-h + ol > li').evaluate_all('e => e.map(l => { const r = l.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.height), l.scrollWidth - l.clientWidth] })')
+        check(f'T-17: four "How I work" items, none spilling sideways, at {w}', len(lis) == 4 and all(l[3] <= 0 for l in lis), str(lis))
+        if w == 1440:
+            check('T-17: the two route cards sit side by side, same top and height, at 1440',
+                  cards[0][1] == cards[1][1] and cards[0][2] == cards[1][2] and cards[0][0] < cards[1][0], str(cards))
+            check('T-17: the four "How I work" items sit in one row, same top and height, at 1440',
+                  len({l[1] for l in lis}) == 1 and len({l[2] for l in lis}) == 1, str(lis))
+            begins = q.locator('a.route').evaluate_all('e => e.map(a => Math.round([...a.querySelectorAll("span")].find(s => s.textContent.trim() === "BEGINS WITH").getBoundingClientRect().y))')
+            # The Mainframe card has a 1 px border and the Local card has none, so allow 1 px.
+            check('T-17: both "Begins with" lines sit at the same height at 1440 (within the 1 px border)', len(begins) == 2 and abs(begins[0] - begins[1]) <= 1, str(begins))
+        else:
+            check(f'T-17: route cards stack in one column at {w}', cards[0][0] == cards[1][0] and cards[0][1] < cards[1][1], str(cards))
+        q.screenshot(path=f'{SHOTS}/t17-home-{w}.png', full_page=True)
+        q.locator('section[aria-label="Routes"]').screenshot(path=f'{SHOTS}/t17-home-routes-{w}.png')
+        q.locator('section[aria-labelledby="rules-h"]').screenshot(path=f'{SHOTS}/t17-home-rules-{w}.png')
+        q.locator('header:has(h1)').screenshot(path=f'{SHOTS}/t17-home-hero-{w}.png')
+
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
 

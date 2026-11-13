@@ -558,6 +558,24 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-17 · Voice pass: Home · READY
+
+**Why:** Josef, Nov 12, 2026: the site has to sound like him, warm, safe and compelling. He approved these exact lines, word for word. Home goes first.
+
+**Build:** all on the home page (`index.html`), in a new pass `_build/voice2.py` that runs after `intent.py` and before `final.py`. Use the words exactly, character for character. No em dashes.
+- **V1.** The intro under the title becomes: "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here."
+- **V2.** The Local Route card's paragraph becomes: "For shops and nonprofits around Sonoma County. Maybe it's a phone full of videos you'll never edit. Maybe it's a binder of lessons, or the one chore that eats every Thursday. Hand it over. You get back finished reels, an app with your name on it, or a chore that does itself, and you watch it work before you decide on the build."
+- **V3.** How I work, item 1: bold "Nothing goes out until a person has looked at it." / "First me, then you."
+- **V4.** Item 2: bold "You never have to take my word for it." / "The checks stay with you, and you can run them again any time."
+- **V5.** Item 3: bold "The first step is small and the price is fixed." (unchanged) / "And if you don't need me, I'll tell you. I sold insurance for years and learned to give the honest answer even when it cost me the sale."
+- **V6.** Item 4: bold "What's yours stays yours." (unchanged) / "Your accounts, your data, and it's in the contract."
+- Left as they are: the title, both card headings, both "Begins with" lines and prices, both route links, the whole Mainframe Route card, "How I work, on either side", the Dragoman definition, header, footer, title tag, meta description, share card. No other page changes.
+- If the longer Local card makes the two cards badly uneven at 1440, change no words: say so here with the screenshot and stop.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
