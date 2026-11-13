@@ -214,7 +214,7 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(render);
 write(sys.argv[1], "captions.html",
       title="Caption Fitter",
       description="A free check for reel captions: balanced line breaks, no stranded words, clear of each app's buttons, enough time to read, and a see-through PNG to drop on your video.",
-      kicker="Free tool · runs in your browser",
+      kicker="Free tool",
       h1="Will your caption<br>survive the phone?",
       lede="Type it once. It breaks the lines evenly, splits long captions into screens, checks whether Instagram, TikTok or YouTube will cover it, times it, and hands you a see-through PNG to drop on your clip.",
       css=CSS, body=BODY, script=SCRIPT,

@@ -61,7 +61,7 @@ BODY = r"""
     <a class="fixit" href="call.html">Want me to fix it? →</a>
   </section>
 
-  <p class="stat" id="stat" hidden>45% of people now use ChatGPT and other AI tools for local recommendations, up from 6% a year before (BrightLocal, 2026). <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener">See the source</a></p>
+  <p class="stat" id="stat" hidden>45% of US adults surveyed now use ChatGPT and other AI tools for local recommendations, up from 6% a year before (BrightLocal, 2026). <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener">See the source</a></p>
 
   <section class="panel rep" id="rep2" aria-labelledby="rep2-h" hidden>
     <h2 id="rep2-h">Can AI find you?</h2>
@@ -270,7 +270,7 @@ var CHECKUP_URL = '';   // the dj-checkup Worker's address; empty until it's liv
 write(sys.argv[1], "checkup.html",
       title="Website Checkup",
       description="A free check for small businesses and nonprofits: paste your site's address and get a plain report of what's broken, and whether a machine can read your facts.",
-      kicker="Free tool · checks your public page",
+      kicker="Free tool",
       h1="Website<br>checkup",
       lede="Paste your site's address. You get a plain report of what's broken, worst first: what it costs you and how hard it is to fix. Then whether AI tools can read the facts about your business.",
       css=CSS, body=BODY, script=SCRIPT,

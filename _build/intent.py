@@ -65,7 +65,6 @@ text('local.html', ' If your Blueprint says you don\'t need me, that is what it 
 text('local.html', ' That\'s why a build costs less than starting from scratch.', '', ref='L15')
 text('local.html', "Kids' programs get stricter rules: no accounts and no child data, ever.",
      "Kids' programs get stricter rules: no child accounts and no child data, ever.", ref='F3')
-sub('local.html', r'Twenty minutes of my full attention, somewhere in Santa Rosa with good coffee\. (Sign up and you\'ll hear the date first\.)', r'\1', ref='L28')
 sub('local.html', r'<span([^>]*)>It\'s <span id="sr-clock">([^<]*)</span> in Santa Rosa\. <span id="sr-status"></span></span>',
     r'<span\1><span id="sr-clock" hidden>\2</span><span id="sr-status"></span></span>', ref='L29')
 sub('local.html', r'\s*<section aria-labelledby="other-route".*?</section>', '', ref='L30')
@@ -141,7 +140,7 @@ sub('work.html', r'\s*<span class="mono"[^>]*>SHOW</span>', '', ref='L56')
 text('work.html', '<p class="num">324 tests</p>', '<p class="num">535 tests</p>', ref='F1')
 text('work.html', '<h2>A seasonal cooking app for teachers and families</h2>', '<h2>A seasonal cooking app for teachers</h2>', ref='F2')
 text('work.html', "<p>What's in season, a grocery list that scales to however many people are cooking, and pictures and read-aloud for the youngest cooks. iPhone, iPad and Android.</p>",
-     '<p>Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program\'s own cards. iPhone, iPad and Android.</p>', ref='F2')
+     '<p>Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program\'s own cards. iPhone, iPad, Android and the web.</p>', ref='F2, T-16 N12')
 text('case-reels.html', 'a seasonal cooking app for teachers and families, on iPhone, iPad and Android.',
      'a seasonal cooking app for teachers, on iPhone, iPad and Android.', ref='F2')
 sub('comp3.html', r'\s*<span class="label"[^>]*>Why this exists</span>', '', ref='L59')

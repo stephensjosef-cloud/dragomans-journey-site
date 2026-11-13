@@ -1,8 +1,9 @@
 {
-  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero uses lede_album_gated while the album card is hidden, so it names the album only when the album shows.",
+  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero shows only intro. The meta description uses lede_album_gated while the album card is hidden, so it names the album only when the album shows. kind and kicker are kept but not printed (T-16); the page title is the kicker's first part.",
   "hero": {
     "kicker": "The studio · updated as things ship",
     "h1": "Built in<br>the open",
+    "intro": "Everything I'm building right now, and the date each piece shipped.",
     "lede": "Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first.",
     "lede_album_gated": "Everything I'm building right now, and the date each piece shipped. Apps, free tools and shirts, made with AI and a lot of real-phone testing. Get on a list and you hear first."
   },

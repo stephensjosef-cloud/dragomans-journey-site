@@ -163,7 +163,7 @@ renderLines();renderReceipt();
 write(sys.argv[1], "receipt.html",
       title="Busywork Receipt",
       description="A free calculator for small businesses and nonprofits: ring up the chores that eat your week and see what they cost in a year, and which ones could honestly come back.",
-      kicker="Free tool · runs in your browser",
+      kicker="Free tool",
       h1="Ring up your<br>busywork",
       lede="Tap the chores that eat your week. You get a receipt for a year of them: the hours, the dollars, the day you'd finish if you did them all in a row, and an honest read on which ones could come back. Some of them should stay human.",
       css=CSS, body=BODY, script=SCRIPT,

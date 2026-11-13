@@ -75,8 +75,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
       </div>
     </nav>
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
-      <span class="kick">{kicker}</span>
-      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">{h1}</h1>{badge}
+      {kick}<h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">{h1}</h1>{badge}
       <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">{lede}</p>
     </div>
   </div>
@@ -126,7 +125,6 @@ TAIL = """  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
       <a href="{cta_href}" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">{cta_btn}</a>
-      <a href="work.html#free" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">More free tools</a>
     </div>
   </section>
 """
@@ -137,6 +135,8 @@ def page(**k):
         k.setdefault(key, "")
     k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
     k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
+    # The small line over the title; a page without one (the Studio, T-16) gets no empty span.
+    k["kick"] = f'<span class="kick">{k["kicker"]}</span>\n      ' if k.get("kicker") else ""
     return HEAD.format(**k)
 
 def write(out_dir, slug, **k):

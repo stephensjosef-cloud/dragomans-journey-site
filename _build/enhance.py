@@ -85,11 +85,14 @@ INTAKE = f"""
     </div>"""
 
 if DROPIN_DATE:
-    drop_when, drop_where, drop_cta = DROPIN_DATE, DROPIN_PLACE or "Santa Rosa", "Save me a seat →"
+    drop_cta = "Save me a seat →"
+    drop_next = (f"""<span style="{MONO}; font-size: 12px; letter-spacing: 0.1em; color: #6B716A">NEXT DROP-IN</span>
+      <strong style="{BIG}; font-size: 34px; line-height: 1; color: #16201C">{DROPIN_DATE}</strong>
+      <span style="font-size: 17px; color: #3B4540">{DROPIN_PLACE or "Santa Rosa"}</span>""")
 else:
-    drop_when = "The list hears first"
-    drop_where = "Twenty minutes, your pile and my full attention, somewhere in Santa Rosa with decent coffee. Dates go to the list before they go anywhere else."
+    # No date yet: one line (T-16, Nov 12, 2026), final wording, not rewritten by plain.py or intent.py.
     drop_cta = "Put me on the list →"
+    drop_next = """<p style="margin: 0; font-size: 19px; font-weight: 600; line-height: 1.4; color: #16201C">No date set yet. Leave your email and you'll get it first.</p>"""
 
 DROPIN = f"""<!-- ============ DROP-IN HOURS ============ -->
 <section id="dropin" aria-labelledby="dropin-h" style="background: #E8E1D1">
@@ -100,9 +103,7 @@ DROPIN = f"""<!-- ============ DROP-IN HOURS ============ -->
       <p style="margin: 0; max-width: 54ch; font-size: 19px; color: #3B4540">Bring the binder, the phone full of clips or the spreadsheet you dread. We sit down for twenty minutes and look at it together, and you leave knowing one thing you could do about it that week, with or without me.</p>
     </div>
     <div style="display: flex; flex-direction: column; gap: 14px; padding: clamp(22px, 3vw, 32px); border: 2px solid #16201C; background: #F2EDE1">
-      <span style="{MONO}; font-size: 12px; letter-spacing: 0.1em; color: #6B716A">NEXT DROP-IN</span>
-      <strong style="{BIG}; font-size: 34px; line-height: 1; color: #16201C">{drop_when}</strong>
-      <span style="font-size: 17px; color: #3B4540">{drop_where}</span>
+      {drop_next}
       <form id="dl" novalidate style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px">
         <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden" aria-hidden="true"><input id="dl-website" tabindex="-1" autocomplete="off"></div>
         <label style="display: flex; flex-direction: column; gap: 6px"><span style="{MONO}; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B716A">Email</span>
@@ -301,6 +302,9 @@ def enhance_local():
     # Drop-in hours before the contact band.
     t = rep(t, '<section id="contact"', DROPIN + '<section id="contact"')
 
+    # "Recently finished" (the canvas's shipped log) is gone (T-16, Nov 12, 2026).
+    t = rep_re(t, r'<!-- ============ SHIPPED LOG ============ -->\s*<section aria-labelledby="log-h".*?</section>\s*', '')
+
     t = rep(t, "</body>", LOCAL_JS + "</body>")
     body = re.sub(r"<script.*?</script>|<style.*?</style>", "", t, flags=re.S)
     left = re.findall(r"\[[A-Z ,.]{6,}\]", body)
@@ -324,6 +328,10 @@ def enhance_mainframe():
                  '<span aria-hidden="true" style="font-family: \'JetBrains Mono\', monospace">→</span></a>') + t[j:]
     t = rep(t, 'href="mailto:stephens.josef@gmail.com?subject=Briefing%20request%3A%20%5Binstitution%5D"', 'href="briefing.html#ask=briefing"')
     t = rep(t, 'href="mailto:stephens.josef@gmail.com?subject=Survey%3A%20one%20program%20family"', 'href="briefing.html#ask=survey"')
+    # The lone section numbers over "What this does not prove." and the section about Josef
+    # are gone (T-16, Nov 12, 2026). The first sat alone in its column, so the column goes too.
+    t = rep_re(t, r'<div style="flex: 1 1 200px; max-width: 260px;[^"]*">\s*<span[^>]*>§5</span>\s*</div>\s*', '')
+    t = rep_re(t, r'<span[^>]*>§6</span>\s*', '')
     body = re.sub(r"<script.*?</script>|<style.*?</style>", "", t, flags=re.S)
     assert not re.search(r"\[[A-Z ,.]{6,}\]", body), "bracket placeholder left in mainframe.html"
     p.write_text(t, encoding="utf-8")
@@ -402,7 +410,6 @@ def tool_cards():
 
 def add_free_tools():
     light = "display:inline-flex;align-items:center;min-height:44px;color:#C9D2CB;text-decoration:none;font-size:15px"
-    paper = "display:inline-flex;align-items:center;min-height:44px;color:#3A4252;text-decoration:none;font-size:15px"
 
     p = OUT / "index.html"
     t = p.read_text(encoding="utf-8")
@@ -434,52 +441,15 @@ def add_free_tools():
 <section id="contact\"""")
     p.write_text(t, encoding="utf-8")
 
-    p = OUT / "mainframe.html"
-    t = p.read_text(encoding="utf-8")
-    t = nav_pair(t, r'<a href="#correspondence" class="quiet"[^>]*>Request a briefing</a>(?=\s*</nav>)',
-                  '<a href="studio.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #3A4252; text-decoration: none; font-size: 15px">Studio</a>'
-                  '<a href="work.html#free" style="display: inline-flex; align-items: center; min-height: 44px; color: #3A4252; text-decoration: none; font-size: 15px">Free tools</a>')
-    p.write_text(t, encoding="utf-8")
-
+    # The three Mainframe pages (mainframe, briefing, comp3) keep their headers
+    # without Studio and Free tools (T-16, Nov 12, 2026).
     for f, last, style in (("call.html", "See the work", light), ("case-reels.html", "← All the work", light),
-                           ("start.html", "← Back to the Local Route", light),
-                           ("briefing.html", "← The Mainframe Route", paper), ("comp3.html", "The Mainframe Route →", paper)):
+                           ("start.html", "← Back to the Local Route", light)):
         p = OUT / f
         t = p.read_text(encoding="utf-8")
         t = nav_pair(t, r'<a href="[a-z]+\.html" style="' + re.escape(style) + r'">' + re.escape(last) + '</a>',
                       f'<a href="studio.html" style="{style}">Studio</a><a href="work.html#free" style="{style}">Free tools</a>')
         p.write_text(t, encoding="utf-8")
-
-
-# The Studio (T-08, Nov 11, 2026): a slim band under the home page's hero with
-# the newest 3 lines of the build log, read from shipped.json by the same rules
-# as the Studio page (tools/studio.py).
-def add_studio_band():
-    studio, shipped = STUDIO.load()
-    today = STUDIO.la_today()
-    rows = STUDIO.visible(studio, shipped, today)[:3]
-    assert len(rows) == 3, "shipped.json: fewer than 3 lines to show on the home page"
-    items = "".join(
-        f'\n        <li style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px">'
-        f'<time datetime="{r["date"]}" style="{MONO}; font-size: 13px; color: #5D6576; white-space: nowrap">{STUDIO.short_date(r["day"], today)}</time>'
-        f'<span style="{MONO}; font-size: 12px; padding: 2px 8px; background: #E6E0D2; color: #3A4252">{STUDIO.t(r["label"])}</span>'
-        f'<span style="flex-basis: 100%; font-size: 16px; line-height: 1.45">{STUDIO.t(r["line"])}</span></li>'
-        for r in rows)
-    band = f"""<!-- shipped lately (T-08) -->
-  <section id="shipped" aria-labelledby="shipped-h" style="max-width: 1240px; margin: 0 auto; padding: 16px clamp(16px, 4vw, 48px) 0">
-    <div style="display: flex; flex-direction: column; gap: 16px; padding: 20px 0; border-top: 1px solid #12161F; border-bottom: 1px solid #CFC8B8">
-      <h2 id="shipped-h" style="margin: 0; {MONO}; font-weight: 400; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #A93F17">Shipped lately</h2>
-      <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px 32px">{items}
-      </ol>
-      <a href="studio.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; color: #12161F; font-weight: 600; text-decoration: none; border-bottom: 1px solid #12161F">See everything I'm building →</a>
-    </div>
-  </section>
-
-  <!-- the two routes -->"""
-    p = OUT / "index.html"
-    t = p.read_text(encoding="utf-8")
-    t = rep(t, "<!-- the two routes -->", band)
-    p.write_text(t, encoding="utf-8")
 
 
 def use_hello():
@@ -526,7 +496,6 @@ enhance_mainframe()
 add_pages()
 enhance_index()
 add_free_tools()
-add_studio_band()
 use_hello()
 add_og()
 for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES:

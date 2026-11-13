@@ -11,13 +11,15 @@ files; this script adds only numbers, dates and arrows.
 Rules:
 - A product with a non-null "gate" does not render, and neither do its log lines.
 - Log lines older than 120 days (America/Los_Angeles) drop off at build time.
-  The numbers strip counts the lines that are left, so it always agrees with
-  the list under it.
+  The count over the log ("<n> things shipped since <date>") counts the lines
+  that are left, so it always agrees with the list under it.
 - "Shipped lately" shows the 8 newest; "See all <N>" reveals the rest in place.
 - Each log line carries a small label: its project's product name, or the
   site's own address for project "site".
-- The hero names the album only while the album card shows: "lede" then,
-  "lede_album_gated" while the album has a gate.
+- The hero shows only "intro" (T-16). The meta description names the album
+  only while the album card shows: "lede" then, "lede_album_gated" while the
+  album has a gate. The kicker and each product's "kind" stay in the JSON but
+  aren't printed (T-16); the page title is the kicker's first part.
 - A join list is a small form (T-10): an email field and the list's button.
   It posts {form: "list", fields: {email, list}} to the intake Worker the same
   way start.html does (honeypot, time since load), says "You're on the list"
@@ -28,12 +30,11 @@ Rules:
 Product pages (T-09): each open product with a join list also gets
 studio-<id>.html: its name, status, what, proof, image, all of its log lines
 that show, and one join box with the line from its list ("line"). Its card
-links there ("See it move"). A page whose product is gated or loses its list is deleted here. og.py, build.py (sitemap)
+links there ("More on <name>", T-16) and the page links back ("← The Studio"). A page whose product is gated or loses its list is deleted here. og.py, build.py (sitemap)
 and enhance.py all take the page list from product_pages().
 
 enhance.py copies studio.html into the site, and refuses to if either JSON
-file changed since this script last ran. enhance.py also uses visible() and
-LABELS here for the band on the home page.
+file changed since this script last ran.
 """
 import datetime
 import hashlib
@@ -48,11 +49,11 @@ STUDIO = HERE / "studio.json"
 SHIPPED = HERE / "shipped.json"
 EMAIL = "hello@dragomansjourney.com"
 KEEP_DAYS = 120
-RECENT_DAYS = 30
 FIRST = 8
 COUNT_FROM = 10
 SITE_LABEL = "dragomansjourney.com"      # label for project "site": the site's own address
-MOVE = "See it move"                     # a card's link to its product page (T-09)
+MORE = "More on {name}"                  # a card's link to its product page (T-09, words T-16)
+BACK = "← The Studio"                    # a product page's link back to the Studio (T-16)
 ENDPOINT = "https://dj-intake.stephens-josef.workers.dev/"   # the intake Worker, same as start.html (T-10)
 JOINED = "You're on the list"            # a join box after the Worker says ok (T-10)
 
@@ -125,13 +126,8 @@ def short_date(d, today):
     return s if d.year == today.year else f"{s}, {d.year}"
 
 
-def numbers(rows, today):
-    since = today - datetime.timedelta(days=RECENT_DAYS)
-    n = len(rows)
-    m = sum(1 for r in rows if r["day"] > since)
-    k = len({r["project"] for r in rows})
-    oldest = min(r["day"] for r in rows)
-    return n, m, k, oldest
+def numbers(rows):
+    return len(rows), min(r["day"] for r in rows)
 
 
 def t(s):
@@ -175,7 +171,7 @@ def join_button(p):
 def product_card(p):
     feature = bool(p.get("image"))
     parts = [f'<h2>{t(p["name"])}</h2>',
-             f'<div class="meta"><span class="pill">{t(p["status"])}</span><span class="kind mono">{t(p["kind"])}</span></div>',
+             f'<div class="meta"><span class="pill">{t(p["status"])}</span></div>',
              f'<p>{t(p["what"])}</p>']
     if p.get("proof"):
         parts.append(f'<p class="proof"><strong>{t(p["proof"])}</strong></p>')
@@ -185,7 +181,7 @@ def product_card(p):
         arrow = "↗" if href.startswith("http") else "→"
         acts.append(f'<a class="go" href="{a(href)}">{t(p["link"]["label"])} {arrow}</a>')
     if page_slug(p):
-        acts.append(f'<a class="go" data-page href="{page_slug(p)}">{MOVE} →</a>')
+        acts.append(f'<a class="go" data-page href="{page_slug(p)}">{t(MORE.format(name=p["name"]))} →</a>')
     if p.get("list"):
         acts += join_button(p)
     if acts:
@@ -198,11 +194,10 @@ def product_card(p):
 
 
 CSS = r"""
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:2px solid #16201C;border-bottom:1px solid #CFC6B2}
-.stats p{margin:0;padding:18px 20px 18px 0;font-size:17px;color:#3B4540}
-.stats p+p{border-left:1px solid #CFC6B2;padding-left:20px}
+.stats{border-top:2px solid #16201C;border-bottom:1px solid #CFC6B2}
+.stats p{margin:0;padding:18px 0;font-size:17px;color:#3B4540}
 .stats strong{display:block;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(48px,5.4vw,68px);line-height:.9;color:#C2461B}
-@media (max-width:760px){.stats p{padding:14px 10px 14px 0;font-size:14px;line-height:1.35}.stats p+p{padding-left:10px}}
+@media (max-width:760px){.stats p{padding:14px 0}}
 .sec{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .sec h2.big{font-size:clamp(38px,4.6vw,60px)}
 .log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
@@ -228,7 +223,6 @@ CSS = r"""
 .prod .proof strong{color:#16201C}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .pill{display:inline-flex;align-items:center;min-height:28px;padding:0 12px;border-radius:999px;background:#16201C;color:#F2EDE1;font-size:13px;font-weight:600}
-.kind{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6B716A}
 .acts{margin-top:auto;padding-top:8px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
 .prod a.go{display:inline-flex;align-items:center;min-height:44px;font-weight:700;text-decoration:none;color:#16201C}
 .prod a.go:hover{color:#A93F17}
@@ -294,11 +288,9 @@ b.addEventListener('click',function(){
 def build(studio, shipped, today):
     rows = visible(studio, shipped, today)
     assert rows, "shipped.json: nothing to show in the last 120 days"
-    n, m, k, oldest = numbers(rows, today)
+    n, oldest = numbers(rows)
     strip = (f'\n  <div class="stats" id="stats" data-built="{today.isoformat()}">'
              f'\n    <p><strong>{n}</strong> {"thing" if n == 1 else "things"} shipped since {short_date(oldest, today)}</p>'
-             f'\n    <p><strong>{m}</strong> in the last {RECENT_DAYS} days</p>'
-             f'\n    <p><strong>{k}</strong> {"project" if k == 1 else "projects"}</p>'
              '\n  </div>')
     items = "".join(log_item(r, today, i >= FIRST) for i, r in enumerate(rows))
     toggle = (f'\n    <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false">See all {n}</button>'
@@ -355,14 +347,14 @@ def main(out_dir):
     today = la_today()
     hero = studio["hero"]
     body = build(studio, shipped, today)
-    kicker = hero["kicker"]
-    lede = hero_lede(studio)
+    title = hero["kicker"].split(" · ")[0]          # "The studio"; the kicker itself isn't printed (T-16)
+    lede = hero_lede(studio)                         # the meta description, as before T-16
     stamp = f'<!-- studio.py {today.isoformat()} {fingerprint()} -->'
     from chrome import write
     write(out_dir, "studio.html",
-          title=kicker.split(" · ")[0],                       # "The studio", from the kicker
+          title=title,
           description=lede.replace('"', "&quot;"),
-          kicker=t(kicker), h1=hero["h1"], lede=t(lede),
+          kicker="", h1=hero["h1"], lede=t(hero["intro"]),
           css=CSS, body=stamp + body, script=SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
@@ -373,7 +365,7 @@ def main(out_dir):
         write(out_dir, slug,
               title=t(p["name"]),
               description=a(p["what"]),
-              kicker=f'<a href="studio.html">{t(kicker.split(" · ")[0])}</a> · {t(p["kind"])}',
+              kicker=f'<a href="studio.html">{t(BACK)}</a>',
               h1=t(p["name"]),
               badge=f'\n      <span class="hero-pill">{t(p["status"])}</span>',
               lede=t(p["what"]),

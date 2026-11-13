@@ -310,6 +310,8 @@ with sync_playwright() as p:
     # ---------------- free tools, findable (T-02, Nov 10, 2026)
     TOOLS = {'shotlist.html': 'Reel shot list', 'captions.html': 'Caption fitter',
              'receipt.html': 'Busywork receipt', 'scaler.html': 'Recipe scaler', 'checkup.html': 'Website checkup'}
+    # T-16: every header except the three Mainframe pages, which carry neither Studio nor Free tools.
+    MAINFRAME_PAGES = ('mainframe', 'briefing', 'comp3')
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         # The header nav: <nav> where the page has one, else its <header>, else the home page's letterhead bar.
@@ -317,6 +319,9 @@ with sync_playwright() as p:
                or _re.search(r'<header.*?</header>', src, _re.S))
         top = top.group(0) if top else ''
         links = _re.findall(r'<a href="work\.html#free"[^>]*>([^<]*)</a>', top)
+        if name in MAINFRAME_PAGES:
+            check(f'{name} header has no Free tools link (T-16)', bool(top) and links == [] and 'Free tools' not in top, str(links))
+            continue
         check(f'{name} nav links Free tools to work.html#free', links == ['Free tools'], str(links))
         if 'Free 15-min call' in top:
             check(f'{name} Free tools sits before the free call', -1 < top.find('work.html#free') < top.index('Free 15-min call'))
@@ -346,6 +351,15 @@ with sync_playwright() as p:
         if line.count() == 1:
             check(f'{href} more-tools line sits above the dark panel',
                   line.bounding_box()['y'] < q.locator('#more-h').bounding_box()['y'])
+        # T-16 N14: the dark panel keeps its own button and no longer has "More free tools".
+        panel = q.locator('section[aria-labelledby="more-h"]')
+        check(f'{href} dark panel: one button, its own, no "More free tools" (T-16)', panel.locator('a').count() == 1
+              and panel.locator('a').get_attribute('href') == ('start.html' if href == 'receipt.html' else 'call.html')
+              and 'More free tools' not in panel.inner_text(),
+              str(panel.locator('a').all_inner_texts()))
+        # T-16 N13: the line over the title is just "Free tool".
+        check(f'{href} kicker reads "Free tool" (T-16)', q.locator('header .kick').count() == 1
+              and q.locator('header .kick').text_content().strip() == 'Free tool', q.locator('header .kick').text_content())
     for name in SHARED:
         q = newpage(390); q.goto(BASE + name + '.html'); q.wait_for_timeout(300)
         sw = q.evaluate('document.documentElement.scrollWidth')
@@ -545,23 +559,29 @@ with sync_playwright() as p:
             and _dt.date.fromisoformat(e['date']) >= today - _dt.timedelta(days=120)]
     rows.sort(key=lambda e: e['date'], reverse=True)
     N = len(rows)
-    M = sum(1 for e in rows if _dt.date.fromisoformat(e['date']) > today - _dt.timedelta(days=30))
-    K = len({e['project'] for e in rows})
     oldest = min(_dt.date.fromisoformat(e['date']) for e in rows)
 
     q = newpage(1440); q.goto(BASE + 'studio.html'); q.wait_for_timeout(400)
     stats = [s.strip() for s in q.locator('#stats p').all_inner_texts()]
     stats = [_re.sub(r'\s+', ' ', s) for s in stats]
-    check('studio strip matches shipped.json', stats == [f'{N} things shipped since {short(oldest, today)}', f'{M} in the last 30 days', f'{K} projects'], str(stats))
-    check('studio shows the hero from studio.json', q.inner_text('h1').replace('\n', ' ').upper() == _re.sub(r'<br\s*/?>', ' ', STUDIO_J['hero']['h1']).upper()
-          and q.locator('header .kick').inner_text().upper() == STUDIO_J['hero']['kicker'].upper())
-    # The hero names the album only while the album card shows (fix approved Nov 11, 2026).
+    # T-16 N4: one count, still from the log; "in the last 30 days" and "projects" are gone.
+    check('studio count matches shipped.json, and is the only one', stats == [f'{N} things shipped since {short(oldest, today)}'], str(stats))
+    check('studio count is one block, not a three-column box (T-16)', q.eval_on_selector('#stats', 'e => getComputedStyle(e).display') == 'block'
+          and abs(q.locator('#stats p').bounding_box()['width'] - q.locator('#stats').bounding_box()['width']) <= 1)
+    # T-16 N2: no line over the title.
+    check('studio shows the h1 from studio.json and no kicker (T-16)', q.inner_text('h1').replace('\n', ' ').upper() == _re.sub(r'<br\s*/?>', ' ', STUDIO_J['hero']['h1']).upper()
+          and q.locator('header .kick').count() == 0 and 'updated as things ship' not in src)
+    check('studio title unchanged', '<title>The studio · Dragoman\'s Journey</title>' in src)
+    # T-16 N3: the hero keeps only its first sentence; the meta description stays as it was, and
+    # still names the album only while the album card shows (fix approved Nov 11, 2026).
+    INTRO = "Everything I'm building right now, and the date each piece shipped."
     HIDDEN_LEDE = "Everything I'm building right now, and the date each piece shipped. Apps, free tools and shirts, made with AI and a lot of real-phone testing. Get on a list and you hear first."
     SHOWN_LEDE = "Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first."
     album_hidden = any(x['id'] == 'album' for x in gated_p)
     hero_p = q.locator('header p').last.inner_text().strip()
-    check('studio hero names the album only when its card shows', hero_p == (HIDDEN_LEDE if album_hidden else SHOWN_LEDE), hero_p)
-    check('studio meta description matches the hero', _html.unescape(_re.search(r'<meta name="description" content="([^"]*)"', src).group(1)) == hero_p)
+    check('studio hero is the intro\'s first sentence only (T-16)', hero_p == INTRO and 'Get on a list' not in q.inner_text('header'), hero_p)
+    check('studio meta description unchanged, names the album only when its card shows',
+          _html.unescape(_re.search(r'<meta name="description" content="([^"]*)"', src).group(1)) == (HIDDEN_LEDE if album_hidden else SHOWN_LEDE))
     if album_hidden:
         check('studio says no "album" while the album is hidden', 'album' not in q.inner_text('body').lower() and 'album' not in src.split('<style>')[0].lower())
     # Both states, from studio.py in a temp copy: the album hidden, then shown.
@@ -583,8 +603,8 @@ with sync_playwright() as p:
             hero_txt = _html.unescape(hero_txt.group(1)) if hero_txt else ''
             meta = _re.search(r'<meta name="description" content="([^"]*)"', page_src)
             want_lede = HIDDEN_LEDE if state == 'hidden' else SHOWN_LEDE
-            check(f'album {state}: hero reads as approved', hero_txt == want_lede, (r.stderr or hero_txt)[-200:])
-            check(f'album {state}: meta description matches', bool(meta) and _html.unescape(meta.group(1)) == want_lede)
+            check(f'album {state}: hero is the first sentence only (T-16)', hero_txt == INTRO, (r.stderr or hero_txt)[-200:])
+            check(f'album {state}: meta description reads as approved', bool(meta) and _html.unescape(meta.group(1)) == want_lede)
             check(f'album {state}: album card ' + ('absent' if state == 'hidden' else 'present'),
                   ('data-id="album"' in page_src) == (state == 'shown'))
     finally:
@@ -611,9 +631,12 @@ with sync_playwright() as p:
     for x in open_p:
         card = q.locator(f'#products article[data-id="{x["id"]}"]')
         txt = card.inner_text()
-        check(f'studio card {x["id"]}: name, status, kind and what from the JSON',
+        check(f'studio card {x["id"]}: name, status and what from the JSON',
               card.locator('h2').inner_text().upper() == x['name'].upper() and card.locator('.pill').inner_text() == x['status']
-              and card.locator('.kind').inner_text().upper() == x['kind'].upper() and x['what'] in txt)
+              and x['what'] in txt)
+        # T-16 N6: the kind stays in the JSON but isn't printed on the card.
+        check(f'studio card {x["id"]}: no kind label (T-16)', card.locator('.kind').count() == 0
+              and x['kind'].upper() not in card.locator('.meta').inner_text().upper(), card.locator('.meta').inner_text())
         if x.get('proof'):
             check(f'studio card {x["id"]}: proof line in bold', card.locator('strong', has_text=x['proof']).count() == 1)
         if x.get('image'):
@@ -651,28 +674,27 @@ with sync_playwright() as p:
             check('Bird League spans the full width at 1440', full == ['birdleague'], str(full))
         q.screenshot(path=f'{SHOTS}/t08-studio-{w}.png', full_page=True)
 
-    # Home band: the newest 3 lines and the way in.
+    # T-16 N1: the home page's "Shipped lately" strip is gone; the header's Studio link stays.
     src = urlopen(BASE + 'index.html').read().decode('utf-8')
-    band = _re.search(r'<section id="shipped".*?</section>', src, _re.S)
-    band = band.group(0) if band else ''
-    check('home band sits between the hero and the routes', bool(band) and src.index('<!-- hero -->') < src.index(band) < src.index('<!-- the two routes -->'))
-    lines = [_html.unescape(x) for x in _re.findall(r'<span style="flex-basis: 100%[^"]*">([^<]*)</span>', band)]
-    check('home band shows the newest 3 log lines', lines == [e['line'] for e in rows[:3]], str(lines))
-    check('home band dates and labels', _re.findall(r'<time datetime="([^"]+)"', band) == [e['date'] for e in rows[:3]]
-          and [_html.unescape(x) for x in _re.findall(r'padding: 2px 8px[^"]*">([^<]*)</span>', band)] == [label_of[e['project']] for e in rows[:3]])
-    check('home band links to the studio', '<a href="studio.html"' in band and "See everything I'm building →" in _html.unescape(band))
+    check('home has no "Shipped lately" strip (T-16)', 'id="shipped"' not in src and 'Shipped lately' not in src
+          and "See everything I'm building" not in _html.unescape(src) and not any(e['line'] in _html.unescape(src) for e in SHIPPED_J['entries']))
+    check('home hero runs straight into the two routes (T-16)', _re.search(r'</header>\s*<!-- the two routes -->', src) is not None)
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'index.html'); q.wait_for_timeout(300)
         check(f'home no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
-        q.locator('#shipped').screenshot(path=f'{SHOTS}/t08-home-band-{w}.png')
+        check(f'home header keeps its Studio link at {w}', q.locator('a[href="studio.html"]').count() == 1)
+        q.screenshot(path=f'{SHOTS}/t16-home-top-{w}.png')
 
-    # Studio in every header, before Free tools.
+    # Studio in every header, before Free tools, except the three Mainframe pages (T-16).
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         top = (_re.search(r'<nav aria-label="Main".*?</nav>', src, _re.S) or _re.search(r'<!-- letterhead -->.*?<!-- hero -->', src, _re.S)
                or _re.search(r'<header.*?</header>', src, _re.S))
         top = top.group(0) if top else ''
         links = _re.findall(r'<a href="studio\.html"[^>]*>([^<]*)</a>', top)
+        if name in MAINFRAME_PAGES:
+            check(f'{name} header has no Studio link (T-16)', bool(top) and links == [] and '>Studio<' not in top, str(links))
+            continue
         check(f'{name} nav links Studio', links == ['Studio'], str(links))
         check(f'{name} Studio sits before Free tools', -1 < top.find('href="studio.html"') < top.find('work.html#free'))
 
@@ -709,8 +731,8 @@ with sync_playwright() as p:
     for x in open_p:
         mv = q.locator(f'#products article[data-id="{x["id"]}"] a[data-page]')
         if x in page_p:
-            check(f'studio card {x["id"]} links "See it move →" to its page',
-                  mv.count() == 1 and mv.inner_text().strip() == 'See it move →' and mv.get_attribute('href') == f'studio-{x["id"]}.html')
+            check(f'studio card {x["id"]} links "More on {x["name"]} →" to its page (T-16)',
+                  mv.count() == 1 and mv.inner_text().strip() == f'More on {x["name"]} →' and mv.get_attribute('href') == f'studio-{x["id"]}.html')
         else:
             check(f'studio card {x["id"]} has no page link', mv.count() == 0)
     for x in page_p:
@@ -727,8 +749,11 @@ with sync_playwright() as p:
         check(f'{slug}: status pill under the name', hd.locator('.hero-pill').inner_text() == x['status']
               and hd.locator('.hero-pill').bounding_box()['y'] > q.locator('h1').bounding_box()['y'])
         check(f'{slug}: what, from the JSON', x['what'] in hd.inner_text())
-        check(f'{slug}: kicker links back to the studio', hd.locator('.kick a[href="studio.html"]').count() == 1
-              and x['kind'].upper() in hd.locator('.kick').inner_text().upper())
+        # T-16 N8: the line over the title is one link back, "← The Studio", and nothing else.
+        check(f'{slug}: the line over the title is one link, "← The Studio", to studio.html (T-16)',
+              hd.locator('.kick a').count() == 1 and hd.locator('.kick a').get_attribute('href') == 'studio.html'
+              and hd.locator('.kick').text_content().strip() == '← The Studio' and hd.locator('.kick a').text_content() == '← The Studio',
+              hd.locator('.kick').text_content())
         main_ = q.locator('main')
         if x.get('proof'):
             check(f'{slug}: proof line in bold', main_.locator('strong', has_text=x['proof']).count() == 1)
@@ -853,8 +878,9 @@ with sync_playwright() as p:
     check('checkup: no long dash', '—' not in src and '–' not in src)
     work = urlopen(BASE + 'work.html').read().decode('utf-8')
     card = _re.search(r'<article class="card" data-k="([^"]*)">((?:(?!</article>).)*href="checkup\.html"(?:(?!</article>).)*)</article>', work, _re.S)
-    check('checkup: a fifth tool card on the work page, data-k free, "25 links", "Website checkup"', bool(card) and card.group(1) == 'free'
-          and '<p class="num">25 links</p>' in card.group(2) and '<h2>Website checkup</h2>' in card.group(2))
+    # T-16 N10: the card keeps its place but no longer carries the "25 links" figure.
+    check('checkup: a fifth tool card on the work page, data-k free, "Website checkup", no figure', bool(card) and card.group(1) == 'free'
+          and 'class="num"' not in card.group(2) and '25 links' not in card.group(2) and '<h2>Website checkup</h2>' in card.group(2))
 
     # Until the Worker is live: "Coming this week", no box, nothing sent.
     sent = []
@@ -946,6 +972,128 @@ with sync_playwright() as p:
     check('checkup live: a refused address gets a plain answer and no report', 'inside a home or office network' in q.inner_text('#msg')
           and not q.locator('#rep1').is_visible() and q.inner_text('#go') == 'Check it')
     q.screenshot(path=f'{SHOTS}/t04-refused-390.png', full_page=True)
+
+    # ---------------- intent pass 2 (T-16, Nov 12, 2026)
+    def text_of(src):
+        return _html.unescape(_re.sub(r'<[^>]+>', ' ', _re.sub(r'<(script|style)\b.*?</\1>', ' ', src, flags=_re.S)))
+    T16_PAGES = ('index', 'studio', 'studio-birdleague', 'studio-deepcuts', 'work', 'shotlist', 'captions', 'receipt',
+                 'scaler', 'checkup', 'local', 'mainframe', 'briefing', 'comp3')
+    site = {n: urlopen(BASE + n + '.html').read().decode('utf-8') for n in SHARED + ('index',)}
+
+    # N5: four log lines gone everywhere, one shortened, the stranger rule written down.
+    GONE = ["Bird League build 50 runs on Apple's newest tools.", 'Deepcuts build 4 works end to end on iPhone.',
+            "Build 2 of the kids' cooking app, checked screen by screen on a real phone.",
+            "Every word on dragomansjourney.com rechecked: if it isn't there for a reader, it's gone.",
+            'Deepcuts got its new look, built and walked through on iPhone.']
+    check('N5: the removed log lines are on no page', not any(g in text_of(s) for g in GONE for s in site.values()))
+    check('N5: shipped.json no longer holds them', not any(g == e['line'] for g in GONE for e in SHIPPED_J['entries']) and len(SHIPPED_J['entries']) == 14)
+    check('N5: the Deepcuts line reads "Deepcuts got its new look."', any(e['line'] == 'Deepcuts got its new look.' and e['date'] == '2026-11-04' for e in SHIPPED_J['entries'])
+          and 'Deepcuts got its new look.' in text_of(site['studio']) and 'Deepcuts got its new look.' in text_of(site['studio-deepcuts']))
+    RULE = 'A line stays only if a stranger can picture what changed: no build number without what a person can now do.'
+    check('N5: the stranger rule ends shipped.json\'s _about and is in the README\'s "To log a ship" line',
+          SHIPPED_J['_about'].endswith(RULE) and any(l.startswith('   To log a ship:') and RULE in l for l in open(os.path.join(here, 'README.md'), encoding='utf-8')))
+    # N9: each product page's log is the JSON's, already checked above; and none of the removed lines.
+    for slug in ('studio-birdleague', 'studio-deepcuts'):
+        check(f'N9: {slug} log follows shipped.json, without the removed lines', not any(g in text_of(site[slug]) for g in GONE))
+
+    # N10 to N12: the work page.
+    q = newpage(1440); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
+    figs = dict(q.locator('#cards .card').evaluate_all('e => e.map(c => [c.querySelector("h2").textContent, c.querySelector(".num") ? c.querySelector(".num").textContent : null])'))
+    KEEP = {'One cooking-class shoot, one finished reel': '~4 min', 'A seasonal cooking app for teachers': '535 tests',
+            'A banking program, checked in public': '2 AI translations'}
+    check('N10: only the three cards with a real result keep their figure', {k: v for k, v in figs.items() if v} == KEEP and len(figs) == 10, str(figs))
+    for gone in ('0 → real users', 'Free</p>', '10 clips', '0 stranded words', '1 year, rung up', '×3, measurable', '25 links'):
+        check(f'N10: figure "{gone.replace("</p>", "")}" is gone', f'<p class="num">{gone}' not in site['work'])
+
+    def lined_up(pg, label):
+        # Cards in one row share their top and height, and their links sit on one line.
+        cards = pg.locator('#cards .card:visible:not(.feature)').evaluate_all(
+            'e => e.map(c => { const r = c.getBoundingClientRect(), g = c.querySelector("a.go").getBoundingClientRect();'
+            ' return [Math.round(r.top), Math.round(r.height), Math.round(g.bottom - r.top), !!c.querySelector(".num")]; })')
+        rows_ = {}
+        for c in cards:
+            rows_.setdefault(c[0], []).append(c)
+        mixed = [r for r in rows_.values() if len({c[3] for c in r}) == 2]
+        ok_ = all(len({c[1] for c in r}) == 1 and max(c[2] for c in r) - min(c[2] for c in r) <= 1 for r in rows_.values())
+        check(f'N10: cards line up, with and without a figure ({label})', ok_ and len(cards) > 0, str(rows_))
+        return mixed
+    lined_up(q, 'all cards at 1440')
+    for f_ in ('nonprofit', 'banking'):
+        q.click(f'.filt[data-f="{f_}"]'); q.wait_for_timeout(150)
+        mixed = lined_up(q, f'{f_} filter at 1440')
+        check(f'N10: the {f_} filter puts cards with and without a figure in one row', len(mixed) == 1, str(mixed))
+        q.screenshot(path=f'{SHOTS}/t16-work-{f_}-1440.png', full_page=True)
+    bl = q.locator('#cards .card.feature a.go')
+    check('N11: the Bird League card links "See Bird League →" to studio-birdleague.html', bl.count() == 1 and bl.inner_text().strip() == 'See Bird League →'
+          and bl.get_attribute('href') == 'studio-birdleague.html')
+    check('N11: "More about how I work" is gone', 'More about how I work' not in site['work'])
+    check('N12: the cooking app card says "iPhone, iPad, Android and the web."', 'iPhone, iPad, Android and the web.</p>' in site['work']
+          and 'iPhone, iPad and Android.</p>' not in site['work'])
+
+    # N15: the scaler intro.
+    check('N15: the scaler intro drops "Kids count as half a portion."', 'Kids count as half a portion.' not in site['scaler']
+          and "Paste any ingredient list and say who's eating. You get amounts" in _html.unescape(site['scaler']))
+    check('N15: the line under the boxes still says it', 'A kid counts as half a portion.' in site['scaler'])
+
+    # N16: the shot list countdown shows from 42 days out to the day itself, and not before.
+    def shot_at(when, nonprofit=False):
+        pg = newpage(390); pg.clock.set_fixed_time(when); pg.goto(BASE + 'shotlist.html'); pg.wait_for_timeout(300)
+        if nonprofit:
+            pg.click('.chip[data-k="type"][data-v="nonprofit"]'); pg.wait_for_timeout(100)
+        return pg
+    for when, np_, want in (('2026-10-17T12:00:00', False, '42 days'), ('2026-10-16T12:00:00', False, None),
+                            ('2026-10-20T12:00:00', True, '42 days'), ('2026-10-19T12:00:00', True, None),
+                            ('2026-11-28T09:00:00', False, 'Today'), ('2026-11-12T12:00:00', False, '16 days')):
+        pg = shot_at(when, np_)
+        who = 'Giving Tuesday' if np_ else 'Small Business Saturday'
+        if want:
+            check(f'N16: {when[:10]}, {who}: countdown shows "{want}"', pg.locator('#when').is_visible() and pg.inner_text('#days').strip() == want
+                  and who in pg.inner_text('#dayslabel'), pg.inner_text('#days'))
+        else:
+            box = pg.locator('#summary').bounding_box()
+            pad = pg.eval_on_selector('#summary', 'e => parseFloat(getComputedStyle(e).paddingTop) + parseFloat(getComputedStyle(e).borderTopWidth)')
+            check(f'N16: {when[:10]}, {who}: 43 days out, no countdown and no empty box', not pg.locator('#when').is_visible()
+                  and who not in pg.inner_text('#summary') and abs(pg.locator('#summary .label').bounding_box()['y'] - box['y'] - pad) <= 1)
+        if when.startswith('2026-10-1') and not np_:
+            pg.locator('#summary').screenshot(path=f'{SHOTS}/t16-shotlist-countdown-{when[:10]}-390.png')
+
+    # N17, N18: local.html.
+    lt = text_of(site['local'])
+    check('N17: "Recently finished" and its four lines are gone', 'Recently finished' not in lt and 'id="log-h"' not in site['local']
+          and 'Export to eBird goes live' not in lt and 'First run on a real shoot' not in lt and 'SHIPPED LOG' not in site['local'])
+    q = newpage(390); q.goto(BASE + 'local.html'); q.wait_for_timeout(300)
+    card = q.locator('#dropin form#dl').locator('xpath=..')
+    ct = card.inner_text()
+    check('N18: no date set, the drop-in box says it in one line', "No date set yet. Leave your email and you'll get it first." in ct
+          and 'NEXT DROP-IN' not in ct.upper() and 'Get the next date' not in ct and "Sign up and you'll hear the date first." not in ct, ct[:200])
+    check('N18: the form and its button stay', q.locator('#dl-email').count() == 1 and q.locator('#dl-name').count() == 1
+          and q.inner_text('#dl-send').strip() == 'Put me on the list →')
+    q.locator('#dropin').screenshot(path=f'{SHOTS}/t16-dropin-390.png')
+
+    # N22: the BrightLocal line.
+    check('N22: the line above the second card names who was asked',
+          '45% of US adults surveyed now use ChatGPT and other AI tools for local recommendations, up from 6% a year before (BrightLocal, 2026). <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener">See the source</a>' in site['checkup']
+          and '45% of people now' not in site['checkup'])
+
+    # N24: the lone 05 and 06 are gone; the audit report's 01 to 07 stay.
+    q = newpage(1440); q.goto(BASE + 'mainframe.html'); q.wait_for_timeout(300)
+    toc = q.locator('[data-toc] span').evaluate_all('e => e.map(s => s.textContent.trim()).filter(t => /^0[0-9]$/.test(t))')
+    check('N24: the audit report still lists 01 to 07', toc == ['01', '02', '03', '04', '05', '06', '07'], str(toc))
+    lone = q.evaluate('[...document.querySelectorAll("span")].filter(s => /^0[0-9]$/.test(s.textContent.trim()) && !s.closest("[data-toc]")).length')
+    check('N24: no lone section number left on the page', lone == 0, str(lone))
+    check('N24: no empty column left where 05 was', q.eval_on_selector('#s5 > div', 'e => e.children.length === 1 && !!e.firstElementChild.querySelector("#s6-h")'))
+    check('N24: the section about Josef keeps its photo column', q.locator('#s7 > div > div').first.locator('img, [role="img"]').count() == 1
+          and q.locator('#s7 > div > div').first.inner_text().strip() == '')
+
+    # Look rule: every changed page at 320, 390 and 1440, no sideways scroll on phones.
+    for n in T16_PAGES:
+        q = newpage(320); q.goto(BASE + n + '.html'); q.wait_for_timeout(400)
+        for w in (320, 390, 1440):
+            q.set_viewport_size({'width': w, 'height': 900}); q.wait_for_timeout(200)
+            if w < 1440:
+                sw = q.evaluate('document.documentElement.scrollWidth')
+                check(f'T-16: {n} has no sideways scroll at {w}', sw <= w, str(sw))
+            q.screenshot(path=f'{SHOTS}/t16-{n}-{w}.png', full_page=True)
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

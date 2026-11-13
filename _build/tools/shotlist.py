@@ -3,7 +3,7 @@ import sys
 
 CSS = r"""
 .ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:22px 32px}
-.count{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline}
+.count{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline;margin-bottom:18px}
 .count .n{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(40px,5vw,60px);line-height:.9;color:#C2461B}
 .strip{display:flex;height:44px;border:1.5px solid #16201C;border-radius:2px;overflow:hidden}
 .strip span{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#16201C;border-right:1px solid rgba(22,32,28,.35);min-width:0;overflow:hidden;white-space:nowrap}
@@ -45,11 +45,11 @@ BODY = r"""
   </section>
 
   <section class="panel" aria-live="polite" id="summary">
-    <div class="count">
+    <div class="count" id="when">
       <span class="n" id="days"></span>
       <span id="dayslabel" style="font-size:18px;font-weight:600"></span>
     </div>
-    <p class="label" style="margin-top:18px">The reel, second by second</p>
+    <p class="label">The reel, second by second</p>
     <div class="strip" id="strip" aria-hidden="true"></div>
     <p class="private" id="striplabel" style="margin-top:8px"></p>
   </section>
@@ -181,6 +181,7 @@ var st={type:'shop',goal:'door',len:30,light:'am'};
 
 function thanksgiving(y){var d=new Date(y,10,1);var first=(4-d.getDay()+7)%7;return new Date(y,10,1+first+21)}
 function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
+var SOON=42;   // days out when the countdown starts to show (T-16)
 function daysUntil(d){var t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/864e5)}
 function fmt(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 
@@ -222,6 +223,8 @@ function render(){
   var np=st.type==='nonprofit'||st.goal==='give';
   var target=np?gt:sbs, name=np?'Giving Tuesday':'Small Business Saturday';
   var d=daysUntil(target);
+  // The countdown shows only from 42 days out to the day itself (T-16); farther out, nothing.
+  document.getElementById('when').hidden=!(d>=0&&d<=SOON);
   document.getElementById('days').textContent=d===0?'Today':d+(d===1?' day':' days');
   document.getElementById('dayslabel').textContent=d===0?(name+' is today. Post it this morning.'):('until '+name+', '+fmt(target)+'. Film this week, post the week before.');
   document.getElementById('strip').innerHTML=clips.map(function(c){return '<span class="r-'+c.role+'" style="flex:'+c.sec+'">'+c.no+'</span>'}).join('');
@@ -263,7 +266,7 @@ render();
 write(sys.argv[1], "shotlist.html",
       title="Reel Shot List",
       description="A free planner for small businesses and nonprofits: pick what you run and get the 10 phone clips to film, in edit order and in one-lap shooting order.",
-      kicker="Free tool · runs in your browser",
+      kicker="Free tool",
       h1="Ten clips.<br>One lap.",
       lede="Pick what you run and what the reel should do. You get the 10 clips to film, how long each one lasts, and the order to shoot them so you never walk back across the room.",
       css=CSS, body=BODY, script=SCRIPT,
