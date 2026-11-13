@@ -552,8 +552,9 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
   - `briefing`, `comp3`: header is the name and the one link back to the Mainframe Route.
   - Every label sits on what it names and nothing overlaps. Worth knowing, not changed here: on the tool, Studio and product pages the header's text links are 24 px tall (the call button is 44); that's how they were before this item.
 - **Josef, by hand:**
-  1. Read the 14 pages from this branch (or the screenshots). If you'd rather "What this does not prove." keep its indent at desktop like the sections around it, say so and Claude puts back an empty column for it only.
+  1. Read the 14 pages from this branch (or the screenshots).
   2. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
+- **Decided Nov 12:** Josef said leave "What this does not prove." full width at desktop. Nothing else changed.
 
 ---
 
