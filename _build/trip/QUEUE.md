@@ -485,7 +485,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-16 · Intent pass 2 · READY
+## T-16 · Intent pass 2 · DONE
 
 **Why:** Josef, Nov 12, 2026: the pages added since Oct 28 were never checked against the intent rule; this applies his audit.
 
@@ -513,7 +513,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 - **N25.** Remove "Studio" and "Free tools" from the header of `mainframe.html`, `briefing.html` and `comp3.html` only; T-02's rule now reads "every header except the three Mainframe pages".
 
 **Receipt:**
-- **Branch:** `trip/T-16`, cut from `origin/trip/T-15` (the `trip/` branch with the newest commit, `6bb5770`). Work commit COMMIT_WORK; this receipt is in the commit after it. Nothing pushed to `main`.
+- **Branch:** `trip/T-16`, cut from `origin/trip/T-15` (the `trip/` branch with the newest commit, `6bb5770`). Work commit `c0340b4`; this receipt is in the commit after it. Nothing pushed to `main`.
 - **Pipeline:** the unchanged pipeline rebuilt every root file byte for byte first. After the change, `cmp` of every file in `out/` (and `out/og/`) against the root shows exactly the 14 named pages differ: `index`, `studio`, `studio-birdleague`, `studio-deepcuts`, `work`, `shotlist`, `captions`, `receipt`, `scaler`, `checkup`, `local`, `mainframe`, `briefing`, `comp3`. Every other root file, the 17 share cards and `sitemap.xml` included, is unchanged. No title, meta description or share card changed, so `tools/og.py` wasn't run.
 - **Each change, where it was made:**
   - **N1** `index.html`: the "Shipped lately" strip (heading, 3 log lines, "See everything I'm building →") is gone; `add_studio_band()` removed from `enhance.py` with its inline styles. The hero now runs straight into the two routes. The header's Studio link stays.
