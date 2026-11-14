@@ -729,6 +729,52 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-19 · Harness lines 01: 33 word changes that won a blind reader test · READY
+
+**Why:** Josef, Nov 13, 2026: fresh readers lost their place on shop words like "the build", "Day 1" and "stop 1", on bare numbers and on two slogans. Each new line below was shown blind beside the line it replaces and at least two of three readers found it clearer.
+
+**Done when:** every line below is on its page exactly once, the line it replaces is gone, nothing else on any page changed, all tests pass, each changed screen was looked at on a phone.
+
+**Build:** words only. No layout change, no feature change, no new element, no removed element except where a line says a sentence is removed. Words exactly, character for character, no em dashes. Where the old words are also an `aria-label` or are set again by script, change them there too. Make each change in the `_build` sources.
+- **W1.** Home, Local Route card: after "BEGINS WITH", "The Blueprint · $1,500 · two weeks · counts toward the build" becomes "The Blueprint: two weeks, $1,500, fixed. If you go ahead, the $1,500 comes off the price." The Mainframe card is not touched.
+- **W2.** Same card: "you watch it work before you decide on the build" becomes "you watch it work before you decide to go ahead".
+- **W3.** `local.html`: "Two weeks · fixed price · the $1,500 comes off your build" becomes "Two weeks · fixed price · the $1,500 comes off the price if you go ahead".
+- **W4.** `work.html`: "~4 min" becomes "An 81-second reel in about 4 minutes".
+- **W5.** "535 tests" becomes "535 automatic checks".
+- **W6.** "2 AI translations" becomes "2 AI translations of one bank program".
+- **W7.** Bird League card: "A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players, and sends sightings to eBird in one tap."
+- **W8.** `start.html`: "Who says yes, and when?" becomes "Who says yes to spending money, and when?"
+- **W9.** "Good days for Day 1" becomes "Good days for my first visit".
+- **W10.** "Start my Blueprint →" becomes "Send my answers →".
+- **W11.** "You get the one-page Blueprint agreement and an invoice for $1,500." becomes "You get a one-page agreement and an invoice for $1,500."
+- **W12.** `call.html`: the paragraph starts "Fifteen minutes, free. Tell me what you run and when you're free."
+- **W13.** `shotlist.html`: "Your 10 clips, in walking order" becomes "Your 10 clips. Film them in this order."
+- **W14.** "Start at stop 1 and film as you go. You never walk back." becomes "Start at the top of the list and film as you go. You never walk back."
+- **W15.** The seconds note becomes "Film each one for about five seconds. The number beside it is how long it stays in the finished video."
+- **W16.** `captions.html` h1: "Can people read the words on your video?"
+- **W17.** Intro: "Type the words that go on your video. See them on a phone, and find out if people can read them before they're gone."
+- **W18.** "Box" becomes "Box behind the words".
+- **W19.** "This picture is see-through except for your words. Lay it over your video in CapCut or the Instagram editor and the words land right where you see them here."
+- **W20.** `receipt.html` note, first two sentences: "The hours you could get back are a rough rule of thumb for each kind of chore, not a promise. The real numbers come from me watching how the work actually gets done."
+- **W21.** "The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead."
+- **W22.** `checkup.html`: "This doesn't tell you what ChatGPT says about you. It checks whether a computer can find the basic facts about your business on your page."
+- **W23.** "What a computer can read off your page".
+- **W24.** "Compare these with your Google listing. They should match exactly. I can't see your listing from here."
+- **W25.** `case-reels.html`: "...and the tool puts together a finished reel, upright for phones, with the program's own title card."
+- **W26.** `studio.html` h1: "Follow along while I piece it together".
+- **W27.** "Everything I'm building right now, and the date each piece was finished."
+- **W28.** The count line: "shipped" becomes "finished".
+- **W29.** `mainframe.html`: "...allows two readings. See each one:"
+- **W30.** "The code, the layouts, the job setup and the data each tell a different story. The real data settles it."
+- **W31.** "Tell me about one program and see what I'd look at first".
+- **W32.** `briefing.html` h1: "Ask me about your system".
+- **W33.** "Which programs (a rough description is enough)".
+- Left as they are: every title tag, meta description and share card; every price and term; the header, phone menu and footer; the Home heading and intro; the four "How I work" lines; the 404 page; every tool's arithmetic and results; both Workers; everything not named above.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
