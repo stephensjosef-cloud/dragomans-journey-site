@@ -53,7 +53,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
 .toast{{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}}
 .toast.on{{opacity:1}}
 @media (prefers-reduced-motion:reduce){{*{{transition:none!important;animation:none!important}}}}
-{css}
+{fold_css}{css}
 </style>
 </head>
 <body>
@@ -98,7 +98,7 @@ function djCopy(text,label){{
   if(navigator.clipboard&&navigator.clipboard.writeText){{navigator.clipboard.writeText(text).then(done,fallback)}}else fallback();
   function fallback(){{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{{document.execCommand('copy');done()}}catch(e){{djToast('Select it and copy by hand')}}ta.remove()}}
 }}
-{script}
+{fold_js}{script}
 </script>
 </body>
 </html>
@@ -130,9 +130,25 @@ TAIL = """  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:
 """
 
 
+# A folded section (T-18, Nov 13, 2026): a real button with aria-expanded that
+# opens and closes the block it controls, closed on load, 48 px tall. A block
+# with class "printopen" holds part of the answer, so it prints open.
+FOLD_CSS = """.fold{font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:0;margin:0;background:none;border:0;color:#A93F17;font-size:16px;font-weight:700;text-align:left;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
+.fold:hover{color:#16201C}
+.fold::after{content:'';flex:none;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-3px) rotate(45deg)}
+.fold[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+@media print{.fold{display:none!important}.printopen[hidden]{display:block!important}}
+"""
+FOLD_JS = """document.addEventListener('click',function(e){var b=e.target.closest('.fold[aria-controls]');if(!b)return;var o=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(o));document.getElementById(b.getAttribute('aria-controls')).hidden=!o});
+"""
+
+
 def page(**k):
     for key in ("css", "script", "badge"):          # badge: right under the h1 (a Studio product's status, T-09)
         k.setdefault(key, "")
+    folds = k.pop("folds", False)
+    k["fold_css"] = FOLD_CSS if folds else ""
+    k["fold_js"] = FOLD_JS if folds else ""
     k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
     k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
     # The small line over the title; a page without one (the Studio, T-16) gets no empty span.

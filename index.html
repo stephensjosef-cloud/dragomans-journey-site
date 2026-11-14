@@ -27,6 +27,7 @@ a{color:#A93F17}a:hover{color:#12161F}
 .fk button{font:inherit;cursor:pointer}
 .route{transition:transform 260ms cubic-bezier(.2,.7,.2,1)}
 .route:hover{transform:translateY(-4px)}
+@media (max-width:699px){.rules{grid-template-columns:1fr!important}.rules>li{padding:24px 0!important;border-right:0!important}}
 .draw{stroke-dasharray:2400;stroke-dashoffset:2400;animation:draw 2.4s 200ms cubic-bezier(.4,.1,.2,1) forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 @media (prefers-reduced-motion:reduce){.draw{animation:none;stroke-dashoffset:0}.route{transition:none}}
@@ -58,19 +59,32 @@ a{color:#A93F17}a:hover{color:#12161F}
  ]
 }
 </script>
+<style>
+.djm-btn{display:none}
+@media (max-width:699px){
+.djm{flex-wrap:wrap!important;row-gap:0!important;column-gap:0!important}
+.djm .djm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 12px;margin-left:auto;font:inherit;font-size:16px;font-weight:600;cursor:pointer;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:2px}
+.djm .djm-links{display:none!important}
+.djm.open .djm-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;flex-basis:100%;padding:12px 0 4px}
+.djm.open .djm-links>a{display:flex!important;align-items:center!important;min-height:48px!important;font-size:16px!important}
+.djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
+}
+</style>
 </head>
 <body>
 <div class="fk" style="font-family: 'Instrument Sans', 'Helvetica Neue', system-ui, sans-serif; color: #12161F; background: #F4F1EA; font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased">
 
   <!-- letterhead -->
-  <div style="max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; border-bottom: 1px solid #CFC8B8">
+  <div class="djm-bar" style="max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; border-bottom: 1px solid #CFC8B8">
     <span style="display: flex; align-items: center; gap: 12px">
       <svg aria-hidden="true" width="30" height="30" viewBox="0 0 34 34"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#12161F" stroke-width="1.8" stroke-linejoin="round"></path><circle cx="23" cy="7" r="2.4" fill="#E8592B"></circle></svg>
       <span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px">Dragoman's Journey</span>
     </span>
-    <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px"><a href="work.html" style="color: #3A4252; text-decoration: none">The work</a><a href="studio.html" style="color: #3A4252; text-decoration: none">Studio</a><a href="work.html#free" style="color: #3A4252; text-decoration: none">Free tools</a><a href="call.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #12161F; color: #12161F; text-decoration: none; font-weight: 600">Free 15-min call</a></span>
+    <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
+    <span class="djm-links" id="djm-links" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px"><a href="work.html" style="color: #3A4252; text-decoration: none">The work</a><a href="studio.html" style="color: #3A4252; text-decoration: none">Studio</a><a href="work.html#free" style="color: #3A4252; text-decoration: none">Free tools</a><a href="call.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #12161F; color: #12161F; text-decoration: none; font-weight: 600">Free 15-min call</a></span>
   </div>
 
+  <script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
   <!-- hero -->
   <header style="max-width: 1240px; margin: 0 auto; padding: clamp(56px, 8vw, 104px) clamp(16px, 4vw, 48px) 24px; display: flex; flex-direction: column; gap: 22px; align-items: center; text-align: center">
     <h1 style="margin: 0; max-width: 18ch; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(48px, 7vw, 104px); line-height: 0.98; letter-spacing: -0.03em; text-wrap: balance">AI, made <em style="color: #A93F17">easy</em></h1>
@@ -107,7 +121,7 @@ a{color:#A93F17}a:hover{color:#12161F}
   <section aria-labelledby="rules-h">
     <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 112px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 36px">
       <h2 id="rules-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.1">How I work, on either side</h2>
-      <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F">
+      <ol class="rules" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F">
         <li style="padding: 24px 22px 24px 0; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #CFC8B8"><strong style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1.2">Nothing goes out until a person has looked at it.</strong><span style="font-size: 16px; color: #3A4252">First me, then you.</span></li>
         <li style="padding: 24px 22px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #CFC8B8"><strong style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1.2">You never have to take my word for it.</strong><span style="font-size: 16px; color: #3A4252">The checks stay with you, and you can run them again any time.</span></li>
         <li style="padding: 24px 22px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #CFC8B8"><strong style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1.2">The first step is small and the price is fixed.</strong><span style="font-size: 16px; color: #3A4252">And if you don't need me, I'll tell you. I sold insurance for years and learned to give the honest answer even when it cost me the sale.</span></li>

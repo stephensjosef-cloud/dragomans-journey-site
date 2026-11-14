@@ -372,6 +372,15 @@ def enhance_index():
             '<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px">'
             '<a href="work.html" style="color: #3A4252; text-decoration: none">The work</a>'
             '<a href="call.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #12161F; color: #12161F; text-decoration: none; font-weight: 600">Free 15-min call</a></span>')
+    # "How I work" on phones (T-18, Nov 13, 2026). The canvas gives each item the
+    # padding and right-hand divider of a row of four. Under 700 px the items stack,
+    # so they share one left edge and lose the divider. 700 px and up is the canvas,
+    # untouched; the canvas file itself is not edited.
+    t = rep(t, '<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F">',
+            '<ol class="rules" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F">')
+    t = rep(t, '.route:hover{transform:translateY(-4px)}\n',
+            '.route:hover{transform:translateY(-4px)}\n'
+            '@media (max-width:699px){.rules{grid-template-columns:1fr!important}.rules>li{padding:24px 0!important;border-right:0!important}}\n')
     p.write_text(t, encoding="utf-8")
 
 
@@ -452,6 +461,62 @@ def add_free_tools():
         p.write_text(t, encoding="utf-8")
 
 
+# The phone header (T-18, Nov 13, 2026). Under 700 px, a header that shows links
+# becomes one row: the site name and a "Menu" button that opens the same links and
+# call button, in the same order, under it. 700 px and up is exactly as before.
+# The script right after the header turns it on, so with scripts off the header
+# stays as it always was. The Local Route and the three Mainframe pages keep theirs.
+MENU_CSS = """<style>
+.djm-btn{display:none}
+@media (max-width:699px){
+.djm{flex-wrap:wrap!important;row-gap:0!important;column-gap:0!important}
+.djm .djm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 12px;margin-left:auto;font:inherit;font-size:16px;font-weight:600;cursor:pointer;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:2px}
+.djm .djm-links{display:none!important}
+.djm.open .djm-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;flex-basis:100%;padding:12px 0 4px}
+.djm.open .djm-links>a{display:flex!important;align-items:center!important;min-height:48px!important;font-size:16px!important}
+.djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
+}
+</style>
+"""
+MENU_BTN = '<button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>'
+MENU_JS = ("<script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');"
+           "function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}"
+           "b.addEventListener('click',function(){set(!n.classList.contains('open'))});"
+           "n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})"
+           "})(document.currentScript.previousElementSibling)</script>")
+DARK_NAV = '<nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">'
+MENU_PAGES = ("index.html", "work.html", "call.html", "case-reels.html", "start.html") + FREE_TOOLS + STUDIO_PAGES
+
+
+def add_phone_menu():
+    for f in MENU_PAGES:
+        p = OUT / f
+        t = p.read_text(encoding="utf-8")
+        t = rep(t, "</head>", MENU_CSS + "</head>")
+        if f == "index.html":
+            a = t.index("<!-- letterhead -->")
+            head, rest = t[:a], t[a:]
+            rest = rep(rest, '<div style="max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px); display: flex;',
+                       '<div class="djm-bar" style="max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px); display: flex;')
+            i = rest.index('<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px"><a href="work.html"')
+            rest = rest[:i] + MENU_BTN + "\n    " + rest[i:].replace('<span style="display: flex; flex-wrap: wrap;', '<span class="djm-links" id="djm-links" style="display: flex; flex-wrap: wrap;', 1)
+            j = rest.index("\n  <!-- hero -->")
+            assert rest[:j].rstrip().endswith("</div>"), "index letterhead end"
+            rest = rest[:j] + "\n  " + MENU_JS + rest[j:]
+            t = head + rest
+        else:
+            assert t.count(DARK_NAV) == 1, "header nav in " + f
+            a = t.index(DARK_NAV)
+            end = t.index("</nav>", a)
+            nav = t[a:end]
+            logo_end = nav.index("</a>") + len("</a>")
+            links = nav.index("<div ", logo_end)
+            nav = (nav[:logo_end] + "\n      " + MENU_BTN + nav[logo_end:links]
+                   + '<div class="djm-links" id="djm-links" ' + nav[links + len("<div "):])
+            t = t[:a] + nav + "</nav>" + MENU_JS + t[end + len("</nav>"):]
+        p.write_text(t, encoding="utf-8")
+
+
 def use_hello():
     # The site's public address is hello@, which forwards to Josef's Gmail.
     for p in OUT.glob("*.html"):
@@ -496,6 +561,7 @@ enhance_mainframe()
 add_pages()
 enhance_index()
 add_free_tools()
+add_phone_menu()
 use_hello()
 add_og()
 for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES:

@@ -174,7 +174,7 @@ write(sys.argv[1], "scaler.html",
       description="A free recipe scaler for classrooms, kitchens and events: paste any ingredient list, set grown-ups and kids, and get amounts you can actually measure, plus when to split into batches.",
       kicker="Free tool",
       h1="Any recipe.<br>Any crowd.",
-      lede="Paste any ingredient list and say who's eating. You get amounts you can actually measure, like \"1/4 cup + 2 tbsp\" instead of 0.375 cups, eggs rounded up, butter in sticks, and a heads-up when it's time to cook in batches.",
+      lede="Paste a recipe and say who's eating. You get amounts you can actually measure.",
       css=CSS, body=BODY, script=SCRIPT,
       cta_h="Built from a real kitchen", cta_p="This is one trick from a cooking app I'm building for a Sonoma County children's nonprofit. If your program has a binder of recipes or lessons, start with a free 15-minute call.",
       cta_href="call.html", cta_btn="Free 15-minute call")

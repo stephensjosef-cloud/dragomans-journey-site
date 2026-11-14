@@ -48,14 +48,18 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.fold{font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:0;margin:0;background:none;border:0;color:#A93F17;font-size:16px;font-weight:700;text-align:left;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
+.fold:hover{color:#16201C}
+.fold::after{content:'';flex:none;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-3px) rotate(45deg)}
+.fold[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+@media print{.fold{display:none!important}.printopen[hidden]{display:block!important}}
 
 .ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:22px 32px}
-.count{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline;margin-bottom:18px}
+.count{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline}
 .count .n{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(40px,5vw,60px);line-height:.9;color:#C2461B}
 .strip{display:flex;height:44px;border:1.5px solid #16201C;border-radius:2px;overflow:hidden}
 .strip span{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#16201C;border-right:1px solid rgba(22,32,28,.35);min-width:0;overflow:hidden;white-space:nowrap}
 .strip span:last-child{border-right:0}
-.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr));gap:24px;align-items:start}
 .clip{display:grid;grid-template-columns:44px 1fr auto;gap:4px 14px;padding:14px 0;border-top:1px solid #DDD5C3}
 .clip:first-of-type{border-top:0}
 .clip .no{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:30px;line-height:1;color:#16201C}
@@ -77,8 +81,21 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .offer .btn{background:#0E1B17;border-color:#0E1B17;color:#F2EDE1}
 .r-hook{background:#F6C9B5}.r-place{background:#D9E4D2}.r-hands{background:#F2DEA8}.r-process{background:#F2DEA8}.r-detail{background:#E6DCF0}
 .r-people{background:#CFE0EE}.r-customer{background:#CFE0EE}.r-reveal{background:#F6C9B5}.r-sign{background:#D9E4D2}.r-call{background:#16201C;color:#F2EDE1!important}
-@media print{.noprint{display:none!important}body{background:#fff}.panel{border:1px solid #999}.cols{display:block}.panel{break-inside:avoid;margin-bottom:12px}}
+.stack{display:flex;flex-direction:column;gap:24px}
+h1.big{text-wrap:balance}
+@media print{.noprint{display:none!important}body{background:#fff}.panel{border:1px solid #999}.panel{break-inside:avoid;margin-bottom:12px}}
 
+</style>
+<style>
+.djm-btn{display:none}
+@media (max-width:699px){
+.djm{flex-wrap:wrap!important;row-gap:0!important;column-gap:0!important}
+.djm .djm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 12px;margin-left:auto;font:inherit;font-size:16px;font-weight:600;cursor:pointer;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:2px}
+.djm .djm-links{display:none!important}
+.djm.open .djm-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;flex-basis:100%;padding:12px 0 4px}
+.djm.open .djm-links>a{display:flex!important;align-items:center!important;min-height:48px!important;font-size:16px!important}
+.djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
+}
 </style>
 </head>
 <body>
@@ -91,64 +108,68 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
         <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+      <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
         <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
         <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
       </div>
-    </nav>
+    </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <span class="kick">Free tool</span>
-      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Ten clips.<br>One lap.</h1>
-      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Pick what you run and what the reel should do. You get the 10 clips to film, how long each one lasts, and the order to shoot them so you never walk back across the room.</p>
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">What to film for your reel</h1>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Tell me what you run. You get 10 clips to film, in the order you walk your shop.</p>
     </div>
   </div>
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
 
-  <section class="panel noprint" aria-labelledby="pick-h">
-    <h2 id="pick-h" class="label">Tell it four things</h2>
-    <div class="ctrl">
-      <div><p class="label" id="l-type">What do you run?</p><div class="chips" role="group" aria-labelledby="l-type" id="c-type"></div></div>
-      <div><p class="label" id="l-goal">What should the reel do?</p><div class="chips" role="group" aria-labelledby="l-goal" id="c-goal"></div></div>
-      <div><p class="label" id="l-len">How long?</p><div class="chips" role="group" aria-labelledby="l-len" id="c-len"></div></div>
-      <div><p class="label" id="l-light">When will you film?</p><div class="chips" role="group" aria-labelledby="l-light" id="c-light"></div></div>
+  <section class="panel noprint" aria-labelledby="l-type">
+    <p class="label" id="l-type">What do you run?</p><div class="chips" role="group" aria-labelledby="l-type" id="c-type"></div>
+    <button type="button" class="fold" id="f-details" aria-expanded="false" aria-controls="details" style="margin-top:12px">Change the details</button>
+    <div id="details" hidden>
+      <div class="ctrl" style="margin-top:12px">
+        <div><p class="label" id="l-goal">What should the reel do?</p><div class="chips" role="group" aria-labelledby="l-goal" id="c-goal"></div></div>
+        <div><p class="label" id="l-len">How long?</p><div class="chips" role="group" aria-labelledby="l-len" id="c-len"></div></div>
+        <div><p class="label" id="l-light">When will you film?</p><div class="chips" role="group" aria-labelledby="l-light" id="c-light"></div></div>
+      </div>
     </div>
   </section>
 
-  <section class="panel" aria-live="polite" id="summary">
-    <div class="count" id="when">
-      <span class="n" id="days"></span>
-      <span id="dayslabel" style="font-size:18px;font-weight:600"></span>
+  <section class="panel" aria-labelledby="shoot-h">
+    <h2 id="shoot-h" style="margin:0 0 4px;font-size:22px">Your 10 clips, in walking order</h2>
+    <p class="private" style="margin-bottom:8px">Start at stop 1 and film as you go. You never walk back.</p>
+    <div id="shoot"></div>
+  </section>
+
+  <div class="stack">
+    <button type="button" class="fold noprint" id="f-cut" aria-expanded="false" aria-controls="cut" style="align-self:flex-start">How it gets cut together</button>
+    <div id="cut" class="printopen" hidden>
+      <section class="panel" aria-labelledby="edit-h">
+        <h2 id="edit-h" style="margin:0 0 4px;font-size:22px">The edit: 10 clips, in the order people see them</h2>
+        <p class="private" style="margin-bottom:8px">Seconds are what each clip gets in the finished reel. Film every one for about five seconds anyway; the edit trims.</p>
+        <div id="edit"></div>
+        <p class="label" style="margin-top:18px">The reel, second by second</p>
+        <div class="strip" id="strip" aria-hidden="true"></div>
+        <p class="private" id="striplabel" style="margin-top:8px"></p>
+      </section>
     </div>
-    <p class="label">The reel, second by second</p>
-    <div class="strip" id="strip" aria-hidden="true"></div>
-    <p class="private" id="striplabel" style="margin-top:8px"></p>
+  </div>
+
+  <section class="panel count" aria-live="polite" id="when">
+    <span class="n" id="days"></span>
+    <span id="dayslabel" style="font-size:18px;font-weight:600"></span>
   </section>
 
   <div id="offer"></div>
 
-  <div class="cols">
-    <section class="panel" aria-labelledby="edit-h">
-      <h2 id="edit-h" style="margin:0 0 4px;font-size:22px">The edit: 10 clips, in the order people see them</h2>
-      <p class="private" style="margin-bottom:8px">Seconds are what each clip gets in the finished reel. Film every one for about five seconds anyway; the edit trims.</p>
-      <div id="edit"></div>
-    </section>
-    <div style="display:flex;flex-direction:column;gap:24px">
-      <section class="panel" aria-labelledby="shoot-h">
-        <h2 id="shoot-h" style="margin:0 0 4px;font-size:22px">The shoot: one lap, no backtracking</h2>
-        <p class="private" style="margin-bottom:8px">Film by where you're standing, not by the edit order. Numbers match the edit.</p>
-        <div id="shoot"></div>
-      </section>
-      <section class="panel" aria-labelledby="rules-h">
-        <h2 id="rules-h" style="margin:0 0 10px;font-size:22px">Five rules for every clip</h2>
-        <ul class="rules" id="rules"></ul>
-      </section>
-    </div>
-  </div>
+  <section class="panel" aria-labelledby="rules-h">
+    <h2 id="rules-h" style="margin:0 0 10px;font-size:22px">Five rules for every clip</h2>
+    <ul class="rules" id="rules"></ul>
+  </section>
 
   <div class="noprint" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
     <button type="button" class="btn" id="copy">Copy the shot list</button>
@@ -181,6 +202,7 @@ function djCopy(text,label){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
   function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
 }
+document.addEventListener('click',function(e){var b=e.target.closest('.fold[aria-controls]');if(!b)return;var o=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(o));document.getElementById(b.getAttribute('aria-controls')).hidden=!o});
 
 (function(){
 var TYPES = {
@@ -263,7 +285,7 @@ var TYPES = {
   ['d','You or your director, one line: what a gift does this week.']]}
 };
 var ROLES=['hook','place','hands','process','detail','people','customer','reveal','sign','call'];
-var ROLE_NAME={hook:'Hook',place:'Where',hands:'Hands',process:'Process',detail:'Detail',people:'Who',customer:'Them',reveal:'Payoff',sign:'Sign',call:'Ask'};
+var ROLE_NAME={hook:'Opening',place:'Your place',hands:'Hands',process:'How it\'s made',detail:'Close-up',people:'You',customer:'A customer',reveal:'The best part',sign:'Your sign',call:'The ask'};
 var GOALS={
  door:{label:'Bring people in', w:{hook:1.1,place:1,hands:.8,process:.8,detail:1,people:1,customer:1.2,reveal:1.2,sign:.8,call:1.3}},
  how:{label:'Show how it\'s made', w:{hook:1,place:.6,hands:1.4,process:1.6,detail:1.2,people:.8,customer:.7,reveal:1.3,sign:.5,call:.9}},

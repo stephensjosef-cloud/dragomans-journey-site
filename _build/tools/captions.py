@@ -2,10 +2,12 @@ from chrome import write
 import sys
 
 CSS = r"""
-.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:'in st' 'ck st' 'sc st';gap:24px;align-items:start}
-.lay>.a-in{grid-area:in}.lay>.a-ck{grid-area:ck}.lay>.a-sc{grid-area:sc}.lay>.stage{grid-area:st;align-self:stretch}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:'in st' 'vd st' 'set st' 'ck st' 'sc st';grid-template-rows:auto auto auto auto 1fr;gap:24px;align-items:start}
+.lay>.a-in{grid-area:in}.lay>.a-vd{grid-area:vd}.lay>.a-set{grid-area:set}.lay>.a-ck{grid-area:ck}.lay>.a-sc{grid-area:sc}.lay>.stage{grid-area:st;align-self:stretch}
 .stage-in{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;align-items:center}
-@media (max-width:860px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'in' 'st' 'ck' 'sc'}.stage-in{position:static}}
+@media (max-width:860px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'in' 'st' 'vd' 'set' 'ck' 'sc';grid-template-rows:none}.stage-in{position:static}}
+.verdict{display:flex;gap:12px;align-items:flex-start;margin:0;font-size:19px;font-weight:700;line-height:1.4}
+.verdict .dot{width:14px;height:14px;margin-top:6px}
 .phone{width:min(340px,100%);aspect-ratio:9/16;border:10px solid #16201C;border-radius:34px;overflow:hidden;background:#3B4540;position:relative}
 .phone canvas{width:100%;height:100%;display:block}
 .row{display:flex;flex-wrap:wrap;gap:22px 32px}
@@ -31,33 +33,41 @@ BODY = r"""
         <h2 id="w-h" class="label">Your caption</h2>
         <label for="cap" class="label" style="position:absolute;left:-9999px">Caption text</label>
         <textarea id="cap" spellcheck="true">Fresh sourdough comes out of the oven at 7 every morning. Come early, because the first batch is always gone by 9.</textarea>
-        <div class="row" style="margin-top:18px">
-          <div><p class="label" id="l-size">Text size</p><div class="chips" role="group" aria-labelledby="l-size" id="c-size"></div></div>
-          <div><p class="label" id="l-pos">Where on screen</p><div class="chips" role="group" aria-labelledby="l-pos" id="c-pos"></div></div>
-          <div><p class="label" id="l-box">Box</p><div class="chips" role="group" aria-labelledby="l-box" id="c-box"></div></div>
-          <div><p class="label" id="l-app">Check against</p><div class="chips" role="group" aria-labelledby="l-app" id="c-app"></div></div>
-          <div style="max-width:220px"><label class="label" for="secs" style="display:block">This clip is on screen for</label>
-            <div style="display:flex;gap:8px;align-items:center"><input id="secs" type="number" min="1" max="60" step="0.5" value="5" style="width:96px"><span>seconds</span></div></div>
-          <div style="max-width:300px"><label class="label" for="bg" style="display:block">Try it on your own frame</label>
-            <input id="bg" type="file" accept="image/*"><p class="private" style="margin-top:6px">A screenshot from your video. It stays on your device.</p></div>
-        </div>
       </section>
 
+      <p class="verdict a-vd" id="verdict" role="status"><span class="dot" id="v-dot" aria-hidden="true"></span><span id="v-text"></span></p>
+
+      <div class="a-set">
+        <button type="button" class="fold" id="f-look" aria-expanded="false" aria-controls="look">Change how it looks</button>
+        <section class="panel" id="look" aria-labelledby="f-look" hidden style="margin-top:8px">
+          <div class="row">
+            <div><p class="label" id="l-size">Text size</p><div class="chips" role="group" aria-labelledby="l-size" id="c-size"></div></div>
+            <div><p class="label" id="l-pos">Where on screen</p><div class="chips" role="group" aria-labelledby="l-pos" id="c-pos"></div></div>
+            <div><p class="label" id="l-box">Box</p><div class="chips" role="group" aria-labelledby="l-box" id="c-box"></div></div>
+            <div><p class="label" id="l-app">Which app?</p><div class="chips" role="group" aria-labelledby="l-app" id="c-app"></div></div>
+            <div style="max-width:220px"><label class="label" for="secs" style="display:block">How long is your clip?</label>
+              <div style="display:flex;gap:8px;align-items:center"><input id="secs" type="number" min="1" max="60" step="0.5" value="5" style="width:96px"><span>seconds</span></div></div>
+            <div style="max-width:300px"><label class="label" for="bg" style="display:block">Try it on your own video</label>
+              <input id="bg" type="file" accept="image/*"><p class="private" style="margin-top:6px">Add a screenshot from your video. It stays on your phone.</p></div>
+          </div>
+        </section>
+      </div>
+
       <section class="panel a-ck" aria-labelledby="v-h" aria-live="polite">
-        <h2 id="v-h" style="margin:0 0 12px;font-size:22px">The checkup</h2>
+        <h2 id="v-h" style="margin:0 0 12px;font-size:22px">Why</h2>
         <ul class="verdicts" id="verdicts"></ul>
       </section>
 
       <section class="panel a-sc" aria-labelledby="k-h">
-        <h2 id="k-h" style="margin:0 0 4px;font-size:22px">Screens</h2>
+        <h2 id="k-h" style="margin:0 0 4px;font-size:22px">Your caption, split up</h2>
         <p class="private" id="k-sub" style="margin-bottom:12px"></p>
         <div class="cards" id="cards"></div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px">
-          <button type="button" class="btn" id="png">Download this screen as a PNG</button>
-          <button type="button" class="btn ghost" id="pngall">Download every screen</button>
-          <button type="button" class="btn ghost" id="copy">Copy the line breaks</button>
+          <button type="button" class="btn" id="png">Save this caption as an image</button>
+          <button type="button" class="btn ghost" id="pngall">Save all of them</button>
+          <button type="button" class="btn ghost" id="copy">Copy the text</button>
         </div>
-        <p class="private" style="margin-top:10px">The PNG is see-through except for the caption, at full phone size (1080 by 1920). Drop it over your clip in CapCut or the Instagram editor and it lands right where you see it here.</p>
+        <p class="private" style="margin-top:10px">The image is clear except for the caption. Drop it over your clip in CapCut or the Instagram editor and it lands right where you see it here.</p>
       </section>
 
     <div class="stage"><div class="stage-in">
@@ -72,7 +82,7 @@ SCRIPT = r"""
 (function(){
 var W=1080,H=1920,MARGIN=96,PADX=34,PADY=22,LH=1.2;
 var SIZES={s:['Small',46],m:['Medium',54],l:['Large',64]};
-var POS={top:['Upper third',0.30],mid:['Middle',0.50],low:['Lower third',0.66]};
+var POS={top:['Top',0.30],mid:['Middle',0.50],low:['Bottom',0.66]};
 var BOX={dark:['Dark box'],light:['Light box'],none:['No box']};
 /* Approximate covered areas at 1080 x 1920. Apps move these now and then. */
 var APPS={
@@ -173,14 +183,14 @@ function render(){
   if(st.card>=cards.length)st.card=0;
   var secs=parseFloat(document.getElementById('secs').value)||0;
   var need=cards.reduce(function(a,c){return a+readSecs(c.text)},0);
-  document.getElementById('k-sub').textContent=cards.length>1?('Two lines fit comfortably on a phone, so this caption becomes '+cards.length+' screens. Each one gets the time shown. Tap one to preview it.'):'Fits on one screen. Tap it to preview.';
+  var sub=document.getElementById('k-sub');sub.hidden=cards.length<2;sub.textContent=cards.length>1?('Two lines fit on a phone, so this caption shows in '+cards.length+' parts. Tap one to see it.'):'';
   document.getElementById('cards').innerHTML=cards.map(function(c,i){return '<button type="button" class="cardline" data-card="'+i+'" aria-pressed="'+(i===st.card)+'"><span class="n">'+(i+1)+'</span><span class="t">'+esc(c.lines.join('\n'))+'</span><span class="s">'+readSecs(c.text)+' s</span></button>'}).join('');
-  var L=draw(),v=[];
+  var L=draw(),v=[],hits=[];
   if(!cards.length){v.push(['warn','Type a caption to check it.'])}
   else{
     var orphan=cards.some(function(c){var l=c.lines;return l.length>1&&l[l.length-1].split(' ').length===1});
     v.push(orphan?['warn','One screen ends on a single word. Add or trim a word in that sentence.']:['ok','No line is stranded on its own. Lines are balanced to even widths and kept clear of the app\'s side buttons.']);
-    var hits=[];cards.forEach(function(c,i){var Lc=layout(c.lines);APPS[st.app].z.forEach(function(z){if(hit(Lc,z))hits.push(i+1)})});
+    cards.forEach(function(c,i){var Lc=layout(c.lines);APPS[st.app].z.forEach(function(z){if(hit(Lc,z))hits.push(i+1)})});
     hits=hits.filter(function(x,i,a){return a.indexOf(x)===i});
     if(st.app==='none')v.push(['warn','No app picked. Pick the one you post to and this checks whether its buttons cover your words.']);
     else v.push(hits.length?['bad','On '+APPS[st.app].label+', the app\'s own text or buttons cover screen '+hits.join(', ')+'. Move it to the middle or use a smaller size.']:['ok','Clear of the buttons and caption area on '+APPS[st.app].label+'.']);
@@ -190,6 +200,10 @@ function render(){
     if(st.size==='s')v.push(['warn','Small text reads fine on a big phone and poorly on a small one. Medium is the safer bet.']);
   }
   document.getElementById('verdicts').innerHTML=v.map(function(x){return '<li><span class="dot '+x[0]+'" aria-hidden="true"></span><span>'+x[1]+'</span></li>'}).join('');
+  /* The one line under the phone (T-18): covered first, then too long, then good to go. */
+  var one=!cards.length?['warn','Type a caption to check it.']:(st.app!=='none'&&hits.length)?['bad','The app\'s buttons cover part of it. Move it up.']:(secs&&need>secs)?['bad','Too long for this clip. People need about '+need+' seconds and your clip is '+secs+'.']:['ok','Good to go. It fits, and people can read it in time.'];
+  document.getElementById('v-dot').className='dot '+one[0];
+  var vt=document.getElementById('v-text');if(vt.textContent!==one[1])vt.textContent=one[1];
 }
 function pngFor(i,cb){
   var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
@@ -216,7 +230,7 @@ write(sys.argv[1], "captions.html",
       description="A free check for reel captions: balanced line breaks, no stranded words, clear of each app's buttons, enough time to read, and a see-through PNG to drop on your video.",
       kicker="Free tool",
       h1="Will your caption<br>survive the phone?",
-      lede="Type it once. It breaks the lines evenly, splits long captions into screens, checks whether Instagram, TikTok or YouTube will cover it, times it, and hands you a see-through PNG to drop on your clip.",
-      css=CSS, body=BODY, script=SCRIPT,
+      lede="Type your caption. See it on a phone, and find out if people can read it in time.",
+      css=CSS, body=BODY, script=SCRIPT, folds=True,
       cta_h="Rather hand it off?", cta_p="Captions are one step of the reels I make for local businesses and nonprofits. Start with a free 15-minute call.",
       cta_href="call.html", cta_btn="Free 15-minute call")

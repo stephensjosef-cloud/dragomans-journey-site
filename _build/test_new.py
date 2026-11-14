@@ -253,6 +253,7 @@ with sync_playwright() as p:
     check('shot list has 10 clips', q.locator('#edit .clip').count() == 10)
     secs = q.eval_on_selector_all('#edit .sec', 'e => e.reduce((a, x) => a + parseFloat(x.textContent), 0)')
     check('shot list seconds add up to 30', abs(secs - 30) < 0.01, str(secs))
+    q.click('#f-details'); q.click('#f-cut')   # T-18: "How long?" and the edit sit under two folds now
     q.click('.chip[data-v="15"]'); q.wait_for_timeout(100)
     secs = q.eval_on_selector_all('#edit .sec', 'e => e.reduce((a, x) => a + parseFloat(x.textContent), 0)')
     check('shot list seconds add up to 15', abs(secs - 15) < 0.01, str(secs))
@@ -262,7 +263,7 @@ with sync_playwright() as p:
     q.fill('#cap', 'New fall sweaters just landed.'); q.wait_for_timeout(300)
     check('short caption is one screen', q.locator('#cards .cardline').count() == 1)
     q = newpage(1440); q.goto(BASE + 'receipt.html'); q.wait_for_timeout(300)
-    check('receipt starts with 3 lines', q.locator('#lines .line').count() == 3)
+    check('receipt starts with 3 lines', q.locator('#rows .row2').count() == 3)   # T-18: the lines sit on the receipt
     check('receipt default total $9,750', '$9,750' in q.inner_text('#paper'), q.inner_text('#paper')[:300])
     q.click('[data-p="11"]'); q.wait_for_timeout(100)
     check('keep-human chore adds nothing to come back', '$6,225' in q.inner_text('#paper'))
@@ -1031,8 +1032,9 @@ with sync_playwright() as p:
           and 'iPhone, iPad and Android.</p>' not in site['work'])
 
     # N15: the scaler intro.
+    # T-18 S25 replaced the intro; it still leaves "Kids count as half a portion." out.
     check('N15: the scaler intro drops "Kids count as half a portion."', 'Kids count as half a portion.' not in site['scaler']
-          and "Paste any ingredient list and say who's eating. You get amounts" in _html.unescape(site['scaler']))
+          and "Paste a recipe and say who's eating. You get amounts you can actually measure." in _html.unescape(site['scaler']))
     check('N15: the line under the boxes still says it', 'A kid counts as half a portion.' in site['scaler'])
 
     # N16: the shot list countdown shows from 42 days out to the day itself, and not before.
@@ -1050,12 +1052,11 @@ with sync_playwright() as p:
             check(f'N16: {when[:10]}, {who}: countdown shows "{want}"', pg.locator('#when').is_visible() and pg.inner_text('#days').strip() == want
                   and who in pg.inner_text('#dayslabel'), pg.inner_text('#days'))
         else:
-            box = pg.locator('#summary').bounding_box()
-            pad = pg.eval_on_selector('#summary', 'e => parseFloat(getComputedStyle(e).paddingTop) + parseFloat(getComputedStyle(e).borderTopWidth)')
+            # T-18 S9: the countdown is its own box now, so with no countdown the whole box is gone.
             check(f'N16: {when[:10]}, {who}: 43 days out, no countdown and no empty box', not pg.locator('#when').is_visible()
-                  and who not in pg.inner_text('#summary') and abs(pg.locator('#summary .label').bounding_box()['y'] - box['y'] - pad) <= 1)
+                  and pg.locator('#when').bounding_box() is None and who not in pg.inner_text('main'))
         if when.startswith('2026-10-1') and not np_:
-            pg.locator('#summary').screenshot(path=f'{SHOTS}/t16-shotlist-countdown-{when[:10]}-390.png')
+            pg.locator('main').screenshot(path=f'{SHOTS}/t16-shotlist-countdown-{when[:10]}-390.png')
 
     # N17, N18: local.html.
     lt = text_of(site['local'])
@@ -1154,6 +1155,407 @@ with sync_playwright() as p:
         q.locator('section[aria-label="Routes"]').screenshot(path=f'{SHOTS}/t17-home-routes-{w}.png')
         q.locator('section[aria-labelledby="rules-h"]').screenshot(path=f'{SHOTS}/t17-home-rules-{w}.png')
         q.locator('header:has(h1)').screenshot(path=f'{SHOTS}/t17-home-hero-{w}.png')
+
+    # ---------------- T-18: simple pass, the six tools and the phone header (Nov 13, 2026)
+    import subprocess as _sp18
+    T17 = 'd0a24616f56f85eb6a252d3a4f98ad2449d1ca04'   # trip/T-17: the pages as they were before this item
+    T17_FILES = {}
+
+    def t17_file(path):
+        if path not in T17_FILES:
+            r = _sp18.run(['git', 'show', f'{T17}:{path}'], cwd=here, capture_output=True)
+            T17_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T17_FILES[path]
+
+    def old_page(w, h=900):
+        """A page that can open the T-17 build at BASE + '__t17/<file>', straight from git."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t17/', 1)[1].split('?')[0].split('#')[0]
+            body = t17_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'application/octet-stream')
+        q.route('**/__t17/**', serve)
+        return q
+    OLD = BASE + '__t17/'
+    check('T-18: the T-17 pages can be read from git for comparison', t17_file('shotlist.html') is not None and t17_file('comp3.html') is not None)
+    TOOLS6 = ('shotlist', 'captions', 'receipt', 'scaler', 'checkup', 'comp3')
+    MENU = ('index', 'work', 'call', 'case-reels', 'start', 'shotlist', 'captions', 'receipt', 'scaler', 'checkup',
+            'studio', 'studio-birdleague', 'studio-deepcuts')
+    # Built on Windows the pages end lines with CRLF and git holds LF, so compare without CR.
+    new_src = {n: urlopen(BASE + n + '.html').read().decode('utf-8').replace('\r', '') for n in TOOLS6 + MENU}
+    old_src = {n: t17_file(n + '.html').decode('utf-8').replace('\r', '') for n in TOOLS6 + MENU}
+
+    def settle(q):
+        q.wait_for_load_state('networkidle'); q.evaluate('document.fonts.ready.then(() => 1)'); q.wait_for_timeout(100)
+    U = lambda s: _html.unescape(s)
+
+    # Left as they are: title tags, meta descriptions, share cards, the dark panels and the "More free tools" lines.
+    for n in TOOLS6 + ('index',):
+        for rx in (r'<title>.*?</title>', r'<meta name="description"[^>]*>', r'<meta property="og:[^"]*"[^>]*>', r'<meta name="twitter:card"[^>]*>'):
+            check(f'T-18: {n} keeps its {rx[1:12]}... as at T-17', _re.findall(rx, new_src[n], _re.S) == _re.findall(rx, old_src[n], _re.S))
+    for n in TOOLS6[:5]:
+        for rx in (r'<p class="noprint"[^>]*>More free tools:.*?</p>', r'<section aria-labelledby="more-h".*?</section>'):
+            a, b_ = _re.findall(rx, new_src[n], _re.S), _re.findall(rx, old_src[n], _re.S)
+            check(f'T-18: {n} keeps its {"More free tools line" if "More" in rx else "dark panel"} as at T-17', a == b_ and len(a) == 1)
+
+    # The words, exactly once where they are in the page itself, and the old ones gone.
+    NEW_LINES = {
+        'shotlist': ["Tell me what you run. You get 10 clips to film, in the order you walk your shop.", "What do you run?",
+                     "Change the details", "Your 10 clips, in walking order", "Start at stop 1 and film as you go. You never walk back.",
+                     "How it gets cut together"],
+        'captions': ["Type your caption. See it on a phone, and find out if people can read it in time.", "Change how it looks",
+                     "Which app?", "How long is your clip?", "Try it on your own video", "Add a screenshot from your video. It stays on your phone.",
+                     "Your caption, split up", "Save this caption as an image", "Save all of them", "Copy the text",
+                     "The image is clear except for the caption. Drop it over your clip in CapCut or the Instagram editor and it lands right where you see it here."],
+        'receipt': ["Tap the chores that eat your week. See what a year of them costs you.", "Guess. Close is good enough."],
+        'scaler': ["Paste a recipe and say who's eating. You get amounts you can actually measure."],
+        'checkup': ["Paste your website's address. You get a plain list of what's broken, worst first, and whether AI tools can find your business."],
+        'comp3': ["One stored number. Two ways to read it. On a $1,000 balance, one reading charges $2.92 of interest a month and the other charges $291.67. The code can't tell you which is right. Paste your own below. Nothing you paste leaves this page.",
+                  "The line in the program that says how the number is stored. Paste it however it appears: PIC S9(7)V99 COMP-3. works."],
+    }
+    OLD_LINES = {
+        'shotlist': ["Ten clips.", "Tell it four things", "The shoot: one lap, no backtracking",
+                     "Film by where you're standing, not by the edit order. Numbers match the edit.",
+                     "Pick what you run and what the reel should do.", "'Payoff'", "'Where'", "'Hook'"],
+        'captions': ["Type it once.", "Upper third", "Lower third", "Check against", "This clip is on screen for", "Try it on your own frame",
+                     "A screenshot from your video. It stays on your device.", "The checkup", ">Screens<", "Download this screen as a PNG",
+                     "Download every screen", "Copy the line breaks", "The PNG is see-through", "Two lines fit comfortably", "Fits on one screen. Tap it to preview."],
+        'receipt': ["How long, how often", "Change any name to match how you'd say it.", "COULD COME BACK", "Could come back:",
+                    "Tap a chore above to start your receipt.", "You get a receipt for a year of them", "tag2"],
+        'scaler': ["Paste any ingredient list and say who's eating."],
+        'checkup': ["Paste your site's address. You get a plain report"],
+        'comp3': ["A free tool · runs in your browser", "Paste the raw bytes of a COMP-3", "Paste the bytes of a COMP-3 field and its picture clause. You get"],
+    }
+    def visible_text(src):
+        return U(_re.sub(r'\s+', ' ', _re.sub(r'<[^>]+>', ' ', _re.sub(r'<(script|style)\b.*?</\1>', ' ', src, flags=_re.S))))
+    for n, lines in NEW_LINES.items():
+        page_text = visible_text(new_src[n]) + ' ' + U(new_src[n])   # words in the markup, or in the script that writes them
+        flat = U(_re.sub(r'<[^>]+>', '', new_src[n]))
+        for s in lines:
+            c = flat.count(s) + (flat.count(s.replace("'", "\\'")) if "'" in s else 0)
+            check(f'T-18: {n} has "{s[:50]}" exactly once', c == 1, str(c))
+    for n, lines in OLD_LINES.items():
+        for s in lines:
+            check(f'T-18: {n} no longer has "{s[:50]}"', s not in U(new_src[n]) and s.replace("'", "\\'") not in U(new_src[n]))
+
+    # Every page that gains the phone menu, and the folds: at 390, 48 px or taller, closed on load.
+    def fold_ok(q, btn, target, label):
+        b_ = q.locator(btn)
+        t_ = q.locator(target)
+        h_ = b_.bounding_box()['height'] if b_.is_visible() else 0
+        tag = b_.evaluate('e => e.tagName')
+        check(f'T-18: {label}: a real button, closed on load, 48 px or taller at 390', tag == 'BUTTON' and b_.get_attribute('aria-expanded') == 'false'
+              and not t_.is_visible() and h_ >= 48 and b_.get_attribute('aria-controls') == t_.get_attribute('id'), f'{tag} {h_}')
+        b_.click(); q.wait_for_timeout(60)
+        o1 = b_.get_attribute('aria-expanded') == 'true' and t_.is_visible()
+        b_.click(); q.wait_for_timeout(60)
+        c1 = b_.get_attribute('aria-expanded') == 'false' and not t_.is_visible()
+        check(f'T-18: {label}: opens and closes by click, aria-expanded follows', o1 and c1)
+        b_.focus(); q.keyboard.press('Enter'); q.wait_for_timeout(60)
+        o2 = b_.get_attribute('aria-expanded') == 'true' and t_.is_visible()
+        q.keyboard.press('Space'); q.wait_for_timeout(60)
+        c2 = b_.get_attribute('aria-expanded') == 'false' and not t_.is_visible()
+        check(f'T-18: {label}: opens with Enter and closes with Space from the keyboard', o2 and c2)
+        q.keyboard.press('Shift+Tab'); q.keyboard.press('Tab')
+        check(f'T-18: {label}: reachable with Tab', q.evaluate('document.activeElement') is not None and b_.evaluate('e => e === document.activeElement'))
+
+    q = newpage(390, 844); q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
+    fold_ok(q, '#f-details', '#details', 'shot list "Change the details"')
+    fold_ok(q, '#f-cut', '#cut', 'shot list "How it gets cut together"')
+    q = newpage(390, 844); q.goto(BASE + 'captions.html'); q.wait_for_timeout(300)
+    fold_ok(q, '#f-look', '#look', 'caption fitter "Change how it looks"')
+    q = newpage(390, 844); q.goto(BASE + 'receipt.html'); q.wait_for_timeout(300)
+    for i in range(3):
+        fold_ok(q, f'#rows .row2:nth-child({i + 1}) .fold', f'#rows .row2:nth-child({i + 1}) .ed', f'receipt line {i + 1} "Change"')
+
+    # The answer first: where each tool's answer starts at 390 wide (one phone screen is 844 px).
+    ANSWER = {'shotlist': "document.querySelector('section[aria-labelledby=shoot-h]')", 'captions': "document.querySelector('.phone')",
+              'receipt': "document.getElementById('paper')", 'scaler': "document.getElementById('out').closest('table')",
+              'checkup': "document.getElementById('soon')",
+              'comp3': "[...document.querySelectorAll('#out .label')].find(e => e.textContent === 'If this field is an annual rate').parentElement"}
+    for n, js in ANSWER.items():
+        tops = []
+        for base_, pgf in ((BASE, lambda: newpage(390, 844)), (OLD, lambda: old_page(390, 844))):
+            q = pgf(); q.goto(base_ + n + '.html'); settle(q)
+            tops.append(q.evaluate('(() => Math.round(' + js + '.getBoundingClientRect().top + scrollY))()'))
+        check(f'T-18: {n}: the answer starts on the first or second phone screen at 390 (was {tops[1]} px, now {tops[0]} px)',
+              tops[0] < 2 * 844 and tops[0] <= tops[1], str(tops))
+
+    # Same choices, same results: three inputs per tool, against the page as it was at T-17.
+    def click_chips(q, picks):
+        for k, v in picks:
+            q.evaluate(f"document.querySelector('.chip[data-k=\"{k}\"][data-v=\"{v}\"]').click()")
+    def set_val(q, sel, v):
+        q.evaluate("([s, v]) => { const e = document.querySelector(s); e.value = v; e.dispatchEvent(new Event('input', {bubbles: true})); e.dispatchEvent(new Event('change', {bubbles: true})) }", [sel, v])
+    def grab_copy(q, btn):
+        q.evaluate('window.djCopy = t => { window.__copied = t }')
+        q.evaluate(f"document.querySelector('{btn}').click()")
+        return q.evaluate('window.__copied')
+    def both(name, fn, w=1440):
+        out_ = []
+        for base_, pgf in ((BASE, lambda: newpage(w)), (OLD, lambda: old_page(w))):
+            q = pgf(); q.goto(base_ + name + '.html'); settle(q); q.wait_for_timeout(300)
+            out_.append(fn(q))
+        return out_
+
+    SHOT_JS = '''(() => ({
+      edit: [...document.querySelectorAll('#edit .clip')].map(c => [c.querySelector('.no').textContent, c.querySelector('.role').className, c.querySelector('.sec').textContent, c.querySelector('p').textContent, (c.querySelector('.cap') || {}).textContent || '']),
+      shoot: [...document.querySelectorAll('#shoot .spot')].map(s => [s.querySelector('h3').textContent, [...s.querySelectorAll('li')].map(l => l.textContent)]),
+      strip: [...document.querySelectorAll('#strip span')].map(s => [s.className, s.style.flex, s.textContent]), striplabel: document.getElementById('striplabel').textContent,
+      rules: [...document.querySelectorAll('#rules li')].map(l => l.textContent),
+      days: document.getElementById('days').textContent, dayslabel: document.getElementById('dayslabel').textContent, when: document.getElementById('when').hidden,
+      offer: document.getElementById('offer').innerHTML,
+      pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)}))()'''
+    for picks in ([], [('type', 'cafe'), ('goal', 'how'), ('len', '15'), ('light', 'pm')], [('type', 'nonprofit'), ('len', '45'), ('light', 'mid')]):
+        def shot(q):
+            click_chips(q, picks); q.wait_for_timeout(80)
+            r = q.evaluate(SHOT_JS)
+            r['copy'] = _re.sub(r'(?m)^(\d+)\. [^(\n]+ \(', r'\1. (', grab_copy(q, '#copy'))   # S8 renames the clip labels
+            return r
+        a, b_ = both('shotlist', shot)
+        check(f'T-18: shot list gives the same clips, seconds, stops, rules, countdown, offer and copy as T-17 for {picks or "the defaults"}', a == b_,
+              str([k for k in a if a[k] != b_.get(k)]))
+    q = newpage(390); q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
+    q.click('#f-cut'); q.wait_for_timeout(60)
+    check('T-18 S8: the ten clip labels in the order people see them', q.locator('#edit .role').all_text_contents() ==
+          ['Opening', 'Your place', 'Hands', "How it's made", 'Close-up', 'You', 'A customer', 'The best part', 'Your sign', 'The ask'],
+          str(q.locator('#edit .role').all_text_contents()))
+    qo = old_page(390); qo.goto(OLD + 'shotlist.html'); qo.wait_for_timeout(300)
+    st_js = 'e => { const s = getComputedStyle(e); return [e.className, s.fontFamily, s.fontSize, s.textTransform, s.backgroundColor, s.color, s.padding] }'
+    check('T-18 S8: the labels keep their styling', q.locator('#edit .role').evaluate_all(f'es => es.map({st_js})') == qo.locator('#edit .role').evaluate_all(f'es => es.map({st_js})'))
+    q.click('#f-cut')
+    q.emulate_media(media='print'); q.wait_for_timeout(60)
+    check('T-18: printed, the shot list shows both lists, the edit fold open', q.locator('#cut').is_visible() and q.locator('#edit .clip').count() == 10
+          and q.locator('#shoot li').count() == 10 and not q.locator('#f-cut').is_visible())
+    q.emulate_media(media='screen')
+
+    CAP_JS = '''(() => { const d = document.getElementById('cv').toDataURL(); let h = 0; for (let i = 0; i < d.length; i++) h = (h * 31 + d.charCodeAt(i)) | 0;
+      return {verdicts: [...document.querySelectorAll('#verdicts li')].map(l => [l.querySelector('.dot').className, l.textContent]),
+              cards: [...document.querySelectorAll('#cards .cardline')].map(c => c.textContent), canvas: h,
+              pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)} })()'''
+    CAP_IN = ((None, [], None), ('New fall sweaters just landed.', [('size', 'l'), ('pos', 'top'), ('app', 'tiktok')], '2'),
+              ('Supercalifragilisticexpialidocious bakery opens at nine tomorrow morning on Fourth Street', [('size', 's'), ('box', 'none'), ('app', 'shorts'), ('pos', 'mid')], '20'))
+    for text, picks, secs in CAP_IN:
+        def cap(q):
+            if text is not None:
+                set_val(q, '#cap', text)
+            click_chips(q, picks)
+            if secs:
+                set_val(q, '#secs', secs)
+            q.wait_for_timeout(400)
+            r = q.evaluate(CAP_JS)
+            r['copy'] = grab_copy(q, '#copy')
+            return r
+        a, b_ = both('captions', cap)
+        check(f'T-18: caption fitter gives the same screens, checks, preview and copy as T-17 for {(text or "the default")[:24]} {picks}', a == b_,
+              str([k for k in a if a[k] != b_.get(k)]))
+    q = newpage(390, 844); q.goto(BASE + 'captions.html'); q.wait_for_timeout(500)
+    v = q.locator('#verdict')
+    check('T-18 S11: the verdict line has role="status"', v.get_attribute('role') == 'status')
+    check('T-18 S11: too long, with today\'s numbers', v.inner_text().strip() == 'Too long for this clip. People need about 7.5 seconds and your clip is 5.', v.inner_text())
+    set_val(q, '#secs', '10'); q.wait_for_timeout(100)
+    check('T-18 S11: good to go when it fits and there is time', v.inner_text().strip() == 'Good to go. It fits, and people can read it in time.', v.inner_text())
+    set_val(q, '#cap', 'Supercalifragilisticexpialidocious'); click_chips(q, [('size', 'l')]); set_val(q, '#secs', '1'); q.wait_for_timeout(300)
+    check('T-18 S11: covered comes first, before too long', v.inner_text().strip() == "The app's buttons cover part of it. Move it up."
+          and 'cover screen' in q.inner_text('#verdicts'), v.inner_text())
+    set_val(q, '#cap', 'New fall sweaters just landed.'); set_val(q, '#secs', '5'); click_chips(q, [('size', 'm')]); q.wait_for_timeout(300)
+    before_ = v.inner_text().strip()
+    q.locator('#cap').click(); q.keyboard.press('Control+A')
+    q.keyboard.type('Fresh sourdough comes out of the oven at 7 every morning. Come early, because the first batch is always gone by 9.'); q.wait_for_timeout(400)
+    check('T-18 S11: the line updates as the visitor types', before_.startswith('Good to go.') and v.inner_text().strip().startswith('Too long for this clip.'), before_ + ' / ' + v.inner_text())
+    st_ = q.locator('.stage').bounding_box(); vb = v.bounding_box(); fb = q.locator('#f-look').bounding_box(); cb = q.locator('.a-in').bounding_box()
+    check('T-18 S11: at 390, the caption box, then the phone, then the verdict, then "Change how it looks"',
+          cb['y'] < st_['y'] < vb['y'] < fb['y'] and vb['y'] - (st_['y'] + st_['height']) < 40, f'{cb} {st_} {vb} {fb}')
+    check('T-18 S13: where on screen is Top / Middle / Bottom, Bottom chosen as before', q.locator('#c-pos .chip').all_text_contents() == ['Top', 'Middle', 'Bottom']
+          and q.locator('#c-pos .chip[aria-pressed=true]').inner_text() == 'Bottom')
+    check('T-18 S16: the checkup list is headed "Why" and sits under the verdict and the settings link', q.inner_text('#v-h') == 'Why'
+          and q.locator('#v-h').bounding_box()['y'] > fb['y'])
+    check('T-18 S17: the note counts the parts', q.inner_text('#k-sub') == 'Two lines fit on a phone, so this caption shows in 3 parts. Tap one to see it.', q.inner_text('#k-sub'))
+    set_val(q, '#cap', 'New fall sweaters just landed.'); q.wait_for_timeout(300)
+    check('T-18 S17: one part, no note', not q.locator('#k-sub').is_visible() and q.locator('#cards .cardline').count() == 1)
+    with q.expect_download() as dl:
+        q.click('#png')
+    check('T-18 S18: "Save this caption as an image" still saves the PNG', dl.value.suggested_filename == 'caption-1.png', dl.value.suggested_filename)
+
+    def rec_in(presets, rate, edit):
+        def rec(q):
+            for i in presets:
+                q.evaluate(f"document.querySelector('[data-p=\"{i}\"]').click()")
+            if rate:
+                set_val(q, '#rate', rate)
+            if edit:
+                set_val(q, '[data-f=min]', '60'); set_val(q, '[data-f=per]', 'week')
+                q.evaluate("document.getElementById('addown').click()"); q.wait_for_timeout(60)
+                set_val(q, 'input[data-f=name]', 'Renamed chore')
+                q.evaluate("document.querySelector('[data-del=\"1\"]').click()")
+            q.wait_for_timeout(100)
+            paper = q.evaluate("(() => { const c = document.getElementById('paper').cloneNode(true); c.querySelectorAll('.ed, .fold').forEach(e => e.remove()); return c.textContent.replace(/\\s+/g, ' ').trim() })()")
+            paper = paper.replace('You could get back', 'BACK').replace('COULD COME BACK', 'BACK')
+            return {'paper': paper, 'bring': q.get_attribute('#bring', 'href'),
+                    'copy': grab_copy(q, '#copy').replace('You could get back:', 'BACK:').replace('Could come back:', 'BACK:'),
+                    'chips': q.evaluate("[...document.querySelectorAll('#presets .chip')].map(c => [c.textContent, c.className, c.getAttribute('aria-disabled')])")}
+        return rec
+    for args in (([], None, False), ([4, 11], '45', False), ([1, 9], None, True)):
+        a, b_ = both('receipt', rec_in(*args))
+        check(f'T-18: receipt gives the same lines, totals, hand-off and copy as T-17 for {args}', a == b_, str([k for k in a if a[k] != b_.get(k)]) + ' ' + str(a)[:300])
+    q = newpage(390, 844); q.goto(BASE + 'receipt.html'); q.wait_for_timeout(300)
+    y = lambda s: q.locator(s).bounding_box()['y']
+    check('T-18 S21/S22: at 390, the chips, then "+ Something else" and the hourly rate, then the receipt',
+          y('#presets') < y('#addown') < y('#paper') and y('#rate') < y('#paper'))
+    n0 = q.locator('#rows .row2').count()
+    q.click('[data-p="4"]')
+    check('T-18 S21: the receipt changes the moment a chore is tapped', q.locator('#rows .row2').count() == n0 + 1 and 'Editing videos or photos' in q.inner_text('#paper'))
+    check('T-18 S22: "How long, how often" is gone as a block', q.locator('#lines').count() == 0 and 'How long, how often' not in q.inner_text('main'))
+    check('T-18 S22: every receipt line has its own "Change"', q.locator('#rows .row2 > .fold').all_text_contents() == ['Change'] * (n0 + 1))
+    q.click('#rows .row2:nth-child(1) .fold'); q.wait_for_timeout(60)
+    ed = q.locator('#rows .row2:nth-child(1) .ed')
+    check('T-18 S22: "Change" opens that chore\'s name, minutes, how often and remove, with "Guess. Close is good enough."',
+          ed.locator('input[data-f=name]').input_value() == 'Answering the same questions' and ed.locator('input[data-f=min]').input_value() == '30'
+          and ed.locator('select[data-f=per]').input_value() == 'day' and ed.locator('[data-del]').count() == 1
+          and ed.locator('p').inner_text() == 'Guess. Close is good enough.')
+    check('T-18 S23: the small tag is not repeated in the fields', 'AI drafts it, you approve' not in ed.inner_text()
+          and 'AI drafts it, you approve' in q.locator('#rows .row2:nth-child(1) .rs').inner_text())
+    ed.locator('input[data-f=min]').fill('60'); q.wait_for_timeout(60)
+    check('T-18 S22: changing minutes keeps the field and its focus while the receipt updates', '$7,500' in q.inner_text('#rows .row2:nth-child(1)')
+          and ed.locator('input[data-f=min]').evaluate('e => e === document.activeElement'))
+    check('T-18: the fields are 48 px or taller at 390', all(h >= 48 for h in ed.locator('input, select, button').evaluate_all('es => es.map(e => e.getBoundingClientRect().height)')))
+    q.click('#addown'); q.wait_for_timeout(60)
+    last = q.locator('#rows .row2').last
+    check('T-18 S22: "+ Something else" opens its own line with its name selected and "What fixes it?" kept',
+          last.locator('.ed').is_visible() and last.locator('input[data-f=name]').evaluate('e => e === document.activeElement')
+          and last.locator('select[data-f=v]').count() == 1)
+    check('T-18 S24: "You could get back" on the receipt', 'You could get back' in q.inner_text('#paper') and 'COULD COME BACK' not in q.inner_text('#paper').upper())
+    q.emulate_media(media='print'); q.wait_for_timeout(60)
+    check('T-18: printed, the receipt has no "Change" and no fields', q.locator('#paper .fold:visible').count() == 0 and q.locator('#paper .ed:visible').count() == 0)
+    q.emulate_media(media='screen')
+
+    for k, v_ in (([], None), ([('#kids', '40')], None), ([('#serves', '6'), ('#adults', '10'), ('#kids', '0')], None)):
+        def sc(q):
+            for s, val in k:
+                set_val(q, s, val)
+            q.wait_for_timeout(100)
+            return [q.inner_text('#fac'), q.inner_text('#facl'), q.inner_text('#warn'), q.inner_text('#out')]
+        a, b_ = both('scaler', sc)
+        check(f'T-18: scaler gives the same amounts as T-17 for {k or "the defaults"}', a == b_)
+
+    thin = _json.loads(_json.dumps(SAMPLE)); thin['facts']['textLength'] = 120
+    for ans in (SAMPLE, thin, {'ok': False, 'error': 'private-name'}):
+        res = []
+        for base_, pgf in ((BASE, lambda: newpage(1440)), (OLD, lambda: old_page(1440))):
+            q = pgf()
+            def page_route(route, base_=base_):
+                body = route.fetch().text() if base_ == BASE else t17_file('checkup.html').decode('utf-8')
+                route.fulfill(status=200, content_type='text/html', body=body.replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1))
+            q.route(base_ + 'checkup.html', page_route)
+            def worker_(a_):
+                return lambda route: route.fulfill(status=200 if a_.get('ok') else 400, content_type='application/json',
+                                                   body=_json.dumps(a_), headers={'Access-Control-Allow-Origin': '*'})
+            q.route('https://dj-checkup.test/**', worker_(ans))
+            q.goto(base_ + 'checkup.html'); q.wait_for_timeout(400)
+            q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
+            res.append([q.inner_text('#msg')] + [q.inner_text(s) if q.locator(s).is_visible() else '' for s in ('#rep1', '#stat', '#rep2')])
+        check(f'T-18: checkup gives the same report as T-17 for {"a refusal" if not ans.get("ok") else "a thin page" if ans is thin else "the sample"}', res[0] == res[1] and any(res[0]))
+
+    def dec(q, steps):
+        for s in steps:
+            if s[0] == 'chip':
+                q.click(f'text={s[1]}')
+            elif s[0] == 'mode':
+                q.click(s[1])
+            else:
+                q.fill(s[0], s[1])
+        q.wait_for_timeout(100)
+        return [sorted(l for l in q.inner_text('#out').split('\n') if l.strip()), _re.sub(r'.*#', '#', q.url)]
+    for steps in ([], [('chip', 'A damaged field')], [('chip', 'A negative balance')], [('mode', '#mode-enc'), ('#in', '-12.345'), ('#pic', 'S9(5)V99')]):
+        a, b_ = both('comp3', lambda q: dec(q, steps))
+        check(f'T-18: decoder shows the same readouts and share link as T-17 for {steps or "the opening example"}', a == b_)
+    q = newpage(390, 844); q.goto(BASE + 'comp3.html'); q.wait_for_timeout(300)
+    check('T-18 S27: "Free tool" over the title', q.locator('h1').evaluate('e => e.previousElementSibling.textContent') == 'Free tool')
+    out_t = q.inner_text('#out')
+    check('T-18 S28: the intro\'s figures are what the tool computes on load', '$2.92' in out_t and '$291.67' in out_t
+          and q.locator('#out > div').first.inner_text().upper().startswith('IF THIS FIELD IS AN ANNUAL RATE'), out_t[:200])
+    order = q.evaluate('''(() => { const k = [...document.querySelectorAll('#out > *')]; const f = p => k.findIndex(p);
+      return [f(e => e.classList.contains('ok')), f(e => e.textContent.startsWith('If this field is an annual rate')), f(e => e.tagName === 'DL'), f(e => e.textContent.startsWith('Every half-byte'))] })()''')
+    check('T-18 S29: clean message, then the dollar readings and their sentence, then value, digits, sign and length, then the half-byte boxes', order == [0, 1, 2, 3], str(order))
+    gap = q.evaluate("document.querySelector('#out > .ok').getBoundingClientRect().top - [...document.querySelectorAll('.chip[data-b]')].pop().getBoundingClientRect().bottom")
+    check('T-18 S29: the clean-or-damaged message sits right under the examples at 390', 0 < gap <= 64, str(gap))
+    q.click('text=A damaged field'); q.wait_for_timeout(100)
+    check('T-18 S29: a damaged field still leads with its warning', q.locator('#out > *').first.evaluate('e => e.className') == 'warn')
+
+    # S1: the phone header.
+    def header_links(q):
+        return q.evaluate('''(() => { const L = document.querySelector('a[href="work.html#free"]').parentElement;
+          return [...L.querySelectorAll('a')].map(a => [a.getAttribute('href'), a.textContent.trim()]) })()''')
+    for n in MENU:
+        q = old_page(390); q.goto(OLD + n + '.html'); q.wait_for_timeout(200)
+        want = header_links(q)
+        for w in (320, 390):
+            q = newpage(w, 844); q.goto(BASE + n + '.html'); q.wait_for_timeout(300)
+            btn = q.locator('.djm-btn')
+            links = q.locator('#djm-links')
+            logo = q.locator('.djm > a, .djm > span').first.bounding_box()
+            bb = btn.bounding_box() if btn.is_visible() else None
+            check(f'T-18 S1: {n} at {w}: one row, the site name and "Menu", links closed', bb is not None and btn.inner_text() == 'Menu'
+                  and btn.get_attribute('aria-expanded') == 'false' and not links.is_visible() and bb['height'] >= 48
+                  and abs((bb['y'] + bb['height'] / 2) - (logo['y'] + logo['height'] / 2)) <= 6 and bb['x'] > logo['x'] + logo['width'], f'{bb} {logo}')
+            btn.click(); q.wait_for_timeout(80)
+            items = links.locator('a').evaluate_all('es => es.map(a => { const r = a.getBoundingClientRect(); return [a.getAttribute("href"), a.textContent.trim(), Math.round(r.top), r.height] })')
+            check(f'T-18 S1: {n} at {w}: "Menu" opens the same links and call button, in the same order, under the header row',
+                  btn.get_attribute('aria-expanded') == 'true' and [i[:2] for i in items] == want and all(i[3] >= 48 for i in items)
+                  and [i[2] for i in items] == sorted(i[2] for i in items) and items[0][2] >= bb['y'] + bb['height'], f'{items} {want}')
+            sw = q.evaluate('document.documentElement.scrollWidth')
+            check(f'T-18 S1: {n} at {w}: no sideways scroll with the menu open', sw <= w, str(sw))
+            if w == 390 and n in ('index', 'captions'):
+                q.screenshot(path=f'{SHOTS}/t18-menu-{n}-390.png')
+            btn.click(); q.wait_for_timeout(60)
+            check(f'T-18 S1: {n} at {w}: pressing again closes it', btn.get_attribute('aria-expanded') == 'false' and not links.is_visible())
+            btn.focus(); q.keyboard.press('Enter'); q.wait_for_timeout(60)
+            o = links.is_visible()
+            q.keyboard.press('Escape'); q.wait_for_timeout(60)
+            check(f'T-18 S1: {n} at {w}: opens from the keyboard, Escape closes it and leaves focus on "Menu"', o and not links.is_visible()
+                  and btn.evaluate('e => e === document.activeElement'))
+        # 700 px and wider: the header as it was at T-17, to the pixel.
+        HJS = '''(() => { const L = document.querySelector('a[href="work.html#free"]').parentElement.parentElement;
+          const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)] };
+          return [r(L), [...L.querySelectorAll('*')].filter(e => e.getBoundingClientRect().width > 0).map(e => [e.tagName, e.tagName === 'svg' ? '' : e.textContent.trim().slice(0, 30), r(e)]),
+                  Math.round(document.querySelector('h1').getBoundingClientRect().top)] })()'''
+        for w in (700, 1024, 1440):
+            got = []
+            for base_, pgf in ((BASE, lambda: newpage(w)), (OLD, lambda: old_page(w))):
+                q = pgf(); q.goto(base_ + n + '.html'); settle(q)
+                got.append(q.evaluate(HJS))
+            check(f'T-18 S1: {n} at {w}: the header matches T-17 (no Menu button, every link where it was)', got[0] == got[1], str(got[0])[:200] + ' | ' + str(got[1])[:200])
+    for n in ('local', 'mainframe', 'briefing', 'comp3', '404'):
+        src_ = urlopen(BASE + n + '.html').read().decode('utf-8')
+        check(f'T-18 S1: {n} keeps its header, no Menu button', 'djm-btn' not in src_)
+
+    # S31: "How I work" on phones; 700 px and up as at T-17.
+    LI = 'es => es.map(l => { const r = l.getBoundingClientRect(), s = getComputedStyle(l); return [Math.round(r.x), Math.round(r.y), Math.round(r.width), s.paddingLeft, s.paddingRight, s.borderRightWidth] })'
+    for w in (320, 390, 600, 699):
+        q = newpage(w); q.goto(BASE + 'index.html'); q.wait_for_timeout(300)
+        lis = q.locator('#rules-h + ol > li').evaluate_all(LI)
+        check(f'T-18 S31: at {w}, the four "How I work" items share one left edge, no line at the right', len(lis) == 4 and len({l[0] for l in lis}) == 1
+              and all(l[3] == '0px' and l[5] == '0px' for l in lis) and [l[1] for l in lis] == sorted(l[1] for l in lis), str(lis))
+        if w in (320, 390):
+            q.locator('section[aria-labelledby="rules-h"]').screenshot(path=f'{SHOTS}/t18-home-rules-{w}.png')
+    for w in (700, 1024, 1440):
+        got = []
+        for base_, pgf in ((BASE, lambda: newpage(w)), (OLD, lambda: old_page(w))):
+            q = pgf(); q.goto(base_ + 'index.html'); settle(q)
+            got.append(q.locator('#rules-h + ol > li').evaluate_all(LI))
+        check(f'T-18 S31: at {w}, "How I work" is as it was at T-17', got[0] == got[1], str(got))
+
+    # No sideways scroll at 320 and 390 on every changed page, folds closed and open.
+    for n in MENU + ('comp3',):
+        for w in (320, 390):
+            q = newpage(w); q.goto(BASE + n + '.html'); q.wait_for_timeout(300)
+            a = q.evaluate('document.documentElement.scrollWidth')
+            q.evaluate("document.querySelectorAll('.fold[aria-expanded=false]').forEach(b => b.click())"); q.wait_for_timeout(100)
+            b2 = q.evaluate('document.documentElement.scrollWidth')
+            check(f'T-18: {n} has no sideways scroll at {w}, folds closed and open', a <= w and b2 <= w, f'{a} {b2}')
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

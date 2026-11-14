@@ -68,6 +68,17 @@ td.note b{color:#A93F17;font-weight:600}
 @media print{.noprint{display:none!important}body{background:#fff}.lay{display:block}.panel{border:0;padding:0}}
 
 </style>
+<style>
+.djm-btn{display:none}
+@media (max-width:699px){
+.djm{flex-wrap:wrap!important;row-gap:0!important;column-gap:0!important}
+.djm .djm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 12px;margin-left:auto;font:inherit;font-size:16px;font-weight:600;cursor:pointer;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:2px}
+.djm .djm-links{display:none!important}
+.djm.open .djm-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;flex-basis:100%;padding:12px 0 4px}
+.djm.open .djm-links>a{display:flex!important;align-items:center!important;min-height:48px!important;font-size:16px!important}
+.djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
+}
+</style>
 </head>
 <body>
 <div class="dj">
@@ -79,18 +90,19 @@ td.note b{color:#A93F17;font-weight:600}
         <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+      <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
         <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
         <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
       </div>
-    </nav>
+    </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <span class="kick">Free tool</span>
       <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Any recipe.<br>Any crowd.</h1>
-      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Paste any ingredient list and say who's eating. You get amounts you can actually measure, like "1/4 cup + 2 tbsp" instead of 0.375 cups, eggs rounded up, butter in sticks, and a heads-up when it's time to cook in batches.</p>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Paste a recipe and say who's eating. You get amounts you can actually measure.</p>
     </div>
   </div>
 </header>

@@ -48,6 +48,17 @@ a{color:#A93F17}a:hover{color:#16201C}
 @media (min-width:800px){.card.feature{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
 </style>
+<style>
+.djm-btn{display:none}
+@media (max-width:699px){
+.djm{flex-wrap:wrap!important;row-gap:0!important;column-gap:0!important}
+.djm .djm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 12px;margin-left:auto;font:inherit;font-size:16px;font-weight:600;cursor:pointer;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:2px}
+.djm .djm-links{display:none!important}
+.djm.open .djm-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;flex-basis:100%;padding:12px 0 4px}
+.djm.open .djm-links>a{display:flex!important;align-items:center!important;min-height:48px!important;font-size:16px!important}
+.djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
+}
+</style>
 </head>
 <body>
 <div class="dj">
@@ -59,14 +70,15 @@ a{color:#A93F17}a:hover{color:#16201C}
         <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+      <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
         <a href="mainframe.html" style="color:#C9D2CB;text-decoration:none">Mainframe Route</a>
         <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
       </div>
-    </nav>
+    </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(28px,5vw,64px) 0 clamp(44px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:24px 64px;align-items:end">
       <div style="display:flex;flex-direction:column;gap:16px">
         <h1 class="big" style="font-size:clamp(56px,8vw,112px)">Things<br>I've built</h1>

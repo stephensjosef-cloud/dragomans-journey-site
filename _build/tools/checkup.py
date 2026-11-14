@@ -272,7 +272,7 @@ write(sys.argv[1], "checkup.html",
       description="A free check for small businesses and nonprofits: paste your site's address and get a plain report of what's broken, and whether a machine can read your facts.",
       kicker="Free tool",
       h1="Website<br>checkup",
-      lede="Paste your site's address. You get a plain report of what's broken, worst first: what it costs you and how hard it is to fix. Then whether AI tools can read the facts about your business.",
+      lede="Paste your website's address. You get a plain list of what's broken, worst first, and whether AI tools can find your business.",
       css=CSS, body=BODY, script=SCRIPT,
       cta_h="Rather hand it off?", cta_p="Start with a free 15-minute call.",
       cta_href="call.html", cta_btn="Free 15-minute call")

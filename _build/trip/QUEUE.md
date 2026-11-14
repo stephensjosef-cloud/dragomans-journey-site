@@ -597,6 +597,48 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-18 · Simple pass: the six tools and the phone header · READY
+
+**Why:** Josef, Nov 13, 2026: his strongest angle is that he makes AI simple, so the free tools have to be simple to use. Today each tool's answer sits two or three phone screens down, under its settings.
+
+**Build:** three moves behind every change: (1) answer first, the worked example's answer on the first or second phone screen; (2) one ask at a time, one question up front, every other choice still in the tool, set as today, under one link; (3) their words, a label is something a shop owner would say. No feature is removed: every choice, field, button, list, download, copy and print that works today still works, with the same defaults and results. A folded section is a button with `aria-expanded`, keyboard reachable, closed on load, 48 px or taller on a phone; folds that hold part of the answer print open. Words exactly as given, no em dashes.
+- **S1.** Every page whose header shows links: under 700 px, one row, the site name and a "Menu" button that opens the same links and call button, in order, under the header (`aria-expanded`). 700 px and up unchanged. The Local Route and the three Mainframe pages keep their header.
+- **S2.** Shot list title "WHAT TO FILM FOR YOUR REEL"; title tag and meta description unchanged.
+- **S3.** Shot list intro: "Tell me what you run. You get 10 clips to film, in the order you walk your shop."
+- **S4.** "Tell it four things" removed; "What do you run?" and its seven choices stay open.
+- **S5.** The other three questions under "Change the details", closed on load, today's defaults.
+- **S6.** The walking-order list right under the first question, headed "Your 10 clips, in walking order", note "Start at stop 1 and film as you go. You never walk back."
+- **S7.** The edit-order list, its seconds note and the color strip under "How it gets cut together", closed on load, after the walking-order list.
+- **S8.** In that fold the ten labels become Opening, Your place, Hands, How it's made, Close-up, You, A customer, The best part, Your sign, The ask; same styling.
+- **S9.** The countdown and free-reel offer below both lists, above "Five rules for every clip"; same words and dates; copy and print give both lists.
+- **S10.** Caption intro: "Type your caption. See it on a phone, and find out if people can read it in time."
+- **S11.** Under the caption box: the phone preview, then one verdict line (`role="status"`): covered, then too long (today's numbers), then good to go; it updates live.
+- **S12.** The six settings under "Change how it looks", closed on load, under the verdict, today's defaults.
+- **S13.** "Top / Middle / Bottom".
+- **S14.** "Which app?", "How long is your clip?", "Try it on your own video".
+- **S15.** "Add a screenshot from your video. It stays on your phone."
+- **S16.** "The checkup" stays, under the verdict and the settings link, headed "Why".
+- **S17.** "Your caption, split up", note "Two lines fit on a phone, so this caption shows in <n> parts. Tap one to see it.", hidden at one part.
+- **S18.** "Save this caption as an image", "Save all of them", "Copy the text".
+- **S19.** The note under them.
+- **S20.** Receipt intro: "Tap the chores that eat your week. See what a year of them costs you."
+- **S21.** The receipt right under the chips, changing the moment a chore is tapped.
+- **S22.** "How long, how often" gone as a block; each receipt line gets "Change" (name, minutes, how often, remove, "Guess. Close is good enough."); "+ Something else" and the hourly rate stay, under the chips and above the receipt.
+- **S23.** The small tag not repeated in the fields.
+- **S24.** "Could come back" becomes "You could get back".
+- **S25.** Scaler intro: "Paste a recipe and say who's eating. You get amounts you can actually measure."
+- **S26.** Checkup intro (page and live tool): "Paste your website's address. You get a plain list of what's broken, worst first, and whether AI tools can find your business." No finding, error or Worker change.
+- **S27.** Decoder: "Free tool" over the title.
+- **S28.** Decoder intro with the opening example's figures ($2.92 and $291.67), confirmed against what the tool computes.
+- **S29.** Decoder readouts: the dollar readings and their sentence first, then value, digits, sign and length, then the half-byte boxes; the clean-or-damaged message stays under the examples.
+- **S30.** Under "Picture clause": "The line in the program that says how the number is stored. Paste it however it appears: PIC S9(7)V99 COMP-3. works."
+- **S31.** Home: on phones the four "How I work" items share one left edge and show no right-hand line. Desktop unchanged.
+- Left as they are: every title tag, meta description and share card; every price; the checkup's findings and both Workers; the "Rather hand it off?" panels; the "More free tools" lines; everything on pages not named, except the phone header.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.

@@ -3,12 +3,11 @@ import sys
 
 CSS = r"""
 .ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:22px 32px}
-.count{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline;margin-bottom:18px}
+.count{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline}
 .count .n{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(40px,5vw,60px);line-height:.9;color:#C2461B}
 .strip{display:flex;height:44px;border:1.5px solid #16201C;border-radius:2px;overflow:hidden}
 .strip span{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#16201C;border-right:1px solid rgba(22,32,28,.35);min-width:0;overflow:hidden;white-space:nowrap}
 .strip span:last-child{border-right:0}
-.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr));gap:24px;align-items:start}
 .clip{display:grid;grid-template-columns:44px 1fr auto;gap:4px 14px;padding:14px 0;border-top:1px solid #DDD5C3}
 .clip:first-of-type{border-top:0}
 .clip .no{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:30px;line-height:1;color:#16201C}
@@ -30,50 +29,55 @@ CSS = r"""
 .offer .btn{background:#0E1B17;border-color:#0E1B17;color:#F2EDE1}
 .r-hook{background:#F6C9B5}.r-place{background:#D9E4D2}.r-hands{background:#F2DEA8}.r-process{background:#F2DEA8}.r-detail{background:#E6DCF0}
 .r-people{background:#CFE0EE}.r-customer{background:#CFE0EE}.r-reveal{background:#F6C9B5}.r-sign{background:#D9E4D2}.r-call{background:#16201C;color:#F2EDE1!important}
-@media print{.noprint{display:none!important}body{background:#fff}.panel{border:1px solid #999}.cols{display:block}.panel{break-inside:avoid;margin-bottom:12px}}
+.stack{display:flex;flex-direction:column;gap:24px}
+h1.big{text-wrap:balance}
+@media print{.noprint{display:none!important}body{background:#fff}.panel{border:1px solid #999}.panel{break-inside:avoid;margin-bottom:12px}}
 """
 
 BODY = r"""
-  <section class="panel noprint" aria-labelledby="pick-h">
-    <h2 id="pick-h" class="label">Tell it four things</h2>
-    <div class="ctrl">
-      <div><p class="label" id="l-type">What do you run?</p><div class="chips" role="group" aria-labelledby="l-type" id="c-type"></div></div>
-      <div><p class="label" id="l-goal">What should the reel do?</p><div class="chips" role="group" aria-labelledby="l-goal" id="c-goal"></div></div>
-      <div><p class="label" id="l-len">How long?</p><div class="chips" role="group" aria-labelledby="l-len" id="c-len"></div></div>
-      <div><p class="label" id="l-light">When will you film?</p><div class="chips" role="group" aria-labelledby="l-light" id="c-light"></div></div>
+  <section class="panel noprint" aria-labelledby="l-type">
+    <p class="label" id="l-type">What do you run?</p><div class="chips" role="group" aria-labelledby="l-type" id="c-type"></div>
+    <button type="button" class="fold" id="f-details" aria-expanded="false" aria-controls="details" style="margin-top:12px">Change the details</button>
+    <div id="details" hidden>
+      <div class="ctrl" style="margin-top:12px">
+        <div><p class="label" id="l-goal">What should the reel do?</p><div class="chips" role="group" aria-labelledby="l-goal" id="c-goal"></div></div>
+        <div><p class="label" id="l-len">How long?</p><div class="chips" role="group" aria-labelledby="l-len" id="c-len"></div></div>
+        <div><p class="label" id="l-light">When will you film?</p><div class="chips" role="group" aria-labelledby="l-light" id="c-light"></div></div>
+      </div>
     </div>
   </section>
 
-  <section class="panel" aria-live="polite" id="summary">
-    <div class="count" id="when">
-      <span class="n" id="days"></span>
-      <span id="dayslabel" style="font-size:18px;font-weight:600"></span>
+  <section class="panel" aria-labelledby="shoot-h">
+    <h2 id="shoot-h" style="margin:0 0 4px;font-size:22px">Your 10 clips, in walking order</h2>
+    <p class="private" style="margin-bottom:8px">Start at stop 1 and film as you go. You never walk back.</p>
+    <div id="shoot"></div>
+  </section>
+
+  <div class="stack">
+    <button type="button" class="fold noprint" id="f-cut" aria-expanded="false" aria-controls="cut" style="align-self:flex-start">How it gets cut together</button>
+    <div id="cut" class="printopen" hidden>
+      <section class="panel" aria-labelledby="edit-h">
+        <h2 id="edit-h" style="margin:0 0 4px;font-size:22px">The edit: 10 clips, in the order people see them</h2>
+        <p class="private" style="margin-bottom:8px">Seconds are what each clip gets in the finished reel. Film every one for about five seconds anyway; the edit trims.</p>
+        <div id="edit"></div>
+        <p class="label" style="margin-top:18px">The reel, second by second</p>
+        <div class="strip" id="strip" aria-hidden="true"></div>
+        <p class="private" id="striplabel" style="margin-top:8px"></p>
+      </section>
     </div>
-    <p class="label">The reel, second by second</p>
-    <div class="strip" id="strip" aria-hidden="true"></div>
-    <p class="private" id="striplabel" style="margin-top:8px"></p>
+  </div>
+
+  <section class="panel count" aria-live="polite" id="when">
+    <span class="n" id="days"></span>
+    <span id="dayslabel" style="font-size:18px;font-weight:600"></span>
   </section>
 
   <div id="offer"></div>
 
-  <div class="cols">
-    <section class="panel" aria-labelledby="edit-h">
-      <h2 id="edit-h" style="margin:0 0 4px;font-size:22px">The edit: 10 clips, in the order people see them</h2>
-      <p class="private" style="margin-bottom:8px">Seconds are what each clip gets in the finished reel. Film every one for about five seconds anyway; the edit trims.</p>
-      <div id="edit"></div>
-    </section>
-    <div style="display:flex;flex-direction:column;gap:24px">
-      <section class="panel" aria-labelledby="shoot-h">
-        <h2 id="shoot-h" style="margin:0 0 4px;font-size:22px">The shoot: one lap, no backtracking</h2>
-        <p class="private" style="margin-bottom:8px">Film by where you're standing, not by the edit order. Numbers match the edit.</p>
-        <div id="shoot"></div>
-      </section>
-      <section class="panel" aria-labelledby="rules-h">
-        <h2 id="rules-h" style="margin:0 0 10px;font-size:22px">Five rules for every clip</h2>
-        <ul class="rules" id="rules"></ul>
-      </section>
-    </div>
-  </div>
+  <section class="panel" aria-labelledby="rules-h">
+    <h2 id="rules-h" style="margin:0 0 10px;font-size:22px">Five rules for every clip</h2>
+    <ul class="rules" id="rules"></ul>
+  </section>
 
   <div class="noprint" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
     <button type="button" class="btn" id="copy">Copy the shot list</button>
@@ -164,7 +168,7 @@ var TYPES = {
   ['d','You or your director, one line: what a gift does this week.']]}
 };
 var ROLES=['hook','place','hands','process','detail','people','customer','reveal','sign','call'];
-var ROLE_NAME={hook:'Hook',place:'Where',hands:'Hands',process:'Process',detail:'Detail',people:'Who',customer:'Them',reveal:'Payoff',sign:'Sign',call:'Ask'};
+var ROLE_NAME={hook:'Opening',place:'Your place',hands:'Hands',process:'How it\'s made',detail:'Close-up',people:'You',customer:'A customer',reveal:'The best part',sign:'Your sign',call:'The ask'};
 var GOALS={
  door:{label:'Bring people in', w:{hook:1.1,place:1,hands:.8,process:.8,detail:1,people:1,customer:1.2,reveal:1.2,sign:.8,call:1.3}},
  how:{label:'Show how it\'s made', w:{hook:1,place:.6,hands:1.4,process:1.6,detail:1.2,people:.8,customer:.7,reveal:1.3,sign:.5,call:.9}},
@@ -267,8 +271,8 @@ write(sys.argv[1], "shotlist.html",
       title="Reel Shot List",
       description="A free planner for small businesses and nonprofits: pick what you run and get the 10 phone clips to film, in edit order and in one-lap shooting order.",
       kicker="Free tool",
-      h1="Ten clips.<br>One lap.",
-      lede="Pick what you run and what the reel should do. You get the 10 clips to film, how long each one lasts, and the order to shoot them so you never walk back across the room.",
-      css=CSS, body=BODY, script=SCRIPT,
+      h1="What to film for your reel",
+      lede="Tell me what you run. You get 10 clips to film, in the order you walk your shop.",
+      css=CSS, body=BODY, script=SCRIPT, folds=True,
       cta_h="Rather hand it off?", cta_p="Send me the clips and I'll cut the reel. Or start with a free 15-minute call.",
       cta_href="call.html", cta_btn="Free 15-minute call")

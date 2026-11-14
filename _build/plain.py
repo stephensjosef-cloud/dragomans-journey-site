@@ -372,8 +372,8 @@ EDITS = [
      'Moving off COBOL with AI? I build a tool that runs your old and new systems on the same real data, flags every difference, and gives your auditors proof they can check.'),
 
     # ---------------- Decoder page ----------------
-    ('Paste the bytes of a COMP-3 field and its picture clause. You get every digit, the sign, the value, and what the number turns into under each reading of a rate. Nothing you paste leaves this page.',
-     'Paste the raw bytes of a COMP-3 (packed) number and its PIC line. You see the value, the sign and how a rate reads both ways. Nothing you paste leaves this page.'),
+    # The decoder's intro was rewritten here until T-18 (Nov 13, 2026), which put
+    # Josef's new intro in comp3.html itself.
     ('Both readings of that field compile and both pass a test written from the source. Only the bytes the business actually stored can settle it, which is where every Survey starts.',
      'Both readings run and both pass a test written from the code. Only the data the business actually stored can settle it, so that is where every Survey starts.'),
 ]
