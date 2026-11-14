@@ -729,7 +729,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-19 · Harness lines 01: 33 word changes that won a blind reader test · READY
+## T-19 · Harness lines 01: 33 word changes that won a blind reader test · DONE (33 lines), BLOCKED (question: two stamp-only files)
 
 **Why:** Josef, Nov 13, 2026: fresh readers lost their place on shop words like "the build", "Day 1" and "stop 1", on bare numbers and on two slogans. Each new line below was shown blind beside the line it replaces and at least two of three readers found it clearer.
 
@@ -772,6 +772,79 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 - Left as they are: every title tag, meta description and share card; every price and term; the header, phone menu and footer; the Home heading and intro; the four "How I work" lines; the 404 page; every tool's arithmetic and results; both Workers; everything not named above.
 
 **Receipt:**
+- **Branch:** `trip/T-19`, cut from `origin/main` at `5ab14f3` (T-18's receipt). Queue item `f503206`, work commit `c0120d3`, this receipt in the commit after it. Nothing pushed to `main`.
+- **Status:** all 33 lines are changed and live in the build. One question is open, about two root files the item doesn't allow to change (below). Nothing a visitor sees depends on the answer.
+- **The question, for Josef:** `studio.py` stamps every Studio page with a hidden comment, `<!-- studio.py <date> <hash> -->`. The hash is taken from `studio.json`, and `enhance.py` uses it to stop the build if the Studio pages are stale. W26 and W27 live in `studio.json`, so the hash changes, and the rebuilt `studio-birdleague.html` and `studio-deepcuts.html` differ from the root by that one comment line. Nothing on either page changes. They aren't on the item's list of root files that may change, so I didn't copy them: the root keeps the old comment. Which do you want?
+  1. **Copy them (my pick).** Two root files change by one hidden comment each. The next item's "rebuild matches the root byte for byte" check then holds.
+  2. **Leave them.** The live site is the same either way, but every rebuild shows these two files differing from the root until the Studio changes again, and the next item has to explain it.
+  3. **Move W26 and W27 into `voice2.py`** so `studio.json` doesn't change. The pages would no longer match `studio.json`, which the README says holds every Studio word. I don't recommend it.
+  Answer in chat with 1, 2 or 3.
+- **Pipeline:** the unchanged pipeline first rebuilt every root file byte for byte (0 of 42 differed). After the change, `cmp` of every file in `out/` (and `out/og/`) against the root showed 15 differ. 13 are the item's pages, each because of its W lines below: `index.html`, `local.html`, `work.html`, `start.html`, `call.html`, `shotlist.html`, `captions.html`, `receipt.html`, `checkup.html`, `case-reels.html`, `studio.html` (also its stamp comment), `mainframe.html`, `briefing.html`. Those 13 were copied to the root. The other 2 are `studio-birdleague.html` and `studio-deepcuts.html`, stamp comment only, not copied (the question above). `404.html`, `scaler.html`, `comp3.html`, `sitemap.xml`, `robots.txt`, every share card and every image are unchanged. No title, meta description or share card changed, and `tools/og.py` was not run.
+- **Where each line was changed** (every new line is on its page exactly once and every old line is gone, checked in the build and in the tests):
+  - Home (`index.html`): **W1**, **W2** in `_build/voice2.py` (W1's old words come from `plain.py`; W2's sentence is T-17's V2, so W2 is a later edit on V2's output, and V2 stays as approved).
+  - Local (`local.html`): **W3** in `voice2.py` (the old words come from `plain.py`).
+  - Work (`work.html`): **W4**, **W6**, **W7** in `_build/work.html`; **W5** in `voice2.py` ("535 tests" comes from `intent.py` F1).
+  - Start (`start.html`): **W8**, **W9**, **W10**, **W11** in `_build/start.html`. W10 is also the label the script puts back after a send that fails; changed there too. W8 and W9 are the accessible names of step 4 and the day choices (`aria-labelledby`), so those follow on their own.
+  - Call (`call.html`): **W12** in `_build/call.html`.
+  - Shot list (`shotlist.html`): **W13**, **W14**, **W15** in `tools/shotlist.py`. The copied shot list never repeated these lines ("THE EDIT", "THE SHOOT (one lap)"), so it needed no change. Print is the page itself, so it shows the new words.
+  - Caption fitter (`captions.html`): **W16**, **W17**, **W18**, **W19** in `tools/captions.py`. W18 is also the name of the box choices (`aria-labelledby="l-box"`), which follows on its own; the three choices are unchanged.
+  - Busywork receipt (`receipt.html`): **W20**, **W21** in `tools/receipt.py`. W20's third sentence is unchanged, and "Bring this receipt to a Blueprint" is untouched.
+  - Website checkup (`checkup.html`): **W22**, **W23**, **W24** in `tools/checkup.py`. The "Coming this week" panel, the findings and both Workers are untouched.
+  - Case study (`case-reels.html`): **W25** in `voice2.py` (the sentence comes from `plain.py`). "The house rules" is unchanged.
+  - Studio (`studio.html`): **W26** (`hero.h1`) and **W27** (`hero.intro`) in `_build/studio.json`; **W28** in `tools/studio.py`, with the count and the date worked out as before ("13 things finished since Oct 6"). The meta description (`lede`, `lede_album_gated`) and the log are untouched.
+  - Mainframe (`mainframe.html`): **W29**, **W30**, **W31** in `voice2.py` (all three come from the canvas through `plain.py`). The hero button "Send one program" is a different element and is untouched.
+  - Briefing (`briefing.html`): **W32** in `_build/briefing.html`; **W33** in `voice2.py` (the label comes from `intent.py` L51). The field keeps `id="family"`, so it sends what it sent before. Its accessible name is now the new label, and a lookup by "Which programs" still finds it.
+- **Markup choices (words untouched):**
+  - **W16:** the old heading had a `<br>`. With a `<br>` after "read", "READ" sat alone at 320 and "VIDEO?" sat alone at 1440. After "the words", "WORDS" sat alone at both widths. With no `<br>` it wraps on its own, with no word alone: "CAN PEOPLE / READ THE / WORDS ON / YOUR VIDEO?" at 320, three lines at 390, two at 1440.
+  - **W26** keeps one `<br>`, "Follow along<br>while I piece it together". It reads as three lines at every width ("FOLLOW ALONG / WHILE I PIECE IT / TOGETHER").
+  - **W30, W31, W32** keep the italic accent where it was: "*The real data settles it.*", "Tell me about one program *and see what I'd look at first*", "Ask me about your *system*".
+- **Same words on other pages (W4 to W7 rule):** each of these is on a different card, so it was left as it is.
+  - "~4 min": the real-result card on `local.html` ("Computer time, start to finish") and the stats on `case-reels.html` ("Machine time, start to finish").
+  - "535 tests": the cooking app's proof line in `studio.json`, on `studio.html` ("535 tests, and every change checked on a real phone before it ships.").
+  - "Build 49 names birds...": Bird League's proof line in `studio.json`, on `studio.html` and `studio-birdleague.html`.
+  - "2 AI translations" appears nowhere else.
+- **How the receipt prints its "can come back" figure** (unchanged, with the default three chores): on the receipt, a bold line "You could get back" with "$6,225" at the right, and under it "Hours" with "208 hr". In the copied text: "You could get back: about 208 hr ($6,225)".
+- **Words like these, not in this item, left for a later ruling:**
+  - `work.html` dark panel: "Two weeks, $1,500, and it comes off the build price."
+  - `start.html` step 1 hint: "Pick the closest. We'll sort out the details on Day 1."
+  - `start.html`'s fallback email (the mailto when a send fails) labels the days field "Good days for Day 1", the same label the intake Worker uses in the email Josef gets. It isn't on screen and the Workers weren't to be touched, so both stay.
+  - The share cards for `captions`, `studio` and `briefing` still show the old headlines, as the item says.
+- **Intent report.** Every line changed is listed above with its page. No line was added that isn't in the item. W7 removed one sentence, "Its first sound screen ran on mock data." Nothing else was added or removed.
+- **Tests updated to describe this item** (no expectation was changed to make a failure pass):
+  - T-08/T-16 Studio count: "things finished since" (W28) and the hero intro (W27).
+  - T-04 checkup live card: its first line (W22), the facts card heading (W23) and its last line (W24).
+  - T-16 N10 work figures (W4 to W6).
+  - T-17 V2 (W2) and the kept "Begins with" line (W1).
+  - T-18 new-line lists: the shot list (W13, W14) and the caption fitter (W17, W19).
+  - T-18 "receipt dark panel as at T-17": W21 applied to the T-17 panel before comparing.
+  - T-18 "checkup report as at T-17": W22 to W24 read back to their old words before comparing.
+- **One test bug fixed:** the two checkup comparisons (T-18's against T-17, and the new T-19 one) used a route handler `page_route(route, base_=base_)`. Playwright hands a two-argument handler the request as its second argument, so `base_` was never the live address and both sides were served the old page. T-18's "checkup gives the same report as T-17" was comparing T-17 with T-17. The handler now takes `(route, request=None, base_=base_)`, so each side gets its own page. With the fix, both comparisons pass for real: the new page's report equals the old one apart from W22 to W24.
+- **Tests added** (T-19 block in `test_new.py`, against the T-18 pages read from git at `5ab14f3`):
+  - The 33 lines: each new line on its page exactly once and each old line gone, or found only inside its new line where the new line contains it (W6, W12, W18, W33). The start script puts back "Send my answers →". No em dash on the 13 pages.
+  - Nothing else changed: each of the 13 pages equals its T-18 page with only the 33 swaps (and the script label) applied, byte for byte, the Studio stamp aside. `scaler`, `comp3`, `404`, both product pages, `sitemap.xml` and `robots.txt` equal T-18, the stamp aside.
+  - Names: step 4's region, the day choices and the send button on `start.html`; the box choices on `captions.html`; the programs field on `briefing.html`. A send that fails puts the button back to "Send my answers →". The briefing send button is still "Send the request →".
+  - Forms: `start`, `call` and `briefing` each send exactly what they sent at T-18 for the same answers (Worker intercepted, nothing sent) and show their thank-you panel.
+  - Same results as T-18, two inputs per changed tool: the shot list (defaults; cafe, how it's made, 15 s, evening) with clips, stops, countdown, offer and copy; the caption fitter (default; a short caption, large, top, TikTok, 2 s) with verdict, checks, preview pixels and copy; the receipt (defaults; two chores and $45 an hour) with every line, total, hand-off and copy; the checkup (the sample, a thin page) with the whole report. The copied shot list has none of the old lines; printed, it shows the new ones.
+  - The look: at 320, 390 and 1440 every new line sits inside its own box, with nothing spilling out of it or out of its parent (folds open, the checkup report showing, the start form's thank-you panel shown for W11). No sideways scroll at 320 or 390 on the 13 pages.
+- **Tests:** `test_new.py` **1387/1387 passed** (1138 before this item: 249 new checks, plus the updates and the handler fix listed above). Run on Windows as a copy with `exe = None`, `p.chromium.launch()` and real Google Fonts, Playwright 1.65, against `out/` served on port 8765, per house rule 3. `node _build/worker/test_intake.mjs` **34/34**, `node _build/worker/test_checkup.mjs` **147/147**, each run on its own; neither Worker changed. `test_site.py` not run.
+- **Looked at** (`C:\Users\Josef\AppData\Local\Temp\claude\7cefe3eb597c3ae7\66489b1a-2e6e-408c-938d-16d817e9f19f\scratchpad\shots`: `t19-<page>-<width>.png` full pages and `t19-<page>-<width>-W<n>.png` close-ups of each changed line, at 320, 390 and 1440 for all 13 pages). Nothing is floating, cut off or overlapping on any page, and no sideways scroll at 320 or 390.
+  - **Home:** the Local card's "Begins with" line reads in two lines at 1440 (four at 320) and sits on its card. At 1440 both cards are the same height, and both "Begins with" lines and both buttons sit level. The card paragraph ends "...before you decide to go ahead."
+  - **Local:** the line under the buttons wraps to two lines at 320 and sits where it did.
+  - **Work:** the three figures now wrap: "AN 81-SECOND / REEL IN ABOUT / 4 MINUTES" (3 lines), "535 / AUTOMATIC / CHECKS" (3), "2 AI / TRANSLATIONS / OF ONE BANK / PROGRAM" (4) at 1440, and two to four lines on phones. Nothing breaks its card. At 1440 the three cards share one row, top and height, and their links sit on one line (the T-16 line-up check passes). **Worth knowing:** because the third figure is a line longer, that card's heading starts about 38 px lower than the other two. The Bird League card reads "...code. It names birds from a photo or a song...".
+  - **Start:** "WHO SAYS YES TO SPENDING / MONEY, AND WHEN?" over its choices. "GOOD DAYS FOR MY FIRST VISIT" fits on one line at 320. The button reads "Send my answers →". The thank-you panel reads "You get a one-page agreement and an invoice for $1,500."
+  - **Call:** the intro opens "Fifteen minutes, free." and wraps in six lines at 320.
+  - **Shot list:** "Your 10 clips. Film them in this order." over the stops, with "Start at the top of the list..." under it. In the cut-together fold, the five-seconds note sits right over the numbered clips and their seconds.
+  - **Caption fitter:** the title in four lines at 320 with no word alone (see W16), then the new intro. "BOX BEHIND THE WORDS" sits over its three choices. The see-through note sits under the three save buttons.
+  - **Receipt:** the note under Copy and Print reads in six lines at 320, ending with the unchanged third sentence. The dark panel reads "The first step is me watching...".
+  - **Checkup** (report shown with the sample answer): "Can AI find you?" then the new first line. "What a computer can read off your page" heads the facts card, and its last line sits under the hours.
+  - **Case study:** the sentence ends "...a finished reel, upright for phones, with the program's own title card."
+  - **Studio:** "FOLLOW ALONG / WHILE I PIECE IT / TOGETHER" at all three widths, then the intro, then "13 things finished since Oct 6".
+  - **Mainframe:** the field note reads "...See each one:" over the two choices. The long heading runs six lines at 320, with its italic second sentence, over the four record cards. "Tell me about one program *and see what I'd look at first*" sits over the four links.
+  - **Briefing:** "Ask me about your *system*". The label "WHICH PROGRAMS (A ROUGH DESCRIPTION IS ENOUGH)" wraps to two lines at 320 and sits right on its field.
+- **Josef, by hand:**
+  1. Answer the question above with 1, 2 or 3.
+  2. Read the 13 pages from this branch on your phone (or the screenshots).
+  3. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
 
 ---
 
