@@ -729,7 +729,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-19 · Harness lines 01: 33 word changes that won a blind reader test · DONE (33 lines), BLOCKED (question: two stamp-only files)
+## T-19 · Harness lines 01: 33 word changes that won a blind reader test · DONE
 
 **Why:** Josef, Nov 13, 2026: fresh readers lost their place on shop words like "the build", "Day 1" and "stop 1", on bare numbers and on two slogans. Each new line below was shown blind beside the line it replaces and at least two of three readers found it clearer.
 
@@ -773,12 +773,13 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 **Receipt:**
 - **Branch:** `trip/T-19`, cut from `origin/main` at `5ab14f3` (T-18's receipt). Queue item `f503206`, work commit `c0120d3`, this receipt in the commit after it. Nothing pushed to `main`.
-- **Status:** all 33 lines are changed and live in the build. One question is open, about two root files the item doesn't allow to change (below). Nothing a visitor sees depends on the answer.
+- **Status:** all 33 lines are changed. The one question (two stamp-only root files) is answered below, and the item is DONE.
 - **The question, for Josef:** `studio.py` stamps every Studio page with a hidden comment, `<!-- studio.py <date> <hash> -->`. The hash is taken from `studio.json`, and `enhance.py` uses it to stop the build if the Studio pages are stale. W26 and W27 live in `studio.json`, so the hash changes, and the rebuilt `studio-birdleague.html` and `studio-deepcuts.html` differ from the root by that one comment line. Nothing on either page changes. They aren't on the item's list of root files that may change, so I didn't copy them: the root keeps the old comment. Which do you want?
   1. **Copy them (my pick).** Two root files change by one hidden comment each. The next item's "rebuild matches the root byte for byte" check then holds.
   2. **Leave them.** The live site is the same either way, but every rebuild shows these two files differing from the root until the Studio changes again, and the next item has to explain it.
   3. **Move W26 and W27 into `voice2.py`** so `studio.json` doesn't change. The pages would no longer match `studio.json`, which the README says holds every Studio word. I don't recommend it.
   Answer in chat with 1, 2 or 3.
+  Answer (Josef, Nov 14, 2026): 1. Copy them. Done in the commit after the receipt: `studio-birdleague.html` and `studio-deepcuts.html` copied from the same T-19 build, each changed by its stamp comment only. `cmp` of every file in `out/` (and `out/og/`) against the root now shows 0 of 42 differ. No rebuild was needed, so the tests above still stand.
 - **Pipeline:** the unchanged pipeline first rebuilt every root file byte for byte (0 of 42 differed). After the change, `cmp` of every file in `out/` (and `out/og/`) against the root showed 15 differ. 13 are the item's pages, each because of its W lines below: `index.html`, `local.html`, `work.html`, `start.html`, `call.html`, `shotlist.html`, `captions.html`, `receipt.html`, `checkup.html`, `case-reels.html`, `studio.html` (also its stamp comment), `mainframe.html`, `briefing.html`. Those 13 were copied to the root. The other 2 are `studio-birdleague.html` and `studio-deepcuts.html`, stamp comment only, not copied (the question above). `404.html`, `scaler.html`, `comp3.html`, `sitemap.xml`, `robots.txt`, every share card and every image are unchanged. No title, meta description or share card changed, and `tools/og.py` was not run.
 - **Where each line was changed** (every new line is on its page exactly once and every old line is gone, checked in the build and in the tests):
   - Home (`index.html`): **W1**, **W2** in `_build/voice2.py` (W1's old words come from `plain.py`; W2's sentence is T-17's V2, so W2 is a later edit on V2's output, and V2 stays as approved).
@@ -842,9 +843,8 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
   - **Mainframe:** the field note reads "...See each one:" over the two choices. The long heading runs six lines at 320, with its italic second sentence, over the four record cards. "Tell me about one program *and see what I'd look at first*" sits over the four links.
   - **Briefing:** "Ask me about your *system*". The label "WHICH PROGRAMS (A ROUGH DESCRIPTION IS ENOUGH)" wraps to two lines at 320 and sits right on its field.
 - **Josef, by hand:**
-  1. Answer the question above with 1, 2 or 3.
-  2. Read the 13 pages from this branch on your phone (or the screenshots).
-  3. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
+  1. Read the 13 pages from this branch on your phone (or the screenshots).
+  2. Say "push it" to Claude in chat. That merges this into `main` and the site goes live.
 
 ---
 
