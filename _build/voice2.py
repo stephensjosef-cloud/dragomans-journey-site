@@ -74,6 +74,47 @@ item('index.html',
      "Your accounts, your data, and it's in the contract.",
      ref='V6')
 
+# ---------------- Harness lines 01, T-19 (Nov 13, 2026) ----------------
+# Each new line won a blind reader test against the line it replaces.
+# Only lines that a pass before this one writes live here; lines that sit
+# in a template or a tools/*.py file are changed there.
+text('index.html',
+     "The Blueprint · $1,500 · two weeks · counts toward the build",
+     "The Blueprint: two weeks, $1,500, fixed. If you go ahead, the $1,500 comes off the price.",
+     ref='W1')
+text('index.html',
+     "you watch it work before you decide on the build",
+     "you watch it work before you decide to go ahead",
+     ref='W2')
+text('local.html',
+     "Two weeks · fixed price · the $1,500 comes off your build",
+     "Two weeks · fixed price · the $1,500 comes off the price if you go ahead",
+     ref='W3')
+text('work.html',
+     '<p class="num">535 tests</p>',
+     '<p class="num">535 automatic checks</p>',
+     ref='W5')
+text('case-reels.html',
+     "and the tool puts together a finished vertical reel with the program's own title art.",
+     "and the tool puts together a finished reel, upright for phones, with the program's own title card.",
+     ref='W25')
+text('mainframe.html',
+     "The code never divides by 100. The field definition allows two readings. Pick one:",
+     "The code never divides by 100. The field definition allows two readings. See each one:",
+     ref='W29')
+text('mainframe.html',
+     "Every record tells a different story. <em",
+     "The code, the layouts, the job setup and the data each tell a different story. <em",
+     ref='W30')
+text('mainframe.html',
+     '>Send one program <em style="color: #A93F17">and see what I find</em>',
+     '>Tell me about one program <em style="color: #A93F17">and see what I\'d look at first</em>',
+     ref='W31')
+text('briefing.html',
+     '<span class="label">Which programs</span>',
+     '<span class="label">Which programs (a rough description is enough)</span>',
+     ref='W33')
+
 # ---------------- write ----------------
 if problems:
     print('VOICE: %d edit(s) missed, nothing written:' % len(problems))

@@ -566,7 +566,8 @@ with sync_playwright() as p:
     stats = [s.strip() for s in q.locator('#stats p').all_inner_texts()]
     stats = [_re.sub(r'\s+', ' ', s) for s in stats]
     # T-16 N4: one count, still from the log; "in the last 30 days" and "projects" are gone.
-    check('studio count matches shipped.json, and is the only one', stats == [f'{N} things shipped since {short(oldest, today)}'], str(stats))
+    # T-19 W28: "shipped" became "finished".
+    check('studio count matches shipped.json, and is the only one', stats == [f'{N} things finished since {short(oldest, today)}'], str(stats))
     check('studio count is one block, not a three-column box (T-16)', q.eval_on_selector('#stats', 'e => getComputedStyle(e).display') == 'block'
           and abs(q.locator('#stats p').bounding_box()['width'] - q.locator('#stats').bounding_box()['width']) <= 1)
     # T-16 N2: no line over the title.
@@ -575,7 +576,7 @@ with sync_playwright() as p:
     check('studio title unchanged', '<title>The studio · Dragoman\'s Journey</title>' in src)
     # T-16 N3: the hero keeps only its first sentence; the meta description stays as it was, and
     # still names the album only while the album card shows (fix approved Nov 11, 2026).
-    INTRO = "Everything I'm building right now, and the date each piece shipped."
+    INTRO = "Everything I'm building right now, and the date each piece was finished."   # T-19 W27
     HIDDEN_LEDE = "Everything I'm building right now, and the date each piece shipped. Apps, free tools and shirts, made with AI and a lot of real-phone testing. Get on a list and you hear first."
     SHOWN_LEDE = "Everything I'm building right now, and the date each piece shipped. Apps, free tools, shirts and an album, made with AI and a lot of real-phone testing. Get on a list and you hear first."
     album_hidden = any(x['id'] == 'album' for x in gated_p)
@@ -936,7 +937,7 @@ with sync_playwright() as p:
           and st.bounding_box()['y'] < q.locator('#rep2').bounding_box()['y'] and q.locator('#rep1').bounding_box()['y'] < st.bounding_box()['y'])
     check('checkup live: second card heading', q.inner_text('#rep2-h') == 'Can AI find you?')
     check('checkup live: its first line, exactly', q.locator('#rep2 > p').first.inner_text() ==
-          "This doesn't tell you what ChatGPT says about you. It checks whether a machine can read the facts it would need.")
+          "This doesn't tell you what ChatGPT says about you. It checks whether a computer can find the basic facts about your business on your page.")   # T-19 W22
     heads2 = q.locator('#finds2 .find h3').all_inner_texts()
     levels2 = q.eval_on_selector_all('#finds2 .find', 'e => e.map(x => x.classList.contains("bad") ? 0 : x.classList.contains("warn") ? 1 : 2)')
     check('checkup live: blocking a search crawler turns AI readers away, worst first', heads2[:1] == ['Your site turns AI readers away']
@@ -948,11 +949,11 @@ with sync_playwright() as p:
     check('checkup live: hours not found, said as "I couldn\'t find"', "I couldn't find your opening hours in your page text" in heads2)
     check('checkup live: never says "missing"', 'missing' not in q.inner_text('#rep2').lower() and 'missing' not in q.inner_text('#rep1').lower())
     facts = dict(zip(q.locator('#facts dt').all_text_contents(), q.locator('#facts dd').all_text_contents()))
-    check('checkup live: the facts card, as found', q.inner_text('#rep2 .facts h3') == 'The facts a machine reads off your page'
+    check('checkup live: the facts card, as found', q.inner_text('#rep2 .facts h3') == 'What a computer can read off your page'   # T-19 W23
           and list(facts) == ['Name', 'Phone', 'Address', 'Hours'] and facts['Name'] == 'Crumb Bakery' and facts['Phone'] == '(707) 555-0134'
           and facts['Address'] == '12 Main St, Santa Rosa, CA' and facts['Hours'] == "I couldn't find it", str(facts))
     check('checkup live: the facts card ends with the profile line', q.locator('#rep2 .facts p').last.inner_text() ==
-          "Check these against your Google Business Profile, letter for letter. I can't see your listing from here.")
+          "Compare these with your Google listing. They should match exactly. I can't see your listing from here.")   # T-19 W24
     for w in (390, 1440):
         q.set_viewport_size({'width': w, 'height': 1000}); q.wait_for_timeout(200)
         check(f'checkup live: no sideways scroll with both reports at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
@@ -1000,8 +1001,9 @@ with sync_playwright() as p:
     # N10 to N12: the work page.
     q = newpage(1440); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
     figs = dict(q.locator('#cards .card').evaluate_all('e => e.map(c => [c.querySelector("h2").textContent, c.querySelector(".num") ? c.querySelector(".num").textContent : null])'))
-    KEEP = {'One cooking-class shoot, one finished reel': '~4 min', 'A seasonal cooking app for teachers': '535 tests',
-            'A banking program, checked in public': '2 AI translations'}
+    # T-19 W4 to W6: the three figures now say what they count.
+    KEEP = {'One cooking-class shoot, one finished reel': 'An 81-second reel in about 4 minutes', 'A seasonal cooking app for teachers': '535 automatic checks',
+            'A banking program, checked in public': '2 AI translations of one bank program'}
     check('N10: only the three cards with a real result keep their figure', {k: v for k, v in figs.items() if v} == KEEP and len(figs) == 10, str(figs))
     for gone in ('0 → real users', 'Free</p>', '10 clips', '0 stranded words', '1 year, rung up', '×3, measurable', '25 links'):
         check(f'N10: figure "{gone.replace("</p>", "")}" is gone', f'<p class="num">{gone}' not in site['work'])
@@ -1100,7 +1102,7 @@ with sync_playwright() as p:
     src = _html.unescape(urlopen(BASE + 'index.html').read().decode('utf-8'))
     V_NEW = {
         'V1': "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here.",
-        'V2': "For shops and nonprofits around Sonoma County. Maybe it's a phone full of videos you'll never edit. Maybe it's a binder of lessons, or the one chore that eats every Thursday. Hand it over. You get back finished reels, an app with your name on it, or a chore that does itself, and you watch it work before you decide on the build.",
+        'V2': "For shops and nonprofits around Sonoma County. Maybe it's a phone full of videos you'll never edit. Maybe it's a binder of lessons, or the one chore that eats every Thursday. Hand it over. You get back finished reels, an app with your name on it, or a chore that does itself, and you watch it work before you decide to go ahead.",   # T-19 W2
         'V3 bold': "Nothing goes out until a person has looked at it.",
         'V3 line': "First me, then you.",
         'V4 bold': "You never have to take my word for it.",
@@ -1128,7 +1130,7 @@ with sync_playwright() as p:
     pairs = _re.findall(r'<li[^>]*><strong[^>]*>([^<]*)</strong><span[^>]*>([^<]*)</span></li>', src)
     check('T-17: "How I work" is four items, each a bold line over its second line, in order',
           pairs == [(V_NEW[f'V{i} bold'], V_NEW[f'V{i} line']) for i in (3, 4, 5, 6)], str(pairs))
-    for keep in ('AI that works the first day', 'Proof your new system', 'The Blueprint · $1,500 · two weeks · counts toward the build',
+    for keep in ('AI that works the first day', 'Proof your new system', 'The Blueprint: two weeks, $1,500, fixed. If you go ahead, the $1,500 comes off the price.',   # T-19 W1
                  'The Survey · one group of programs · from $8,000 · counts toward the next step', 'Take the Local Route →',
                  'Take the Mainframe Route →', 'How I work, on either side',
                  'For banks, insurers and agencies moving off COBOL with AI.'):
@@ -1199,17 +1201,20 @@ with sync_playwright() as p:
     for n in TOOLS6[:5]:
         for rx in (r'<p class="noprint"[^>]*>More free tools:.*?</p>', r'<section aria-labelledby="more-h".*?</section>'):
             a, b_ = _re.findall(rx, new_src[n], _re.S), _re.findall(rx, old_src[n], _re.S)
+            if n == 'receipt' and 'more-h' in rx:   # T-19 W21 changed the panel's line; the rest stays as at T-17
+                b_ = [x.replace('Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.',
+                                'The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.') for x in b_]
             check(f'T-18: {n} keeps its {"More free tools line" if "More" in rx else "dark panel"} as at T-17', a == b_ and len(a) == 1)
 
     # The words, exactly once where they are in the page itself, and the old ones gone.
     NEW_LINES = {
         'shotlist': ["Tell me what you run. You get 10 clips to film, in the order you walk your shop.", "What do you run?",
-                     "Change the details", "Your 10 clips, in walking order", "Start at stop 1 and film as you go. You never walk back.",
+                     "Change the details", "Your 10 clips. Film them in this order.", "Start at the top of the list and film as you go. You never walk back.",   # T-19 W13, W14
                      "How it gets cut together"],
-        'captions': ["Type your caption. See it on a phone, and find out if people can read it in time.", "Change how it looks",
+        'captions': ["Type the words that go on your video. See them on a phone, and find out if people can read them before they're gone.", "Change how it looks",   # T-19 W17
                      "Which app?", "How long is your clip?", "Try it on your own video", "Add a screenshot from your video. It stays on your phone.",
                      "Your caption, split up", "Save this caption as an image", "Save all of them", "Copy the text",
-                     "The image is clear except for the caption. Drop it over your clip in CapCut or the Instagram editor and it lands right where you see it here."],
+                     "This picture is see-through except for your words. Lay it over your video in CapCut or the Instagram editor and the words land right where you see them here."],   # T-19 W19
         'receipt': ["Tap the chores that eat your week. See what a year of them costs you.", "Guess. Close is good enough."],
         'scaler': ["Paste a recipe and say who's eating. You get amounts you can actually measure."],
         'checkup': ["Paste your website's address. You get a plain list of what's broken, worst first, and whether AI tools can find your business."],
@@ -1446,7 +1451,7 @@ with sync_playwright() as p:
         res = []
         for base_, pgf in ((BASE, lambda: newpage(1440)), (OLD, lambda: old_page(1440))):
             q = pgf()
-            def page_route(route, base_=base_):
+            def page_route(route, request=None, base_=base_):   # T-19: Playwright hands a second argument (the request) to a two-argument handler
                 body = route.fetch().text() if base_ == BASE else t17_file('checkup.html').decode('utf-8')
                 route.fulfill(status=200, content_type='text/html', body=body.replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1))
             q.route(base_ + 'checkup.html', page_route)
@@ -1457,6 +1462,11 @@ with sync_playwright() as p:
             q.goto(base_ + 'checkup.html'); q.wait_for_timeout(400)
             q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
             res.append([q.inner_text('#msg')] + [q.inner_text(s) if q.locator(s).is_visible() else '' for s in ('#rep1', '#stat', '#rep2')])
+            if base_ == BASE:   # T-19 W22 to W24 changed three lines of the second card; the rest stays as at T-17
+                for new_, old_ in (("It checks whether a computer can find the basic facts about your business on your page.", "It checks whether a machine can read the facts it would need."),
+                                   ('What a computer can read off your page', 'The facts a machine reads off your page'),
+                                   ("Compare these with your Google listing. They should match exactly.", "Check these against your Google Business Profile, letter for letter.")):
+                    res[-1][3] = res[-1][3].replace(new_, old_, 1)
         check(f'T-18: checkup gives the same report as T-17 for {"a refusal" if not ans.get("ok") else "a thin page" if ans is thin else "the sample"}', res[0] == res[1] and any(res[0]))
 
     def dec(q, steps):
@@ -1556,6 +1566,272 @@ with sync_playwright() as p:
             q.evaluate("document.querySelectorAll('.fold[aria-expanded=false]').forEach(b => b.click())"); q.wait_for_timeout(100)
             b2 = q.evaluate('document.documentElement.scrollWidth')
             check(f'T-18: {n} has no sideways scroll at {w}, folds closed and open', a <= w and b2 <= w, f'{a} {b2}')
+
+    # ---------------- T-19: harness lines 01, 33 word changes (W1 to W33), Nov 13, 2026
+    # Every check here is against the pages as they were at T-18, read straight from git.
+    T18 = '5ab14f363bc9ae99bf2a7e110871b097ac01d4e6'   # origin/main after T-18
+    T18_FILES = {}
+
+    def t18_file(path):
+        if path not in T18_FILES:
+            r = _sp18.run(['git', 'show', f'{T18}:{path}'], cwd=here, capture_output=True)
+            T18_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T18_FILES[path]
+
+    def t18_page(w, h=900):
+        """A page that can open the T-18 build at BASE + '__t18/<file>'."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t18/', 1)[1].split('?')[0].split('#')[0]
+            body = t18_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__t18/**', serve)
+        return q
+    OLD18 = BASE + '__t18/'
+    check('T-19: the T-18 pages can be read from git for comparison', t18_file('index.html') is not None and t18_file('briefing.html') is not None)
+
+    def both18(name, fn, w=1440):
+        out_ = []
+        for base_, pgf in ((BASE, lambda: newpage(w)), (OLD18, lambda: t18_page(w))):
+            q = pgf(); q.goto(base_ + name + '.html'); settle(q); q.wait_for_timeout(300)
+            out_.append(fn(q))
+        return out_
+
+    # (ID, page, old words, new words, old in the markup, new in the markup); None: the markup is the words.
+    W19 = [
+        ('W1', 'index', "The Blueprint · $1,500 · two weeks · counts toward the build", "The Blueprint: two weeks, $1,500, fixed. If you go ahead, the $1,500 comes off the price.", None, None),
+        ('W2', 'index', "you watch it work before you decide on the build", "you watch it work before you decide to go ahead", None, None),
+        ('W3', 'local', "Two weeks · fixed price · the $1,500 comes off your build", "Two weeks · fixed price · the $1,500 comes off the price if you go ahead", None, None),
+        ('W4', 'work', "~4 min", "An 81-second reel in about 4 minutes", '<p class="num">~4 min</p>', '<p class="num">An 81-second reel in about 4 minutes</p>'),
+        ('W5', 'work', "535 tests", "535 automatic checks", '<p class="num">535 tests</p>', '<p class="num">535 automatic checks</p>'),
+        ('W6', 'work', "2 AI translations", "2 AI translations of one bank program", '<p class="num">2 AI translations</p>', '<p class="num">2 AI translations of one bank program</p>'),
+        ('W7', 'work', "A competitive birding app I built from zero lines of code. Its first sound screen ran on mock data. Build 49 names birds from a photo or a song, has real players, and sends sightings to eBird in one tap.",
+                       "A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players, and sends sightings to eBird in one tap.", None, None),
+        ('W8', 'start', "Who says yes, and when?", "Who says yes to spending money, and when?", None, None),
+        ('W9', 'start', "Good days for Day 1", "Good days for my first visit", '<h2 id="s5">Good days for Day 1</h2>', '<h2 id="s5">Good days for my first visit</h2>'),
+        ('W10', 'start', "Start my Blueprint →", "Send my answers →", 'id="bp-send">Start my Blueprint →<', 'id="bp-send">Send my answers →<'),
+        ('W11', 'start', "You get the one-page Blueprint agreement and an invoice for $1,500.", "You get a one-page agreement and an invoice for $1,500.", None, None),
+        ('W12', 'call', "Tell me what you run and when you're free.", "Fifteen minutes, free. Tell me what you run and when you're free.",
+                        '">Tell me what you run and when you\'re free. I\'ll call you', '">Fifteen minutes, free. Tell me what you run and when you\'re free. I\'ll call you'),
+        ('W13', 'shotlist', "Your 10 clips, in walking order", "Your 10 clips. Film them in this order.", None, None),
+        ('W14', 'shotlist', "Start at stop 1 and film as you go. You never walk back.", "Start at the top of the list and film as you go. You never walk back.", None, None),
+        ('W15', 'shotlist', "Seconds are what each clip gets in the finished reel. Film every one for about five seconds anyway; the edit trims.",
+                            "Film each one for about five seconds. The number beside it is how long it stays in the finished video.", None, None),
+        ('W16', 'captions', "Will your caption survive the phone?", "Can people read the words on your video?", "Will your caption<br>survive the phone?", "Can people read the words on your video?"),
+        ('W17', 'captions', "Type your caption. See it on a phone, and find out if people can read it in time.",
+                            "Type the words that go on your video. See them on a phone, and find out if people can read them before they're gone.", None, None),
+        ('W18', 'captions', "Box", "Box behind the words", 'id="l-box">Box</p>', 'id="l-box">Box behind the words</p>'),
+        ('W19', 'captions', "The image is clear except for the caption. Drop it over your clip in CapCut or the Instagram editor and it lands right where you see it here.",
+                            "This picture is see-through except for your words. Lay it over your video in CapCut or the Instagram editor and the words land right where you see them here.", None, None),
+        ('W20', 'receipt', 'The "can come back" numbers are a rough rule of thumb for each kind of chore, not a promise. Day 1 of a Blueprint is where the real numbers come from.',
+                           "The hours you could get back are a rough rule of thumb for each kind of chore, not a promise. The real numbers come from me watching how the work actually gets done.", None, None),
+        ('W21', 'receipt', "Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.",
+                           "The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.", None, None),
+        ('W22', 'checkup', "This doesn't tell you what ChatGPT says about you. It checks whether a machine can read the facts it would need.",
+                           "This doesn't tell you what ChatGPT says about you. It checks whether a computer can find the basic facts about your business on your page.", None, None),
+        ('W23', 'checkup', "The facts a machine reads off your page", "What a computer can read off your page", None, None),
+        ('W24', 'checkup', "Check these against your Google Business Profile, letter for letter. I can't see your listing from here.",
+                           "Compare these with your Google listing. They should match exactly. I can't see your listing from here.", None, None),
+        ('W25', 'case-reels', "and the tool puts together a finished vertical reel with the program's own title art.",
+                              "and the tool puts together a finished reel, upright for phones, with the program's own title card.", None, None),
+        ('W26', 'studio', "Built in the open", "Follow along while I piece it together", "Built in<br>the open", "Follow along<br>while I piece it together"),
+        ('W27', 'studio', "Everything I'm building right now, and the date each piece shipped.", "Everything I'm building right now, and the date each piece was finished.",
+                          ">Everything I'm building right now, and the date each piece shipped.</p>", ">Everything I'm building right now, and the date each piece was finished.</p>"),
+        ('W28', 'studio', "things shipped since", "things finished since", None, None),
+        ('W29', 'mainframe', "The code never divides by 100. The field definition allows two readings. Pick one:",
+                             "The code never divides by 100. The field definition allows two readings. See each one:", None, None),
+        ('W30', 'mainframe', "Every record tells a different story. The real data settles it.",
+                             "The code, the layouts, the job setup and the data each tell a different story. The real data settles it.",
+                             "Every record tells a different story. <em", "The code, the layouts, the job setup and the data each tell a different story. <em"),
+        ('W31', 'mainframe', "Send one program and see what I find", "Tell me about one program and see what I'd look at first",
+                             '>Send one program <em style="color: #A93F17">and see what I find</em>', '>Tell me about one program <em style="color: #A93F17">and see what I\'d look at first</em>'),
+        ('W32', 'briefing', "Request a briefing", "Ask me about your system",
+                            '>Request a <em style="color:#A93F17">briefing</em></h1>', '>Ask me about your <em style="color:#A93F17">system</em></h1>'),
+        ('W33', 'briefing', "Which programs", "Which programs (a rough description is enough)",
+                            '<span class="label">Which programs</span>', '<span class="label">Which programs (a rough description is enough)</span>'),
+    ]
+    # Words set again by script: the start button's label after a send that didn't go through.
+    W19_SCRIPT = [('W10 script', 'start', None, None, "btn.textContent = 'Start my Blueprint →';", "btn.textContent = 'Send my answers →';")]
+    check('T-19: 33 lines', len(W19) == 33 and [w[0] for w in W19] == [f'W{i}' for i in range(1, 34)])
+
+    def words19(src):
+        """What a visitor reads: the body, scripts and styles out, a line break read as a space."""
+        b_ = src[src.index('<body'):]
+        b_ = _re.sub(r'<(script|style)\b.*?</\1>', ' ', b_, flags=_re.S)
+        b_ = _re.sub(r'<br\s*/?>', ' ', b_)
+        return _re.sub(r'\s+', ' ', U(_re.sub(r'<[^>]+>', '', b_)))
+    P19 = ['index', 'local', 'work', 'start', 'call', 'shotlist', 'captions', 'receipt', 'checkup', 'case-reels', 'studio', 'mainframe', 'briefing']
+    check('T-19: the 13 pages named in the item', sorted(P19) == sorted({w[1] for w in W19}))
+    src19 = {n: urlopen(BASE + n + '.html').read().decode('utf-8').replace('\r', '') for n in P19}
+    for wid, n, old, new, _o, _n in W19:
+        t = words19(src19[n])
+        check(f'T-19 {wid}: {n} has the new line exactly once', t.count(new) == 1, str(t.count(new)))
+        if old in new:
+            check(f'T-19 {wid}: on {n} the old words are only inside the new line', t.count(old) == 1, str(t.count(old)))
+        else:
+            check(f'T-19 {wid}: the old line is gone from {n}', t.count(old) == 0, str(t.count(old)))
+    check('T-19 W10: the script puts back the new label after a send that fails', "btn.textContent = 'Send my answers →';" in src19['start']
+          and 'Start my Blueprint' not in src19['start'])
+    for n in P19:
+        check(f'T-19: no em dash on {n}', '—' not in src19[n])
+
+    # Nothing else changed: the T-18 page with only these lines swapped is the new page, byte for byte
+    # (the Studio build stamp aside: it is a hash of studio.json, which holds W26 and W27).
+    STAMP = lambda s: _re.sub(r'<!-- studio\.py [^>]* -->', '<!-- studio.py -->', s)
+    for n in P19:
+        was = t18_file(n + '.html').decode('utf-8').replace('\r', '')
+        miss = []
+        for wid, n_, old, new, o_raw, n_raw in W19 + W19_SCRIPT:
+            if n_ != n:
+                continue
+            o, nw = o_raw or old, n_raw or new
+            if was.count(o) != 1:
+                miss.append(f'{wid}: {was.count(o)} matches')
+                continue
+            was = was.replace(o, nw)
+        a, b_ = STAMP(was), STAMP(src19[n])
+        i = next((k for k in range(min(len(a), len(b_))) if a[k] != b_[k]), min(len(a), len(b_)))
+        check(f'T-19: {n} differs from T-18 only by its lines in this item', not miss and a == b_, str(miss) + ' first difference: ' + repr(b_[max(0, i - 60):i + 60]))
+    for f in ('scaler.html', 'comp3.html', '404.html', 'studio-birdleague.html', 'studio-deepcuts.html', 'sitemap.xml', 'robots.txt'):
+        now_ = urlopen(BASE + f).read().decode('utf-8').replace('\r', '')
+        check(f'T-19: {f} is as it was at T-18 (the Studio build stamp aside)', STAMP(now_) == STAMP(t18_file(f).decode('utf-8').replace('\r', '')))
+
+    # Accessible names follow the new words; names that point at the old ones are gone.
+    q = newpage(1440); q.goto(BASE + 'start.html'); q.wait_for_timeout(300)
+    check('T-19 W8: step 4 is named by its new heading', q.get_by_role('region', name='Who says yes to spending money, and when?', exact=True).count() == 1)
+    check('T-19 W9: the day choices are named by the new heading', q.get_by_role('group', name='Good days for my first visit', exact=True).count() == 1)
+    check('T-19 W10: the send button is named "Send my answers →"', q.get_by_role('button', name='Send my answers →', exact=True).count() == 1)
+    q.route('**/dj-intake.stephens-josef.workers.dev/**', lambda r: r.fulfill(status=502, content_type='application/json', body='{"ok":false}', headers={'Access-Control-Allow-Origin': '*'}))
+    q.locator('.chips[data-key="pile"] .chip').first.click()
+    q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com')
+    q.click('#bp-send'); q.wait_for_timeout(600)
+    check('T-19 W10: after a send that fails, the button says "Send my answers →" again', q.inner_text('#bp-send').strip() == 'Send my answers →'
+          and q.locator('#bp-err').is_visible(), q.inner_text('#bp-send'))
+    q = newpage(1440); q.goto(BASE + 'captions.html'); q.wait_for_timeout(300)
+    check('T-19 W18: the box choices are named "Box behind the words", with the same three choices',
+          q.get_by_role('group', name='Box behind the words', exact=True, include_hidden=True).count() == 1
+          and q.locator('#c-box .chip').all_text_contents() == ['Dark box', 'Light box', 'No box'])
+    q = newpage(1440); q.goto(BASE + 'briefing.html'); q.wait_for_timeout(300)
+    check('T-19 W33: the programs field is named by its new label', q.get_by_role('textbox', name='Which programs (a rough description is enough)', exact=True).evaluate('e => e.id') == 'family')
+    check('T-19 W33: "Which programs" still finds the same field', q.get_by_label('Which programs').evaluate('e => e.id') == 'family')
+    check('T-19 W32: the briefing form\'s own send button is untouched', q.inner_text('#br-send').strip() == 'Send the request →')
+
+    # Every form still sends exactly what it sent at T-18 (the Worker intercepted, nothing leaves).
+    def sent18(base_, name, fill, btn, done):
+        q = newpage(1440) if base_ == BASE else t18_page(1440)
+        got = []
+        def grab(route):
+            if route.request.method == 'POST':
+                got.append(_json.loads(route.request.post_data or '{}'))
+            route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
+        q.route('**/dj-intake.stephens-josef.workers.dev/**', grab)
+        q.goto(base_ + name + '.html'); settle(q)
+        fill(q); q.click(btn); q.wait_for_timeout(700)
+        for g in got:
+            g.pop('ms', None)
+        return got, q.locator(done).is_visible()
+    def fill_start(q):
+        q.locator('.chips[data-key="pile"] .chip').nth(1).click()
+        q.locator('.chips[data-key="days"] .chip').first.click()
+        q.fill('#org', 'Test Bakery'); q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com')
+    def fill_call(q):
+        q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com'); q.fill('#org', 'Test Bakery')
+    def fill_brief(q):
+        q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com'); q.fill('#family', 'Month-end batch'); q.fill('#role', 'Lead')
+    for name, fill, btn, done in (('start', fill_start, '#bp-send', '#bp-done'), ('call', fill_call, '#cl-send', '#cl-done'), ('briefing', fill_brief, '#br-send', '#br-done')):
+        a, b_ = sent18(BASE, name, fill, btn, done), sent18(OLD18, name, fill, btn, done)
+        check(f'T-19: {name} still sends, and sends exactly what it sent at T-18', a == b_ and len(a[0]) == 1 and a[1], str(a)[:300] + ' | ' + str(b_)[:300])
+
+    # Same input, same result, against T-18: two inputs per changed tool.
+    for picks in ([], [('type', 'cafe'), ('goal', 'how'), ('len', '15'), ('light', 'pm')]):
+        def shot18(q):
+            click_chips(q, picks); q.wait_for_timeout(80)
+            r = q.evaluate(SHOT_JS); r['copy'] = grab_copy(q, '#copy')
+            return r
+        a, b_ = both18('shotlist', shot18)
+        check(f'T-19: shot list gives the same clips, stops, countdown, offer and copy as T-18 for {picks or "the defaults"}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    q = newpage(390); q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
+    cp = grab_copy(q, '#copy')
+    check('T-19 W13 to W15: the copied shot list repeats none of the old lines', not any(w[2] in cp for w in W19 if w[1] == 'shotlist'))
+    q.emulate_media(media='print'); q.wait_for_timeout(60)
+    check('T-19 W13 to W15: printed, the shot list shows the new lines', all(q.get_by_text(w[3], exact=True).is_visible() for w in W19 if w[1] == 'shotlist'))
+    q.emulate_media(media='screen')
+    for text, picks, secs in CAP_IN[:2]:
+        def cap18(q):
+            if text is not None:
+                set_val(q, '#cap', text)
+            click_chips(q, picks)
+            if secs:
+                set_val(q, '#secs', secs)
+            q.wait_for_timeout(400)
+            r = q.evaluate(CAP_JS); r['copy'] = grab_copy(q, '#copy'); r['verdict'] = q.inner_text('#verdict')
+            return r
+        a, b_ = both18('captions', cap18)
+        check(f'T-19: caption fitter gives the same verdict, checks, preview and copy as T-18 for {(text or "the default")[:24]} {picks}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    for args in (([], None, False), ([4, 11], '45', False)):
+        a, b_ = both18('receipt', rec_in(*args))
+        check(f'T-19: receipt gives the same lines, totals, hand-off and copy as T-18 for {args}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+
+    def checkup_live(q, base_):
+        def page_route(route, request=None, base_=base_):   # T-19: Playwright hands a second argument (the request) to a two-argument handler
+            body = route.fetch().text() if base_ == BASE else t18_file('checkup.html').decode('utf-8')
+            route.fulfill(status=200, content_type='text/html', body=body.replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1))
+        q.route(base_ + 'checkup.html', page_route)
+    W22_24 = [(w[3], w[2]) for w in W19 if w[0] in ('W22', 'W23', 'W24')]
+    for ans in (SAMPLE, thin):
+        res = []
+        for base_, pgf in ((BASE, lambda: newpage(1440)), (OLD18, lambda: t18_page(1440))):
+            q = pgf(); checkup_live(q, base_)
+            q.route('https://dj-checkup.test/**', worker_(ans))
+            q.goto(base_ + 'checkup.html'); q.wait_for_timeout(400)
+            q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
+            r2 = q.inner_text('#rep2')
+            if base_ == BASE:
+                for new, old in W22_24:   # the three lines of this item read back as they were; everything else must match
+                    r2 = r2.replace(new, old, 1)
+            res.append([q.inner_text('#msg'), q.inner_text('#rep1'), q.inner_text('#stat'), r2])
+        check(f'T-19: checkup gives the same report as T-18 for {"a thin page" if ans is thin else "the sample"}, only the three lines changed', res[0] == res[1] and any(res[0]))
+
+    # The look: each new line sits inside its own box at 320, 390 and 1440, nothing spills, no sideways scroll.
+    # (Titles and labels set in capitals read back in capitals, so the match ignores case. W11 is in the
+    # panel that shows after a send, so the start form is sent, to an intercepted Worker, before W11.)
+    FIT_JS = '''(line) => {
+      const norm = s => s.replace(/\\s+/g, ' ').trim();
+      const els = [...document.querySelectorAll('body *')].filter(e => {
+        const d = getComputedStyle(e).display; const r = e.getBoundingClientRect();
+        return d !== 'inline' && d !== 'contents' && r.width > 0 && r.height > 0 && norm(e.innerText || '').toLowerCase().includes(line.toLowerCase()); });
+      if (!els.length) return null;
+      els.sort((a, b) => a.innerText.length - b.innerText.length);
+      const e = els[0], r = e.getBoundingClientRect(), p = e.parentElement.getBoundingClientRect();
+      const kids = [...e.querySelectorAll('*')].map(k => k.getBoundingClientRect()).filter(k => k.width > 0);
+      return {spill: e.scrollWidth - e.clientWidth, inParent: r.left >= p.left - 1 && r.right <= p.right + 1,
+              kidsIn: kids.every(k => k.left >= r.left - 1 && k.right <= r.right + 1), w: Math.round(r.width), h: Math.round(r.height)};
+    }'''
+    for n in P19:
+        for w in (320, 390, 1440):
+            q = newpage(w)
+            if n == 'checkup':
+                checkup_live(q, BASE)
+                q.route('https://dj-checkup.test/**', lambda route: route.fulfill(status=200, content_type='application/json', body=_json.dumps(SAMPLE), headers={'Access-Control-Allow-Origin': '*'}))
+            if n == 'start':
+                q.route('**/dj-intake.stephens-josef.workers.dev/**', lambda r: r.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'}))
+            q.goto(BASE + n + '.html'); settle(q)
+            if n == 'checkup':
+                q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
+            q.evaluate("document.querySelectorAll('.fold[aria-expanded=false]').forEach(b => b.click())"); q.wait_for_timeout(150)
+            for wid, n_, old, new, _o, _n in W19:
+                if n_ != n:
+                    continue
+                if wid == 'W11':
+                    fill_start(q); q.click('#bp-send'); q.wait_for_timeout(700)
+                f_ = q.evaluate(FIT_JS, new)
+                check(f'T-19 {wid}: on {n} at {w} the new line sits inside its box', f_ is not None and f_['spill'] <= 0 and f_['inParent'] and f_['kidsIn'], str(f_))
+            if w < 1440:
+                sw = q.evaluate('document.documentElement.scrollWidth')
+                check(f'T-19: {n} has no sideways scroll at {w}', sw <= w, str(sw))
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

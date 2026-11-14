@@ -139,7 +139,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <section class="step" aria-labelledby="s4">
       <span class="step-n">04</span>
       <div style="display:flex;flex-direction:column;gap:18px">
-        <h2 id="s4">Who says yes, and when?</h2>
+        <h2 id="s4">Who says yes to spending money, and when?</h2>
         <div class="chips" role="group" aria-label="Who says yes to spending money" data-key="yes" data-single="1">
           <button type="button" class="chip" aria-pressed="false">I do</button>
           <button type="button" class="chip" aria-pressed="false">Me and one other person</button>
@@ -156,7 +156,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <section class="step" aria-labelledby="s5">
       <span class="step-n">05</span>
       <div>
-        <h2 id="s5">Good days for Day 1</h2>
+        <h2 id="s5">Good days for my first visit</h2>
         <p class="hint">I come to you, anywhere in Sonoma County. Pick as many as work.</p>
         <div class="chips" role="group" aria-labelledby="s5" data-key="days">
           <button type="button" class="chip" aria-pressed="false">Monday</button>
@@ -186,7 +186,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <div style="border-top:1.5px solid #16201C;padding-top:28px;display:flex;flex-direction:column;gap:16px">
       <p id="bp-err" class="err" role="alert" hidden></p>
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px">
-        <button type="submit" class="send" id="bp-send">Start my Blueprint →</button>
+        <button type="submit" class="send" id="bp-send">Send my answers →</button>
         <span style="font-size:15px;color:#5A635D">Nothing is charged today. Next comes my reply, the agreement and the invoice.</span>
       </div>
     </div>
@@ -198,7 +198,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <p style="margin:0;font-size:19px;color:#3B4540;max-width:56ch">I've got your answers. Here's what happens next:</p>
     <ol style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:18px;color:#16201C">
       <li>I read your answers myself and write back with any questions.</li>
-      <li>You get the one-page Blueprint agreement and an invoice for $1,500.</li>
+      <li>You get a one-page agreement and an invoice for $1,500.</li>
       <li>Once it's signed, we lock in Day 1 and I come see the real work.</li>
     </ol>
     <a href="local.html#proof" style="align-self:flex-start;display:inline-flex;align-items:center;min-height:52px;padding:0 22px;margin-top:6px;background:#16201C;color:#F2EDE1;text-decoration:none;font-weight:700;border-radius:2px">While you wait, see the work →</a>
@@ -297,7 +297,7 @@ a{color:#A93F17}a:hover{color:#16201C}
           return;
         }
         btn.disabled = false;
-        btn.textContent = 'Start my Blueprint →';
+        btn.textContent = 'Send my answers →';
         var body = encodeURIComponent('Hi Josef,\n\n' + summary(f) + '\n');
         showErr('That didn\'t go through, but your answers are still here. Try again, or <a href="mailto:' + EMAIL + '?subject=' + encodeURIComponent('Blueprint request') + '&body=' + body + '">send them by email</a> to ' + EMAIL + '.');
       });

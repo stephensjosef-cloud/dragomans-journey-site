@@ -43,7 +43,7 @@ BODY = r"""
           <div class="row">
             <div><p class="label" id="l-size">Text size</p><div class="chips" role="group" aria-labelledby="l-size" id="c-size"></div></div>
             <div><p class="label" id="l-pos">Where on screen</p><div class="chips" role="group" aria-labelledby="l-pos" id="c-pos"></div></div>
-            <div><p class="label" id="l-box">Box</p><div class="chips" role="group" aria-labelledby="l-box" id="c-box"></div></div>
+            <div><p class="label" id="l-box">Box behind the words</p><div class="chips" role="group" aria-labelledby="l-box" id="c-box"></div></div>
             <div><p class="label" id="l-app">Which app?</p><div class="chips" role="group" aria-labelledby="l-app" id="c-app"></div></div>
             <div style="max-width:220px"><label class="label" for="secs" style="display:block">How long is your clip?</label>
               <div style="display:flex;gap:8px;align-items:center"><input id="secs" type="number" min="1" max="60" step="0.5" value="5" style="width:96px"><span>seconds</span></div></div>
@@ -67,7 +67,7 @@ BODY = r"""
           <button type="button" class="btn ghost" id="pngall">Save all of them</button>
           <button type="button" class="btn ghost" id="copy">Copy the text</button>
         </div>
-        <p class="private" style="margin-top:10px">The image is clear except for the caption. Drop it over your clip in CapCut or the Instagram editor and it lands right where you see it here.</p>
+        <p class="private" style="margin-top:10px">This picture is see-through except for your words. Lay it over your video in CapCut or the Instagram editor and the words land right where you see them here.</p>
       </section>
 
     <div class="stage"><div class="stage-in">
@@ -229,8 +229,8 @@ write(sys.argv[1], "captions.html",
       title="Caption Fitter",
       description="A free check for reel captions: balanced line breaks, no stranded words, clear of each app's buttons, enough time to read, and a see-through PNG to drop on your video.",
       kicker="Free tool",
-      h1="Will your caption<br>survive the phone?",
-      lede="Type your caption. See it on a phone, and find out if people can read it in time.",
+      h1="Can people read the words on your video?",
+      lede="Type the words that go on your video. See them on a phone, and find out if people can read them before they're gone.",
       css=CSS, body=BODY, script=SCRIPT, folds=True,
       cta_h="Rather hand it off?", cta_p="Captions are one step of the reels I make for local businesses and nonprofits. Start with a free 15-minute call.",
       cta_href="call.html", cta_btn="Free 15-minute call")

@@ -48,8 +48,8 @@ BODY = r"""
   </section>
 
   <section class="panel" aria-labelledby="shoot-h">
-    <h2 id="shoot-h" style="margin:0 0 4px;font-size:22px">Your 10 clips, in walking order</h2>
-    <p class="private" style="margin-bottom:8px">Start at stop 1 and film as you go. You never walk back.</p>
+    <h2 id="shoot-h" style="margin:0 0 4px;font-size:22px">Your 10 clips. Film them in this order.</h2>
+    <p class="private" style="margin-bottom:8px">Start at the top of the list and film as you go. You never walk back.</p>
     <div id="shoot"></div>
   </section>
 
@@ -58,7 +58,7 @@ BODY = r"""
     <div id="cut" class="printopen" hidden>
       <section class="panel" aria-labelledby="edit-h">
         <h2 id="edit-h" style="margin:0 0 4px;font-size:22px">The edit: 10 clips, in the order people see them</h2>
-        <p class="private" style="margin-bottom:8px">Seconds are what each clip gets in the finished reel. Film every one for about five seconds anyway; the edit trims.</p>
+        <p class="private" style="margin-bottom:8px">Film each one for about five seconds. The number beside it is how long it stays in the finished video.</p>
         <div id="edit"></div>
         <p class="label" style="margin-top:18px">The reel, second by second</p>
         <div class="strip" id="strip" aria-hidden="true"></div>

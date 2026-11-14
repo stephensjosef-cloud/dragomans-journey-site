@@ -11,7 +11,7 @@ files; this script adds only numbers, dates and arrows.
 Rules:
 - A product with a non-null "gate" does not render, and neither do its log lines.
 - Log lines older than 120 days (America/Los_Angeles) drop off at build time.
-  The count over the log ("<n> things shipped since <date>") counts the lines
+  The count over the log ("<n> things finished since <date>") counts the lines
   that are left, so it always agrees with the list under it.
 - "Shipped lately" shows the 8 newest; "See all <N>" reveals the rest in place.
 - Each log line carries a small label: its project's product name, or the
@@ -290,7 +290,7 @@ def build(studio, shipped, today):
     assert rows, "shipped.json: nothing to show in the last 120 days"
     n, oldest = numbers(rows)
     strip = (f'\n  <div class="stats" id="stats" data-built="{today.isoformat()}">'
-             f'\n    <p><strong>{n}</strong> {"thing" if n == 1 else "things"} shipped since {short_date(oldest, today)}</p>'
+             f'\n    <p><strong>{n}</strong> {"thing" if n == 1 else "things"} finished since {short_date(oldest, today)}</p>'
              '\n  </div>')
     items = "".join(log_item(r, today, i >= FIRST) for i, r in enumerate(rows))
     toggle = (f'\n    <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false">See all {n}</button>'

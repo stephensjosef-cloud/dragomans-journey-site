@@ -55,7 +55,7 @@ BODY = r"""
         <button type="button" class="btn ghost" id="copy">Copy it</button>
         <button type="button" class="btn ghost" id="print">Print it</button>
       </div>
-      <p class="private noprint">The "can come back" numbers are a rough rule of thumb for each kind of chore, not a promise. Day 1 of a Blueprint is where the real numbers come from. Nothing you type here leaves this page unless you press the orange button.</p>
+      <p class="private noprint">The hours you could get back are a rough rule of thumb for each kind of chore, not a promise. The real numbers come from me watching how the work actually gets done. Nothing you type here leaves this page unless you press the orange button.</p>
     </div>
   </div>
 """
@@ -175,5 +175,5 @@ write(sys.argv[1], "receipt.html",
       h1="Ring up your<br>busywork",
       lede="Tap the chores that eat your week. See what a year of them costs you.",
       css=CSS, body=BODY, script=SCRIPT, folds=True,
-      cta_h="Want the real numbers?", cta_p="Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.",
+      cta_h="Want the real numbers?", cta_p="The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.",
       cta_href="start.html", cta_btn="Start a Blueprint →")

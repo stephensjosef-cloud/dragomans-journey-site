@@ -141,7 +141,7 @@ COMPUTE WS-MONTHLY-RATE ROUNDED =
     APR-RATE / 12
 COMPUTE WS-INTEREST ROUNDED =
     CURR-BAL * WS-MONTHLY-RATE</pre>
-        <p style="margin: 0; font-size: 15px; color: #3A4252">The code never divides by 100. The field definition allows two readings. Pick one:</p>
+        <p style="margin: 0; font-size: 15px; color: #3A4252">The code never divides by 100. The field definition allows two readings. See each one:</p>
         <div role="group" aria-label="Reading of APR-RATE" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
           <button type="button" aria-pressed="false" data-reading="fraction" style="min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: transparent; color: #12161F;">A fraction</button><button type="button" aria-pressed="true" data-reading="percent" style="min-height: 46px; padding: 0 12px; font-size: 15px; font-weight: 600; border: 1px solid #12161F; transition: background 160ms ease; background: #12161F; color: #F4F1EA;">A percentage</button>
         </div>
@@ -198,7 +198,7 @@ COMPUTE WS-INTEREST ROUNDED =
 <section aria-labelledby="voices-h" style="background: #EBE6DA">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 112px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 40px">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 24px 64px; align-items: end">
-      <h2 id="voices-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Every record tells a different story. <em style="color: #A93F17">The real data settles it.</em></h2>
+      <h2 id="voices-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">The code, the layouts, the job setup and the data each tell a different story. <em style="color: #A93F17">The real data settles it.</em></h2>
       <p style="margin: 0; font-size: 18px; color: #2C3341">On a real mainframe, the records disagree. The code says one thing, the field layouts suggest another, the job setup a third, and the real data shows something else. The engineer who knew why retired years ago. A tool that quietly picks one version hides the problem, so I write down every disagreement as a finding.</p>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 14px">
@@ -363,7 +363,7 @@ COMPUTE WS-INTEREST ROUNDED =
 <section id="correspondence" aria-labelledby="corr-h">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(80px, 10vw, 140px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 40px 72px; align-items: start">
     <div style="display: flex; flex-direction: column; gap: 22px">
-      <h2 id="corr-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(44px, 6vw, 84px); line-height: 1.0; letter-spacing: -0.025em">Send one program <em style="color: #A93F17">and see what I find</em></h2>
+      <h2 id="corr-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(44px, 6vw, 84px); line-height: 1.0; letter-spacing: -0.025em">Tell me about one program <em style="color: #A93F17">and see what I'd look at first</em></h2>
       <p style="margin: 0; max-width: 54ch; font-size: 18px; color: #2C3341">Tell me which programs you're least sure about, roughly how big your system is and where the move stands. I'll reply myself with what I'd look at first. If I'm not the right fit, I'll tell you who is.</p>
     </div>
     <div style="display: flex; flex-direction: column; gap: 0; border-top: 1px solid #12161F">
