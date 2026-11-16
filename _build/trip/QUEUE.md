@@ -848,6 +848,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-20 · Walk fixes 01: what the Nov 15 public walk found that needs no new words · READY
+
+**Why:** Nov 15, 2026: every page was checked at 320, 390 and 1440 by two fresh reviewers and axe. The site still offered free reels that are no longer on offer, six pages sent visitors to a tool that isn't live yet, one Mainframe line claimed a check that hasn't been done, and the layout had a set of phone and laptop problems.
+
+**Done when:** every fix below is in, each changed page was looked at at 320, 390 and 1440, axe reports no color-contrast or landmark problem on any page, all tests pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
