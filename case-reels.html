@@ -24,14 +24,14 @@ body{margin:0;background:#F2EDE1}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 a{color:#A93F17}a:hover{color:#16201C}
-::selection{background:#E8592B;color:#0E1B17}
+::selection{background:#E8592B;color:#0E1A17}
 .dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
 .dj a:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));border-top:1px solid #2B3D35;border-left:1px solid #2B3D35}
-.stat{padding:18px 20px;border-right:1px solid #2B3D35;border-bottom:1px solid #2B3D35;display:flex;flex-direction:column;gap:4px}
+.stats{display:flex;flex-wrap:wrap;border-top:1px solid #2B3D35;border-left:1px solid #2B3D35}
+.stat{flex:1 1 170px;padding:18px 20px;border-right:1px solid #2B3D35;border-bottom:1px solid #2B3D35;display:flex;flex-direction:column;gap:4px}
 .stat b{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(34px,3.6vw,46px);line-height:1;color:#F07A4E}
 .stat span{font-size:14px;color:#B5C2BA;line-height:1.4}
 .sec{display:grid;grid-template-columns:minmax(150px,260px) minmax(0,1fr);gap:10px 48px;padding:clamp(28px,4vw,44px) 0;border-top:1.5px solid #16201C}
@@ -51,6 +51,7 @@ a{color:#A93F17}a:hover{color:#16201C}
 .djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
 }
 </style>
+<style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
 </head>
 <body>
 <div class="dj">
@@ -138,7 +139,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       <p style="margin:0;font-size:18px;color:#C9D2CB">Bring the clips. I'll take it from here.</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
-      <a href="start.html#pile=Phone%20videos%20nobody%20has%20time%20to%20edit" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">Start a Blueprint →</a>
+      <a href="start.html#pile=Phone%20videos%20nobody%20has%20time%20to%20edit" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1A17;text-decoration:none;font-weight:700;border-radius:2px">Start a Blueprint →</a>
       <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-minute call</a>
     </div>
   </section>

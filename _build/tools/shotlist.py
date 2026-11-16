@@ -23,10 +23,6 @@ CSS = r"""
 .spot li{display:flex;gap:10px;font-size:15px}
 .spot li b{font-family:'JetBrains Mono',monospace;font-size:13px;min-width:2.2em;color:#A93F17}
 .rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px}
-.offer{background:#E8592B;color:#0E1B17;border-radius:2px;padding:clamp(18px,2.4vw,28px);display:flex;flex-direction:column;gap:12px}
-.offer h2{margin:0;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.4vw,40px);line-height:.95}
-.offer p{margin:0;font-size:17px}
-.offer .btn{background:#0E1B17;border-color:#0E1B17;color:#F2EDE1}
 .r-hook{background:#F6C9B5}.r-place{background:#D9E4D2}.r-hands{background:#F2DEA8}.r-process{background:#F2DEA8}.r-detail{background:#E6DCF0}
 .r-people{background:#CFE0EE}.r-customer{background:#CFE0EE}.r-reveal{background:#F6C9B5}.r-sign{background:#D9E4D2}.r-call{background:#16201C;color:#F2EDE1!important}
 .stack{display:flex;flex-direction:column;gap:24px}
@@ -71,8 +67,6 @@ BODY = r"""
     <span class="n" id="days"></span>
     <span id="dayslabel" style="font-size:18px;font-weight:600"></span>
   </section>
-
-  <div id="offer"></div>
 
   <section class="panel" aria-labelledby="rules-h">
     <h2 id="rules-h" style="margin:0 0 10px;font-size:22px">Five rules for every clip</h2>
@@ -244,10 +238,6 @@ function render(){
   }).join('');
   var rules=['Hold the phone upright, the way people watch.','Count to five on every clip, then stop. Short clips are easy to trim and impossible to stretch.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
   document.getElementById('rules').innerHTML=rules.map(function(r){return '<li>'+r+'</li>'}).join('');
-  var off=document.getElementById('offer'), today=new Date(), cut=new Date(2026,10,20,23,59);
-  if(today<=cut){
-    off.innerHTML='<div class="offer noprint"><h2>Want it edited for free?</h2><p>This month I\'m editing three reels for Santa Rosa shops and three for nonprofits, free. Film these 10 clips, send them by November 20, and you get a finished, captioned reel back by November 25. You approve it before anyone sees it.</p><div style="display:flex;flex-wrap:wrap;gap:10px"><a class="btn" href="mailto:hello@dragomansjourney.com?subject='+encodeURIComponent('Free reel: '+T.label)+'&body='+encodeURIComponent('Hi Josef, I\'d like one of the free reels. I run: \n\nI\'ll send the clips by Nov 20.\n')+'">Claim a free reel</a><a class="btn" href="call.html" style="background:transparent;color:#0E1B17;border-color:#0E1B17">Ask on a 15-minute call</a></div></div>';
-  }else off.innerHTML='';
   window._dj=clips;
 }
 document.addEventListener('click',function(e){

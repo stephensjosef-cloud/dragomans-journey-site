@@ -115,6 +115,24 @@ text('briefing.html',
      '<span class="label">Which programs (a rough description is enough)</span>',
      ref='W33')
 
+# ---------------- T-20 (Nov 15, 2026): walk fixes, three word changes ----------------
+# F3: Exhibit B's "Caught by" agrees with the Limits note (the output comparison hasn't
+# been done yet). The value is in the exhibit as first drawn and in the tabs' state data,
+# so both change and every state of the tabs carries it.
+text('mainframe.html',
+     '>Caught by</span><strong style="text-align: right">Comparing the output, not reading the code</strong>',
+     '>Caught by</span><strong style="text-align: right">Comparing the code, line by line</strong>',
+     ref='F3')
+text('mainframe.html',
+     '"Caught by", "v": "Comparing the output, not reading the code"',
+     '"Caught by", "v": "Comparing the code, line by line"',
+     ref='F3')
+# F4: the hero button. Where it points does not change.
+text('mainframe.html',
+     '>Send one program</a>',
+     '>Tell me about one program</a>',
+     ref='F4')
+
 # ---------------- write ----------------
 if problems:
     print('VOICE: %d edit(s) missed, nothing written:' % len(problems))

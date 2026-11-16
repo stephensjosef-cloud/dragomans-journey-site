@@ -2,8 +2,9 @@ from chrome import write
 import sys
 
 CSS = r"""
-.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}
-@media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr)}}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);grid-template-areas:'pick paper' 'acts paper';grid-template-rows:auto 1fr;gap:28px;align-items:start}
+.lay>.a-pick{grid-area:pick}.lay>.a-paper{grid-area:paper}.lay>.a-acts{grid-area:acts}
+@media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'pick' 'paper' 'acts';grid-template-rows:none}.lay>.a-acts{margin-top:-12px}}
 .row2{padding:2px 0 6px}
 .row2 .fold{min-height:48px;font-size:14px}
 .ed{display:grid;grid-template-columns:72px minmax(0,1fr) 48px;gap:8px;align-items:center;padding:2px 0 14px;font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif}
@@ -16,7 +17,9 @@ CSS = r"""
 .ed .x{font:inherit;cursor:pointer;min-height:48px;border:1.5px solid #CFC6B2;background:transparent;border-radius:2px;font-size:20px;line-height:1;color:#5A635D}
 .ed .x:hover{border-color:#16201C;color:#16201C}
 .chip.add::before{content:'+ ';font-weight:700}
-.chip.used{opacity:.45}
+#presets{display:contents}
+.chip.used{background:#16201C;border-color:#16201C;color:#F2EDE1;cursor:default}
+.chip.used::before{content:'';display:inline-block;width:5px;height:10px;margin:0 9px 3px 1px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);vertical-align:middle}
 .paper{background:#FFFDF7;color:#16201C;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;line-height:1.55;padding:28px 26px 34px;box-shadow:0 24px 48px rgba(22,32,28,.18),0 2px 0 rgba(22,32,28,.08);position:relative;
   -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 12px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 12px repeat-x;
   mask:linear-gradient(#000 0 0) top/100% calc(100% - 12px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 12px repeat-x}
@@ -29,18 +32,17 @@ CSS = r"""
 .rs{color:#5A635D;font-size:12.5px;margin:0 0 8px}
 .tot{font-weight:700;font-size:17px}
 .big2{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:44px;line-height:1;color:#C2461B;text-align:center;margin:6px 0 2px}
-.t-draft{color:#1F4FA8}.t-form{color:#2E7D4F}.t-connect{color:#7A4FB0}.t-tool{color:#A93F17}.t-human{color:#5A635D}.t-look{color:#8A6A12}
+.t-draft{color:#16201C}.t-form{color:#2E7D4F}.t-connect{color:#3B4540}.t-tool{color:#A93F17}.t-human{color:#5A635D}.t-look{color:#8A6A12}
 @media print{.noprint{display:none!important}body{background:#fff}.lay{display:block}.paper{box-shadow:none;-webkit-mask:none;mask:none;border:1px dashed #999;max-width:440px;margin:0 auto}}
 """
 
 BODY = r"""
   <div class="lay">
-    <div style="display:flex;flex-direction:column;gap:24px;min-width:0" class="noprint">
+    <div style="display:flex;flex-direction:column;gap:24px;min-width:0" class="noprint a-pick">
       <section class="panel" aria-labelledby="a-h">
         <h2 id="a-h" class="label">Tap the chores that eat your week</h2>
-        <div class="chips" id="presets"></div>
+        <div class="chips"><div id="presets"></div><button type="button" class="chip" id="addown">+ Something else</button></div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-top:16px">
-          <button type="button" class="btn ghost" id="addown">+ Something else</button>
           <label style="display:flex;flex-direction:column;gap:6px;max-width:260px"><span class="label" style="margin:0">What an hour of it is worth</span>
             <span style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">$</span><input id="rate" type="number" min="0" step="1" value="30" style="width:110px"><span>an hour</span></span></label>
         </div>
@@ -48,8 +50,11 @@ BODY = r"""
       </section>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:16px;position:sticky;top:16px">
+    <div class="a-paper" style="display:flex;flex-direction:column;gap:16px;position:sticky;top:16px">
       <div class="paper" id="paper"><div id="p-head"></div><div id="rows"></div><div id="p-foot" aria-live="polite"></div></div>
+    </div>
+
+    <div class="a-acts" style="display:flex;flex-direction:column;gap:16px;min-width:0">
       <div class="noprint" style="display:flex;flex-wrap:wrap;gap:10px">
         <a class="btn hot" id="bring" href="start.html">Bring this receipt to a Blueprint</a>
         <button type="button" class="btn ghost" id="copy">Copy it</button>

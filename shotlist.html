@@ -24,7 +24,7 @@ body{margin:0;background:#F2EDE1}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 a{color:#A93F17}a:hover{color:#16201C}
-::selection{background:#E8592B;color:#0E1B17}
+::selection{background:#E8592B;color:#0E1A17}
 .dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
@@ -39,7 +39,7 @@ a{color:#A93F17}a:hover{color:#16201C}
 .chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
 .btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
 .btn:hover{background:#0E1B17;color:#F2EDE1}
-.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1A17}
 .btn.ghost{background:transparent;color:#16201C}
 .btn.ghost:hover{background:#EAE3D3;color:#16201C}
 input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
@@ -48,6 +48,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
 .fold{font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:0;margin:0;background:none;border:0;color:#A93F17;font-size:16px;font-weight:700;text-align:left;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
 .fold:hover{color:#16201C}
 .fold::after{content:'';flex:none;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-3px) rotate(45deg)}
@@ -75,10 +76,6 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .spot li{display:flex;gap:10px;font-size:15px}
 .spot li b{font-family:'JetBrains Mono',monospace;font-size:13px;min-width:2.2em;color:#A93F17}
 .rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px}
-.offer{background:#E8592B;color:#0E1B17;border-radius:2px;padding:clamp(18px,2.4vw,28px);display:flex;flex-direction:column;gap:12px}
-.offer h2{margin:0;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.4vw,40px);line-height:.95}
-.offer p{margin:0;font-size:17px}
-.offer .btn{background:#0E1B17;border-color:#0E1B17;color:#F2EDE1}
 .r-hook{background:#F6C9B5}.r-place{background:#D9E4D2}.r-hands{background:#F2DEA8}.r-process{background:#F2DEA8}.r-detail{background:#E6DCF0}
 .r-people{background:#CFE0EE}.r-customer{background:#CFE0EE}.r-reveal{background:#F6C9B5}.r-sign{background:#D9E4D2}.r-call{background:#16201C;color:#F2EDE1!important}
 .stack{display:flex;flex-direction:column;gap:24px}
@@ -164,8 +161,6 @@ h1.big{text-wrap:balance}
     <span id="dayslabel" style="font-size:18px;font-weight:600"></span>
   </section>
 
-  <div id="offer"></div>
-
   <section class="panel" aria-labelledby="rules-h">
     <h2 id="rules-h" style="margin:0 0 10px;font-size:22px">Five rules for every clip</h2>
     <ul class="rules" id="rules"></ul>
@@ -177,14 +172,14 @@ h1.big{text-wrap:balance}
     <p class="private">Nothing you pick here leaves this page.</p>
   </div>
 
-  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="captions.html">Caption fitter</a> · <a href="receipt.html">Busywork receipt</a> · <a href="scaler.html">Recipe scaler</a> · <a href="checkup.html">Website checkup</a></p>
+  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="captions.html">Caption fitter</a> · <a href="receipt.html">Busywork receipt</a> · <a href="scaler.html">Recipe scaler</a></p>
   <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Rather hand it off?</h2>
       <p style="margin:0;font-size:18px;color:#C9D2CB">Send me the clips and I'll cut the reel. Or start with a free 15-minute call.</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
-      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">Free 15-minute call</a>
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1A17;text-decoration:none;font-weight:700;border-radius:2px">Free 15-minute call</a>
     </div>
   </section>
 </main>
@@ -361,10 +356,6 @@ function render(){
   }).join('');
   var rules=['Hold the phone upright, the way people watch.','Count to five on every clip, then stop. Short clips are easy to trim and impossible to stretch.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
   document.getElementById('rules').innerHTML=rules.map(function(r){return '<li>'+r+'</li>'}).join('');
-  var off=document.getElementById('offer'), today=new Date(), cut=new Date(2026,10,20,23,59);
-  if(today<=cut){
-    off.innerHTML='<div class="offer noprint"><h2>Want it edited for free?</h2><p>This month I\'m editing three reels for Santa Rosa shops and three for nonprofits, free. Film these 10 clips, send them by November 20, and you get a finished, captioned reel back by November 25. You approve it before anyone sees it.</p><div style="display:flex;flex-wrap:wrap;gap:10px"><a class="btn" href="mailto:hello@dragomansjourney.com?subject='+encodeURIComponent('Free reel: '+T.label)+'&body='+encodeURIComponent('Hi Josef, I\'d like one of the free reels. I run: \n\nI\'ll send the clips by Nov 20.\n')+'">Claim a free reel</a><a class="btn" href="call.html" style="background:transparent;color:#0E1B17;border-color:#0E1B17">Ask on a 15-minute call</a></div></div>';
-  }else off.innerHTML='';
   window._dj=clips;
 }
 document.addEventListener('click',function(e){

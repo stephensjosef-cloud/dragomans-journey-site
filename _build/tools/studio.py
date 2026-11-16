@@ -202,7 +202,7 @@ CSS = r"""
 .sec h2.big{font-size:clamp(38px,4.6vw,60px)}
 .log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
 .log li{display:grid;grid-template-columns:5.5em 13em minmax(0,1fr);gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid #DDD5C3}
-.log time{font-size:14px;color:#6B716A;white-space:nowrap}
+.log time{font-size:14px;color:#676D66;white-space:nowrap}
 .log .proj{justify-self:start;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:3px 9px;background:#EAE3D3;color:#3B4540;border-radius:2px}
 .log .line{font-size:17px}
 @media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr)}.log .line{grid-column:1/-1}}
@@ -311,7 +311,7 @@ PAGE_CSS = r"""
 .top{display:grid;grid-template-columns:minmax(0,1fr);gap:24px 40px;align-items:start}
 .top .proof{margin:0;font-size:clamp(20px,2vw,24px);line-height:1.4}
 .top img{width:100%;max-width:560px;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
-@media (min-width:800px){.top.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (min-width:800px){.top.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.top.has-log{grid-template-areas:'proof img' 'log img';grid-template-rows:auto 1fr}.top.has-log>.proof{grid-area:proof}.top.has-log>img{grid-area:img}.top.has-log>.sec{grid-area:log;margin-top:0}}
 .log.solo li{grid-template-columns:5.5em minmax(0,1fr)}
 @media (max-width:760px){.log.solo li{grid-template-columns:4.2em minmax(0,1fr);gap:4px 12px}.log.solo .line{grid-column:auto}}
 .join{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:24px;max-width:560px}
@@ -325,16 +325,23 @@ def product_page(p, rows, today, stamp):
     proof = f'<p class="proof"><strong>{t(p["proof"])}</strong></p>' if p.get("proof") else ""
     img = (f'<img src="{a(p["image"])}" width="1200" height="1331" alt="{a(p["image_alt"] or "")}">'
            if p.get("image") else "")
-    if proof or img:
-        parts.append(f'\n  <div class="top{" has-img" if img else ""}">'
-                     + (f'\n    {proof}' if proof else "") + (f'\n    {img}' if img else "") + '\n  </div>')
     mine = [r for r in rows if r["project"] == p["id"]]
+    log = ""
     if mine:
         items = "".join(log_item(r, today, label=False) for r in mine)
-        parts.append(f'\n  <section class="sec" aria-labelledby="log-h">'
-                     f'\n    <h2 id="log-h" class="big">Shipped lately</h2>'
-                     f'\n    <ol class="log solo" id="log">{items}\n    </ol>'
-                     '\n  </section>')
+        log = (f'\n  <section class="sec" aria-labelledby="log-h">'
+               f'\n    <h2 id="log-h" class="big">Shipped lately</h2>'
+               f'\n    <ol class="log solo" id="log">{items}\n    </ol>'
+               '\n  </section>')
+    # With an image and a proof line, the log joins them (T-20 F8), so on wide screens it
+    # fills the column under the proof line, beside the image.
+    beside = bool(proof and img and log)
+    if proof or img:
+        parts.append(f'\n  <div class="top{" has-img" if img else ""}{" has-log" if beside else ""}">'
+                     + (f'\n    {proof}' if proof else "") + (f'\n    {img}' if img else "")
+                     + (log.replace("\n  ", "\n    ") if beside else "") + '\n  </div>')
+    if log and not beside:
+        parts.append(log)
     parts.append(f'\n  <section class="join panel" id="join">'
                  f'\n    <div class="acts">{"".join(join_button(p))}</div>'
                  f'\n    <p class="private">{t(p["list"]["line"])}</p>'

@@ -407,8 +407,10 @@ def build_mainframe():
     )
     body = rep_re(body, r'<sc-for list="\{\{exTabs\}\}".*?</sc-for>', tabs)
     xb = v0["xb"]
+    # The panel is a div, not an article: an article may not carry role="tabpanel" (T-20 F9).
     body = rep(body, '<article style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 28px 48px; align-items: start">',
-               '<article id="xb-panel" role="tabpanel" aria-label="Exhibit" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 28px 48px; align-items: start">')
+               '<div id="xb-panel" role="tabpanel" aria-label="Exhibit" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 28px 48px; align-items: start">')
+    body = rep(body, '      </article>\n', '      </div>\n')
     body = rep(body, 'line-height: 1.1">{{xb.title}}</h3>', f'line-height: 1.1" id="xb-title">{esc(xb["title"])}</h3>')
     body = rep(body, 'color: #2C3341">{{xb.body}}</p>', f'color: #2C3341" id="xb-body">{esc(xb["body"])}</p>')
     body = rep(body, 'line-height: 1.45">{{xb.lesson}}</p>', f'line-height: 1.45" id="xb-lesson">{esc(xb["lesson"])}</p>')
@@ -515,6 +517,10 @@ def build_extras(fork_helmet):
     # The Studio product pages (T-09), the same list tools/studio.py writes.
     sys.path.insert(0, str(Path(__file__).resolve().parent / "tools"))
     import studio
+    # The checkup stays out of the sitemap until CHECKUP_URL is set in tools/checkup.py (T-20 F2).
+    import chrome
+    if not chrome.checkup_live():
+        urls.remove(SITE + "checkup.html")
     urls += [SITE + slug for slug, _ in studio.product_pages(studio.load()[0])]
     (OUT / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

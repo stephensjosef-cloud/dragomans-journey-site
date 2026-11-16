@@ -1,7 +1,15 @@
 """Shared page chrome for the Dragoman's Journey free tools.
 Each tool supplies: slug, title, description, kicker, h1 (may contain <br>), lede, css, body, script.
 Output is a standalone page written into _build/ (the pipeline copies it to the site)."""
-import pathlib, sys
+import pathlib, re, sys
+
+# No word alone on a line (T-20 F5, Nov 15, 2026): headings, buttons, chips and form
+# labels balance their lines; paragraphs and list items avoid a last word alone.
+# One copy for every page: tools/chrome.py puts it in each page it writes, and
+# enhance.py puts it in each pipeline page, once.
+WRAP_CSS = ("p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}"
+            ":is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*=\"JetBrains Mono\"]),"
+            ":is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}")
 
 HEAD = """<!doctype html>
 <html lang="en">
@@ -53,6 +61,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
 .toast{{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}}
 .toast.on{{opacity:1}}
 @media (prefers-reduced-motion:reduce){{*{{transition:none!important;animation:none!important}}}}
+{wrap_css}
 {fold_css}{css}
 </style>
 </head>
@@ -111,8 +120,27 @@ TOOLS = (("shotlist.html", "Reel shot list"), ("captions.html", "Caption fitter"
          ("checkup.html", "Website checkup"))
 
 
+# The website checkup is linked only once it is live (T-20 F2, Nov 15, 2026). The one
+# switch is CHECKUP_URL at the top of checkup.py's script: while it is empty, no page
+# links to checkup.html or lists it, and the sitemap leaves it out. Every build script
+# reads it from there through checkup_url(); nothing else holds a copy.
+def checkup_url():
+    src = (pathlib.Path(__file__).resolve().parent / "checkup.py").read_text(encoding="utf-8")
+    found = re.findall(r"""^var CHECKUP_URL = (['"])(.*?)\1;""", src, re.M)
+    assert len(found) == 1, "checkup.py: expected one CHECKUP_URL line, found " + str(len(found))
+    return found[0][1].strip()
+
+
+def checkup_live():
+    return bool(checkup_url())
+
+
+def linked_tools():
+    return tuple(t for t in TOOLS if t[0] != "checkup.html" or checkup_live())
+
+
 def more_tools(slug):
-    return " · ".join(f'<a href="{href}">{name}</a>' for href, name in TOOLS if href != slug)
+    return " · ".join(f'<a href="{href}">{name}</a>' for href, name in linked_tools() if href != slug)
 
 
 # Under the tool: the line to the other tools and the dark panel. A page without
@@ -149,6 +177,7 @@ def page(**k):
     folds = k.pop("folds", False)
     k["fold_css"] = FOLD_CSS if folds else ""
     k["fold_js"] = FOLD_JS if folds else ""
+    k["wrap_css"] = WRAP_CSS
     k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
     k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
     # The small line over the title; a page without one (the Studio, T-16) gets no empty span.

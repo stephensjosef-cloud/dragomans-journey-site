@@ -31,8 +31,9 @@ a{color:#A93F17}a:hover{color:#16201C}
 .step h2{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(26px,2.8vw,36px);line-height:1;margin:0 0 6px}
 .hint{margin:0 0 14px;font-size:15px;color:#5A635D}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:inherit;cursor:pointer;min-height:52px;padding:0 18px;border-radius:2px;border:1.5px solid #B9B09C;background:#FBF8F1;color:#16201C;font-size:16px;font-weight:600;text-align:left;transition:border-color 140ms ease,background 140ms ease}
+.chip{font:inherit;cursor:pointer;min-height:52px;padding:10px 18px;border-radius:2px;border:1.5px solid #B9B09C;background:#FBF8F1;color:#16201C;font-size:16px;font-weight:600;text-align:left;transition:border-color 140ms ease,background 140ms ease}
 .chip:hover{border-color:#16201C}
+.chip-row{flex-basis:100%;height:0}
 .chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
 .field{display:flex;flex-direction:column;gap:6px}
 .field span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#5A635D}
@@ -148,6 +149,7 @@ a{color:#A93F17}a:hover{color:#16201C}
           <button type="button" class="chip" aria-pressed="false">Wednesday</button>
           <button type="button" class="chip" aria-pressed="false">Thursday</button>
           <button type="button" class="chip" aria-pressed="false">Friday</button>
+          <span class="chip-row" aria-hidden="true"></span>
           <button type="button" class="chip" aria-pressed="false">Mornings</button>
           <button type="button" class="chip" aria-pressed="false">Afternoons</button>
         </div>

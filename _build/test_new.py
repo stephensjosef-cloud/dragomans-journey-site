@@ -185,17 +185,19 @@ with sync_playwright() as p:
         q.screenshot(path=f'{SHOTS}/briefing-{w}.png', full_page=True)
 
     # ---------------- work, case study, free call
+    # T-20 F2: the checkup card and links show only once CHECKUP_URL is set in tools/checkup.py.
+    CK_LIVE = "\nvar CHECKUP_URL = '';" not in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tools', 'checkup.py'), encoding='utf-8').read()
     pg = newpage(1440)
     pg.goto(BASE + 'work.html'); pg.wait_for_timeout(300)
-    check('work has 10 cards (T-04 adds the Website checkup)', pg.locator('#cards .card').count() == 10)
+    check('work has 10 cards (T-04 adds the Website checkup; 9 while it isn\'t live, T-20 F2)', pg.locator('#cards .card').count() == (10 if CK_LIVE else 9))
     pg.click('.filt[data-f="banking"]'); pg.wait_for_timeout(100)
     check('banking filter shows 2', pg.locator('#cards .card:visible').count() == 2, str(pg.locator('#cards .card:visible').count()))
     pg.click('.filt[data-f="nonprofit"]'); pg.wait_for_timeout(100)
     check('nonprofit filter shows 3 (two jobs + the recipe scaler)', pg.locator('#cards .card:visible').count() == 3)
     pg.click('.filt[data-f="free"]'); pg.wait_for_timeout(100)
-    check('free tools filter shows 6', pg.locator('#cards .card:visible').count() == 6)
+    check('free tools filter shows 6 (5 while the checkup isn\'t live, T-20 F2)', pg.locator('#cards .card:visible').count() == (6 if CK_LIVE else 5))
     q = newpage(1440); q.goto(BASE + 'work.html#free'); q.wait_for_timeout(300)
-    check('work.html#free opens on free tools', q.locator('#cards .card:visible').count() == 6)
+    check('work.html#free opens on free tools', q.locator('#cards .card:visible').count() == (6 if CK_LIVE else 5))
     check('no CLIENT_ token left on work', 'CLIENT_' not in pg.content())
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
@@ -311,6 +313,7 @@ with sync_playwright() as p:
     # ---------------- free tools, findable (T-02, Nov 10, 2026)
     TOOLS = {'shotlist.html': 'Reel shot list', 'captions.html': 'Caption fitter',
              'receipt.html': 'Busywork receipt', 'scaler.html': 'Recipe scaler', 'checkup.html': 'Website checkup'}
+    LINKED = {k: v for k, v in TOOLS.items() if k != 'checkup.html' or CK_LIVE}   # T-20 F2
     # T-16: every header except the three Mainframe pages, which carry neither Studio nor Free tools.
     MAINFRAME_PAGES = ('mainframe', 'briefing', 'comp3')
     for name in SHARED:
@@ -334,21 +337,21 @@ with sync_playwright() as p:
     sec = sec.group(0) if sec else ''
     check('local free tools section sits right before contact', bool(sec) and bool(_re.search(_re.escape(sec) + r'\s*<section id="contact"', src)))
     check('local free tools heading', '>Free tools for your pile</h2>' in sec)
-    check('local free tools section links the 5 tools', sorted(_re.findall(r'href="([a-z]+\.html)"', sec)) == sorted(TOOLS), sec[:200])
+    check(f'local free tools section links the {len(LINKED)} tools (the checkup only once it is live, T-20 F2)', sorted(_re.findall(r'href="([a-z]+\.html)"', sec)) == sorted(LINKED), sec[:200])
     work = urlopen(BASE + 'work.html').read().decode('utf-8')
-    for href, title in TOOLS.items():
+    for href, title in LINKED.items():
         para = _re.search(r'<h2>' + title + r'</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + href, work)
         check(f'local card for {href} matches the work page', bool(para) and f'>{title}</h3>' in sec and f'>{para.group(1)}</p>' in sec)
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'local.html'); q.wait_for_timeout(300)
         xs = q.eval_on_selector_all('#tools article', 'e => e.map(a => Math.round(a.getBoundingClientRect().left))')
-        check(f'local free tools: {"one column" if w == 390 else "one row of five"} at {w}',
-              len(xs) == 5 and (len(set(xs)) == 1 if w == 390 else len(set(xs)) == 5), str(xs))
+        check(f'local free tools: {"one column" if w == 390 else "one row of all " + str(len(LINKED))} at {w}',
+              len(xs) == len(LINKED) and (len(set(xs)) == 1 if w == 390 else len(set(xs)) == len(LINKED)), str(xs))
     for href in TOOLS:
         q = newpage(1440); q.goto(BASE + href); q.wait_for_timeout(300)
         line = q.locator('main > p', has_text='More free tools:')
         got = line.locator('a').evaluate_all('e => e.map(a => [a.getAttribute("href"), a.textContent])') if line.count() == 1 else []
-        check(f'{href} links the other tools by name', sorted(got) == sorted([k, v] for k, v in TOOLS.items() if k != href), str(got))
+        check(f'{href} links the other tools by name (the checkup only once it is live, T-20 F2)', sorted(got) == sorted([k, v] for k, v in LINKED.items() if k != href), str(got))
         if line.count() == 1:
             check(f'{href} more-tools line sits above the dark panel',
                   line.bounding_box()['y'] < q.locator('#more-h').bounding_box()['y'])
@@ -873,7 +876,7 @@ with sync_playwright() as p:
     SAMPLE = _json.loads(_sp.run(['node', 'test_checkup.mjs', '--sample'], cwd=os.path.join(here, 'worker'), capture_output=True, text=True).stdout)
 
     src = urlopen(BASE + 'checkup.html').read().decode('utf-8')
-    check('checkup: sitemap lists it', 'https://dragomansjourney.com/checkup.html' in urlopen(BASE + 'sitemap.xml').read().decode('utf-8'))
+    check('checkup: sitemap lists it once it is live, and not before (T-20 F2)', ('https://dragomansjourney.com/checkup.html' in urlopen(BASE + 'sitemap.xml').read().decode('utf-8')) == CK_LIVE)
     check('checkup: CHECKUP_URL is one empty constant at the top of the script', src.count("var CHECKUP_URL = '';") == 1
           and _re.search(r"<script>\s*function djToast[\s\S]*?\n\s*var CHECKUP_URL = '';", src) is not None)
     check('checkup: the line under the box', "This checks your public page the way a visitor's phone would. Nothing is stored." in src)
@@ -881,8 +884,11 @@ with sync_playwright() as p:
     work = urlopen(BASE + 'work.html').read().decode('utf-8')
     card = _re.search(r'<article class="card" data-k="([^"]*)">((?:(?!</article>).)*href="checkup\.html"(?:(?!</article>).)*)</article>', work, _re.S)
     # T-16 N10: the card keeps its place but no longer carries the "25 links" figure.
-    check('checkup: a fifth tool card on the work page, data-k free, "Website checkup", no figure', bool(card) and card.group(1) == 'free'
-          and 'class="num"' not in card.group(2) and '25 links' not in card.group(2) and '<h2>Website checkup</h2>' in card.group(2))
+    if CK_LIVE:
+        check('checkup: a fifth tool card on the work page, data-k free, "Website checkup", no figure', bool(card) and card.group(1) == 'free'
+              and 'class="num"' not in card.group(2) and '25 links' not in card.group(2) and '<h2>Website checkup</h2>' in card.group(2))
+    else:
+        check('checkup: no card on the work page while it isn\'t live (T-20 F2)', card is None)
 
     # Until the Worker is live: "Coming this week", no box, nothing sent.
     sent = []
@@ -1004,7 +1010,7 @@ with sync_playwright() as p:
     # T-19 W4 to W6: the three figures now say what they count.
     KEEP = {'One cooking-class shoot, one finished reel': 'An 81-second reel in about 4 minutes', 'A seasonal cooking app for teachers': '535 automatic checks',
             'A banking program, checked in public': '2 AI translations of one bank program'}
-    check('N10: only the three cards with a real result keep their figure', {k: v for k, v in figs.items() if v} == KEEP and len(figs) == 10, str(figs))
+    check('N10: only the three cards with a real result keep their figure', {k: v for k, v in figs.items() if v} == KEEP and len(figs) == (10 if CK_LIVE else 9), str(figs))   # T-20 F2
     for gone in ('0 → real users', 'Free</p>', '10 clips', '0 stranded words', '1 year, rung up', '×3, measurable', '25 links'):
         check(f'N10: figure "{gone.replace("</p>", "")}" is gone', f'<p class="num">{gone}' not in site['work'])
 
@@ -1204,6 +1210,9 @@ with sync_playwright() as p:
             if n == 'receipt' and 'more-h' in rx:   # T-19 W21 changed the panel's line; the rest stays as at T-17
                 b_ = [x.replace('Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.',
                                 'The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.') for x in b_]
+            if not CK_LIVE:   # T-20 F2: no checkup link while it isn't live
+                b_ = [x.replace(' · <a href="checkup.html">Website checkup</a>', '') for x in b_]
+            a = [x.replace('#0E1A17', '#0E1B17') for x in a]   # T-20 F9: the orange button's text is one shade darker
             check(f'T-18: {n} keeps its {"More free tools line" if "More" in rx else "dark panel"} as at T-17', a == b_ and len(a) == 1)
 
     # The words, exactly once where they are in the page itself, and the old ones gone.
@@ -1312,7 +1321,6 @@ with sync_playwright() as p:
       strip: [...document.querySelectorAll('#strip span')].map(s => [s.className, s.style.flex, s.textContent]), striplabel: document.getElementById('striplabel').textContent,
       rules: [...document.querySelectorAll('#rules li')].map(l => l.textContent),
       days: document.getElementById('days').textContent, dayslabel: document.getElementById('dayslabel').textContent, when: document.getElementById('when').hidden,
-      offer: document.getElementById('offer').innerHTML,
       pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)}))()'''
     for picks in ([], [('type', 'cafe'), ('goal', 'how'), ('len', '15'), ('light', 'pm')], [('type', 'nonprofit'), ('len', '45'), ('light', 'mid')]):
         def shot(q):
@@ -1321,7 +1329,7 @@ with sync_playwright() as p:
             r['copy'] = _re.sub(r'(?m)^(\d+)\. [^(\n]+ \(', r'\1. (', grab_copy(q, '#copy'))   # S8 renames the clip labels
             return r
         a, b_ = both('shotlist', shot)
-        check(f'T-18: shot list gives the same clips, seconds, stops, rules, countdown, offer and copy as T-17 for {picks or "the defaults"}', a == b_,
+        check(f'T-18: shot list gives the same clips, seconds, stops, rules, countdown and copy as T-17 for {picks or "the defaults"} (T-20 F1: the offer is gone)', a == b_,
               str([k for k in a if a[k] != b_.get(k)]))
     q = newpage(390); q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
     q.click('#f-cut'); q.wait_for_timeout(60)
@@ -1341,7 +1349,7 @@ with sync_playwright() as p:
       return {verdicts: [...document.querySelectorAll('#verdicts li')].map(l => [l.querySelector('.dot').className, l.textContent]),
               cards: [...document.querySelectorAll('#cards .cardline')].map(c => c.textContent), canvas: h,
               pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)} })()'''
-    CAP_IN = ((None, [], None), ('New fall sweaters just landed.', [('size', 'l'), ('pos', 'top'), ('app', 'tiktok')], '2'),
+    CAP_IN = ((None, [], '5'), ('New fall sweaters just landed.', [('size', 'l'), ('pos', 'top'), ('app', 'tiktok')], '2'),
               ('Supercalifragilisticexpialidocious bakery opens at nine tomorrow morning on Fourth Street', [('size', 's'), ('box', 'none'), ('app', 'shorts'), ('pos', 'mid')], '20'))
     for text, picks, secs in CAP_IN:
         def cap(q):
@@ -1360,6 +1368,7 @@ with sync_playwright() as p:
     q = newpage(390, 844); q.goto(BASE + 'captions.html'); q.wait_for_timeout(500)
     v = q.locator('#verdict')
     check('T-18 S11: the verdict line has role="status"', v.get_attribute('role') == 'status')
+    set_val(q, '#secs', '5'); q.wait_for_timeout(100)   # T-20 F7: the clip starts at 7.5 s now, so set the old 5 s
     check('T-18 S11: too long, with today\'s numbers', v.inner_text().strip() == 'Too long for this clip. People need about 7.5 seconds and your clip is 5.', v.inner_text())
     set_val(q, '#secs', '10'); q.wait_for_timeout(100)
     check('T-18 S11: good to go when it fits and there is time', v.inner_text().strip() == 'Good to go. It fits, and people can read it in time.', v.inner_text())
@@ -1372,8 +1381,9 @@ with sync_playwright() as p:
     q.keyboard.type('Fresh sourdough comes out of the oven at 7 every morning. Come early, because the first batch is always gone by 9.'); q.wait_for_timeout(400)
     check('T-18 S11: the line updates as the visitor types', before_.startswith('Good to go.') and v.inner_text().strip().startswith('Too long for this clip.'), before_ + ' / ' + v.inner_text())
     st_ = q.locator('.stage').bounding_box(); vb = v.bounding_box(); fb = q.locator('#f-look').bounding_box(); cb = q.locator('.a-in').bounding_box()
-    check('T-18 S11: at 390, the caption box, then the phone, then the verdict, then "Change how it looks"',
-          cb['y'] < st_['y'] < vb['y'] < fb['y'] and vb['y'] - (st_['y'] + st_['height']) < 40, f'{cb} {st_} {vb} {fb}')
+    lb_ = q.locator('.a-len').bounding_box()
+    check('T-18 S11: at 390, the caption box, then the phone, then the verdict, then "Change how it looks" (T-20 F7: the clip length sits between the phone and the verdict)',
+          cb['y'] < st_['y'] < lb_['y'] < vb['y'] < fb['y'] and vb['y'] - (lb_['y'] + lb_['height']) < 40, f'{cb} {st_} {lb_} {vb} {fb}')
     check('T-18 S13: where on screen is Top / Middle / Bottom, Bottom chosen as before', q.locator('#c-pos .chip').all_text_contents() == ['Top', 'Middle', 'Bottom']
           and q.locator('#c-pos .chip[aria-pressed=true]').inner_text() == 'Bottom')
     check('T-18 S16: the checkup list is headed "Why" and sits under the verdict and the settings link', q.inner_text('#v-h') == 'Why'
@@ -1408,8 +1418,8 @@ with sync_playwright() as p:
         check(f'T-18: receipt gives the same lines, totals, hand-off and copy as T-17 for {args}', a == b_, str([k for k in a if a[k] != b_.get(k)]) + ' ' + str(a)[:300])
     q = newpage(390, 844); q.goto(BASE + 'receipt.html'); q.wait_for_timeout(300)
     y = lambda s: q.locator(s).bounding_box()['y']
-    check('T-18 S21/S22: at 390, the chips, then "+ Something else" and the hourly rate, then the receipt',
-          y('#presets') < y('#addown') < y('#paper') and y('#rate') < y('#paper'))
+    check('T-18 S21/S22: at 390, the chips, then "+ Something else" and the hourly rate, then the receipt (T-20 F7: measured from the first chip)',
+          y('#presets .chip >> nth=0') < y('#addown') < y('#paper') and y('#rate') < y('#paper'))
     n0 = q.locator('#rows .row2').count()
     q.click('[data-p="4"]')
     check('T-18 S21: the receipt changes the moment a chore is tapped', q.locator('#rows .row2').count() == n0 + 1 and 'Editing videos or photos' in q.inner_text('#paper'))
@@ -1681,6 +1691,8 @@ with sync_playwright() as p:
     # Nothing else changed: the T-18 page with only these lines swapped is the new page, byte for byte
     # (the Studio build stamp aside: it is a hash of studio.json, which holds W26 and W27).
     STAMP = lambda s: _re.sub(r'<!-- studio\.py [^>]* -->', '<!-- studio.py -->', s)
+    # T-20 changes every page, so T-19's own pages are read from git at its last commit.
+    git19 = lambda f: _sp18.run(['git', 'show', 'cbaa0d86e85b7033c9e9c76dc704ab77a415c556:' + f], cwd=here, capture_output=True).stdout.decode('utf-8').replace('\r', '')
     for n in P19:
         was = t18_file(n + '.html').decode('utf-8').replace('\r', '')
         miss = []
@@ -1692,12 +1704,12 @@ with sync_playwright() as p:
                 miss.append(f'{wid}: {was.count(o)} matches')
                 continue
             was = was.replace(o, nw)
-        a, b_ = STAMP(was), STAMP(src19[n])
+        a, b_ = STAMP(was), STAMP(git19(n + '.html'))
         i = next((k for k in range(min(len(a), len(b_))) if a[k] != b_[k]), min(len(a), len(b_)))
-        check(f'T-19: {n} differs from T-18 only by its lines in this item', not miss and a == b_, str(miss) + ' first difference: ' + repr(b_[max(0, i - 60):i + 60]))
+        check(f'T-19: {n} differs from T-18 only by its lines in this item (T-19\'s page, read from git)', not miss and a == b_, str(miss) + ' first difference: ' + repr(b_[max(0, i - 60):i + 60]))
     for f in ('scaler.html', 'comp3.html', '404.html', 'studio-birdleague.html', 'studio-deepcuts.html', 'sitemap.xml', 'robots.txt'):
-        now_ = urlopen(BASE + f).read().decode('utf-8').replace('\r', '')
-        check(f'T-19: {f} is as it was at T-18 (the Studio build stamp aside)', STAMP(now_) == STAMP(t18_file(f).decode('utf-8').replace('\r', '')))
+        now_ = git19(f)   # T-20 changes these too, so T-19's own files are read from git
+        check(f'T-19: {f} is as it was at T-18 (the Studio build stamp aside; T-19\'s file, read from git)', STAMP(now_) == STAMP(t18_file(f).decode('utf-8').replace('\r', '')))
 
     # Accessible names follow the new words; names that point at the old ones are gone.
     q = newpage(1440); q.goto(BASE + 'start.html'); q.wait_for_timeout(300)
@@ -1752,7 +1764,7 @@ with sync_playwright() as p:
             r = q.evaluate(SHOT_JS); r['copy'] = grab_copy(q, '#copy')
             return r
         a, b_ = both18('shotlist', shot18)
-        check(f'T-19: shot list gives the same clips, stops, countdown, offer and copy as T-18 for {picks or "the defaults"}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+        check(f'T-19: shot list gives the same clips, stops, countdown and copy as T-18 for {picks or "the defaults"} (T-20 F1: the offer is gone)', a == b_, str([k for k in a if a[k] != b_.get(k)]))
     q = newpage(390); q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
     cp = grab_copy(q, '#copy')
     check('T-19 W13 to W15: the copied shot list repeats none of the old lines', not any(w[2] in cp for w in W19 if w[1] == 'shotlist'))
@@ -1832,6 +1844,365 @@ with sync_playwright() as p:
             if w < 1440:
                 sw = q.evaluate('document.documentElement.scrollWidth')
                 check(f'T-19: {n} has no sideways scroll at {w}', sw <= w, str(sw))
+
+    # ---------------- T-20: walk fixes 01 (F1 to F9), Nov 15, 2026
+    # Comparisons are against origin/main before this item (T-19's last commit), read straight from git.
+    T19 = 'cbaa0d86e85b7033c9e9c76dc704ab77a415c556'
+    T19_FILES = {}
+
+    def t19_file(path):
+        if path not in T19_FILES:
+            r = _sp18.run(['git', 'show', f'{T19}:{path}'], cwd=here, capture_output=True)
+            T19_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T19_FILES[path]
+
+    def t19_page(w, h=900):
+        """A page that can open the T-19 build at BASE + '__t19/<file>'."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t19/', 1)[1].split('?')[0].split('#')[0]
+            body = t19_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__t19/**', serve)
+        return q
+    OLD19 = BASE + '__t19/'
+    check('T-20: the T-19 pages can be read from git for comparison', t19_file('index.html') is not None and t19_file('sitemap.xml') is not None)
+
+    def both19(name, fn, w=1440):
+        out_ = []
+        for base_, pgf in ((BASE, lambda: newpage(w)), (OLD19, lambda: t19_page(w))):
+            q = pgf(); q.goto(base_ + name + '.html'); settle(q); q.wait_for_timeout(300)
+            out_.append(fn(q))
+        return out_
+
+    SRC20 = {n: urlopen(BASE + n).read().decode('utf-8') for n in ALL_HTML}
+    sys.path.insert(0, os.path.join(here, 'tools'))
+    import chrome as _chrome20
+    WRAP20 = _chrome20.WRAP_CSS
+
+    # F1: the free-reel offer is gone; the countdown stays. (The words are put together here, so a
+    # search of the repository for them finds no copy in this file.)
+    OFFER_WORDS = ['three ' + 'reels', 'free ' + 'reel', 'Claim a ' + 'free ' + 'reel', 'November ' + '20', 'Want it edited ' + 'for free']
+    for n in ALL_HTML:
+        low = SRC20[n].lower()
+        check(f'T-20 F1: {n} carries none of the offer\'s words', not any(w.lower() in low for w in OFFER_WORDS), str([w for w in OFFER_WORDS if w.lower() in low]))
+    sl = SRC20['shotlist.html']
+    check('T-20 F1: the shot list has no offer block, no offer styles and no offer date check',
+          'id="offer"' not in sl and '.offer' not in sl and 'new Date(2026,10,20' not in sl and 'Free%20reel' not in sl)
+    for day, expect in (('2026-11-15T10:00:00', '13 days'), ('2026-10-17T10:00:00', '42 days'), ('2026-11-28T10:00:00', 'Today'), ('2026-10-16T10:00:00', None)):
+        q = newpage(390)
+        q.clock.set_fixed_time(day)
+        q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
+        shown = q.locator('#when').is_visible()
+        if expect:
+            check(f'T-20 F1: the countdown still shows inside its 42-day window ({day[:10]}: {expect})', shown and q.inner_text('#days').strip() == expect
+                  and 'Small Business Saturday' in q.inner_text('#dayslabel'), q.inner_text('#when'))
+        else:
+            check(f'T-20 F1: the countdown stays hidden outside its window ({day[:10]})', not shown)
+        check(f'T-20 F1: no offer on the shot list on {day[:10]}', q.locator('#offer, .offer').count() == 0)
+    q = newpage(390); q.clock.set_fixed_time('2026-11-15T10:00:00'); q.goto(BASE + 'shotlist.html'); q.wait_for_timeout(300)
+    click_chips(q, [('type', 'nonprofit')]); q.wait_for_timeout(80)
+    check('T-20 F1: nonprofits still count down to Giving Tuesday', q.inner_text('#days').strip() == '16 days' and 'Giving Tuesday' in q.inner_text('#dayslabel'), q.inner_text('#when'))
+
+    # F2: no links to the checkup while CHECKUP_URL is empty; it all comes back once it is set.
+    ck_src = open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read()
+    check('T-20 F2: CHECKUP_URL is still empty in checkup.py', "\nvar CHECKUP_URL = '';" in ck_src and _chrome20.checkup_url() == '')
+    for n in ALL_HTML:
+        if n != 'checkup.html':
+            check(f'T-20 F2: {n} does not link to or list the checkup while it isn\'t live', 'checkup.html' not in SRC20[n] and 'Website checkup' not in SRC20[n])
+    sm = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
+    check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
+    old_ck = t19_file('checkup.html').decode('utf-8').replace('\r\n', '\n')
+    new_ck = SRC20['checkup.html'].replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')
+    check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck)
+    check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
+    WORK_CARD = r'\n    <article class="card" data-k="free">(?:(?!</article>).)*?href="checkup\.html".*?</article>'
+    TOOLS_SEC = r'<section id="tools".*?</section>'
+    MORE = r'<p class="noprint"[^>]*>More free tools: .*?</p>'
+    tmp = _tmp.mkdtemp()
+    try:
+        bd = os.path.join(tmp, '_build')
+        _shutil.copytree(here, bd, ignore=_shutil.ignore_patterns('out', 'vals.json', '__pycache__', 'trip', 'worker'))
+        fp = os.path.join(bd, 'tools', 'checkup.py')
+        open(fp, 'w', encoding='utf-8').write(ck_src.replace("\nvar CHECKUP_URL = '';", "\nvar CHECKUP_URL = 'https://dj-checkup.example.test/';", 1))
+        steps = [([sys.executable, t + '.py', '..'], os.path.join(bd, 'tools')) for t in ('shotlist', 'captions', 'receipt', 'scaler', 'checkup', 'studio')]
+        steps += [(st, bd) for st in (['node', 'dump.js', 'canvas', 'vals.json'], [sys.executable, 'build.py', 'canvas', 'out', 'vals.json'],
+                                      [sys.executable, 'enhance.py', 'out'], [sys.executable, 'plain.py', 'out'], [sys.executable, 'intent.py', 'out'],
+                                      [sys.executable, 'voice2.py', 'out'], [sys.executable, 'final.py', 'out'])]
+        built = True
+        for st, cwd_ in steps:
+            r = _sp18.run(st, cwd=cwd_, capture_output=True, text=True)
+            if r.returncode:
+                built = False
+                check('T-20 F2: the temp build with a checkup address runs', False, ' '.join(st[1:2]) + ': ' + (r.stdout + r.stderr)[-300:])
+                break
+        if built:
+            outd = os.path.join(bd, 'out')
+            rd = lambda f: open(os.path.join(outd, f), encoding='utf-8').read()
+            old = lambda f: t19_file(f).decode('utf-8')
+            check('T-20 F2 (address set): the work page card comes back exactly as before',
+                  _re.findall(WORK_CARD, rd('work.html'), _re.S) == _re.findall(WORK_CARD, old('work.html'), _re.S) and len(_re.findall(WORK_CARD, rd('work.html'), _re.S)) == 1)
+            check('T-20 F2 (address set): the local.html free tools section comes back exactly as before',
+                  _re.findall(TOOLS_SEC, rd('local.html'), _re.S) == _re.findall(TOOLS_SEC, old('local.html'), _re.S) and 'checkup.html' in rd('local.html'))
+            for t in ('shotlist', 'captions', 'receipt', 'scaler', 'checkup'):
+                check(f'T-20 F2 (address set): {t}.html\'s "More free tools" line comes back exactly as before',
+                      _re.findall(MORE, rd(t + '.html'), _re.S) == _re.findall(MORE, old(t + '.html'), _re.S))
+            check('T-20 F2 (address set): the sitemap line comes back, the sitemap exactly as before', rd('sitemap.xml') == old('sitemap.xml'))
+            links = sorted(f for f in os.listdir(outd) if f.endswith('.html') and 'checkup.html' in rd(f) and f != 'checkup.html')
+            check('T-20 F2 (address set): the same pages link to the checkup as before',
+                  links == ['captions.html', 'local.html', 'receipt.html', 'scaler.html', 'shotlist.html', 'work.html'], str(links))
+    finally:
+        _shutil.rmtree(tmp, ignore_errors=True)
+    check('T-20 F2: the temp copy is gone, and the real checkup.py still has no address',
+          not os.path.exists(tmp) and "\nvar CHECKUP_URL = '';" in open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read())
+
+    # F3 and F4: the three word changes, each on its page exactly once, the old words gone.
+    mf, br = SRC20['mainframe.html'], SRC20['briefing.html']
+    q = newpage(1440); q.goto(BASE + 'mainframe.html'); settle(q)
+    check('T-20 F3: "Comparing the code, line by line" is on the Mainframe page once', q.inner_text('main').count('Comparing the code, line by line') == 1)
+    check('T-20 F3: the old "Caught by" value is gone from the page and from every tab state', 'Comparing the output, not reading the code' not in mf and 'not reading the code' not in mf)
+    check('T-20 F3: the tab state data carries the new value', '"Caught by", "v": "Comparing the code, line by line"' in mf)
+    q.click('[role=tab][data-ex="c"]'); q.wait_for_timeout(100); q.click('[role=tab][data-ex="b"]'); q.wait_for_timeout(100)
+    check('T-20 F3: back on Exhibit B, the row reads the new value', 'Caught by\nComparing the code, line by line' in q.inner_text('#xb-panel').replace('\t', '\n'), q.inner_text('#xb-panel')[-200:])
+    hero = q.locator('a.seal')
+    check('T-20 F4: the hero button reads "Tell me about one program" and still points to #correspondence',
+          hero.count() == 1 and hero.inner_text().strip() == 'Tell me about one program' and hero.get_attribute('href') == '#correspondence')
+    check('T-20 F4: "Tell me about one program" as a button once, "Send one program" gone', mf.count('>Tell me about one program</a>') == 1 and 'Send one program' not in mf)
+    old_br = t19_file('briefing.html').decode('utf-8')
+    check('T-20 F4: the briefing placeholder reads "For example: deposit interest", once', br.count('placeholder="For example: deposit interest"') == 1 and 'month-end batch' not in br)
+    check('T-20 F4: the other briefing placeholder is untouched',
+          [p for p in _re.findall(r'placeholder="([^"]*)"', br) if not p.startswith('For example')] == [p for p in _re.findall(r'placeholder="([^"]*)"', old_br) if not p.startswith('For example')])
+
+    # F9 landmarks, F5 wrapping: one <main> and one copy of the wrapping rules on every page.
+    for n in ALL_HTML:
+        check(f'T-20 F9: {n} has exactly one <main>', len(_re.findall(r'<main[\s>]', SRC20[n])) == 1)
+        check(f'T-20 F5: {n} carries the wrapping rules exactly once', SRC20[n].count(WRAP20) == 1)
+    for n in ('index.html', '404.html'):
+        q = newpage(390); q.goto(BASE + n); settle(q)
+        loose = q.evaluate('''() => { const out = []; const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            let t; while ((t = w.nextNode())) { if (!t.data.trim()) continue; const e = t.parentElement; if (!e || e.closest('script,style')) continue;
+            if (!e.getClientRects().length) continue; if (!e.closest('header,nav,main,footer,aside,section[aria-label],section[aria-labelledby],[role]')) out.push(t.data.trim()) } return out }''')
+        check(f'T-20 F9: no visible text on {n} sits outside a landmark', loose == [], str(loose)[:200])
+    check('T-20 F9: the exhibit panel is a div carrying role="tabpanel"', '<div id="xb-panel" role="tabpanel"' in mf and '<article id="xb-panel"' not in mf)
+
+    # F9 tabs: tap and keyboard work exactly as before.
+    def tabs_seq(q):
+        res = []
+        q.click('[role=tab][data-ex="c"]'); q.wait_for_timeout(80)
+        res.append([q.inner_text('#xb-title'), q.inner_text('#xb-rows'), q.locator('[role=tab][aria-selected=true]').get_attribute('data-ex')])
+        q.focus('[role=tab][data-ex="d"]'); q.keyboard.press('Enter'); q.wait_for_timeout(80)
+        res.append([q.inner_text('#xb-title'), q.inner_text('#xb-rows'), q.locator('[role=tab][aria-selected=true]').get_attribute('data-ex')])
+        q.focus('[role=tab][data-ex="b"]'); q.keyboard.press('Space'); q.wait_for_timeout(80)
+        res.append([q.inner_text('#xb-title'), q.locator('[role=tab][aria-selected=true]').get_attribute('data-ex')])
+        q.keyboard.press('ArrowRight'); q.wait_for_timeout(80)
+        res.append([q.inner_text('#xb-title'), q.evaluate('document.activeElement.dataset.ex || document.activeElement.tagName')])
+        return res
+    a, b_ = both19('mainframe', tabs_seq)
+    check('T-20 F9: the exhibit tabs work by tap and keyboard exactly as before (F3\'s value aside)',
+          _json.dumps(a).replace('Comparing the code, line by line', 'X') == _json.dumps(b_).replace('Comparing the output, not reading the code', 'X'), str(a)[:200] + ' | ' + str(b_)[:200])
+
+    # F9 contrast: the darker text colors are in place.
+    q = newpage(1440); q.goto(BASE + 'local.html'); settle(q)
+    check('T-20 F9: the orange "Start a Blueprint" button text is #0E1A17', q.evaluate("getComputedStyle([...document.querySelectorAll('a.btn-blaze')].find(a => a.textContent.includes('Start a Blueprint'))).color") == 'rgb(14, 26, 23)')
+    q = newpage(1440); q.goto(BASE + 'scaler.html'); settle(q)
+    check('T-20 F9: the struck-through "was" amounts are #6F736D', q.evaluate("getComputedStyle(document.querySelector('.was')).color") == 'rgb(111, 115, 109)')
+    for n in ('studio', 'studio-birdleague', 'studio-deepcuts'):
+        q = newpage(1440); q.goto(BASE + n + '.html'); settle(q)
+        check(f'T-20 F9: the dates on {n} are #676D66', q.evaluate("getComputedStyle(document.querySelector('.log time')).color") == 'rgb(103, 109, 102)')
+
+    # No sideways scroll at 320, 390 and 1440 on every page.
+    for n in ALL_HTML:
+        for w in (320, 390, 1440):
+            q = newpage(w); q.goto(BASE + n); settle(q)
+            sw = q.evaluate('document.documentElement.scrollWidth')
+            check(f'T-20: {n} has no sideways scroll at {w}', sw <= w, str(sw))
+            q.close()
+
+    # F6: the Mainframe layout.
+    for w in (320, 390, 640):
+        q = newpage(w); q.goto(BASE + 'mainframe.html'); settle(q)
+        r = q.evaluate('''() => { const L = e => { const b = e.getBoundingClientRect(), s = getComputedStyle(e); return Math.round(b.left + parseFloat(s.paddingLeft)) };
+            const stats = [...document.querySelectorAll('.t20-stats > div')], steps = [...document.querySelectorAll('.t20-steps > li')];
+            return {lefts: [...stats, ...steps].map(L), rights: [...stats, ...steps].map(e => getComputedStyle(e).borderRightWidth),
+                    tops: [...stats.slice(1), ...steps.slice(1)].map(e => getComputedStyle(e).borderTopWidth),
+                    widths: [...stats, ...steps].map(e => Math.round(e.getBoundingClientRect().width)), pw: Math.round(stats[0].parentElement.getBoundingClientRect().width),
+                    sw: Math.round(steps[0].parentElement.getBoundingClientRect().width)} }''')
+        check(f'T-20 F6: at {w} the stats and the four steps share one left edge', len(set(r['lefts'])) == 1, str(r['lefts']))
+        check(f'T-20 F6: at {w} no stat or step has a side rule, and each divider runs the full width',
+              set(r['rights']) == {'0px'} and set(r['tops']) == {'1px'} and set(r['widths'][:3]) == {r['pw']} and set(r['widths'][3:]) == {r['sw']}, str(r))
+        pre = q.evaluate("(() => { const p = document.querySelector('.t20-code'); return [p.scrollWidth, p.clientWidth] })()")
+        check(f'T-20 F6: at {w} every Exhibit A code line shows in full', pre[0] <= pre[1], str(pre))
+    for w in (320, 390, 768, 1024, 1440):
+        q = newpage(w); q.goto(BASE + 'mainframe.html'); settle(q)
+        hs = q.evaluate("[...document.querySelectorAll('.t20-read button')].map(b => Math.round(b.getBoundingClientRect().height))")
+        check(f'T-20 F6: at {w} the two Exhibit A reading buttons are the same height', len(hs) == 2 and hs[0] == hs[1], str(hs))
+        sel = q.evaluate("[...document.querySelectorAll('.t20-read button')].map(b => [b.textContent, b.getAttribute('aria-pressed'), getComputedStyle(b).backgroundColor])")
+        check(f'T-20 F6: at {w} "A percentage" starts selected, filled dark, and "A fraction" is a plain outline',
+              sel == [['A fraction', 'false', 'rgba(0, 0, 0, 0)'], ['A percentage', 'true', 'rgb(18, 22, 31)']], str(sel))
+    q = newpage(1440); q.goto(BASE + 'mainframe.html'); settle(q)
+    tops = q.evaluate("[...document.querySelectorAll('.t20-steps > li > p:last-child')].map(p => Math.round(p.getBoundingClientRect().top))")
+    check('T-20 F6: at 1440 step IV\'s divider and price line sit level with I to III', len(tops) == 4 and len(set(tops)) == 1, str(tops))
+    v = q.evaluate("(() => { const g = document.querySelector('.t20-voices'); return [Math.round(g.children[0].getBoundingClientRect().top), Math.round(g.children[1].getBoundingClientRect().top)] })()")
+    check('T-20 F6: at 1440 the text beside the third section\'s heading sits at its top', abs(v[1] - v[0]) < 24, str(v))
+    gap = q.evaluate("(() => { const a = document.getElementById('s4').querySelector(':scope > div'), s5 = document.getElementById('s5'); const last = [...a.children].reduce((m, c) => Math.max(m, c.getBoundingClientRect().bottom), 0); return Math.round(s5.querySelector('h2').getBoundingClientRect().top - last) })()")
+    check('T-20 F6: at 1440 the gap above "What this does not prove" is a normal section gap', gap < 200, str(gap))
+
+    # F7: the tools.
+    for w in (390, 1440):
+        q = newpage(w); q.goto(BASE + 'receipt.html'); settle(q)
+        r = q.evaluate('''() => { const used = document.querySelector('.chip.used'), free = document.querySelector('#presets .chip:not(.used)'), s = getComputedStyle(used), f = getComputedStyle(free);
+            return {used: [s.opacity, s.backgroundColor, s.color, getComputedStyle(used, '::before').borderBottomWidth, used.getAttribute('aria-disabled')],
+                    free: [f.opacity, f.backgroundColor, f.borderTopStyle, free.hasAttribute('aria-disabled')],
+                    add: document.getElementById('addown').parentElement === document.getElementById('presets').parentElement && document.getElementById('addown').parentElement.classList.contains('chips'),
+                    rate: document.getElementById('addown').parentElement.contains(document.getElementById('rate'))} }''')
+        check(f'T-20 F7: at {w} chores on the receipt look chosen (filled, a CSS check mark), never faded',
+              r['used'] == ['1', 'rgb(22, 32, 28)', 'rgb(242, 237, 225)', '2px', 'true'], str(r['used']))
+        check(f'T-20 F7: at {w} chores not chosen are plain outlines', r['free'] == ['1', 'rgba(0, 0, 0, 0)', 'solid', False], str(r['free']))
+        check(f'T-20 F7: at {w} "+ Something else" sits in the chore group, not beside the hourly rate', r['add'] and not r['rate'])
+        check(f'T-20 F7: at {w} no receipt note is blue or purple',
+              q.evaluate("[...document.querySelectorAll('[class^=t-]')].map(e => getComputedStyle(e).color).filter(c => ['rgb(31, 79, 168)', 'rgb(122, 79, 176)'].includes(c)).length") == 0)
+    q = newpage(390); q.goto(BASE + 'receipt.html'); settle(q)
+    before_ = q.evaluate("[...document.querySelectorAll('[data-p]')].map(c => c.getAttribute('aria-disabled'))")
+    q.evaluate("document.querySelector('[data-p=\"1\"]').click()"); q.wait_for_timeout(80)
+    after_ = q.evaluate("[...document.querySelectorAll('[data-p]')].map(c => c.getAttribute('aria-disabled'))")
+    check('T-20 F7: tapping a chore marks it chosen as before (aria-disabled), and it lands on the receipt',
+          before_[1] is None and after_[1] == 'true' and 'Booking and rescheduling' in q.inner_text('#paper'))
+    for w in (390, 1440):
+        q = newpage(w, 844); q.goto(BASE + 'captions.html'); settle(q); q.wait_for_timeout(300)
+        check(f'T-20 F7: at {w} the sample caption passes on first load', q.inner_text('#verdict').strip() == 'Good to go. It fits, and people can read it in time.'
+              and q.input_value('#secs') == '7.5', q.inner_text('#verdict') + ' ' + q.input_value('#secs'))
+        lb, vb = q.locator('.a-len').bounding_box(), q.locator('#verdict').bounding_box()
+        check(f'T-20 F7: at {w} the clip length sits directly above the verdict', 0 <= vb['y'] - (lb['y'] + lb['height']) <= 32, f'{lb} {vb}')
+    q = newpage(390); q.goto(BASE + 'captions.html'); settle(q)
+    set_val(q, '#secs', '7'); q.wait_for_timeout(200)
+    check('T-20 F7: 7.5 is the shortest choice at which the sample passes (7 fails)', q.inner_text('#verdict').strip().startswith('Too long for this clip.'))
+    for w in (320, 390, 560, 561, 1440):
+        q = newpage(w); q.goto(BASE + 'scaler.html'); settle(q)
+        bots = q.evaluate("[...document.querySelectorAll('.who input')].map(i => Math.round(i.getBoundingClientRect().bottom))")
+        check(f'T-20 F7: at {w} the three scaler inputs line up along their bottom edge', len(bots) == 3 and len(set(bots)) == 1, str(bots))
+        hd = q.evaluate("Math.round(document.querySelector('thead tr').getBoundingClientRect().height)")
+        three = q.evaluate("(() => { const c = document.querySelector('#out tr').children; return c[0].getBoundingClientRect().top === c[1].getBoundingClientRect().top && c[1].getBoundingClientRect().top === c[2].getBoundingClientRect().top })()")
+        check(f'T-20 F7: at {w} the column headers show only where the rows show three columns', (hd > 4) == three, f'{hd} {three}')
+        butter = q.evaluate("(() => { const r = [...document.querySelectorAll('#out tr')].find(r => r.textContent.includes('butter')); return Math.abs(r.children[0].getBoundingClientRect().top - r.children[1].getBoundingClientRect().top) })()")
+        check(f'T-20 F7: at {w} "butter, for the pan" stays beside its amount', butter < 6, str(butter))
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'start.html'); settle(q)
+        r = q.evaluate('''() => { const c = [...document.querySelectorAll('.chips[data-key="days"] .chip')], B = e => e.getBoundingClientRect();
+            const fri = c.find(e => e.textContent === 'Friday'), mor = c.find(e => e.textContent === 'Mornings'), aft = c.find(e => e.textContent === 'Afternoons');
+            return [B(mor).top >= B(fri).bottom, Math.round(B(mor).left) === Math.round(B(c[0]).left), Math.round(B(mor).top) === Math.round(B(aft).top), c.map(e => e.className)] }''')
+        check(f'T-20 F7: at {w} Mornings and Afternoons sit on their own row under the weekdays', r[0] and r[1] and r[2] and set(r[3]) == {'chip'}, str(r))
+    q = newpage(320); q.goto(BASE + 'start.html'); settle(q)
+    pads = q.evaluate('''[...document.querySelectorAll('.chip')].filter(c => c.getBoundingClientRect().height > 56).map(c => { const b = c.getBoundingClientRect(), r = document.createRange(); r.selectNodeContents(c); const t = r.getBoundingClientRect(); return [Math.round(t.top - b.top), Math.round(b.bottom - t.bottom)] })''')
+    check('T-20 F7: at 320 two-line start chips grow, with even padding and no text touching a border', all(a_ > 6 and b2 > 6 and abs(a_ - b2) <= 2 for a_, b2 in pads), str(pads))
+
+    # F8: other layout.
+    q = newpage(320); q.goto(BASE + 'local.html'); settle(q)
+    r = q.evaluate('''() => { const h = document.querySelector('.tear > div'), a = h.children[0].getBoundingClientRect(), b = h.children[1].getBoundingClientRect();
+        const lh = parseFloat(getComputedStyle(document.querySelector('#rc-rows span')).lineHeight);
+        return {stack: b.top >= a.bottom - 1, one: [a.height, b.height], lh: lh,
+                rows: [...document.querySelectorAll('#rc-rows > div')].map(d => Math.round(d.getBoundingClientRect().height - parseFloat(getComputedStyle(d).paddingTop) - parseFloat(getComputedStyle(d).paddingBottom))),
+                tabs: [...document.querySelectorAll('[aria-label="Receipts"] > button')].map(t => [Math.round(t.getBoundingClientRect().top), Math.round(t.getBoundingClientRect().width)]),
+                tw: Math.round(document.querySelector('[aria-label="Receipts"]').getBoundingClientRect().width)} }''')
+    check('T-20 F8: local at 320, the receipt card\'s labels sit above each other, each on one line', r['stack'] and max(r['one']) < 26, str(r['one']))
+    below = q.evaluate("[...document.querySelectorAll('.tear > div:nth-child(3) > div')].map(d => Math.round(d.lastElementChild.getBoundingClientRect().top - d.firstElementChild.getBoundingClientRect().bottom))")
+    check('T-20 F8: local at 320, each receipt card label sits above its number', len(below) == 5 and all(x >= -2 for x in below), str(below))
+    check('T-20 F8: local at 320, no Results row is taller than three lines', all(h <= 3 * max(r['lh'], 27) + 6 for h in r['rows']), str(r['rows']))
+    rows_ = {}
+    for top, wdt in r['tabs']:
+        rows_[top] = rows_.get(top, 0) + wdt
+    check('T-20 F8: local at 320, the tab row wraps evenly (each row fills the width)', all(abs(v - r['tw']) <= 10 + 8 * 2 for v in rows_.values()), str(r['tabs']) + ' ' + str(r['tw']))
+    bp = q.evaluate("(() => { const h = document.querySelector('#blueprint h3'), r = document.createRange(); r.selectNodeContents(h); return [r.getClientRects().length, h.scrollWidth <= h.clientWidth + 1] })()")
+    check('T-20 F8: local at 320, "$1,500" stays on the line with "THE BLUEPRINT"', bp == [1, True], str(bp))
+    q = newpage(320); q.goto(BASE + 'index.html'); settle(q)
+    g = q.evaluate("(() => { const bar = document.querySelector('.djm-bar'), logo = bar.children[0], m = bar.querySelector('.djm-btn'); return [Math.round(m.getBoundingClientRect().left - logo.getBoundingClientRect().right), Math.round(m.getBoundingClientRect().top - logo.getBoundingClientRect().top)] })()")
+    check('T-20 F8: index at 320, at least 12 px between the logo and Menu, on one row', g[0] >= 12 and abs(g[1]) < 24, str(g))
+    c = q.evaluate("(() => { const s = [...document.querySelectorAll('.route span')].find(s => s.textContent.startsWith('Take the Mainframe Route')); return getComputedStyle(s).textAlign })()")
+    check('T-20 F8: index, the "Take the Mainframe Route" label is centered when it wraps', c == 'center', c)
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'comp3.html'); settle(q)
+        bx = q.evaluate("[...document.querySelectorAll('.bytes .byte')].map(b => [Math.round(b.getBoundingClientRect().left), Math.round(b.getBoundingClientRect().top)])")
+        check(f'T-20 F8: comp3 at {w}, the half-byte boxes are 2 by 2', len(bx) == 4 and len({x for x, _ in bx}) == 2 and len({y for _, y in bx}) == 2, str(bx))
+    for w in (320, 390, 600, 768, 1024, 1440):
+        q = newpage(w); q.goto(BASE + 'case-reels.html'); settle(q)
+        r = q.evaluate("(() => { const s = document.querySelector('.stats'), W = s.clientWidth, rows = {}; for (const e of s.children) { const b = e.getBoundingClientRect(); rows[Math.round(b.top)] = (rows[Math.round(b.top)] || 0) + b.width } return [W, Object.values(rows).map(Math.round)] })()")
+        check(f'T-20 F8: case-reels at {w}, every stat row is full (no empty cell)', all(abs(v - r[0]) <= 2 for v in r[1]), str(r))
+    q = newpage(1440); q.goto(BASE + 'receipt.html'); settle(q)
+    r = q.evaluate("(() => { const a = document.querySelector('.a-acts').getBoundingClientRect(), p = document.querySelector('.a-pick').getBoundingClientRect(), r = document.querySelector('.a-paper').getBoundingClientRect(); return [Math.round(a.left - p.left), Math.round(a.top - p.bottom), Math.round(r.bottom - a.bottom)] })()")
+    check('T-20 F8: receipt at 1440, the buttons and note sit under the chips, beside the receipt', r[0] == 0 and 0 <= r[1] <= 40, str(r))
+    for w in (390,):
+        q = newpage(w); q.goto(BASE + 'receipt.html'); settle(q)
+        ys = q.evaluate("['.a-pick', '#paper', '#bring', '.a-acts .private'].map(s => Math.round(document.querySelector(s).getBoundingClientRect().top))")
+        check(f'T-20 F8: receipt at {w}, the order is still chips, receipt, buttons, note', ys == sorted(ys), str(ys))
+    q = newpage(1440); q.goto(BASE + 'studio-birdleague.html'); settle(q)
+    r = q.evaluate("(() => { const p = document.querySelector('.top .proof').getBoundingClientRect(), l = document.querySelector('.top #log-h').getBoundingClientRect(), i = document.querySelector('.top img').getBoundingClientRect(); return [Math.round(l.left - p.left), Math.round(l.top - p.bottom), l.right <= i.left] })()")
+    check('T-20 F8: Bird League at 1440, its log sits under the proof line, beside the image', r[0] == 0 and 0 < r[1] < 80 and r[2], str(r))
+    q = newpage(390); q.goto(BASE + 'studio-birdleague.html'); settle(q)
+    ys = q.evaluate("['.top .proof', '.top img', '#log-h', '#join'].map(s => Math.round(document.querySelector(s).getBoundingClientRect().top))")
+    check('T-20 F8: Bird League at 390, the order is still proof, image, log, join box', ys == sorted(ys), str(ys))
+    q = newpage(1440); q.goto(BASE + 'local.html'); settle(q)
+    for sec in ('proof', 'faq'):
+        r = q.evaluate(f"(() => {{ const d = document.querySelector('#{sec} > div'), h = d.children[0].getBoundingClientRect(), c = d.children[1].getBoundingClientRect(); return [Math.round(c.top - h.bottom), Math.round(c.left - h.left)] }})()")
+        check(f'T-20 F8: local at 1440, the {sec} heading sits above its content, no empty column beside it', 0 <= r[0] <= 48 and r[1] == 0, str(r))
+
+    # Same input, same result as origin/main: two inputs per tool, and every form.
+    SHOT20 = SHOT_JS
+    for picks in ([], [('type', 'cafe'), ('goal', 'how'), ('len', '15'), ('light', 'pm')]):
+        def shot20(q):
+            click_chips(q, picks); q.wait_for_timeout(80)
+            r = q.evaluate(SHOT20); r['copy'] = grab_copy(q, '#copy')
+            return r
+        a, b_ = both19('shotlist', shot20)
+        check(f'T-20: shot list gives the same clips, stops, countdown and copy as before for {picks or "the defaults"}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    for text, picks, secs in ((None, [], '5'), ('New fall sweaters just landed.', [('size', 'l'), ('pos', 'top'), ('app', 'tiktok')], '2')):
+        def cap20(q):
+            if text is not None:
+                set_val(q, '#cap', text)
+            click_chips(q, picks); set_val(q, '#secs', secs); q.wait_for_timeout(400)
+            r = q.evaluate(CAP_JS); r['copy'] = grab_copy(q, '#copy'); r['verdict'] = q.inner_text('#verdict')
+            return r
+        a, b_ = both19('captions', cap20)
+        check(f'T-20: caption fitter gives the same verdict, checks, preview and copy as before for {(text or "the default")[:24]} at {secs} s', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    for args in (([], None, False), ([4, 11], '45', True)):
+        a, b_ = both19('receipt', rec_in(*args))
+        check(f'T-20: receipt gives the same lines, totals, hand-off and copy as before for {args}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    for serves, adults, kids in ((None, None, None), ('6', '10', '0')):
+        def sc20(q):
+            if serves:
+                set_val(q, '#serves', serves); set_val(q, '#adults', adults); set_val(q, '#kids', kids); q.wait_for_timeout(100)
+            return [q.inner_text('#fac'), q.inner_text('#facl'), q.inner_text('#warn'), q.evaluate("document.getElementById('out').textContent"), grab_copy(q, '#copy')]
+        a, b_ = both19('scaler', sc20)
+        check(f'T-20: scaler gives the same amounts and copy as before for {serves or "the defaults"}', a == b_, str(a)[:200] + ' | ' + str(b_)[:200])
+    for steps in ([], [('#in', '0350000D'), ('#pic', 'PIC S9(5)V99 COMP-3.')]):
+        def dec20(q):
+            for sel, val in steps:
+                q.fill(sel, val)
+            q.wait_for_timeout(150)
+            return q.inner_text('#out')
+        a, b_ = both19('comp3', dec20)
+        check(f'T-20: the decoder gives the same readings as before for {steps or "the opening example"}', a == b_, a[:200] + ' | ' + b_[:200])
+    def sent19(base_, name, fill, btn, done):
+        q = newpage(1440) if base_ == BASE else t19_page(1440)
+        got = []
+        def grab(route):
+            if route.request.method == 'POST':
+                got.append(_json.loads(route.request.post_data or '{}'))
+            route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
+        q.route('**/dj-intake.stephens-josef.workers.dev/**', grab)
+        q.goto(base_ + name + '.html'); settle(q)
+        fill(q); q.click(btn); q.wait_for_timeout(700)
+        for g in got:
+            g.pop('ms', None)
+        return got, q.locator(done).is_visible()
+    def fill_start20(q):
+        fill_start(q)
+        for t in ('Mornings', 'Friday'):
+            q.locator('.chips[data-key="days"] .chip', has_text=t).click()
+    for name, fill, btn, done in (('start', fill_start20, '#bp-send', '#bp-done'), ('call', fill_call, '#cl-send', '#cl-done'), ('briefing', fill_brief, '#br-send', '#br-done')):
+        a, b_ = sent19(BASE, name, fill, btn, done), sent19(OLD19, name, fill, btn, done)
+        check(f'T-20: {name} still sends, and sends exactly what it sent before', a == b_ and len(a[0]) == 1 and a[1], str(a)[:300] + ' | ' + str(b_)[:300])
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

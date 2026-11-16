@@ -24,7 +24,7 @@ body{margin:0;background:#F2EDE1}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 a{color:#A93F17}a:hover{color:#16201C}
-::selection{background:#E8592B;color:#0E1B17}
+::selection{background:#E8592B;color:#0E1A17}
 .dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
@@ -39,7 +39,7 @@ a{color:#A93F17}a:hover{color:#16201C}
 .chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
 .btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
 .btn:hover{background:#0E1B17;color:#F2EDE1}
-.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1A17}
 .btn.ghost{background:transparent;color:#16201C}
 .btn.ghost:hover{background:#EAE3D3;color:#16201C}
 input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
@@ -48,6 +48,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
 
 .stats{border-top:2px solid #16201C;border-bottom:1px solid #CFC6B2}
 .stats p{margin:0;padding:18px 0;font-size:17px;color:#3B4540}
@@ -57,7 +58,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .sec h2.big{font-size:clamp(38px,4.6vw,60px)}
 .log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
 .log li{display:grid;grid-template-columns:5.5em 13em minmax(0,1fr);gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid #DDD5C3}
-.log time{font-size:14px;color:#6B716A;white-space:nowrap}
+.log time{font-size:14px;color:#676D66;white-space:nowrap}
 .log .proj{justify-self:start;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:3px 9px;background:#EAE3D3;color:#3B4540;border-radius:2px}
 .log .line{font-size:17px}
 @media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr)}.log .line{grid-column:1/-1}}
@@ -128,8 +129,8 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-13 e43eed74c65a79cd -->
-  <div class="stats" id="stats" data-built="2026-11-13">
+<!-- studio.py 2026-11-15 e43eed74c65a79cd -->
+  <div class="stats" id="stats" data-built="2026-11-15">
     <p><strong>13</strong> things finished since Oct 6</p>
   </div>
   <section class="sec" aria-labelledby="log-h">

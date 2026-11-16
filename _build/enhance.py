@@ -25,6 +25,7 @@ CLIENT_LONG = "A Sonoma County children's nonprofit"
 CLIENT_SHORT = "a Sonoma County children's nonprofit"
 sys.path.insert(0, str(HERE / "tools"))
 import studio as STUDIO   # the Studio page and its build log (T-08)
+import chrome as CHROME   # the tools' shared page parts; the checkup switch (T-20 F2)
 # One page per open product with a join list, written by tools/studio.py (T-09).
 STUDIO_PAGES = ("studio.html",) + tuple(slug for slug, _ in STUDIO.product_pages(STUDIO.load()[0]))
 PHOTO = HERE / "assets" / "josef.jpg"   # drop Josef's photo here and rebuild      # Josef's profile URL; until then the footer link is left out
@@ -289,7 +290,7 @@ def enhance_local():
             "Every number here comes from a run I can show you. If I can't show it, it isn't on this site. Pick a tab and tap a number to see where it came from. <a href=\"work.html\" style=\"color: #F07A4E; white-space: nowrap\">See all the work →</a>")
     t = rep(t, '<a href="#faq">Questions</a>', '<a href="#faq">Questions</a>\n        <a href="work.html">The work</a>')
     t = rep(t, 'href="#dropin" class="ghost"', 'href="call.html" class="ghost"')
-    t = rep(t, '>Or come to drop-in hours</a>', '>Or grab a free 15-minute call</a>')
+    t = rep(t, '>Or come to drop-in hours</a>', '><span>Or grab a free <span style="white-space: nowrap">15-minute</span> call</span></a>')
     if PHOTO.exists():
         t = rep(t, PHOTO_LOCAL, '<img src="josef.jpg" alt="Josef Stephens" style="aspect-ratio: 4 / 5; width: 100%; max-width: 420px; object-fit: cover; border: 2px solid #16201C; display: block">')
 
@@ -387,6 +388,9 @@ def enhance_index():
 # Free tools, findable from every page (T-02, Nov 10, 2026). The tool pages
 # get their nav link and "More free tools" line from tools/chrome.py.
 FREE_TOOLS = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html")
+# The tools other pages link to (T-20 F2): the checkup only once CHECKUP_URL is set in
+# tools/checkup.py, read through chrome.py. checkup.html itself is always built.
+LINKED_TOOLS = tuple(href for href, _ in CHROME.linked_tools())
 
 
 def nav_pair(t, link_rx, ft):
@@ -402,7 +406,7 @@ def tool_cards():
     work = (OUT / "work.html").read_text(encoding="utf-8")
     cards = []
     articles = re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', work, re.S)
-    for href in FREE_TOOLS:
+    for href in LINKED_TOOLS:
         m = [re.search(r'<h2>([^<]*)</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + re.escape(href) + r'">([^<]*)</a>', a)
              for a in articles]
         m = [x for x in m if x]
@@ -429,6 +433,10 @@ def add_free_tools():
 
     p = OUT / "work.html"
     t = p.read_text(encoding="utf-8")
+    # While the checkup isn't live, its card comes off the work page (T-20 F2), and so
+    # off the local.html tools section, which is read from these cards.
+    if "checkup.html" not in LINKED_TOOLS:
+        t = rep_re(t, r'\n    <article class="card" data-k="free">(?:(?!</article>).)*?href="checkup\.html".*?</article>\n', '\n')
     t = rep(t, '\n        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;',
             '\n        <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>'
             '\n        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>'
@@ -517,6 +525,154 @@ def add_phone_menu():
         p.write_text(t, encoding="utf-8")
 
 
+# No word alone on a line (T-20 F5): the same rules tools/chrome.py gives the pages it
+# writes, once on each pipeline page, 404 included.
+WRAP_PAGES = ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html",
+              "work.html", "case-reels.html", "call.html", "404.html")
+
+
+def add_wrap():
+    for f in WRAP_PAGES:
+        p = OUT / f
+        t = p.read_text(encoding="utf-8")
+        assert CHROME.WRAP_CSS not in t, "wrap rules already in " + f
+        t = rep(t, "</head>", "<style>" + CHROME.WRAP_CSS + "</style>\n</head>")
+        p.write_text(t, encoding="utf-8")
+    for f in WRAP_PAGES + TOOL_PAGES:
+        assert (OUT / f).read_text(encoding="utf-8").count(CHROME.WRAP_CSS) == 1, "wrap rules in " + f
+
+
+# Mainframe layout (T-20 F6, Nov 15, 2026). Layout only; the canvas file is untouched.
+MF_CSS = """<style>
+.t20-exa{white-space:nowrap}
+.t20-code{white-space:pre-wrap!important;overflow-wrap:break-word;overflow-x:visible!important}
+.t20-voices{align-items:start!important}
+#s5>div{padding-top:0!important}
+.t20-steps>li>p:last-child{line-height:1.6}
+@media (min-width:641px){.t20-steps>li>p:last-child{min-height:calc(3.2em + 15px)}}
+@media (max-width:640px){
+.t20-stats,.t20-steps{grid-template-columns:minmax(0,1fr)!important}
+.t20-stats>div{padding:24px 0!important;border-right:0!important}
+.t20-stats>div+div{border-top:1px solid #CFC8B8}
+.t20-steps>li{padding:28px 0 30px!important;border-right:0!important}
+.t20-steps>li+li{border-top:1px solid #2A3140}
+}
+@media (max-width:399px){.t20-read{grid-template-columns:1fr!important}}
+</style>
+"""
+
+
+def layout_mainframe():
+    p = OUT / "mainframe.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, "</head>", MF_CSS + "</head>")
+    # Phones: the stats and the four steps share one left edge, with whole dividers.
+    t = rep(t, '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F; border-bottom: 1px solid #12161F">',
+            '<div class="t20-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 0; border-top: 1px solid #12161F; border-bottom: 1px solid #12161F">')
+    # Wide: every step's divider and price line sit level (each price line holds two lines).
+    t = rep(t, '<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(270px, 100%), 1fr)); gap: 0; border-top: 1px solid #3A4252">',
+            '<ol class="t20-steps" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(270px, 100%), 1fr)); gap: 0; border-top: 1px solid #3A4252">')
+    # Exhibit A: long code lines wrap inside the box; the label stays on one line;
+    # under 400 px the two reading buttons stack, so each label fits on one line.
+    t = rep(t, 'overflow-x: auto; white-space: pre">', 'overflow-x: auto; white-space: pre" class="t20-code">')
+    t = rep(t, '<strong style="font-weight: 700">EXHIBIT A</strong>', '<strong class="t20-exa" style="font-weight: 700">EXHIBIT A</strong>')
+    t = rep(t, '<div role="group" aria-label="Reading of APR-RATE" style="', '<div role="group" aria-label="Reading of APR-RATE" class="t20-read" style="')
+    # The text beside the heading in the third section sits at the top, not the bottom.
+    t = rep(t, 'minmax(min(440px, 100%), 1fr)); gap: 24px 64px; align-items: end">',
+            'minmax(min(440px, 100%), 1fr)); gap: 24px 64px; align-items: end" class="t20-voices">')
+    # One <main> around the page's content (T-20 F9): from the hero to the footer.
+    t = rep(t, "<!-- ======= HERO ======= -->", "<main>\n<!-- ======= HERO ======= -->")
+    t = rep(t, '<footer style="background: #12161F; color: #9AA3B5">', '</main>\n\n<footer style="background: #12161F; color: #9AA3B5">')
+    p.write_text(t, encoding="utf-8")
+
+
+# Local Route and Home layout (T-20 F8, Nov 15, 2026). Layout only. On wide screens the
+# Results and FAQ headings sit above their content, so no tall empty column is left beside it.
+LOCAL_T20_CSS = """<style>
+@media (max-width:420px){
+.tear>div:first-child{flex-direction:column;align-items:flex-start!important;gap:2px!important}
+.tear>div:nth-child(3)>div{flex-wrap:wrap;row-gap:0!important}
+.tear>div:nth-child(3)>div>span:first-child{flex:1 0 100%}
+#rc-rows>div{grid-template-columns:minmax(0,1fr)!important;gap:4px!important}
+#rc-rows>div>strong{text-align:left!important}
+[aria-label="Receipts"]>button{flex:1 1 auto}
+#blueprint{padding-right:0!important}
+#blueprint h3{white-space:nowrap;font-size:min(38px,10.6vw)!important}
+}
+@media (min-width:900px){
+#proof>div,#faq>div{grid-template-columns:minmax(0,1fr)!important;gap:clamp(28px,3vw,40px)!important}
+#proof>div>:last-child,#faq>div>:last-child{width:100%;max-width:860px}
+}
+</style>
+"""
+INDEX_T20_CSS = """<style>
+@media (max-width:699px){.djm-bar.djm{column-gap:12px!important}}
+@media (max-width:360px){.djm-bar>span:first-child{gap:8px!important}.djm-bar>.djm-btn{padding:0 9px}}
+.route span[style*="min-height: 52px"]{text-align:center;justify-content:center}
+</style>
+"""
+
+
+def layout_local_index():
+    p = OUT / "local.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, "</head>", LOCAL_T20_CSS + "</head>")
+    t = rep(t, "<!-- ============ HERO (night) ============ -->", "<main>\n<!-- ============ HERO (night) ============ -->")
+    t = rep(t, '<footer style="background: #0A1411; color: #93A39A">', '</main>\n\n<footer style="background: #0A1411; color: #93A39A">')
+    p.write_text(t, encoding="utf-8")
+    p = OUT / "index.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, "</head>", INDEX_T20_CSS + "</head>")
+    p.write_text(t, encoding="utf-8")
+
+
+# Landmarks on Home and 404 (T-20 F9): the letterhead is the page's header, and Home
+# gets one <main> around its content, so no visible text sits outside a landmark.
+def add_landmarks():
+    p = OUT / "index.html"
+    t = p.read_text(encoding="utf-8")
+    a = t.index('<div class="djm-bar"')
+    b = t.index("<script>(function(n){n.classList.add('djm')", a)
+    bar = t[a:b]
+    k = bar.rindex("</div>")
+    t = t[:a] + "<header" + bar[len("<div"):k] + "</header>" + bar[k + len("</div>"):] + t[b:]
+    t = rep(t, "\n  <!-- hero -->", "\n  <main>\n  <!-- hero -->")
+    t = rep(t, "\n  <footer ", "\n  </main>\n  <footer ")
+    p.write_text(t, encoding="utf-8")
+    p = OUT / "404.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, '<div style="width: 100%; max-width: 1240px; margin: 0 auto; padding: 24px', '<header style="width: 100%; max-width: 1240px; margin: 0 auto; padding: 24px')
+    t = rep(t, "  </div>\n  <main ", "  </header>\n  <main ")
+    p.write_text(t, encoding="utf-8")
+    for f in ("index.html", "local.html", "mainframe.html", "404.html"):
+        assert (OUT / f).read_text(encoding="utf-8").count("<main") == 1, "one <main> in " + f
+
+
+
+# Contrast (T-20 F9, Nov 15, 2026). Each pair axe flagged gets the smallest darkening of
+# its text that reaches 4.5:1; no background changes.
+#  - Dark text on the orange (#E8592B) buttons, chips and selection: #0E1B17 becomes
+#    #0E1A17, on every page and in every rule where the orange carries that text.
+#  - The grey on the cream panels of local.html: #6B716A becomes #676D66.
+ORANGE_TEXT = re.compile(r'(background: ?#E8592B;(?:[^"{}]*?[;\s])?color: ?)#0E1B17')
+
+
+def fix_contrast():
+    hit = []
+    for p in sorted(OUT.glob("*.html")):
+        t = p.read_text(encoding="utf-8")
+        t2, n = ORANGE_TEXT.subn(lambda m: m.group(1) + "#0E1A17", t)
+        if n:
+            hit.append(f"{p.name} ({n})")
+            p.write_text(t2, encoding="utf-8")
+        assert not ORANGE_TEXT.search(t2), "orange pair left in " + p.name
+    p = OUT / "local.html"
+    t = p.read_text(encoding="utf-8")
+    assert t.count("#6B716A") > 0, "local.html grey"
+    p.write_text(t.replace("#6B716A", "#676D66"), encoding="utf-8")
+    print("contrast: orange buttons on " + ", ".join(hit))
+
+
 def use_hello():
     # The site's public address is hello@, which forwards to Josef's Gmail.
     for p in OUT.glob("*.html"):
@@ -562,6 +718,11 @@ add_pages()
 enhance_index()
 add_free_tools()
 add_phone_menu()
+layout_mainframe()
+layout_local_index()
+add_landmarks()
+add_wrap()
+fix_contrast()
 use_hello()
 add_og()
 for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES:

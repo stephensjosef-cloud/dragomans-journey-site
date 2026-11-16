@@ -38,6 +38,7 @@ input.field{width:100%;min-height:52px;padding:10px 14px;border:1px solid #12161
 .nib.bad b{background:#E8592B;color:#12161F}
 .nib span{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.08em;color:#5D6576;text-transform:uppercase}
 .byte{display:flex;gap:4px;padding:8px;border:1px dashed #CFC8B8}
+.bytes{display:grid;grid-template-columns:repeat(2,max-content);gap:8px}
 dl.facts{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));border-top:1px solid #12161F}
 dl.facts div{padding:14px 16px 14px 0;border-bottom:1px solid #CFC8B8}
 dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-break:break-all}
@@ -189,7 +190,7 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
   }
 
   function nibbleRow(nibs, pic) {
-    var html = '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    var html = '<div class="bytes">';   // two bytes to a row, 2 by 2 for four bytes (T-20 F8)
     var digitCount = nibs.length - 1;
     var padCount = pic ? Math.max(0, digitCount - pic.digits) : 0;
     for (var b = 0; b < nibs.length / 2; b++) {

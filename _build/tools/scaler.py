@@ -4,7 +4,7 @@ import sys
 CSS = r"""
 .lay{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:28px;align-items:start}
 @media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr)}}
-.who{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.who{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px;align-items:end}
 .who label{display:flex;flex-direction:column;gap:6px}
 .who span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6B716A}
 .factor{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px}
@@ -16,8 +16,8 @@ td{padding:10px 8px 10px 0;border-bottom:1px solid #DDD5C3;vertical-align:top}
 td.amt{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 td.note{font-size:14px;color:#5A635D}
 td.note b{color:#A93F17;font-weight:600}
-.was{display:block;font-size:12.5px;color:#8A8F87;font-weight:400}
-@media (max-width:560px){td.note{display:block;padding-top:0;border-bottom:0}tr{display:block;border-bottom:1px solid #DDD5C3;padding:6px 0}td{display:inline-block;border:0;padding:4px 8px 4px 0}td.amt{min-width:7.5em}}
+.was{display:block;font-size:12.5px;color:#6F736D;font-weight:400}
+@media (max-width:560px){td.note{display:block;padding-top:0;border-bottom:0}tr{display:block;border-bottom:1px solid #DDD5C3;padding:6px 0}td{display:inline-block;border:0;padding:4px 8px 4px 0}td.amt{min-width:7.5em}thead tr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}tbody tr{display:flex;flex-wrap:wrap;align-items:baseline}td.amt{flex:none}td.amt+td{flex:1 1 0;min-width:0}td.note{flex:1 0 100%}}
 @media print{.noprint{display:none!important}body{background:#fff}.lay{display:block}.panel{border:0;padding:0}}
 """
 

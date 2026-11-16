@@ -2,10 +2,11 @@ from chrome import write
 import sys
 
 CSS = r"""
-.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:'in st' 'vd st' 'set st' 'ck st' 'sc st';grid-template-rows:auto auto auto auto 1fr;gap:24px;align-items:start}
-.lay>.a-in{grid-area:in}.lay>.a-vd{grid-area:vd}.lay>.a-set{grid-area:set}.lay>.a-ck{grid-area:ck}.lay>.a-sc{grid-area:sc}.lay>.stage{grid-area:st;align-self:stretch}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:'in st' 'len st' 'vd st' 'set st' 'ck st' 'sc st';grid-template-rows:auto auto auto auto auto 1fr;gap:24px;align-items:start}
+.lay>.a-in{grid-area:in}.lay>.a-len{grid-area:len}
+.a-len .label{color:#676D66}.lay>.a-vd{grid-area:vd}.lay>.a-set{grid-area:set}.lay>.a-ck{grid-area:ck}.lay>.a-sc{grid-area:sc}.lay>.stage{grid-area:st;align-self:stretch}
 .stage-in{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;align-items:center}
-@media (max-width:860px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'in' 'st' 'vd' 'set' 'ck' 'sc';grid-template-rows:none}.stage-in{position:static}}
+@media (max-width:860px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'in' 'st' 'len' 'vd' 'set' 'ck' 'sc';grid-template-rows:none}.stage-in{position:static}}
 .verdict{display:flex;gap:12px;align-items:flex-start;margin:0;font-size:19px;font-weight:700;line-height:1.4}
 .verdict .dot{width:14px;height:14px;margin-top:6px}
 .phone{width:min(340px,100%);aspect-ratio:9/16;border:10px solid #16201C;border-radius:34px;overflow:hidden;background:#3B4540;position:relative}
@@ -20,7 +21,7 @@ CSS = r"""
 .cardline{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;background:#fff;border:1.5px solid #CFC6B2;border-radius:2px;cursor:pointer;text-align:left;font:inherit;color:#16201C;width:100%}
 .cardline[aria-pressed="true"]{border-color:#16201C;box-shadow:inset 4px 0 0 #E8592B}
 .cardline .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:#6B716A}
-.cardline .t{white-space:pre-line;font-size:15px;line-height:1.35}
+.cardline .t{white-space:pre-line;font-size:15px;line-height:1.35;text-wrap:pretty}
 .cardline .s{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
 .legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:#5A635D}
 .legend i{display:inline-block;width:12px;height:12px;background:rgba(232,89,43,.45);border:1px dashed #E8592B;margin-right:6px;vertical-align:-1px}
@@ -35,6 +36,9 @@ BODY = r"""
         <textarea id="cap" spellcheck="true">Fresh sourdough comes out of the oven at 7 every morning. Come early, because the first batch is always gone by 9.</textarea>
       </section>
 
+      <div class="a-len"><label class="label" for="secs" style="display:block">How long is your clip?</label>
+        <div style="display:flex;gap:8px;align-items:center"><input id="secs" type="number" min="1" max="60" step="0.5" value="7.5" style="width:96px"><span>seconds</span></div></div>
+
       <p class="verdict a-vd" id="verdict" role="status"><span class="dot" id="v-dot" aria-hidden="true"></span><span id="v-text"></span></p>
 
       <div class="a-set">
@@ -45,8 +49,6 @@ BODY = r"""
             <div><p class="label" id="l-pos">Where on screen</p><div class="chips" role="group" aria-labelledby="l-pos" id="c-pos"></div></div>
             <div><p class="label" id="l-box">Box behind the words</p><div class="chips" role="group" aria-labelledby="l-box" id="c-box"></div></div>
             <div><p class="label" id="l-app">Which app?</p><div class="chips" role="group" aria-labelledby="l-app" id="c-app"></div></div>
-            <div style="max-width:220px"><label class="label" for="secs" style="display:block">How long is your clip?</label>
-              <div style="display:flex;gap:8px;align-items:center"><input id="secs" type="number" min="1" max="60" step="0.5" value="5" style="width:96px"><span>seconds</span></div></div>
             <div style="max-width:300px"><label class="label" for="bg" style="display:block">Try it on your own video</label>
               <input id="bg" type="file" accept="image/*"><p class="private" style="margin-top:6px">Add a screenshot from your video. It stays on your phone.</p></div>
           </div>
