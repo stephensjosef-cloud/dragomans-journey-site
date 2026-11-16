@@ -220,7 +220,8 @@ with sync_playwright() as p:
         q.screenshot(path=f'{SHOTS}/work-{w}.png', full_page=True)
         q = newpage(w); q.goto(BASE + 'case-reels.html'); q.wait_for_timeout(400)
         check(f'case no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
-        check(f'case client filled at {w}', 'CLIENT_' not in q.content() and "children's nonprofit" in q.inner_text('main'))
+        # T-22 K1 to K3: the sentences that named "a Sonoma County children's nonprofit" are off case-reels; the page now says "the program's creator".
+        check(f'case client filled at {w}', 'CLIENT_' not in q.content() and "the program's creator" in q.inner_text('header'))
         q.screenshot(path=f'{SHOTS}/case-{w}.png', full_page=True)
 
     calls = []
@@ -1011,7 +1012,7 @@ with sync_playwright() as p:
             "Every word on dragomansjourney.com rechecked: if it isn't there for a reader, it's gone.",
             'Deepcuts got its new look, built and walked through on iPhone.']
     check('N5: the removed log lines are on no page', not any(g in text_of(s) for g in GONE for s in site.values()))
-    check('N5: shipped.json no longer holds them', not any(g == e['line'] for g in GONE for e in SHIPPED_J['entries']) and len(SHIPPED_J['entries']) == 14)
+    check('N5: shipped.json no longer holds them', not any(g == e['line'] for g in GONE for e in SHIPPED_J['entries']) and len(SHIPPED_J['entries']) == 12)   # T-22 K9 removed two lines
     check('N5: the Deepcuts line reads "Deepcuts got its new look."', any(e['line'] == 'Deepcuts got its new look.' and e['date'] == '2026-11-04' for e in SHIPPED_J['entries'])
           and 'Deepcuts got its new look.' in text_of(site['studio']) and 'Deepcuts got its new look.' in text_of(site['studio-deepcuts']))
     RULE = 'A line stays only if a stranger can picture what changed: no build number without what a person can now do.'
@@ -1863,6 +1864,9 @@ with sync_playwright() as p:
             for wid, n_, old, new, _o, _n in W19:
                 if n_ != n:
                     continue
+                # T-22: W4, W5 and W25 are replaced by K6's and K8's headlines and K3's paragraph; the same fit check runs on those.
+                new = {'W4': 'An evening of editing, now about 4 minutes.', 'W5': 'Their recipe cards, now an app.',
+                       'W25': 'She films the class on her phone.'}.get(wid, new)
                 if wid == 'W11':
                     fill_start(q); q.click('#bp-send'); q.wait_for_timeout(700)
                 f_ = q.evaluate(FIT_JS, new)
@@ -2133,8 +2137,9 @@ with sync_playwright() as p:
                 tabs: [...document.querySelectorAll('[aria-label="Receipts"] > button')].map(t => [Math.round(t.getBoundingClientRect().top), Math.round(t.getBoundingClientRect().width)]),
                 tw: Math.round(document.querySelector('[aria-label="Receipts"]').getBoundingClientRect().width)} }''')
     check('T-20 F8: local at 320, the receipt card\'s labels sit above each other, each on one line', r['stack'] and max(r['one']) < 26, str(r['one']))
+    # T-22 K4: the hero card has four rows.
     below = q.evaluate("[...document.querySelectorAll('.tear > div:nth-child(3) > div')].map(d => Math.round(d.lastElementChild.getBoundingClientRect().top - d.firstElementChild.getBoundingClientRect().bottom))")
-    check('T-20 F8: local at 320, each receipt card label sits above its number', len(below) == 5 and all(x >= -2 for x in below), str(below))
+    check('T-20 F8: local at 320, each receipt card label sits above its number', len(below) == 4 and all(x >= -2 for x in below), str(below))
     check('T-20 F8: local at 320, no Results row is taller than three lines', all(h <= 3 * max(r['lh'], 27) + 6 for h in r['rows']), str(r['rows']))
     rows_ = {}
     for top, wdt in r['tabs']:
