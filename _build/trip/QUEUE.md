@@ -924,6 +924,28 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-21 · Walk fixes 02: what the T-20 recheck found · READY
+
+**Why:** Nov 15, 2026: two fresh reviewers rechecked the live site after T-20. Nothing looked broken, but words still split at hyphens, two grids had an empty slot, one Local section looked lopsided on a laptop, and the Mainframe code example split COBOL names on a small phone.
+
+**Done when:** every fix below is in, each changed page was looked at at 320, 390 and 1440, axe stays at zero, all tests pass.
+
+**The rule for words in this item:** no word on any page changes, is added or is removed. This item is layout and line breaking only.
+
+**Build:**
+- **G1, no split at a hyphen, site-wide.** A hyphenated word or number pair a visitor reads ("15-minute", "three-month", "one-page", "cooking-class", "two-week", "half-byte") never breaks at its hyphen, at any width. The body font has no non-breaking hyphen glyph, so each pair goes in a no-wrap span (T-20's pattern for the call link), added by one pass that runs last over every finished page (in `final.py` or a step after it). The pass touches only visible text (never script, style, code, pre, an attribute, a URL or an email address), wraps only letters or digits joined by one hyphen, at most 24 characters, and runs after every exact-match pass. The tool scripts (shotlist, captions, receipt, scaler, start's "More free tools" line and the closing bands) get the same span where they write such a pair.
+- **G2, no stray separator at a line end.** In eyebrow and meta lines joined by " · ", no line ends or starts with the dot: each separator stays with the item after it. Same words, same dots.
+- **G3, Mainframe at 320.** Exhibit A's code breaks only at spaces, never inside a COBOL name or token and never leaving "=" alone, continuation indented; font steps down to no less than 11 px, then the box scrolls inside itself with a fade at its right edge. Exhibit B's labels and field names don't split badly at 320. At 1440 the four steps' body text starts at the same height, and the right-hand paragraph in the dark band about both readings sits level with its heading.
+- **G4, no empty slot at the end of a grid.** work.html's free tools grid (four tools today, five with the checkup) and studio.html's products grid; any other card grid with a lone or missing last cell at 320, 390 or 1440.
+- **G5, Local at 1440.** The Results card fills the content width; the FAQ keeps answers to about 72 characters and goes two columns at 1200 px and up; "I'm off the clock..." shares the left edge above it. Every FAQ item still opens and closes by tap and by keyboard.
+- **G6, small ones.** comp3's "Found a field with two readings?" link; Bird League's space before "Shipped lately" at 1440; local's "How it works" step lines at 390; local's "Start here" tiles at 390; the five tools' closing call bands at 1440 as one balanced group.
+
+**Leave as they are:** every word, title, meta description and share card (`og/` unchanged by `cmp`), every price and term, the header and footer (other than G1 and G2), every tool's arithmetic, both Workers, the checkup switch and page, Exhibit A's numbers and starting reading, and everything T-20 fixed.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
