@@ -168,7 +168,7 @@ def join_button(p):
     return out
 
 
-def product_card(p):
+def product_card(p, wide=False):
     feature = bool(p.get("image"))
     parts = [f'<h2>{t(p["name"])}</h2>',
              f'<div class="meta"><span class="pill">{t(p["status"])}</span></div>',
@@ -188,7 +188,8 @@ def product_card(p):
         parts.append('<div class="acts">' + "".join(acts) + '</div>')
     body = "\n        ".join(parts)
     if not feature:
-        return f'\n    <article class="prod" data-id="{a(p["id"])}">\n        {body}\n    </article>'
+        cls = "prod wide" if wide else "prod"
+        return f'\n    <article class="{cls}" data-id="{a(p["id"])}">\n        {body}\n    </article>'
     img = (f'<img src="{a(p["image"])}" width="1200" height="1331" loading="lazy" alt="{a(p["image_alt"] or "")}">')
     return (f'\n    <article class="prod feature" data-id="{a(p["id"])}">\n      <div class="fb">\n        {body}\n      </div>\n      {img}\n    </article>')
 
@@ -227,6 +228,7 @@ CSS = r"""
 .prod a.go{display:inline-flex;align-items:center;min-height:44px;font-weight:700;text-decoration:none;color:#16201C}
 .prod a.go:hover{color:#A93F17}
 .count{font-size:14px;color:#5A635D}
+.prod.wide{grid-column:1/-1}
 .prod.feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
 .prod.feature .fb{display:flex;flex-direction:column;gap:12px}
 .prod.feature .acts{margin-top:8px}
@@ -299,7 +301,18 @@ def build(studio, shipped, today):
            f'\n    <h2 id="log-h" class="big">Shipped lately</h2>'
            f'\n    <ol class="log" id="log">{items}\n    </ol>{toggle}'
            '\n  </section>')
-    cards = "".join(product_card(p) for p in studio["products"] if p.get("gate") is None)
+    shown = [p for p in studio["products"] if p.get("gate") is None]
+    # Two columns from 800 px (T-21 G4): a card alone on its row spans the whole row, so
+    # the grid never ends a row with an empty cell. A feature card always spans the row.
+    wide, run = set(), []
+    for p in shown + [None]:
+        if p is None or p.get("image"):
+            if len(run) % 2:
+                wide.add(run[-1]["id"])
+            run = []
+        else:
+            run.append(p)
+    cards = "".join(product_card(p, p["id"] in wide) for p in shown)
     prods = f'\n  <div class="sec prods" id="products">{cards}\n  </div>'
     return strip + log + prods + "\n"
 
@@ -311,7 +324,7 @@ PAGE_CSS = r"""
 .top{display:grid;grid-template-columns:minmax(0,1fr);gap:24px 40px;align-items:start}
 .top .proof{margin:0;font-size:clamp(20px,2vw,24px);line-height:1.4}
 .top img{width:100%;max-width:560px;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
-@media (min-width:800px){.top.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.top.has-log{grid-template-areas:'proof img' 'log img';grid-template-rows:auto 1fr}.top.has-log>.proof{grid-area:proof}.top.has-log>img{grid-area:img}.top.has-log>.sec{grid-area:log;margin-top:0}}
+@media (min-width:800px){.top.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.top.has-log{grid-template-areas:'proof img' 'log img';grid-template-rows:auto 1fr}.top.has-log>.proof{grid-area:proof}.top.has-log>img{grid-area:img}.top.has-log>.sec{grid-area:log}}
 .log.solo li{grid-template-columns:5.5em minmax(0,1fr)}
 @media (max-width:760px){.log.solo li{grid-template-columns:4.2em minmax(0,1fr);gap:4px 12px}.log.solo .line{grid-column:auto}}
 .join{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:24px;max-width:560px}

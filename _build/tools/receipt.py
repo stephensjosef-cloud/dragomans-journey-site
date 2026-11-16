@@ -97,13 +97,13 @@ function hrs(n){return (n<10?(Math.round(n*10)/10):Math.round(n)).toLocaleString
 function addPreset(i){var p=PRESETS[i];lines.push({name:p[0],min:p[1],per:p[2],v:p[3],pi:i,id:++uid});renderLines();renderReceipt()}
 function renderPresets(){
   document.getElementById('presets').innerHTML=PRESETS.map(function(p,i){var used=lines.some(function(l){return l.pi===i});
-    return '<button type="button" class="chip add'+(used?' used':'')+'" data-p="'+i+'" '+(used?'aria-disabled="true"':'')+'>'+esc(p[0])+'</button>'}).join('');
+    return '<button type="button" class="chip add'+(used?' used':'')+'" data-p="'+i+'" '+(used?'aria-disabled="true"':'')+'>'+djNw(esc(p[0]))+'</button>'}).join('');
 }
 /* Each chore is a line on the receipt. "Change" opens its fields under it (T-18). */
 function renderLines(){
   renderPresets();
   document.getElementById('rows').innerHTML=lines.map(function(l,i){
-    return '<div class="row2" data-i="'+i+'"><div class="rl"><span data-o="name"></span><span data-o="money"></span></div><p class="rs"><span data-o="hrs"></span> · <span data-o="v"></span></p>'+
+    return '<div class="row2" data-i="'+i+'"><div class="rl"><span data-o="name"></span><span data-o="money"></span></div><p class="rs"><span data-o="hrs"></span>&nbsp;·&nbsp;<span data-o="v"></span></p>'+
       '<button type="button" class="fold noprint" aria-expanded="'+(!!l.open)+'" aria-controls="ed-'+l.id+'" data-o="change">Change</button>'+
       '<div class="ed noprint" id="ed-'+l.id+'"'+(l.open?'':' hidden')+'><p class="private">Guess. Close is good enough.</p><input aria-label="Chore" data-f="name" value="'+esc(l.name)+'">'+
       '<input aria-label="Minutes" type="number" min="0" step="5" data-f="min" value="'+l.min+'">'+
@@ -126,10 +126,10 @@ function receiptText(c){
 }
 function renderReceipt(){
   var c=calc(),d=new Date();
-  document.getElementById('p-head').innerHTML='<h2>BUSYWORK RECEIPT</h2><p class="c">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · 1 year of it</p><hr>';
+  document.getElementById('p-head').innerHTML='<h2>BUSYWORK RECEIPT</h2><p class="c">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'&nbsp;·&nbsp;1 year of it</p><hr>';
   var rows=document.querySelectorAll('#rows .row2'),f=document.getElementById('p-foot');
   c.rows.forEach(function(r,i){var el=rows[i];if(!el)return;
-    el.querySelector('[data-o=name]').textContent=r.l.name;
+    el.querySelector('[data-o=name]').innerHTML=djNw(esc(r.l.name));
     el.querySelector('[data-o=money]').textContent=money(r.h*c.rate);
     el.querySelector('[data-o=hrs]').textContent=hrs(r.h)+' a year';
     var v=el.querySelector('[data-o=v]');v.className='t-'+r.l.v;v.textContent=V[r.l.v][0];

@@ -33,7 +33,9 @@ a{color:#A93F17}a:hover{color:#16201C}
 .filt{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
 .filt:hover{border-color:#16201C}
 .filt[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:18px}
+.grid{display:flex;flex-wrap:wrap;gap:18px}
+/* T-21 G4: cards wrap like the old 360 px columns, and the cards on the last row stretch to fill it, so no row ends in an empty cell for any filter, four tools or five. */
+.grid>.card{flex:1 1 min(360px,100%);min-width:0}
 .card{display:flex;flex-direction:column;gap:12px;padding:clamp(22px,2.6vw,30px);background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;transition:transform 200ms ease,border-color 200ms ease}
 .card:hover{transform:translateY(-3px);border-color:#16201C}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
@@ -43,7 +45,7 @@ a{color:#A93F17}a:hover{color:#16201C}
 .card p{margin:0;font-size:16px;color:#3B4540}
 .card a.go{margin-top:auto;padding-top:8px;font-weight:700;text-decoration:none;color:#16201C}
 .card a.go:hover{color:#A93F17}
-.card.feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
+.card.feature{grid-column:1/-1;flex-basis:100%;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
 .card.feature .fb{display:flex;flex-direction:column;gap:12px}
 @media (min-width:800px){.card.feature{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
@@ -77,7 +79,7 @@ a{color:#A93F17}a:hover{color:#16201C}
         <a href="mainframe.html" style="color:#C9D2CB;text-decoration:none">Mainframe Route</a>
         <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
-        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(28px,5vw,64px) 0 clamp(44px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:24px 64px;align-items:end">
@@ -100,8 +102,8 @@ a{color:#A93F17}a:hover{color:#16201C}
   <div class="grid" id="cards">
     <article class="card" data-k="nonprofit">
       <div class="tags"><span class="tag">Nonprofit</span><span class="tag">Reels</span></div>
-      <p class="num">An 81-second reel in about 4 minutes</p>
-      <h2>One cooking-class shoot, one finished reel</h2>
+      <p class="num">An <span style="white-space: nowrap">81-second</span> reel in about 4 minutes</p>
+      <h2>One <span style="white-space: nowrap">cooking-class</span> shoot, one finished reel</h2>
       <p>Phone clips from a cooking class at a Sonoma County children's nonprofit became a finished, captioned reel with about four minutes of machine time. Every reel waits for the client's yes.</p>
       <a class="go" href="case-reels.html">Read the case study →</a>
     </article>
@@ -149,7 +151,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <article class="card" data-k="free">
       <div class="tags"><span class="tag">Free tool</span><span class="tag">Reels</span></div>
       <h2>Caption fitter</h2>
-      <p>Type a caption once. It breaks the lines evenly, splits it into screens, checks it against each app's buttons, times it, and hands you a see-through PNG.</p>
+      <p>Type a caption once. It breaks the lines evenly, splits it into screens, checks it against each app's buttons, times it, and hands you a <span style="white-space: nowrap">see-through</span> PNG.</p>
       <a class="go" href="captions.html">Fit a caption →</a>
     </article>
 
@@ -163,7 +165,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <article class="card" data-k="free nonprofit">
       <div class="tags"><span class="tag">Free tool</span><span class="tag">Kitchens</span></div>
       <h2>Recipe scaler</h2>
-      <p>Paste any ingredient list, count grown-ups and kids, and get amounts you can actually measure, eggs rounded up, and a heads-up when it's time to cook in batches.</p>
+      <p>Paste any ingredient list, count <span style="white-space: nowrap">grown-ups</span> and kids, and get amounts you can actually measure, eggs rounded up, and a <span style="white-space: nowrap">heads-up</span> when it's time to cook in batches.</p>
       <a class="go" href="scaler.html">Scale a recipe →</a>
     </article>
 
@@ -172,17 +174,17 @@ a{color:#A93F17}a:hover{color:#16201C}
   <section aria-labelledby="next-h" style="margin-top:20px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:12px">
       <h2 id="next-h" class="big" style="font-size:clamp(36px,4.6vw,60px)">Your pile could be next</h2>
-      <p style="margin:0;font-size:18px;color:#C9D2CB">Two weeks, $1,500, and it comes off the build price. Or start with a free 15-minute call.</p>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">Two weeks, $1,500, and it comes off the build price. Or start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
       <a href="start.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1A17;text-decoration:none;font-weight:700;border-radius:2px">Start a Blueprint →</a>
-      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-minute call</a>
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
 </main>
 
 <footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
-  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
   <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
 </footer>
 </div>

@@ -11,6 +11,53 @@ WRAP_CSS = ("p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}"
             ":is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*=\"JetBrains Mono\"]),"
             ":is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}")
 
+# Line breaking only, no word changes (T-21, Nov 16, 2026).
+# G1: a hyphenated pair a visitor reads ("15-minute", "three-month") never breaks at
+# its hyphen. The body font has no non-breaking hyphen glyph, so the pair sits in a
+# no-wrap span (T-20's pattern for the call link). Only letters or digits joined by
+# one hyphen, at most 24 characters; longer runs ("side-by-side") break as before.
+# G2: in a list joined by " · ", a line never starts or ends with the dot: the dot is
+# held to the words on both sides by no-break spaces, so lines break inside an item.
+# final.py runs nobreak() last over every finished page; the tool scripts use it (and
+# djNw() in the page script) where they write such text themselves.
+NOWRAP = '<span style="white-space: nowrap">'
+MAX_PAIR = 24
+_OPEN = r'(?:[(\["\'“‘]|&(?:quot|#x27|#39|ldquo|lsquo);)*'
+_CLOSE = r'(?:[)\]"\'”’.,;:!?…]|&(?:quot|#x27|#39|rdquo|rsquo|hellip);)*'
+_POSS = r'(?:(?:[\'’]|&#x27;|&#39;|&rsquo;)s)?'
+PAIR_TOKEN = re.compile(r'(?P<pre>' + _OPEN + r')(?P<core>[^\W_]+-[^\W_]+)(?P<post>' + _POSS + _CLOSE + ')')
+DOT_GAP = re.compile(r'[ \t\r\n]+·[ \t\r\n]+')
+
+
+def keep_pairs(text):
+    """Escaped visible text, no tags: each hyphen pair in a no-wrap span."""
+    out = []
+    for part in re.split(r'(\s+|&nbsp;|&#160;)', text):
+        m = PAIR_TOKEN.fullmatch(part) if "-" in part else None
+        if m and len(m["core"]) <= MAX_PAIR:
+            part = m["pre"] + NOWRAP + m["core"] + "</span>" + m["post"]
+        out.append(part)
+    return "".join(out)
+
+
+def keep_dots(text):
+    """Escaped visible text, no tags: " · " held to its neighbours."""
+    return DOT_GAP.sub("&nbsp;·&nbsp;", text)
+
+
+def nobreak(text):
+    return keep_dots(keep_pairs(text))
+
+
+# The same rule for text a page script writes (innerHTML only, never the clipboard).
+NW_JS = (r"""function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,"""
+         r"""function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}""")
+
+# The closing call band under each tool (G6): on wide screens the words and the button
+# sit as one group, the button on the right, the words filling the rest.
+BAND_CSS = ("@media (min-width:800px){section[aria-labelledby=\"more-h\"]{grid-template-columns:minmax(0,1fr) auto!important;column-gap:clamp(48px,6vw,96px)!important}"
+            "section[aria-labelledby=\"more-h\"]>div:first-child{max-width:62ch}}")
+
 HEAD = """<!doctype html>
 <html lang="en">
 <head>
@@ -62,6 +109,7 @@ textarea{{min-height:140px;resize:vertical;line-height:1.5}}
 .toast.on{{opacity:1}}
 @media (prefers-reduced-motion:reduce){{*{{transition:none!important;animation:none!important}}}}
 {wrap_css}
+{band_css}
 {fold_css}{css}
 </style>
 </head>
@@ -107,6 +155,7 @@ function djCopy(text,label){{
   if(navigator.clipboard&&navigator.clipboard.writeText){{navigator.clipboard.writeText(text).then(done,fallback)}}else fallback();
   function fallback(){{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{{document.execCommand('copy');done()}}catch(e){{djToast('Select it and copy by hand')}}ta.remove()}}
 }}
+{nw_js}
 {fold_js}{script}
 </script>
 </body>
@@ -178,6 +227,15 @@ def page(**k):
     k["fold_css"] = FOLD_CSS if folds else ""
     k["fold_js"] = FOLD_JS if folds else ""
     k["wrap_css"] = WRAP_CSS
+    k["band_css"] = BAND_CSS if k.get("cta_h") else ""
+    k["nw_js"] = NW_JS
+    for key in ("cta_h", "cta_p", "cta_btn"):   # T-21 G1, G2
+        if k.get(key):
+            k[key] = nobreak(k[key])
+    if "<span" in k.get("cta_btn", ""):
+        k["cta_btn"] = "<span>" + k["cta_btn"] + "</span>"   # the button is a flex box: one item
+    if k.get("more"):
+        k["more"] = keep_dots(k["more"])
     k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
     k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
     # The small line over the title; a page without one (the Studio, T-16) gets no empty span.

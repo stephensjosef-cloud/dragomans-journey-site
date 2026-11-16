@@ -68,6 +68,32 @@ a{color:#A93F17}a:hover{color:#16201C}
 #proof>div>:last-child,#faq>div>:last-child{width:100%;max-width:860px}
 }
 </style>
+<style>
+@media (min-width:900px){#proof>div>:last-child{max-width:none}#rc-note,#rc-src-foot{padding-right:max(0px,calc(100% - 72ch))}}
+@media (min-width:1200px){
+#faq>div>:last-child{max-width:none;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(40px,4vw,64px);align-items:stretch}
+}
+#contact p:has(>#sr-dot){flex-wrap:nowrap!important}
+#sr-dot{flex:none}
+@media (min-width:700px){
+#contact p:has(>#sr-dot){position:relative}
+#sr-dot{position:absolute;left:-19px;top:50%;margin-top:-4.5px}
+}
+@media (max-width:699px){
+#route ol{grid-template-columns:minmax(0,1fr)!important;border-top:0!important}
+#route ol>li{padding:0 0 34px 34px!important}
+#route ol>li:last-child{padding-bottom:0!important}
+#route ol>li>span[aria-hidden="true"]:first-child{top:-2px!important;left:0!important}
+#route ol>li:not(:last-child)::before{content:"";position:absolute;left:9.5px;top:9px;bottom:-9px;width:3px;background:#16201C}
+#route ol>li h3{font-size:min(38px,calc(10.6vw - 3.4px))!important}
+}
+@media (max-width:529px){[data-pick]{min-height:0!important}}
+article[data-card]>p:last-child{font-size:13px!important}
+@media (max-width:359px){article[data-card]>p:last-child{font-size:12.5px!important}}
+@media (max-width:359px){#dropin span[style*="letter-spacing: 0.1em"]{letter-spacing:.06em!important}}
+#tools>div>div{display:flex!important;flex-wrap:wrap}
+#tools>div>div>article{flex:1 1 min(200px,100%);min-width:0}
+</style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
 <script type="application/ld+json">
 {
@@ -226,7 +252,7 @@ a{color:#A93F17}a:hover{color:#16201C}
           <a href="start.html" class="btn-blaze" style="display: inline-flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 26px; background: #E8592B; color: #0E1A17; text-decoration: none; font-weight: 700; font-size: 17px; border-radius: 2px">Start with a Blueprint <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 14px">$1,500</span></a>
           <a href="#proof" class="ghost" style="display: inline-flex; align-items: center; min-height: 56px; padding: 0 22px; border: 1.5px solid #4C5F56; color: #E9EEE9; text-decoration: none; font-weight: 600; font-size: 17px; border-radius: 2px">See real results first</a>
         </div>
-        <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A">Two weeks · fixed price · the $1,500 comes off the price if you go ahead</p>
+        <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A">Two weeks&nbsp;·&nbsp;fixed price&nbsp;·&nbsp;the $1,500 comes off the price if you go ahead</p>
       </div>
 
       <!-- receipt -->
@@ -254,7 +280,7 @@ a{color:#A93F17}a:hover{color:#16201C}
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 112px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: clamp(32px, 5vw, 72px); align-items: end">
     <h2 id="why" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(40px, 5.2vw, 72px); line-height: 0.92; text-wrap: balance">Most AI projects quietly break by month two</h2>
     <div style="display: flex; flex-direction: column; gap: 22px">
-      <p style="margin: 0; font-size: 19px; color: #3B4540">It works great in the demo. A few weeks later it has stopped working, or it sounds like nobody you know, and nobody can say what it does anymore. I build for month two from the start. Every month you get a one-page report you can read in a minute.</p>
+      <p style="margin: 0; font-size: 19px; color: #3B4540">It works great in the demo. A few weeks later it has stopped working, or it sounds like nobody you know, and nobody can say what it does anymore. I build for month two from the start. Every month you get a <span style="white-space: nowrap">one-page</span> report you can read in a minute.</p>
     </div>
   </div>
 </section>
@@ -310,7 +336,7 @@ a{color:#A93F17}a:hover{color:#16201C}
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #676D66">YOU GET</dt><dd style="margin: 2px 0 0">8 or 12 captioned reels a month in the style you picked, all delivered by the 5th.</dd></div>
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #676D66">HOW YOU KNOW IT WORKS</dt><dd style="margin: 2px 0 0">I check every reel against the style you approved, and nothing posts without your yes. Your monthly report counts the calls and bookings the reels bring in, not just views.</dd></div>
         </dl>
-        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>From $800/month</strong> · three-month minimum</p>
+        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>From $800/month</strong>&nbsp;·&nbsp;<span style="white-space: nowrap">three-month</span> minimum</p>
       </article>
 
       <article class="card-lift" data-card="app" style="display: flex; flex-direction: column; gap: 18px; padding: 30px 28px; background: #FBF8F1; border-radius: 2px; border: 2px solid #16201C; box-shadow: 6px 6px 0 #16201C;">
@@ -324,7 +350,7 @@ a{color:#A93F17}a:hover{color:#16201C}
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #676D66">YOU GET</dt><dd style="margin: 2px 0 0">An app for iPhone, iPad and Android, published under your own name in the app stores.</dd></div>
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #676D66">HOW YOU KNOW IT WORKS</dt><dd style="margin: 2px 0 0">The app refuses broken entries, like a recipe with no photo. It runs hundreds of automatic checks every time it changes, and your staff try it before any family does.</dd></div>
         </dl>
-        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>Build from $8,000</strong> · then a yearly fee for updates and support</p>
+        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>Build from $8,000</strong>&nbsp;·&nbsp;then a yearly fee for updates and support</p>
       </article>
 
       <article class="card-lift" data-card="flow" style="display: flex; flex-direction: column; gap: 18px; padding: 30px 28px; background: #FBF8F1; border-radius: 2px; border: 2px solid #16201C; box-shadow: 6px 6px 0 #16201C;">
@@ -338,7 +364,7 @@ a{color:#A93F17}a:hover{color:#16201C}
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #676D66">YOU GET</dt><dd style="margin: 2px 0 0">That task running on its own, with a person approving anything that goes to a customer or donor.</dd></div>
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #676D66">HOW YOU KNOW IT WORKS</dt><dd style="margin: 2px 0 0">I test it before it goes live. Each month you get one page showing what it did and anything it held for a person to check.</dd></div>
         </dl>
-        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>Build from $3,000</strong> · support from $750/month</p>
+        <p style="margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px"><strong>Build from $3,000</strong>&nbsp;·&nbsp;support from $750/month</p>
       </article>
 
     </div>
@@ -358,12 +384,12 @@ a{color:#A93F17}a:hover{color:#16201C}
 
     <div id="rc-panel" role="tabpanel" aria-label="Receipt" style="background: #15261F; border: 1px solid #2B3D35; padding: clamp(22px, 3vw, 36px); display: flex; flex-direction: column; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, monospace">
       <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 12px; letter-spacing: 0.1em; color: #93A39A">
-        <span id="rc-head">RESULT · REELS</span>
+        <span id="rc-head">RESULT&nbsp;·&nbsp;REELS</span>
         <span id="rc-date">AUG 2026</span>
       </div>
       <h3 id="rc-title" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 34px; line-height: 1; color: #E9EEE9">One shoot, one finished reel</h3>
       <span style="margin-top: -8px; font-size: 13px; color: #93A39A">Tap any orange number to see where it comes from.</span>
-      <div id="rc-rows" style="display: flex; flex-direction: column"><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Clips in a typical cooking-class shoot</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">16 to 20</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Captioned steps in the finished reel</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">9</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Machine time for the whole episode</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">~4 min</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Mistakes the client caught in the first three rounds</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">3 of 3 fixed</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Reels posted without the client approving them</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">0</strong></div></div>
+      <div id="rc-rows" style="display: flex; flex-direction: column"><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Clips in a typical <span style="white-space: nowrap">cooking-class</span> shoot</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">16 to 20</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Captioned steps in the finished reel</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">9</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Machine time for the whole episode</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">~4 min</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Mistakes the client caught in the first three rounds</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">3 of 3 fixed</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">Reels posted without the client approving them</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">0</strong></div></div>
       <p style="margin: 0; padding-top: 14px; border-top: 1px dashed #4C5F56; font-family: 'Instrument Sans', sans-serif; font-size: 16px; line-height: 1.55; color: #C9D2CB" id="rc-note">Those three were uneven caption boxes, square corners and single words stranded on their own line. The tool now checks for all three on every reel, so nobody has to catch them twice.</p>
       <p id="rc-src-foot" style="margin: 0; font-family: 'Instrument Sans', sans-serif; font-size: 14px; color: #93A39A"></p>
       <a id="rc-link" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence" style="color: #F07A4E; font-size: 14px; text-decoration: none" hidden="">Open the repo →</a>
@@ -382,7 +408,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       <li id="blueprint" style="display: flex; flex-direction: column; gap: 14px; padding: 30px 28px 34px 0; position: relative">
         <span aria-hidden="true" style="position: absolute; top: -13px; left: 0; width: 22px; height: 22px; border-radius: 50%; background: #E8592B; border: 3px solid #16201C"></span>
         <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #676D66">DAYS 1 TO 14</span>
-        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 38px; line-height: 0.95">The Blueprint · $1,500</h3>
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 38px; line-height: 0.95">The Blueprint&nbsp;·&nbsp;$1,500</h3>
         <p style="margin: 0; color: #3B4540">Fixed price. If you go ahead with the build, the $1,500 comes off its price. If you don't, the plan is still yours.</p>
         <div style="display: flex; flex-direction: column; gap: 10px; font-size: 16px">
           <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px"><strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A93F17; padding-top: 3px">DAY 1</strong><span>I come to you, anywhere in Sonoma County, and watch how the work gets done today.</span></div>
@@ -394,7 +420,7 @@ a{color:#A93F17}a:hover{color:#16201C}
         <span aria-hidden="true" style="position: absolute; top: -13px; left: 0; width: 22px; height: 22px; border-radius: 50%; background: #F2EDE1; border: 3px solid #16201C"></span>
         <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #676D66">ON THE DATE IN THE PLAN</span>
         <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 38px; line-height: 0.95">The Build</h3>
-        <p style="margin: 0; color: #3B4540">A fixed price, agreed before any work starts. You get the finished tool, the style you approved and a one-page guide in plain English.</p>
+        <p style="margin: 0; color: #3B4540">A fixed price, agreed before any work starts. You get the finished tool, the style you approved and a <span style="white-space: nowrap">one-page</span> guide in plain English.</p>
               </li>
       <li style="display: flex; flex-direction: column; gap: 14px; padding: 30px 0 34px 0; position: relative">
         <span aria-hidden="true" style="position: absolute; top: -13px; left: 0; width: 22px; height: 22px; border-radius: 50%; background: #16201C; border: 3px solid #16201C"></span>
@@ -466,7 +492,7 @@ a{color:#A93F17}a:hover{color:#16201C}
 <section id="dropin" aria-labelledby="dropin-h" style="background: #E8E1D1">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(64px, 8vw, 104px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: clamp(28px, 5vw, 72px); align-items: center">
     <div style="display: flex; flex-direction: column; gap: 16px">
-      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.1em; color: #A93F17">ONCE A MONTH · SANTA ROSA · FREE</span>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.1em; color: #A93F17">ONCE A MONTH&nbsp;·&nbsp;SANTA ROSA&nbsp;·&nbsp;FREE</span>
       <h2 id="dropin-h" style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.9; color: #16201C">Bring your pile</h2>
       <p style="margin: 0; max-width: 54ch; font-size: 19px; color: #3B4540">Bring the binder, the phone full of clips or the spreadsheet you dread. We sit down for twenty minutes and look at it together, and you leave knowing one thing you could do about it that week, with or without me.</p>
     </div>
@@ -497,7 +523,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       </article>
       <article style="display: flex; flex-direction: column; gap: 10px; padding: clamp(18px, 2vw, 24px); background: #FBF8F1; border: 1.5px solid #CFC6B2; border-radius: 2px">
         <h3 style="margin: 0; font-size: 20px; line-height: 1.25; font-weight: 700; color: #16201C">Caption fitter</h3>
-        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">Type a caption once. It breaks the lines evenly, splits it into screens, checks it against each app's buttons, times it, and hands you a see-through PNG.</p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">Type a caption once. It breaks the lines evenly, splits it into screens, checks it against each app's buttons, times it, and hands you a <span style="white-space: nowrap">see-through</span> PNG.</p>
         <a href="captions.html" style="margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: #16201C; text-decoration: none">Fit a caption →</a>
       </article>
       <article style="display: flex; flex-direction: column; gap: 10px; padding: clamp(18px, 2vw, 24px); background: #FBF8F1; border: 1.5px solid #CFC6B2; border-radius: 2px">
@@ -507,7 +533,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       </article>
       <article style="display: flex; flex-direction: column; gap: 10px; padding: clamp(18px, 2vw, 24px); background: #FBF8F1; border: 1.5px solid #CFC6B2; border-radius: 2px">
         <h3 style="margin: 0; font-size: 20px; line-height: 1.25; font-weight: 700; color: #16201C">Recipe scaler</h3>
-        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">Paste any ingredient list, count grown-ups and kids, and get amounts you can actually measure, eggs rounded up, and a heads-up when it's time to cook in batches.</p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">Paste any ingredient list, count <span style="white-space: nowrap">grown-ups</span> and kids, and get amounts you can actually measure, eggs rounded up, and a <span style="white-space: nowrap">heads-up</span> when it's time to cook in batches.</p>
         <a href="scaler.html" style="margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: #16201C; text-decoration: none">Scale a recipe →</a>
       </article>
     </div>
@@ -522,7 +548,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     <h2 id="contact-h" style="margin: 0; max-width: 14ch; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 900; text-transform: uppercase; font-size: clamp(56px, 8vw, 120px); line-height: 0.86">Tell me what eats your week.</h2>
     <p style="margin: 0; max-width: 56ch; font-size: 20px; color: #C9D2CB">Two lines is plenty: what you run, and the part that never gets done. I read every message myself and write back with the next step.</p>
     <div style="display: flex; flex-wrap: wrap; gap: 14px">
-      <a href="start.html" class="btn-blaze" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 30px; background: #E8592B; color: #0E1A17; text-decoration: none; font-weight: 700; font-size: 18px; border-radius: 2px">Start a Blueprint · $1,500</a>
+      <a href="start.html" class="btn-blaze" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 30px; background: #E8592B; color: #0E1A17; text-decoration: none; font-weight: 700; font-size: 18px; border-radius: 2px">Start a Blueprint&nbsp;·&nbsp;$1,500</a>
       <a href="call.html" class="ghost" style="display: inline-flex; align-items: center; min-height: 60px; padding: 0 24px; border: 1.5px solid #4C5F56; color: #E9EEE9; text-decoration: none; font-weight: 600; font-size: 18px; border-radius: 2px"><span>Or grab a free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
     <p style="margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #93A39A">
@@ -582,7 +608,8 @@ a{color:#A93F17}a:hover{color:#16201C}
     $('rc-head').textContent = rc.head;
     $('rc-date').textContent = rc.date;
     $('rc-title').textContent = rc.title;
-    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v)); }).join('');
+    // T-21 G2: a value like "iPhone · iPad · Android" keeps each dot with its neighbours, as on the built page.
+    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v).replace(/ · /g, '&nbsp;·&nbsp;')); }).join('');
     $('rc-note').textContent = rc.note;
     var link = $('rc-link');
     if (rc.hasLink) { link.setAttribute('href', rc.link); link.textContent = rc.linkLabel + ' →'; }

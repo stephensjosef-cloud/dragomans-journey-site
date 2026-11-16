@@ -50,6 +50,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
 
+
 .stats{border-top:2px solid #16201C;border-bottom:1px solid #CFC6B2}
 .stats p{margin:0;padding:18px 0;font-size:17px;color:#3B4540}
 .stats strong{display:block;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(48px,5.4vw,68px);line-height:.9;color:#C2461B}
@@ -83,6 +84,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .prod a.go{display:inline-flex;align-items:center;min-height:44px;font-weight:700;text-decoration:none;color:#16201C}
 .prod a.go:hover{color:#A93F17}
 .count{font-size:14px;color:#5A635D}
+.prod.wide{grid-column:1/-1}
 .prod.feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
 .prod.feature .fb{display:flex;flex-direction:column;gap:12px}
 .prod.feature .acts{margin-top:8px}
@@ -95,7 +97,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .top{display:grid;grid-template-columns:minmax(0,1fr);gap:24px 40px;align-items:start}
 .top .proof{margin:0;font-size:clamp(20px,2vw,24px);line-height:1.4}
 .top img{width:100%;max-width:560px;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
-@media (min-width:800px){.top.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.top.has-log{grid-template-areas:'proof img' 'log img';grid-template-rows:auto 1fr}.top.has-log>.proof{grid-area:proof}.top.has-log>img{grid-area:img}.top.has-log>.sec{grid-area:log;margin-top:0}}
+@media (min-width:800px){.top.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.top.has-log{grid-template-areas:'proof img' 'log img';grid-template-rows:auto 1fr}.top.has-log>.proof{grid-area:proof}.top.has-log>img{grid-area:img}.top.has-log>.sec{grid-area:log}}
 .log.solo li{grid-template-columns:5.5em minmax(0,1fr)}
 @media (max-width:760px){.log.solo li{grid-template-columns:4.2em minmax(0,1fr);gap:4px 12px}.log.solo .line{grid-column:auto}}
 .join{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:24px;max-width:560px}
@@ -130,7 +132,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
         <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
         <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
-        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
@@ -143,7 +145,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-15 e43eed74c65a79cd -->
+<!-- studio.py 2026-11-16 e43eed74c65a79cd -->
   <div class="top has-img has-log">
     <p class="proof"><strong>Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.</strong></p>
     <img src="bird-league-then-now.jpg" width="1200" height="1331" alt="Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.">
@@ -166,7 +168,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </main>
 
 <footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
-  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
   <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
 </footer>
 </div>
@@ -178,6 +180,7 @@ function djCopy(text,label){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
   function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
 }
+function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}
 
 (function(){
 var ENDPOINT='https://dj-intake.stephens-josef.workers.dev/';

@@ -49,6 +49,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
+@media (min-width:800px){section[aria-labelledby="more-h"]{grid-template-columns:minmax(0,1fr) auto!important;column-gap:clamp(48px,6vw,96px)!important}section[aria-labelledby="more-h"]>div:first-child{max-width:62ch}}
 .fold{font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:0;margin:0;background:none;border:0;color:#A93F17;font-size:16px;font-weight:700;text-align:left;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
 .fold:hover{color:#16201C}
 .fold::after{content:'';flex:none;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-3px) rotate(45deg)}
@@ -145,7 +146,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
     </div>
   </div>
 
-  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="shotlist.html">Reel shot list</a> · <a href="captions.html">Caption fitter</a> · <a href="scaler.html">Recipe scaler</a></p>
+  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="shotlist.html">Reel shot list</a>&nbsp;·&nbsp;<a href="captions.html">Caption fitter</a>&nbsp;·&nbsp;<a href="scaler.html">Recipe scaler</a></p>
   <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Want the real numbers?</h2>
@@ -170,6 +171,7 @@ function djCopy(text,label){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
   function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
 }
+function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}
 document.addEventListener('click',function(e){var b=e.target.closest('.fold[aria-controls]');if(!b)return;var o=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(o));document.getElementById(b.getAttribute('aria-controls')).hidden=!o});
 
 (function(){
@@ -203,13 +205,13 @@ function hrs(n){return (n<10?(Math.round(n*10)/10):Math.round(n)).toLocaleString
 function addPreset(i){var p=PRESETS[i];lines.push({name:p[0],min:p[1],per:p[2],v:p[3],pi:i,id:++uid});renderLines();renderReceipt()}
 function renderPresets(){
   document.getElementById('presets').innerHTML=PRESETS.map(function(p,i){var used=lines.some(function(l){return l.pi===i});
-    return '<button type="button" class="chip add'+(used?' used':'')+'" data-p="'+i+'" '+(used?'aria-disabled="true"':'')+'>'+esc(p[0])+'</button>'}).join('');
+    return '<button type="button" class="chip add'+(used?' used':'')+'" data-p="'+i+'" '+(used?'aria-disabled="true"':'')+'>'+djNw(esc(p[0]))+'</button>'}).join('');
 }
 /* Each chore is a line on the receipt. "Change" opens its fields under it (T-18). */
 function renderLines(){
   renderPresets();
   document.getElementById('rows').innerHTML=lines.map(function(l,i){
-    return '<div class="row2" data-i="'+i+'"><div class="rl"><span data-o="name"></span><span data-o="money"></span></div><p class="rs"><span data-o="hrs"></span> · <span data-o="v"></span></p>'+
+    return '<div class="row2" data-i="'+i+'"><div class="rl"><span data-o="name"></span><span data-o="money"></span></div><p class="rs"><span data-o="hrs"></span>&nbsp;·&nbsp;<span data-o="v"></span></p>'+
       '<button type="button" class="fold noprint" aria-expanded="'+(!!l.open)+'" aria-controls="ed-'+l.id+'" data-o="change">Change</button>'+
       '<div class="ed noprint" id="ed-'+l.id+'"'+(l.open?'':' hidden')+'><p class="private">Guess. Close is good enough.</p><input aria-label="Chore" data-f="name" value="'+esc(l.name)+'">'+
       '<input aria-label="Minutes" type="number" min="0" step="5" data-f="min" value="'+l.min+'">'+
@@ -232,10 +234,10 @@ function receiptText(c){
 }
 function renderReceipt(){
   var c=calc(),d=new Date();
-  document.getElementById('p-head').innerHTML='<h2>BUSYWORK RECEIPT</h2><p class="c">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · 1 year of it</p><hr>';
+  document.getElementById('p-head').innerHTML='<h2>BUSYWORK RECEIPT</h2><p class="c">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'&nbsp;·&nbsp;1 year of it</p><hr>';
   var rows=document.querySelectorAll('#rows .row2'),f=document.getElementById('p-foot');
   c.rows.forEach(function(r,i){var el=rows[i];if(!el)return;
-    el.querySelector('[data-o=name]').textContent=r.l.name;
+    el.querySelector('[data-o=name]').innerHTML=djNw(esc(r.l.name));
     el.querySelector('[data-o=money]').textContent=money(r.h*c.rate);
     el.querySelector('[data-o=hrs]').textContent=hrs(r.h)+' a year';
     var v=el.querySelector('[data-o=v]');v.className='t-'+r.l.v;v.textContent=V[r.l.v][0];

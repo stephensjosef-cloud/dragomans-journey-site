@@ -29,7 +29,9 @@ a{color:#A93F17}a:hover{color:#16201C}
 .filt{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
 .filt:hover{border-color:#16201C}
 .filt[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:18px}
+.grid{display:flex;flex-wrap:wrap;gap:18px}
+/* T-21 G4: cards wrap like the old 360 px columns, and the cards on the last row stretch to fill it, so no row ends in an empty cell for any filter, four tools or five. */
+.grid>.card{flex:1 1 min(360px,100%);min-width:0}
 .card{display:flex;flex-direction:column;gap:12px;padding:clamp(22px,2.6vw,30px);background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;transition:transform 200ms ease,border-color 200ms ease}
 .card:hover{transform:translateY(-3px);border-color:#16201C}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
@@ -39,7 +41,7 @@ a{color:#A93F17}a:hover{color:#16201C}
 .card p{margin:0;font-size:16px;color:#3B4540}
 .card a.go{margin-top:auto;padding-top:8px;font-weight:700;text-decoration:none;color:#16201C}
 .card a.go:hover{color:#A93F17}
-.card.feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
+.card.feature{grid-column:1/-1;flex-basis:100%;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
 .card.feature .fb{display:flex;flex-direction:column;gap:12px}
 @media (min-width:800px){.card.feature{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}

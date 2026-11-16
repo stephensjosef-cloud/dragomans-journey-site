@@ -626,6 +626,135 @@ def layout_local_index():
     p.write_text(t, encoding="utf-8")
 
 
+# Walk fixes 02 (T-21, Nov 16, 2026). Layout and line breaking only: no word changes.
+# G3, Mainframe:
+#  - Exhibit A's code breaks only at spaces. Each token (WS-MONTHLY-RATE, S9(2)V9(5),
+#    COMP-3.) is one no-wrap piece; an operator stays with its operand ("ROUNDED =",
+#    "/ 12", "* WS-MONTHLY-RATE"), so neither a name nor an "=" is ever split or alone.
+#    Each line is its own block, so a wrapped line continues 2 characters in from where
+#    that line starts (a cascade, never level with the next real line). The text, spaces and newlines are exactly as before.
+#  - Exhibits B to D under 420 px: label above value, so no label breaks with one word
+#    alone ("Translations affected" at 390) and no field name splits; labels balance.
+#  - The four steps at 641 px and up share their rows (subgrid), so the body text starts
+#    at the same height in all four, eyebrow line or not.
+#  - The band about both readings: the right-hand paragraph sits at the top, level with
+#    the big line (like T-20's fix in section 3).
+MF_T21_CSS = """<style>
+.t21-ln{display:block}
+.t21-tk{white-space:nowrap}
+@media (max-width:419px){
+#xb-rows>div{grid-template-columns:minmax(0,1fr)!important;gap:2px!important}
+#xb-rows>div>strong{text-align:left!important}
+}
+#xb-rows>div>span{text-wrap:balance}
+@media (min-width:641px){
+.t20-steps>li{display:grid!important;grid-row:span 5;grid-template-rows:subgrid;row-gap:12px;align-content:start}
+.t20-steps>li>p:nth-last-child(2){grid-row:4}
+.t20-steps>li>p:last-child{grid-row:5}
+}
+.t21-thesis{align-items:start!important}
+</style>
+"""
+OPERATORS = ("=", "/", "*", "+", "-")
+
+
+def code_lines(code):
+    """Exhibit A's code, each line a block of no-wrap tokens; same characters exactly."""
+    out = []
+    for line in code.split("\n"):
+        lead = len(line) - len(line.lstrip(" "))
+        parts = re.split(r"( +)", line[lead:])           # tokens and the runs of spaces between
+        words, gaps = parts[0::2], parts[1::2]
+        groups, i = [], 0                                  # [text, the spaces after it]
+        while i < len(words):
+            w = words[i]
+            if not w:
+                i += 1
+            elif w in OPERATORS and i == len(words) - 1 and groups:   # "ROUNDED =" at a line end
+                groups[-1] = [groups[-1][0] + groups[-1][1] + w, ""]
+                i += 1
+            elif w in OPERATORS and i + 1 < len(words):                # "/ 12", "* WS-MONTHLY-RATE"
+                groups.append([w + gaps[i] + words[i + 1], gaps[i + 1] if i + 1 < len(gaps) else ""])
+                i += 2
+            else:
+                groups.append([w, gaps[i] if i < len(gaps) else ""])
+                i += 1
+        body = "".join(f'<span class="t21-tk">{g}</span>{gap}' for g, gap in groups)
+        pad = lead + 2
+        out.append(f'<span class="t21-ln" style="padding-left:{pad}ch;text-indent:-{pad}ch">{" " * lead}{body}\n</span>')
+    out[-1] = out[-1][:-len("\n</span>")] + "</span>"     # the last line had no newline
+    return "".join(out)
+
+
+def layout_mainframe_t21():
+    p = OUT / "mainframe.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, "</head>", MF_T21_CSS + "</head>")
+    m = re.findall(r'(<pre [^>]*class="t20-code">)(.*?)(</pre>)', t, re.S)
+    assert len(m) == 1, "Exhibit A code block"
+    head, code, tail = m[0]
+    new = code_lines(code)
+    assert re.sub(r"<[^>]+>", "", new) == code, "Exhibit A's code text changed"
+    t = rep(t, head + code + tail, head + new + tail)
+    t = rep(t, 'grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 64px; align-items: center">\n    <p style="margin: 0; font-family: \'Newsreader\'',
+            'grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 64px; align-items: center" class="t21-thesis">\n    <p style="margin: 0; font-family: \'Newsreader\'')
+    p.write_text(t, encoding="utf-8")
+
+
+# G5 and G6, Local Route:
+#  - 900 px and up: the Results card fills the section's width (T-20 held it to 860 px);
+#    its note keeps a 72ch measure (by padding, so its dashed rule still spans the card).
+#  - 1200 px and up: the FAQ lays its questions out in two columns, so the section fills
+#    its width; each answer keeps its 62ch measure. Narrower, one column as before.
+#  - 700 px and up: the reply-status dot hangs left of the text, so the line shares the
+#    left edge of the buttons above it.
+#    Narrower, the dot stays beside its text instead of sitting alone on a line above it.
+#  - Up to 699 px: "How it works" reads as one line through all three steps: a vertical
+#    rule from the first dot to the last, each dot on it, every step the same.
+#  - Up to 529 px: the "Start here" tiles size to their words (no 104 px floor); the grid
+#    still gives tiles in one row the same height.
+#  - Up to 699 px the three step headings share the size that keeps "THE BLUEPRINT · $1,500"
+#    on one line beside the rule; the cards' price lines step down from 14 to 13 px
+#    (12.5 px under 360), so a line joined by " · " breaks in fewer, fuller lines.
+#  - Under 360 px the drop-in line "ONCE A MONTH · SANTA ROSA · FREE" sets its letters a touch
+#    closer, so it holds on one line instead of splitting the place name.
+#  - The free tools cards (G4): the last row's cards stretch to fill it, four tools or five,
+#    as on the work page (the 200 px columns left a gap at 768 and 1024 px).
+LOCAL_T21_CSS = """<style>
+@media (min-width:900px){#proof>div>:last-child{max-width:none}#rc-note,#rc-src-foot{padding-right:max(0px,calc(100% - 72ch))}}
+@media (min-width:1200px){
+#faq>div>:last-child{max-width:none;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(40px,4vw,64px);align-items:stretch}
+}
+#contact p:has(>#sr-dot){flex-wrap:nowrap!important}
+#sr-dot{flex:none}
+@media (min-width:700px){
+#contact p:has(>#sr-dot){position:relative}
+#sr-dot{position:absolute;left:-19px;top:50%;margin-top:-4.5px}
+}
+@media (max-width:699px){
+#route ol{grid-template-columns:minmax(0,1fr)!important;border-top:0!important}
+#route ol>li{padding:0 0 34px 34px!important}
+#route ol>li:last-child{padding-bottom:0!important}
+#route ol>li>span[aria-hidden="true"]:first-child{top:-2px!important;left:0!important}
+#route ol>li:not(:last-child)::before{content:"";position:absolute;left:9.5px;top:9px;bottom:-9px;width:3px;background:#16201C}
+#route ol>li h3{font-size:min(38px,calc(10.6vw - 3.4px))!important}
+}
+@media (max-width:529px){[data-pick]{min-height:0!important}}
+article[data-card]>p:last-child{font-size:13px!important}
+@media (max-width:359px){article[data-card]>p:last-child{font-size:12.5px!important}}
+@media (max-width:359px){#dropin span[style*="letter-spacing: 0.1em"]{letter-spacing:.06em!important}}
+#tools>div>div{display:flex!important;flex-wrap:wrap}
+#tools>div>div>article{flex:1 1 min(200px,100%);min-width:0}
+</style>
+"""
+
+
+def layout_local_t21():
+    p = OUT / "local.html"
+    t = p.read_text(encoding="utf-8")
+    t = rep(t, "</head>", LOCAL_T21_CSS + "</head>")
+    p.write_text(t, encoding="utf-8")
+
 # Landmarks on Home and 404 (T-20 F9): the letterhead is the page's header, and Home
 # gets one <main> around its content, so no visible text sits outside a landmark.
 def add_landmarks():
@@ -720,6 +849,8 @@ add_free_tools()
 add_phone_menu()
 layout_mainframe()
 layout_local_index()
+layout_mainframe_t21()
+layout_local_t21()
 add_landmarks()
 add_wrap()
 fix_contrast()

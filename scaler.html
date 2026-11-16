@@ -49,6 +49,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
+@media (min-width:800px){section[aria-labelledby="more-h"]{grid-template-columns:minmax(0,1fr) auto!important;column-gap:clamp(48px,6vw,96px)!important}section[aria-labelledby="more-h"]>div:first-child{max-width:62ch}}
 
 .lay{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:28px;align-items:start}
 @media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr)}}
@@ -97,7 +98,7 @@ td.note b{color:#A93F17;font-weight:600}
         <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
         <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
-        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
@@ -125,10 +126,10 @@ pinch of salt</textarea>
       <p class="private" style="margin-top:8px">One ingredient per line, any format: 1 1/2 cups, 1½ cups, 3 Tbsp, 200 g, 2 large eggs.</p>
       <div class="who">
         <label><span>Recipe serves</span><input id="serves" type="number" min="1" step="1" value="4"></label>
-        <label><span>Grown-ups</span><input id="adults" type="number" min="0" step="1" value="2"></label>
+        <label><span><span style="white-space: nowrap">Grown-ups</span></span><input id="adults" type="number" min="0" step="1" value="2"></label>
         <label><span>Kids</span><input id="kids" type="number" min="0" step="1" value="20"></label>
       </div>
-      <p class="private" style="margin-top:8px">A kid counts as half a portion. Set grown-ups to the whole group if everyone eats like a grown-up.</p>
+      <p class="private" style="margin-top:8px">A kid counts as half a portion. Set <span style="white-space: nowrap">grown-ups</span> to the whole group if everyone eats like a <span style="white-space: nowrap">grown-up</span>.</p>
     </section>
 
     <section class="panel" aria-labelledby="o-h" aria-live="polite">
@@ -145,20 +146,20 @@ pinch of salt</textarea>
     </section>
   </div>
 
-  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="shotlist.html">Reel shot list</a> · <a href="captions.html">Caption fitter</a> · <a href="receipt.html">Busywork receipt</a></p>
+  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="shotlist.html">Reel shot list</a>&nbsp;·&nbsp;<a href="captions.html">Caption fitter</a>&nbsp;·&nbsp;<a href="receipt.html">Busywork receipt</a></p>
   <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Built from a real kitchen</h2>
-      <p style="margin:0;font-size:18px;color:#C9D2CB">This is one trick from a cooking app I'm building for a Sonoma County children's nonprofit. If your program has a binder of recipes or lessons, start with a free 15-minute call.</p>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">This is one trick from a cooking app I'm building for a Sonoma County children's nonprofit. If your program has a binder of recipes or lessons, start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
-      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1A17;text-decoration:none;font-weight:700;border-radius:2px">Free 15-minute call</a>
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1A17;text-decoration:none;font-weight:700;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
 </main>
 
 <footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
-  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
   <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
 </footer>
 </div>
@@ -170,6 +171,7 @@ function djCopy(text,label){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
   function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
 }
+function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}
 
 (function(){
 var UF={'½':.5,'⅓':1/3,'⅔':2/3,'¼':.25,'¾':.75,'⅕':.2,'⅖':.4,'⅗':.6,'⅘':.8,'⅙':1/6,'⅚':5/6,'⅛':.125,'⅜':.375,'⅝':.625,'⅞':.875};

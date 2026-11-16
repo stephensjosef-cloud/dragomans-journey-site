@@ -320,7 +320,8 @@ def build_local():
     $('rc-head').textContent = rc.head;
     $('rc-date').textContent = rc.date;
     $('rc-title').textContent = rc.title;
-    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v)); }).join('');
+    // T-21 G2: a value like "iPhone · iPad · Android" keeps each dot with its neighbours, as on the built page.
+    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v).replace(/ · /g, '&nbsp;·&nbsp;')); }).join('');
     $('rc-note').textContent = rc.note;
     var link = $('rc-link');
     if (rc.hasLink) { link.setAttribute('href', rc.link); link.textContent = rc.linkLabel + ' →'; }

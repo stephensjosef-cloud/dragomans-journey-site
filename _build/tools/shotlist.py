@@ -195,7 +195,7 @@ function captions(role){
 }
 function chips(id,opts,key){
   var el=document.getElementById(id);
-  el.innerHTML=opts.map(function(o){return '<button type="button" class="chip" data-k="'+key+'" data-v="'+o[0]+'" aria-pressed="'+(String(st[key])===String(o[0]))+'">'+o[1]+'</button>'}).join('');
+  el.innerHTML=opts.map(function(o){return '<button type="button" class="chip" data-k="'+key+'" data-v="'+o[0]+'" aria-pressed="'+(String(st[key])===String(o[0]))+'">'+djNw(o[1])+'</button>'}).join('');
 }
 function plan(){
   var T=TYPES[st.type], w=GOALS[st.goal].w, sum=0;
@@ -228,16 +228,16 @@ function render(){
   document.getElementById('strip').innerHTML=clips.map(function(c){return '<span class="r-'+c.role+'" style="flex:'+c.sec+'">'+c.no+'</span>'}).join('');
   document.getElementById('striplabel').textContent=st.len+' seconds, 10 clips. Hook first, the ask last.';
   document.getElementById('edit').innerHTML=clips.map(function(c){
-    return '<div class="clip"><span class="no">'+c.no+'</span><span class="role r-'+c.role+'">'+ROLE_NAME[c.role]+'</span><span class="sec">'+c.sec+' s</span><p>'+c.text+'</p>'+
-      (c.cap?'<p class="cap">On-screen text: <b>'+c.cap+'</b></p>':'')+'</div>';
+    return '<div class="clip"><span class="no">'+c.no+'</span><span class="role r-'+c.role+'">'+ROLE_NAME[c.role]+'</span><span class="sec">'+c.sec+' s</span><p>'+djNw(c.text)+'</p>'+
+      (c.cap?'<p class="cap">On-screen text: <b>'+djNw(c.cap)+'</b></p>':'')+'</div>';
   }).join('');
   var groups={};clips.forEach(function(c){(groups[c.spot]=groups[c.spot]||[]).push(c)});
   var spotOrder=Object.keys(T.spots).filter(function(s){return groups[s]});
   document.getElementById('shoot').innerHTML=spotOrder.map(function(s,i){
-    return '<div class="spot"><h3>Stop '+(i+1)+': '+T.spots[s]+'</h3><ol>'+groups[s].map(function(c){return '<li><b>#'+c.no+'</b><span>'+c.text+'</span></li>'}).join('')+'</ol></div>';
+    return '<div class="spot"><h3>Stop '+(i+1)+': '+T.spots[s]+'</h3><ol>'+groups[s].map(function(c){return '<li><b>#'+c.no+'</b><span>'+djNw(c.text)+'</span></li>'}).join('')+'</ol></div>';
   }).join('');
   var rules=['Hold the phone upright, the way people watch.','Count to five on every clip, then stop. Short clips are easy to trim and impossible to stretch.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
-  document.getElementById('rules').innerHTML=rules.map(function(r){return '<li>'+r+'</li>'}).join('');
+  document.getElementById('rules').innerHTML=rules.map(function(r){return '<li>'+djNw(r)+'</li>'}).join('');
   window._dj=clips;
 }
 document.addEventListener('click',function(e){

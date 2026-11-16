@@ -49,6 +49,7 @@ textarea{min-height:140px;resize:vertical;line-height:1.5}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
+@media (min-width:800px){section[aria-labelledby="more-h"]{grid-template-columns:minmax(0,1fr) auto!important;column-gap:clamp(48px,6vw,96px)!important}section[aria-labelledby="more-h"]>div:first-child{max-width:62ch}}
 .fold{font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:0;margin:0;background:none;border:0;color:#A93F17;font-size:16px;font-weight:700;text-align:left;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:5px}
 .fold:hover{color:#16201C}
 .fold::after{content:'';flex:none;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-3px) rotate(45deg)}
@@ -160,14 +161,14 @@ input[type=file]{padding:8px;min-height:auto;background:transparent;border-style
     </div></div>
   </div>
 
-  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="shotlist.html">Reel shot list</a> · <a href="receipt.html">Busywork receipt</a> · <a href="scaler.html">Recipe scaler</a></p>
+  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: <a href="shotlist.html">Reel shot list</a>&nbsp;·&nbsp;<a href="receipt.html">Busywork receipt</a>&nbsp;·&nbsp;<a href="scaler.html">Recipe scaler</a></p>
   <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Rather hand it off?</h2>
-      <p style="margin:0;font-size:18px;color:#C9D2CB">Captions are one step of the reels I make for local businesses and nonprofits. Start with a free 15-minute call.</p>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">Captions are one step of the reels I make for local businesses and nonprofits. Start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
-      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">Free 15-minute call</a>
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
 </main>
@@ -185,6 +186,7 @@ function djCopy(text,label){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
   function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
 }
+function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}
 document.addEventListener('click',function(e){var b=e.target.closest('.fold[aria-controls]');if(!b)return;var o=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(o));document.getElementById(b.getAttribute('aria-controls')).hidden=!o});
 
 (function(){

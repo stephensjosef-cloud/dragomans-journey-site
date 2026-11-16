@@ -243,6 +243,91 @@ add('mainframe.html', mainframe())
 if CF_BEACON_TOKEN:
     beacon(CF_BEACON_TOKEN)
 
+
+# ---------------- line breaking (T-21, Nov 16, 2026) ----------------
+# The last thing done to every page, after the structured data above (which reads the
+# FAQ's <span> markup) and after every exact-match pass (plain, intent, voice2), so no
+# exact match can miss. Visible text only: nothing inside script, style, code, pre,
+# title, textarea, svg or an element that is already no-wrap, and never an attribute.
+# The rules (a hyphen pair in a no-wrap span; " · " held to both neighbours) live in
+# tools/chrome.py as nobreak(), which the tool scripts use too. No word changes: the
+# visible text before and after must match, with a no-break space read as a space.
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'tools'))
+import chrome  # noqa: E402
+
+RAW = ('script', 'style', 'textarea', 'title')                 # contents are not markup
+SKIP = RAW + ('code', 'pre', 'svg', 'head', 'option', 'select', 'template', 'noscript')
+VOID = ('area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr')
+TAG = re.compile(r"""<!--.*?-->|<![^>]*>|</?[A-Za-z][^\s/>]*(?:[^"'>]|"[^"]*"|'[^']*')*>""", re.S)
+NOWRAP_STYLE = re.compile(r"""\bstyle\s*=\s*(["'])[^"']*white-space:\s*nowrap""", re.I)
+
+
+def visible(page):
+    """The page's text as a reader gets it: tags out, entities decoded, spaces collapsed."""
+    t = re.sub(r'<(script|style|title|textarea)\b.*?</\1\s*>', ' ', page, flags=re.S | re.I)
+    return re.sub(r'[\s ]+', ' ', html.unescape(re.sub(r'<[^>]+>', '', t))).strip()
+
+
+FLEX_STYLE = re.compile(r"""\bstyle\s*=\s*(["'])[^"']*display:\s*(?:inline-)?(?:flex|grid)""", re.I)
+
+
+def nobreak_text(text, parent):
+    """One run of text. In a flex or grid box (the call buttons) each piece of text
+    becomes its own flex item and the spaces around a new span vanish, so there the
+    whole run goes in one plain <span>, as T-20 did for the call link."""
+    done = chrome.nobreak(text)
+    if done != text and '<span' in done and parent and FLEX_STYLE.search(parent):
+        core = done.strip()
+        lead, trail = done[:len(done) - len(done.lstrip())], done[len(done.rstrip()):]
+        done = lead + '<span>' + core + '</span>' + trail
+    return done
+
+
+def nobreak_page(page):
+    out, pos, skip = [], 0, None        # skip: [tag name, nesting depth] while inside
+    prev = ''                           # the tag just before this run of text
+    for m in TAG.finditer(page):
+        if m.start() < pos:
+            continue
+        text = page[pos:m.start()]
+        out.append(text if skip else nobreak_text(text, prev if not prev.startswith('</') else ''))
+        tag = m.group(0)
+        prev = tag
+        out.append(tag)
+        pos = m.end()
+        tm = re.match(r'<(/?)([A-Za-z][^\s/>]*)', tag)
+        if not tm:
+            continue
+        closing, name = tm.group(1) == '/', tm.group(2).lower()
+        if name in RAW and not closing:          # copy a raw element whole, up to its end tag
+            end = re.compile(r'</%s\s*>' % name, re.I).search(page, pos)
+            stop = end.end() if end else len(page)
+            out.append(page[pos:stop])
+            pos = stop
+            continue
+        if name in VOID or tag.endswith('/>'):
+            continue
+        if skip:
+            if name == skip[0]:
+                skip[1] += -1 if closing else 1
+                if skip[1] == 0:
+                    skip = None
+        elif not closing and (name in SKIP or NOWRAP_STYLE.search(tag)):
+            skip = [name, 1]
+    out.append(page[pos:] if skip else chrome.nobreak(page[pos:]))
+    return ''.join(out)
+
+
+
+for name in pages:
+    done = nobreak_page(pages[name])
+    if visible(done) != visible(pages[name]):
+        problems.append('%s: the line-breaking pass changed the visible text' % name)
+    elif nobreak_page(done) != done:
+        problems.append('%s: the line-breaking pass is not stable on a second run' % name)
+    else:
+        pages[name] = done
+
 # ---------------- write ----------------
 if problems:
     print('FINAL: %d problem(s), nothing written:' % len(problems))

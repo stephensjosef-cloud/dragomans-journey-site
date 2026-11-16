@@ -16,6 +16,21 @@ def check(name, cond, detail=''):
     (ok if cond else bad).append(name + ('' if cond else f'  {detail}'))
 
 
+# T-21 (Nov 16, 2026) changes line breaking only: a hyphen pair sits in a no-wrap span, a " · "
+# is held to its neighbours by no-break spaces, a call button's words sit in one plain span,
+# and the tool pages carry the call band rule and the djNw() helper. un21() takes those back
+# out, for the older checks that compare markup with a build from before T-21. The T-21 block
+# checks each of them on its own.
+def un21(s):
+    import re as _r
+    s = _r.sub(r'<span>((?:(?!</?span)[^<])*<span style="white-space: nowrap">[^<]*</span>(?:(?!</?span)[^<])*)</span>', r'\1', s)
+    s = _r.sub(r'<span style="white-space: nowrap">([^<]*)</span>', r'\1', s)
+    s = s.replace('&nbsp;·&nbsp;', ' · ').replace(chr(160) + chr(183) + chr(160), ' ' + chr(183) + ' ')   # escaped, or read with html.unescape
+    s = _r.sub(r'\n@media \(min-width:800px\)\{section\[aria-labelledby="more-h"\][^\n]*', '', s)
+    s = _r.sub(r'\nfunction djNw\(s\)[^\n]*', '', s)
+    return s
+
+
 def route_fonts(page):
     def gf(route):
         u = route.request.url
@@ -338,7 +353,8 @@ with sync_playwright() as p:
     check('local free tools section sits right before contact', bool(sec) and bool(_re.search(_re.escape(sec) + r'\s*<section id="contact"', src)))
     check('local free tools heading', '>Free tools for your pile</h2>' in sec)
     check(f'local free tools section links the {len(LINKED)} tools (the checkup only once it is live, T-20 F2)', sorted(_re.findall(r'href="([a-z]+\.html)"', sec)) == sorted(LINKED), sec[:200])
-    work = urlopen(BASE + 'work.html').read().decode('utf-8')
+    work = un21(urlopen(BASE + 'work.html').read().decode('utf-8'))   # T-21: compared without its line-breaking spans
+    sec = un21(sec)
     for href, title in LINKED.items():
         para = _re.search(r'<h2>' + title + r'</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + href, work)
         check(f'local card for {href} matches the work page', bool(para) and f'>{title}</h3>' in sec and f'>{para.group(1)}</p>' in sec)
@@ -452,7 +468,7 @@ with sync_playwright() as p:
         check('local has the Blueprint and the three cards as offers', [o.get('name') for o in offers][:1] == ['The Blueprint'] and len(offers) == 4
               and [o.get('name') for o in offers][1:] == [_html.unescape(_re.sub(r'<[^>]+>', '', h)) for h in
                                                          _re.findall(r'data-card="[^"]+".*?<h3[^>]*>(.*?)</h3>', src, _re.S)], str([o.get('name') for o in offers]))
-        check('local Blueprint is a fixed $1,500 as the page says', offers and offers[0].get('price') == 1500 and '>The Blueprint · $1,500</h3>' in src, str(offers[:1]))
+        check('local Blueprint is a fixed $1,500 as the page says', offers and offers[0].get('price') == 1500 and '>The Blueprint · $1,500</h3>' in un21(src), str(offers[:1]))   # T-21 G2: the dot's spaces don't break
         qs = faq.get('mainEntity', [])
         nbtn = len(_re.findall(r'<button[^>]*data-faq="', src))
         check('local FAQ count equals the data-faq buttons', len(qs) == nbtn and nbtn > 0, f'{len(qs)} vs {nbtn}')
@@ -676,7 +692,8 @@ with sync_playwright() as p:
             check('studio products in one column at 390', len({b_[1] for b_ in boxes}) == 1 and len(full) == len(boxes), str(boxes))
         else:
             check('studio products in two columns at 1440', len({b_[1] for b_ in boxes}) == 2, str(boxes))
-            check('Bird League spans the full width at 1440', full == ['birdleague'], str(full))
+            # T-21 G4: a card alone on the last row spans it too (today Chucklefits), so no row ends in an empty cell.
+            check('Bird League spans the full width at 1440 (and, T-21 G4, a card alone on its row)', full == ['birdleague', 'chucklefits'], str(full))
         q.screenshot(path=f'{SHOTS}/t08-studio-{w}.png', full_page=True)
 
     # T-16 N1: the home page's "Shipped lately" strip is gone; the header's Studio link stays.
@@ -1088,7 +1105,7 @@ with sync_playwright() as p:
     q = newpage(1440); q.goto(BASE + 'mainframe.html'); q.wait_for_timeout(300)
     toc = q.locator('[data-toc] span').evaluate_all('e => e.map(s => s.textContent.trim()).filter(t => /^0[0-9]$/.test(t))')
     check('N24: the audit report still lists 01 to 07', toc == ['01', '02', '03', '04', '05', '06', '07'], str(toc))
-    lone = q.evaluate('[...document.querySelectorAll("span")].filter(s => /^0[0-9]$/.test(s.textContent.trim()) && !s.closest("[data-toc]")).length')
+    lone = q.evaluate('[...document.querySelectorAll("span")].filter(s => /^0[0-9]$/.test(s.textContent.trim()) && !s.closest("[data-toc], pre")).length')   # T-21 G3: the code's own "05" token sits in a span now
     check('N24: no lone section number left on the page', lone == 0, str(lone))
     check('N24: no empty column left where 05 was', q.eval_on_selector('#s5 > div', 'e => e.children.length === 1 && !!e.firstElementChild.querySelector("#s6-h")'))
     check('N24: the section about Josef keeps its photo column', q.locator('#s7 > div > div').first.locator('img, [role="img"]').count() == 1
@@ -1140,7 +1157,7 @@ with sync_playwright() as p:
                  'The Survey · one group of programs · from $8,000 · counts toward the next step', 'Take the Local Route →',
                  'Take the Mainframe Route →', 'How I work, on either side',
                  'For banks, insurers and agencies moving off COBOL with AI.'):
-        check(f'T-17: home keeps "{keep[:40]}"', src.count(keep) == 1)
+        check(f'T-17: home keeps "{keep[:40]}"', un21(src).count(keep) == 1)   # T-21: read without its line-breaking spans
     for w in (320, 390, 1440):
         q = newpage(w); q.goto(BASE + 'index.html'); q.wait_for_timeout(400)
         sw = q.evaluate('document.documentElement.scrollWidth')
@@ -1212,7 +1229,7 @@ with sync_playwright() as p:
                                 'The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.') for x in b_]
             if not CK_LIVE:   # T-20 F2: no checkup link while it isn't live
                 b_ = [x.replace(' · <a href="checkup.html">Website checkup</a>', '') for x in b_]
-            a = [x.replace('#0E1A17', '#0E1B17') for x in a]   # T-20 F9: the orange button's text is one shade darker
+            a = [un21(x).replace('#0E1A17', '#0E1B17') for x in a]   # T-20 F9: the orange button's text is one shade darker; T-21: line-breaking spans out
             check(f'T-18: {n} keeps its {"More free tools line" if "More" in rx else "dark panel"} as at T-17', a == b_ and len(a) == 1)
 
     # The words, exactly once where they are in the page itself, and the old ones gone.
@@ -1540,14 +1557,18 @@ with sync_playwright() as p:
         # 700 px and wider: the header as it was at T-17, to the pixel.
         HJS = '''(() => { const L = document.querySelector('a[href="work.html#free"]').parentElement.parentElement;
           const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)] };
-          return [r(L), [...L.querySelectorAll('*')].filter(e => e.getBoundingClientRect().width > 0).map(e => [e.tagName, e.tagName === 'svg' ? '' : e.textContent.trim().slice(0, 30), r(e)]),
+          return [r(L), [...L.querySelectorAll('*')].filter(e => e.getBoundingClientRect().width > 0 && !(e.tagName === 'SPAN' && e.closest('a') && (e.getAttribute('style') === 'white-space: nowrap' || (!e.attributes.length && e.querySelector('span[style="white-space: nowrap"]'))))).map(e => [e.tagName, e.tagName === 'svg' ? '' : e.textContent.trim().slice(0, 30), r(e)]),
                   Math.round(document.querySelector('h1').getBoundingClientRect().top)] })()'''
         for w in (700, 1024, 1440):
             got = []
             for base_, pgf in ((BASE, lambda: newpage(w)), (OLD, lambda: old_page(w))):
                 q = pgf(); q.goto(base_ + n + '.html'); settle(q)
                 got.append(q.evaluate(HJS))
-            check(f'T-18 S1: {n} at {w}: the header matches T-17 (no Menu button, every link where it was)', got[0] == got[1], str(got[0])[:200] + ' | ' + str(got[1])[:200])
+            # T-21 G1: the call button's words now sit in one span, which can move the right-hand links by
+            # a sub-pixel amount (1 px after rounding, at 1024); everything else must match exactly.
+            near = lambda a, b: type(a) == type(b) and (abs(a - b) <= 1 if isinstance(a, (int, float)) else
+                                                        (len(a) == len(b) and all(near(x, y) for x, y in zip(a, b))) if isinstance(a, list) else a == b)
+            check(f'T-18 S1: {n} at {w}: the header matches T-17 (no Menu button, every link where it was; T-21: within 1 px)', near(got[0], got[1]), str(got[0])[:200] + ' | ' + str(got[1])[:200])
     for n in ('local', 'mainframe', 'briefing', 'comp3', '404'):
         src_ = urlopen(BASE + n + '.html').read().decode('utf-8')
         check(f'T-18 S1: {n} keeps its header, no Menu button', 'djm-btn' not in src_)
@@ -1916,7 +1937,7 @@ with sync_playwright() as p:
     sm = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
     check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
     old_ck = t19_file('checkup.html').decode('utf-8').replace('\r\n', '\n')
-    new_ck = SRC20['checkup.html'].replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')
+    new_ck = un21(SRC20['checkup.html']).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out
     check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck)
     check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
     WORK_CARD = r'\n    <article class="card" data-k="free">(?:(?!</article>).)*?href="checkup\.html".*?</article>'
@@ -1941,7 +1962,7 @@ with sync_playwright() as p:
                 break
         if built:
             outd = os.path.join(bd, 'out')
-            rd = lambda f: open(os.path.join(outd, f), encoding='utf-8').read()
+            rd = lambda f: un21(open(os.path.join(outd, f), encoding='utf-8').read())   # T-21: line-breaking spans out
             old = lambda f: t19_file(f).decode('utf-8')
             check('T-20 F2 (address set): the work page card comes back exactly as before',
                   _re.findall(WORK_CARD, rd('work.html'), _re.S) == _re.findall(WORK_CARD, old('work.html'), _re.S) and len(_re.findall(WORK_CARD, rd('work.html'), _re.S)) == 1)
@@ -2203,6 +2224,429 @@ with sync_playwright() as p:
     for name, fill, btn, done in (('start', fill_start20, '#bp-send', '#bp-done'), ('call', fill_call, '#cl-send', '#cl-done'), ('briefing', fill_brief, '#br-send', '#br-done')):
         a, b_ = sent19(BASE, name, fill, btn, done), sent19(OLD19, name, fill, btn, done)
         check(f'T-20: {name} still sends, and sends exactly what it sent before', a == b_ and len(a[0]) == 1 and a[1], str(a)[:300] + ' | ' + str(b_)[:300])
+
+    # ---------------- T-21: walk fixes 02 (G1 to G6), Nov 16, 2026
+    # Layout and line breaking only. Comparisons are against origin/main before this item
+    # (T-20's last commit), read straight from git.
+    T20C = '172db8bfed500e4768671108aa28cf546b7df5f9'
+    T20_FILES = {}
+
+    def t20_file(path):
+        if path not in T20_FILES:
+            r = _sp18.run(['git', 'show', f'{T20C}:{path}'], cwd=here, capture_output=True)
+            T20_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T20_FILES[path]
+
+    def t20_page(w, h=900):
+        """A page that can open the T-20 build at BASE + '__t20/<file>'."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t20/', 1)[1].split('?')[0].split('#')[0]
+            body = t20_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__t20/**', serve)
+        return q
+    OLD20 = BASE + '__t20/'
+    check('T-21: the T-20 pages can be read from git for comparison', t20_file('index.html') is not None and t20_file('local.html') is not None)
+
+    def both20(name, fn, w=1440):
+        out_ = []
+        for base_, pgf in ((BASE, lambda: newpage(w)), (OLD20, lambda: t20_page(w))):
+            q = pgf(); q.goto(base_ + name + '.html'); settle(q); q.wait_for_timeout(300)
+            out_.append(fn(q))
+        return out_
+
+    SRC21 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}   # git holds LF
+    NW = '<span style="white-space: nowrap">'
+
+    # Every word as it was: each page's text content (after its scripts run), with the new
+    # spans out of the way and a no-break space read as a space, matches origin/main.
+    TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style').forEach(e => e.remove());
+      return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
+    for n in ALL_HTML:
+        a, b_ = both20(n[:-5], lambda q: q.evaluate(TEXT_JS))
+        if n.startswith('studio'):   # the build-date stamp and the log's day count move with the day the page is built
+            a, b_ = (_re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', x) for x in (a, b_))
+        check(f'T-21: {n} reads word for word as on origin/main', a == b_,
+              next((f'...{a[max(0, i - 40):i + 40]}... | ...{b_[max(0, i - 40):i + 40]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+    for n in ALL_HTML:
+        old = t20_file(n).decode('utf-8').replace('\r\n', '\n')
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'), ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>')):
+            a = [_re.sub(r'<span style="white-space: nowrap">([^<]*)</span>', r'\1', x) for x in _re.findall(rx, SRC21[n], _re.S)]
+            check(f'T-21: {n} keeps its {what} (no word changed)', a == _re.findall(rx, old, _re.S), str(a)[:160])
+        check(f'T-21: {n} keeps every link address', _re.findall(r'href="([^"]*)"', SRC21[n]) == _re.findall(r'href="([^"]*)"', old))
+    for n in ('local.html', 'mainframe.html', 'index.html'):
+        rx = r'<script type="application/ld\+json">(.*?)</script>'
+        check(f'T-21: {n}\'s structured data is exactly as before', _re.findall(rx, SRC21[n], _re.S) == _re.findall(rx, t20_file(n).decode('utf-8'), _re.S))
+    og_same = all(open(os.path.join(here, '..', 'og', f), 'rb').read() == t20_file('og/' + f) for f in os.listdir(os.path.join(here, '..', 'og')))
+    check('T-21: every share card in og/ is byte for byte as on origin/main', og_same)
+
+    # G1: no hyphen pair splits at its hyphen; the pass leaves code, scripts, links and addresses alone.
+    PAIR_SPLIT_JS = r'''(() => {
+      const out = [], seen = [];
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {acceptNode(n) {
+        const p = n.parentElement; if (!p || p.closest('script,style,code,pre,textarea,svg,[hidden],[aria-hidden="true"]')) return 2;
+        return p.getClientRects().length ? 1 : 2; }});
+      let n;
+      while ((n = w.nextNode())) for (const m of n.data.matchAll(/(?<![\p{L}\p{N}-])[\p{L}\p{N}]+-[\p{L}\p{N}]+(?![\p{L}\p{N}-])/gu)) {
+        const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length);
+        const tops = new Set([...r.getClientRects()].filter(x => x.width > 0.5).map(x => Math.round(x.top)));
+        seen.push(m[0]); if (tops.size > 1) out.push(m[0]);
+      }
+      return {split: out, seen};
+    })()'''
+    LISTED = {'captions.html': ['15-minute'], 'checkup.html': ['15-minute'], 'scaler.html': ['15-minute'], 'work.html': ['15-minute', 'cooking-class'],
+              'shotlist.html': ['15-minute'], 'local.html': ['three-month', 'cooking-class'], 'start.html': ['one-page'], 'case-reels.html': ['cooking-class']}
+    for w in (320, 390, 1440):
+        for n in ALL_HTML:
+            q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(600)
+            r = q.evaluate(PAIR_SPLIT_JS)
+            check(f'T-21 G1: at {w}, no hyphen pair on {n} breaks at its hyphen', r['split'] == [], str(r['split']))
+            for pair in LISTED.get(n, []):
+                if w < 1440:
+                    check(f'T-21 G1: at {w}, "{pair}" is on {n} and holds on one line', pair in r['seen'] and pair not in r['split'])
+            q.close()
+    q = newpage(320); q.goto(BASE + 'work.html'); settle(q)
+    h = q.evaluate("(() => { const e = [...document.querySelectorAll('#cards h2')].find(x => x.textContent.startsWith('One cooking-class shoot')); const s = e.querySelector('span'); return [s.textContent, s.getClientRects().length] })()")
+    check('T-21 G1: at 320 the work heading "One cooking-class shoot" keeps "cooking-class" on one line', h == ['cooking-class', 1], str(h))
+    q.close()
+    for n, pairs in LISTED.items():
+        for pair in pairs:
+            check(f'T-21 G1: "{pair}" on {n} sits in a no-wrap span', (NW + pair + '</span>') in SRC21[n])
+    check('T-21 G1: the call band button keeps its words and spaces ("Free 15-minute call")',
+          all(f'><span>Free {NW}15-minute</span> call</span></a>' in SRC21[n] for n in ('shotlist.html', 'captions.html', 'scaler.html')))
+    FLEX_JS = '''(() => [...document.querySelectorAll('span[style="white-space: nowrap"]')].filter(s => /flex|grid/.test(getComputedStyle(s.parentElement).display)).map(s => s.parentElement.textContent.trim()))()'''
+    for n in ALL_HTML:
+        q = newpage(1440); q.goto(BASE + n); settle(q)
+        check(f'T-21 G1: on {n} no no-wrap span sits straight in a flex or grid box (its spaces would vanish)', q.evaluate(FLEX_JS) == [], str(q.evaluate(FLEX_JS))[:200])
+        q.close()
+    for n in ALL_HTML:
+        s = SRC21[n]
+        pres = ''.join(_re.findall(r'<(?:pre|code|textarea|title)\b.*?</(?:pre|code|textarea|title)>', s, _re.S))
+        check(f'T-21 G1: on {n} nothing inside pre, code, textarea or title got a no-wrap span', NW not in pres)
+        # Every attribute value outside scripts and styles (links, labels, alt text, placeholders, data)
+        # is as on origin/main; only style and class may differ, and the Studio pages' build-date stamp.
+        def attrs21(src):
+            src = _re.sub(r'<script\b.*?</script>|<style\b.*?</style>|<!--.*?-->', '', src, flags=_re.S)
+            return sorted((a.lower(), v) for t in _re.findall(r'<[a-zA-Z][^<>]*>', src)
+                          for a, v in _re.findall(r'''\s([a-zA-Z][\w:-]*)\s*=\s*("[^"]*"|'[^']*')''', t) if a.lower() not in ('style', 'class', 'data-built'))
+        check(f'T-21 G1: on {n} every attribute is as on origin/main (the pass never writes inside one)', attrs21(s) == attrs21(t20_file(n).decode('utf-8')))
+        long_ = [x for x in _re.findall(NW + r'([^<]*)</span>', _re.sub(r'<script\b.*?</script>', '', s, flags=_re.S)) if len(x) > 24 or x.count('-') != 1]
+        check(f'T-21 G1: on {n} every wrapped pair is letters or digits with one hyphen, at most 24 characters', long_ == [], str(long_))
+    check('T-21 G1: three-part runs ("side-by-side", "year-to-date") and addresses are left to break as before',
+          'side-by-side' in SRC21['mainframe.html'] and NW + 'side-by-side' not in SRC21['mainframe.html'] and 'stephensjosef-cloud' in SRC21['mainframe.html'] and NW + 'stephensjosef' not in SRC21['mainframe.html'])
+    # The tools' own scripts use the same span where they write such text.
+    q = newpage(390); q.goto(BASE + 'shotlist.html'); settle(q)
+    q.evaluate("document.querySelector('.chip[data-k=\"type\"][data-v=\"gym\"]').click()"); q.wait_for_timeout(150)
+    check('T-21 G1: the shot list\'s script wraps "mid-cue" when it writes the clips (Gym or class)', (NW + 'mid-cue</span>') in q.inner_html('#edit') and 'mid-cue' in q.inner_text('#edit'))
+    q.close()
+    q = newpage(390); q.goto(BASE + 'receipt.html'); settle(q)
+    check('T-21 G1: the receipt\'s script wraps "follow-ups" on its chore chip', (NW + 'follow-ups</span>') in q.inner_html('#presets'))
+    q.close()
+    q = newpage(390); q.goto(BASE + 'comp3.html'); settle(q)
+    check('T-21 G1: the decoder\'s script wraps "half-byte" in its label', (NW + 'half-byte</span>') in q.inner_html('#out'))
+    q.close()
+
+    # G2: in " · " lists no line starts or ends with the dot.
+    DOT_JS = r'''(() => {
+      const out = [];
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {acceptNode(n) {
+        const p = n.parentElement; if (!p || p.closest('script,style,textarea,svg,[hidden],[aria-hidden="true"]')) return 2;
+        return p.getClientRects().length ? 1 : 2; }});
+      const box = (n, i) => { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); return [...r.getClientRects()].find(x => x.width > 0.5); };
+      const chars = []; let n;
+      while ((n = w.nextNode())) for (let i = 0; i < n.data.length; i++) if (/\S/.test(n.data[i]) && n.data[i] !== ' ') chars.push([n, i]);
+      chars.forEach(([n, i], k) => {
+        if (n.data[i] !== '·') return;
+        const d = box(n, i); if (!d) return;
+        const prev = chars[k - 1] && box(...chars[k - 1]), next = chars[k + 1] && box(...chars[k + 1]);
+        if (prev && prev.top < d.top - 4) out.push('starts a line: ' + n.data.trim().slice(0, 40));
+        if (next && next.top > d.top + 4) out.push('ends a line: ' + n.data.trim().slice(0, 40));
+      });
+      return out;
+    })()'''
+    for w in (320, 390, 1440):
+        for n in ALL_HTML:
+            q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(600)
+            r = q.evaluate(DOT_JS)
+            check(f'T-21 G2: at {w}, no line on {n} starts or ends with a " · " separator', r == [], str(r)[:200])
+            q.close()
+    for w in (320, 390):
+        q = newpage(w); q.goto(BASE + 'local.html'); settle(q)
+        for tab in ('app', 'method'):
+            q.evaluate(f"document.querySelector('[data-tab=\"{tab}\"]').click()"); q.wait_for_timeout(200)
+            check(f'T-21 G2: at {w}, local\'s {tab} result card has no separator at a line edge', q.evaluate(DOT_JS) == [], str(q.evaluate(DOT_JS)))
+        q.close()
+
+    # G3: Mainframe.
+    MF_OLD = t20_file('mainframe.html').decode('utf-8')
+    code_of = lambda s: _html.unescape(_re.sub(r'<[^>]+>', '', _re.search(r'<pre [^>]*class="t20-code">(.*?)</pre>', s, _re.S).group(1)))
+    check('T-21 G3: Exhibit A\'s code is character for character as before', code_of(SRC21['mainframe.html']) == code_of(MF_OLD))
+    for w in (320, 360, 390):
+        q = newpage(w); q.goto(BASE + 'mainframe.html'); settle(q)
+        r = q.evaluate('''(() => { const pre = document.querySelector('pre.t20-code');
+          const toks = [...pre.querySelectorAll('.t21-tk')];
+          return {split: toks.filter(t => new Set([...t.getClientRects()].map(x => Math.round(x.top))).size > 1).map(t => t.textContent),
+                  alone: toks.filter(t => /^[=*\\/+-]$/.test(t.textContent.trim())).map(t => t.textContent),
+                  words: toks.map(t => t.textContent),
+                  fs: parseFloat(getComputedStyle(pre).fontSize), scroll: [pre.scrollWidth, pre.clientWidth], page: document.documentElement.scrollWidth,
+                  indent: [...pre.querySelectorAll('.t21-ln')].filter(l => l.getClientRects().length && l.textContent.trim()).map(l => { const rs = [...l.querySelectorAll('.t21-tk')].map(t => t.getBoundingClientRect()); return rs.length > 1 ? Math.round(rs[rs.length - 1].left - rs[0].left) : 0 })} })()''')
+        check(f'T-21 G3: at {w} no COBOL name or token in Exhibit A breaks across lines', r['split'] == [], str(r['split']))
+        check(f'T-21 G3: at {w} no operator sits alone in Exhibit A', r['alone'] == [] and 'ROUNDED =' in r['words'], str(r['alone']))
+        check(f'T-21 G3: at {w} Exhibit A fits its box at {r["fs"]} px (11 px or more) with no sideways scroll, and the page has none', r['fs'] >= 11 and r['scroll'][0] <= r['scroll'][1] and r['page'] <= w, str(r))
+        q.close()
+    q = newpage(320); q.goto(BASE + 'mainframe.html'); settle(q)
+    ind = q.evaluate('''(() => [...document.querySelectorAll('pre.t20-code .t21-ln')].map(l => { const t = [...l.querySelectorAll('.t21-tk')]; const pre = l.closest('pre').getBoundingClientRect(); const cs = getComputedStyle(l.closest('pre'));
+        return t.map(x => [x.textContent, Math.round(x.getBoundingClientRect().left - pre.left - parseFloat(cs.paddingLeft)), Math.round(x.getBoundingClientRect().top)]) }))()''')
+    ch = q.evaluate("(() => { const s = document.createElement('span'); s.textContent = '0000000000'; document.querySelector('pre.t20-code').appendChild(s); const w = s.getBoundingClientRect().width / 10; s.remove(); return w })()")
+    cont = [(t[0], round(t[1] / ch)) for line in ind for k, t in enumerate(line) if k and t[2] > line[0][2] + 4 and t[2] != line[k - 1][2]]
+    lead = {line[0][0]: round(line[0][1] / ch) for line in ind if line}
+    check('T-21 G3: at 320 a wrapped Exhibit A line continues 2 characters in from where its own line starts',
+          bool(cont) and all(c in (2, 6) for _, c in cont) and lead.get('APR-RATE') == 4 and lead.get('COMPUTE') == 0, str(cont) + str(lead))
+    q.close()
+    for w in (320, 390):
+        q = newpage(w); q.goto(BASE + 'mainframe.html'); settle(q)
+        for tab in ('b', 'c', 'd'):
+            q.evaluate(f"document.querySelector('[data-ex=\"{tab}\"]').click()"); q.wait_for_timeout(200)
+            r = q.evaluate(r'''(() => [...document.querySelectorAll('#xb-rows > div')].map(row => { const [l, v] = row.children;
+                const lines = e => { const r = document.createRange(); r.selectNodeContents(e); return new Set([...r.getClientRects()].filter(x => x.width > .5).map(x => Math.round(x.top))).size };
+                const words = e => { const ws = []; const t = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = t.nextNode())) for (const m of n.data.matchAll(/\S+/g)) { const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length); const b = [...r.getClientRects()].filter(x => x.width > .5); ws.push([m[0], b.length, b.length ? Math.round(b[b.length - 1].top) : 0]) } return ws };
+                return {label: l.textContent, lw: words(l), vw: words(v)} }))()''')
+            alone = [x['label'] for x in r if len({t for _, _, t in x['lw']}) > 1 and sum(1 for _, _, t in x['lw'] if t == max(t2 for _, _, t2 in x['lw'])) == 1]
+            split = [wd for x in r for wd, nb, _ in x['vw'] + x['lw'] if nb > 1]
+            check(f'T-21 G3: at {w}, Exhibit {tab.upper()}: no label leaves one word alone on its last line', alone == [], str(alone))
+            check(f'T-21 G3: at {w}, Exhibit {tab.upper()}: no field name or word splits across lines', split == [], str(split))
+        q.close()
+    q = newpage(1440); q.goto(BASE + 'mainframe.html'); settle(q)
+    tops = q.evaluate("[...document.querySelectorAll('.t20-steps > li')].map(li => Math.round(li.querySelector('p').getBoundingClientRect().top))")
+    check('T-21 G3: at 1440 the body text of steps I to IV starts at the same height', len(tops) == 4 and len(set(tops)) == 1, str(tops))
+    eyebrows = q.evaluate("[...document.querySelectorAll('.t20-steps > li')].map(li => li.querySelectorAll('span').length)")
+    check('T-21 G3: only steps I and IV carry an eyebrow line, as before (no words added)', eyebrows == [2, 1, 1, 2], str(eyebrows))
+    v = q.evaluate("[...document.querySelectorAll('section[aria-label=Thesis] > div > p')].map(p => Math.round(p.getBoundingClientRect().top))")
+    check('T-21 G3: at 1440 the paragraph beside the band about both readings sits at its top', len(v) == 2 and abs(v[0] - v[1]) <= 2, str(v))
+    q.close()
+    q = newpage(390); q.goto(BASE + 'mainframe.html'); settle(q)
+    tops = q.evaluate("[...document.querySelectorAll('.t20-steps > li')].map(li => li.getBoundingClientRect().height)")
+    check('T-21 G3: on phones the steps stay one column with no empty eyebrow row', all(t > 0 for t in tops) and q.evaluate("getComputedStyle(document.querySelector('.t20-steps > li')).display") == 'flex', str(tops))
+    q.close()
+
+    # G4: no card grid ends with an empty slot; work in both checkup states.
+    LAST_JS = '''((sel) => { const g = document.querySelector(sel); const kids = [...g.children].filter(k => k.getClientRects().length);
+        const gb = g.getBoundingClientRect(); const top = Math.max(...kids.map(k => Math.round(k.getBoundingClientRect().top)));
+        const last = kids.filter(k => Math.round(k.getBoundingClientRect().top) === top);
+        return Math.round(gb.right - Math.max(...last.map(k => k.getBoundingClientRect().right))) })'''
+    def grids21(base_, label):
+        for w in (320, 390, 768, 1024, 1440):
+            q = newpage(w); q.goto(base_ + 'work.html'); settle(q)
+            for f in ('all', 'nonprofit', 'banking', 'own', 'free'):
+                q.click(f'.filt[data-f="{f}"]'); q.wait_for_timeout(120)
+                gap = q.evaluate(LAST_JS, '#cards')
+                check(f'T-21 G4 ({label}): at {w}, the work grid ("{f}") ends with no empty slot', gap <= 2, str(gap))
+            q.goto(base_ + 'studio.html'); settle(q)
+            check(f'T-21 G4 ({label}): at {w}, the Studio products grid ends with no empty slot', q.evaluate(LAST_JS, '#products') <= 2, str(q.evaluate(LAST_JS, '#products')))
+            q.goto(base_ + 'local.html'); settle(q)
+            check(f'T-21 G4 ({label}): at {w}, local\'s free tools cards end with no empty slot', q.evaluate(LAST_JS, '#tools > div > div') <= 2, str(q.evaluate(LAST_JS, '#tools > div > div')))
+            q.close()
+    grids21(BASE, 'checkup not live')
+    tmp21 = _tmp.mkdtemp()
+    srv = None
+    try:
+        bd = os.path.join(tmp21, '_build')
+        _shutil.copytree(here, bd, ignore=_shutil.ignore_patterns('out', 'vals.json', '__pycache__', 'trip', 'worker'))
+        fp = os.path.join(bd, 'tools', 'checkup.py')
+        open(fp, 'w', encoding='utf-8').write(ck_src.replace("\nvar CHECKUP_URL = '';", "\nvar CHECKUP_URL = 'https://dj-checkup.example.test/';", 1))
+        steps = [([sys.executable, t + '.py', '..'], os.path.join(bd, 'tools')) for t in ('shotlist', 'captions', 'receipt', 'scaler', 'checkup', 'studio')]
+        steps += [(st, bd) for st in (['node', 'dump.js', 'canvas', 'vals.json'], [sys.executable, 'build.py', 'canvas', 'out', 'vals.json'],
+                                      [sys.executable, 'enhance.py', 'out'], [sys.executable, 'plain.py', 'out'], [sys.executable, 'intent.py', 'out'],
+                                      [sys.executable, 'voice2.py', 'out'], [sys.executable, 'final.py', 'out'])]
+        built = True
+        for st, cwd_ in steps:
+            r = _sp18.run(st, cwd=cwd_, capture_output=True, text=True)
+            if r.returncode:
+                built = False
+                check('T-21 G4: the temp build with a checkup address runs', False, ' '.join(st[1:2]) + ': ' + (r.stdout + r.stderr)[-300:])
+                break
+        if built:
+            check('T-21 G4: the temp build with a checkup address has the fifth tool card', open(os.path.join(bd, 'out', 'work.html'), encoding='utf-8').read().count('href="checkup.html"') >= 1)
+            srv = _sp18.Popen([sys.executable, '-m', 'http.server', '8767', '--bind', '127.0.0.1'], cwd=os.path.join(bd, 'out'), stdout=_sp18.DEVNULL, stderr=_sp18.DEVNULL)
+            import time as _time21
+            _time21.sleep(1.5)
+            grids21('http://127.0.0.1:8767/', 'checkup live')
+    finally:
+        if srv:
+            srv.terminate(); srv.wait()
+        _shutil.rmtree(tmp21, ignore_errors=True)
+    check('T-21 G4: the temp copy is gone, and the real checkup.py still has no address',
+          not os.path.exists(tmp21) and "\nvar CHECKUP_URL = '';" in open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read())
+
+    # G5: Local at 1440.
+    q = newpage(1440); q.goto(BASE + 'local.html'); settle(q)
+    r = q.evaluate('''(() => { const s = document.querySelector('#proof > div'); const cs = getComputedStyle(s);
+        const inner = s.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        return [Math.round(document.getElementById('rc-panel').getBoundingClientRect().width), Math.round(inner)] })()''')
+    check('T-21 G5: at 1440 the Results card fills the section\'s content width', abs(r[0] - r[1]) <= 1, str(r))
+    for w, cols in ((1440, 2), (1200, 2), (1199, 1), (900, 1), (390, 1)):
+        q2 = newpage(w); q2.goto(BASE + 'local.html'); settle(q2)
+        r = q2.evaluate('''(() => { const items = [...document.querySelectorAll('[data-faq]')].map(b => b.parentElement);
+            const lefts = new Set(items.map(i => Math.round(i.getBoundingClientRect().left)));
+            const p = document.getElementById('faq-a-0'); const s = document.createElement('span'); s.style.cssText = 'display:inline-block;width:72ch';
+            p.appendChild(s); const max = s.getBoundingClientRect().width; s.remove();
+            return [lefts.size, Math.round(p.getBoundingClientRect().width), Math.round(max)] })()''')
+        check(f'T-21 G5: at {w} the FAQ lays its questions out in {cols} column{"s" if cols > 1 else ""}', r[0] == cols, str(r))
+        check(f'T-21 G5: at {w} an FAQ answer is no wider than 72 characters', r[1] <= r[2], str(r))
+        q2.close()
+    r = q.evaluate('''(() => [document.getElementById('sr-status').getBoundingClientRect().left, document.querySelector('#contact a.btn-blaze').getBoundingClientRect().left].map(Math.round))()''')
+    check('T-21 G5: at 1440 "I\'m off the clock..." shares the left edge of the buttons above it', abs(r[0] - r[1]) <= 1, str(r))
+    q.close()
+    for w in (1440, 390):
+        a, b_ = [], []
+        for base_, pgf, out_ in ((BASE, lambda: newpage(w), a), (OLD20, lambda: t20_page(w), b_)):
+            q = pgf(); q.goto(base_ + 'local.html'); settle(q)
+            st = lambda: q.evaluate("[...document.querySelectorAll('[data-faq]')].map(b => b.getAttribute('aria-expanded') + (document.getElementById(b.getAttribute('aria-controls')).hidden ? '-' : '+'))")
+            out_.append(st())
+            n_ = len(st())
+            for i in range(n_):
+                q.click(f'[data-faq="{i}"]'); q.wait_for_timeout(250); out_.append(st())
+            for i in range(n_):
+                q.focus(f'[data-faq="{i}"]'); q.keyboard.press('Enter' if i % 2 else 'Space'); q.wait_for_timeout(250); out_.append(st())
+            q.close()
+        check(f'T-21 G5: at {w} every FAQ item opens and closes by tap and by keyboard exactly as before', a == b_ and len(a) > 6, str(a[:3]) + ' | ' + str(b_[:3]))
+
+    # G6: the small ones.
+    q = newpage(320); q.goto(BASE + 'comp3.html'); settle(q)
+    r = q.evaluate(r'''(() => { const s = [...document.querySelectorAll('a.quiet span')].find(x => x.textContent.startsWith('Found a field')); const out = [];
+        const t = s.firstChild; for (const m of t.data.matchAll(/\S+/g)) { const r = document.createRange(); r.setStart(t, m.index); r.setEnd(t, m.index + m[0].length); out.push([m[0], Math.round(r.getClientRects()[0].top)]) } return out })()''')
+    last = [x for x, t in r if t == r[-1][1]]
+    check('T-21 G6: comp3 at 320, "Found a field with two readings?" leaves no word alone on its last line', len(last) >= 2, str(r))
+    q.close()
+    q = newpage(1440); q.goto(BASE + 'studio-birdleague.html'); settle(q)
+    r = q.evaluate('''(() => { const p = document.querySelector('.top > .proof').getBoundingClientRect(); const h = document.getElementById('log-h').getBoundingClientRect();
+        const j = document.getElementById('join').getBoundingClientRect(); const top = document.querySelector('.top').getBoundingClientRect();
+        return [Math.round(h.top - p.bottom), Math.round(j.top - top.bottom)] })()''')
+    check('T-21 G6: Bird League at 1440, "Shipped lately" gets the page\'s normal space under the bold line', abs(r[0] - 48) <= 2, str(r))
+    q.close()
+    for w in (390, 320):
+        q = newpage(w); q.goto(BASE + 'local.html'); settle(q)
+        r = q.evaluate('''(() => { const lis = [...document.querySelectorAll('#route ol > li')];
+            const dots = lis.map(li => li.querySelector('span[aria-hidden="true"]').getBoundingClientRect());
+            const lines = lis.map(li => { const s = getComputedStyle(li, '::before'); return s.content === 'none' ? null : [Math.round(li.getBoundingClientRect().left + parseFloat(s.left) + parseFloat(s.width) / 2), Math.round(li.getBoundingClientRect().top + parseFloat(s.top)), Math.round(li.getBoundingClientRect().bottom - parseFloat(s.bottom))] });
+            return {dx: dots.map(d => Math.round(d.left + d.width / 2)), dy: dots.map(d => Math.round(d.top + d.height / 2)), lines, ol: getComputedStyle(document.querySelector('#route ol')).borderTopWidth} })()''')
+        joined = all(r['lines'][i] and abs(r['lines'][i][0] - r['dx'][i]) <= 1 and abs(r['lines'][i][1] - r['dy'][i]) <= 2 and abs(r['lines'][i][2] - r['dy'][i + 1]) <= 2 for i in range(len(r['dx']) - 1))
+        check(f'T-21 G6: local at {w}, "How it works" reads as one line through all three steps (every dot on it, every step the same)',
+              len(set(r['dx'])) == 1 and joined and r['lines'][-1] is None and r['ol'] == '0px', str(r))
+        bp = q.evaluate("(() => { const h = document.querySelector('#blueprint h3'); return [h.getClientRects().length, h.scrollWidth <= h.clientWidth + 1] })()")
+        check(f'T-21 G6: local at {w}, "THE BLUEPRINT · $1,500" still holds on one line beside the line', bp == [1, True], str(bp))
+        q.close()
+    for w in (390, 320):
+        q = newpage(w); q.goto(BASE + 'local.html'); settle(q)
+        r = q.evaluate('''(() => [...document.querySelectorAll('[data-pick]')].map(b => { const c = b.firstElementChild.getBoundingClientRect(), r = b.getBoundingClientRect(), cs = getComputedStyle(b);
+            return [Math.round(r.top), Math.round(r.height), Math.round(c.height + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + parseFloat(cs.borderTopWidth) * 2)] }))()''')
+        rows_ = {}
+        for top, hgt, need in r:
+            rows_.setdefault(top, []).append(hgt)
+        check(f'T-21 G6: local at {w}, each "Start here" tile is as tall as its words (no tall empty bottom)', all(h_ <= nd + 2 for _, h_, nd in r), str(r))
+        check(f'T-21 G6: local at {w}, tiles on one row share a height and every tile is at least 48 px tall', all(len(set(v)) == 1 for v in rows_.values()) and min(h_ for _, h_, _ in r) >= 48, str(r))
+        q.close()
+    for n in ('captions', 'checkup', 'receipt', 'scaler', 'shotlist'):
+        q = newpage(1440); q.goto(BASE + n + '.html'); settle(q)
+        r = q.evaluate('''(() => { const s = document.querySelector('section[aria-labelledby="more-h"]'); const cs = getComputedStyle(s); const b = s.getBoundingClientRect();
+            const t = s.children[0].getBoundingClientRect(), a = s.querySelector('a').getBoundingClientRect();
+            return {right: Math.round(b.right - parseFloat(cs.paddingRight) - a.right), left: Math.round(t.left - b.left - parseFloat(cs.paddingLeft)),
+                    mid: Math.round((a.top + a.bottom) / 2 - (t.top + t.bottom) / 2), empty: Math.round(a.left - t.right)} })()''')
+        check(f'T-21 G6: {n} at 1440, the call band\'s words and button sit as one group (words from the left edge, button at the right edge, centered on the words)',
+              abs(r['right']) <= 1 and abs(r['left']) <= 1 and abs(r['mid']) <= 2, str(r))
+        q.close()
+    check('T-21 G6: the call band rule is set once, in tools/chrome.py', all(SRC21[n].count(_chrome20.BAND_CSS) == 1 for n in ('captions.html', 'checkup.html', 'receipt.html', 'scaler.html', 'shotlist.html')))
+    for n in ALL_HTML:
+        for w in (320, 390, 1440):
+            q = newpage(w); q.goto(BASE + n); settle(q)
+            sw = q.evaluate('document.documentElement.scrollWidth')
+            check(f'T-21: {n} has no sideways scroll at {w}', sw <= w, str(sw))
+            q.close()
+
+    # Same input, same result as origin/main: two inputs per tool, and every form.
+    for picks in ([], [('type', 'cafe'), ('goal', 'how'), ('len', '15'), ('light', 'pm')]):
+        def shot21(q):
+            click_chips(q, picks); q.wait_for_timeout(80)
+            r = q.evaluate(SHOT_JS); r['copy'] = grab_copy(q, '#copy')
+            return r
+        a, b_ = both20('shotlist', shot21)
+        check(f'T-21: shot list gives the same clips, stops, countdown and copy as on origin/main for {picks or "the defaults"}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    for text, picks, secs in ((None, [], '7.5'), ('New fall sweaters just landed.', [('size', 'l'), ('pos', 'top'), ('app', 'tiktok')], '2')):
+        def cap21(q):
+            if text is not None:
+                set_val(q, '#cap', text)
+            click_chips(q, picks); set_val(q, '#secs', secs); q.wait_for_timeout(400)
+            r = q.evaluate(CAP_JS); r['copy'] = grab_copy(q, '#copy'); r['verdict'] = q.inner_text('#verdict')
+            return r
+        a, b_ = both20('captions', cap21)
+        check(f'T-21: caption fitter gives the same verdict, checks, preview and copy as on origin/main for {(text or "the default")[:24]} at {secs} s', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    for args in (([], None, False), ([4, 11], '45', True)):
+        a, b_ = both20('receipt', rec_in(*args))
+        check(f'T-21: receipt gives the same lines, totals, hand-off and copy as on origin/main for {args}', a == b_, str([k for k in a if a[k] != b_.get(k)]))
+    for serves, adults, kids in ((None, None, None), ('6', '10', '0')):
+        def sc21(q):
+            if serves:
+                set_val(q, '#serves', serves); set_val(q, '#adults', adults); set_val(q, '#kids', kids); q.wait_for_timeout(100)
+            return [q.inner_text('#fac'), q.inner_text('#facl'), q.inner_text('#warn'), q.evaluate("document.getElementById('out').textContent"), grab_copy(q, '#copy')]
+        a, b_ = both20('scaler', sc21)
+        check(f'T-21: scaler gives the same amounts and copy as on origin/main for {serves or "the defaults"}', a == b_, str(a)[:200] + ' | ' + str(b_)[:200])
+    for steps in ([], [('#in', '0350000D'), ('#pic', 'PIC S9(5)V99 COMP-3.')]):
+        def dec21(q):
+            for sel, val in steps:
+                q.fill(sel, val)
+            q.wait_for_timeout(150)
+            return q.evaluate("document.getElementById('out').textContent.replace(/\\s+/g, ' ').trim()")
+        a, b_ = both20('comp3', dec21)
+        check(f'T-21: the decoder gives the same readings as on origin/main for {steps or "the opening example"}', a == b_, a[:200] + ' | ' + b_[:200])
+    for tab in ('b', 'c', 'd'):
+        def ex21(q):
+            q.evaluate(f"document.querySelector('[data-ex=\"{tab}\"]').click()"); q.wait_for_timeout(150)
+            return q.evaluate("document.getElementById('xb-panel').textContent.replace(/\\s+/g, ' ').trim()")
+        a, b_ = both20('mainframe', ex21)
+        check(f'T-21: Mainframe Exhibit {tab.upper()} reads as on origin/main', a == b_, a[:120] + ' | ' + b_[:120])
+    for reading in ('fraction', 'percent'):
+        def rd21(q):
+            q.evaluate(f"document.querySelector('[data-reading=\"{reading}\"]').click()"); q.wait_for_timeout(150)
+            return [q.inner_text('#mf-value'), q.inner_text('#mf-rate'), q.inner_text('#mf-interest'), q.inner_text('#mf-verdict')]
+        a, b_ = both20('mainframe', rd21)
+        check(f'T-21: Exhibit A\'s "{reading}" reading gives the same numbers as on origin/main', a == b_, str(a) + ' | ' + str(b_))
+    sel = both20('mainframe', lambda q: q.evaluate("[...document.querySelectorAll('[data-reading]')].map(b => b.dataset.reading + '=' + b.getAttribute('aria-pressed'))"))
+    check('T-21: Exhibit A starts on the same reading as on origin/main', sel[0] == sel[1], str(sel))
+    def sent20(base_, name, fill, btn, done):
+        q = newpage(1440) if base_ == BASE else t20_page(1440)
+        got = []
+        def grab(route):
+            if route.request.method == 'POST':
+                got.append(_json.loads(route.request.post_data or '{}'))
+            route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
+        q.route('**/dj-intake.stephens-josef.workers.dev/**', grab)
+        q.goto(base_ + name + '.html'); settle(q)
+        fill(q); q.click(btn); q.wait_for_timeout(700)
+        for g in got:
+            g.pop('ms', None)
+        return got, q.locator(done).is_visible()
+    for name, fill, btn, done in (('start', fill_start20, '#bp-send', '#bp-done'), ('call', fill_call, '#cl-send', '#cl-done'), ('briefing', fill_brief, '#br-send', '#br-done')):
+        a, b_ = sent20(BASE, name, fill, btn, done), sent20(OLD20, name, fill, btn, done)
+        check(f'T-21: {name} still sends, and sends exactly what it sent on origin/main', a == b_ and len(a[0]) == 1 and a[1], str(a)[:300] + ' | ' + str(b_)[:300])
+    def join20(base_):
+        q = newpage(1440) if base_ == BASE else t20_page(1440)
+        got = []
+        def grab(route):
+            if route.request.method == 'POST':
+                got.append(_json.loads(route.request.post_data or '{}'))
+            route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
+        q.route('**/dj-intake.stephens-josef.workers.dev/**', grab)
+        q.goto(base_ + 'studio-birdleague.html'); settle(q)
+        q.fill('#join input[type=email]', 'test@example.com'); q.click('#join button[type=submit]'); q.wait_for_timeout(700)
+        for g in got:
+            g.pop('ms', None)
+        return got
+    a, b_ = join20(BASE), join20(OLD20)
+    check('T-21: the Bird League join list still sends exactly what it sent on origin/main', a == b_ and len(a) == 1, str(a) + ' | ' + str(b_))
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
