@@ -340,11 +340,10 @@ EDITS = [
 
     # ---------------- Case study ----------------
     ('CASE STUDY · REELS ENGINE · NONPROFIT', 'CASE STUDY · REELS · NONPROFIT'),
-    ('Kept by the motion scan', 'Kept after cutting the dead time'),
-    ("The Reels Engine. The clips go in along with the recipe card. A motion scan keeps the action and drops the cleanup and empty-pot shots. I read a contact sheet of what's left and write the edit, and the engine renders a vertical 1080×1920 reel with the program's own title-card art.",
-     "A tool that turns the clips and the recipe card into a reel. It scans the footage, keeps the action and drops the cleanup and empty-pot shots. I look over what's left and choose the cuts, and the tool puts together a finished vertical reel with the program's own title art."),
-    ('becomes a rule the engine checks on every reel after.', 'becomes a rule the tool checks on every reel from then on.'),
-    ('are going through the engine now.', 'are being edited now.'),
+    # 'Kept by the motion scan': retired by T-22 K2 (the stat is off case-reels).
+    # "The Reels Engine. The clips go in...": retired by T-22 K3 ("What I built" is off case-reels).
+    # 'becomes a rule the engine checks on every reel after.': retired by T-22 K3 ("The house rules" is off case-reels).
+    # 'are going through the engine now.': retired by T-22 K3 ("What's next" is off case-reels).
 
     # ---------------- Start page ----------------
     ('Let\'s map<br>your pile', "Let's get<br>started"),

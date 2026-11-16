@@ -90,14 +90,8 @@ text('local.html',
      "Two weeks · fixed price · the $1,500 comes off your build",
      "Two weeks · fixed price · the $1,500 comes off the price if you go ahead",
      ref='W3')
-text('work.html',
-     '<p class="num">535 tests</p>',
-     '<p class="num">535 automatic checks</p>',
-     ref='W5')
-text('case-reels.html',
-     "and the tool puts together a finished vertical reel with the program's own title art.",
-     "and the tool puts together a finished reel, upright for phones, with the program's own title card.",
-     ref='W25')
+# W5 retired by T-22 K8: the cooking app card's headline is now in _build/work.html.
+# W25 retired by T-22 K3: its section ("What I built") is off case-reels.
 text('mainframe.html',
      "The code never divides by 100. The field definition allows two readings. Pick one:",
      "The code never divides by 100. The field definition allows two readings. See each one:",
@@ -132,6 +126,74 @@ text('mainframe.html',
      '>Send one program</a>',
      '>Tell me about one program</a>',
      ref='F4')
+
+# ---------------- T-22 (Nov 16, 2026): Kids Kitchen, process and scale ----------------
+# Josef's lines, word for word. local.html's words come from the canvas through plain.py
+# and intent.py, so they change here, the same way T-19 and T-20 did it; the canvas file
+# isn't touched. case-reels and work change in their templates, Studio in studio.json and
+# shipped.json.
+HERO_ROW = ('<div style="display: flex; justify-content: space-between; gap: 16px; align-items: baseline">'
+            '<span style="color: #3E4640">%s</span><span style="flex: 1; border-bottom: 1px dotted #A6AAA2; '
+            'transform: translateY(-4px)"></span><strong style="font-weight: 700; color: #16201C; white-space: nowrap">%s</strong></div>')
+RC_ROW = ('<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; '
+          'border-top: 1px solid #2B3D35; align-items: baseline"><span style="font-size: 14px; color: #B5C2BA; '
+          'line-height: 1.45">%s</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">%s</strong></div>')
+
+
+def rc_json(rows):
+    return '"rows": [' + ', '.join('{"k": "%s", "v": "%s"}' % r for r in rows) + ']'
+
+
+# K4: the hero "Real result" card. Title and client line stay.
+text('local.html',
+     '>One cooking class, filmed on a phone, turned into a finished reel. August 2026.</p>',
+     ">A 40-reel series for a children's nonprofit, cut by one engine.</p>",
+     ref='K4')
+K4_OLD = [('Clips in a typical class', '16 to 20'), ('Sorts the footage at', '29× real time'), ('Captioned steps', '9'),
+          ('Feedback notes it now checks for itself', '3 of 3'), ('Computer time, start to finish', '~4 min')]
+K4_NEW = [('Editing each reel, before', 'An evening'), ('Now', '~4 min'), ('Reels in the series', '40'),
+          ('Posted without their yes', '0')]
+text('local.html', ''.join(HERO_ROW % r for r in K4_OLD), ''.join(HERO_ROW % r for r in K4_NEW), ref='K4')
+
+# K5: Results, Reels tab. Drawn once in the page and once in the tabs' state data, so both change.
+# The date (AUG 2026) and the "Open the repo" link stay.
+K5_OLD = [('Clips in a typical cooking-class shoot', '16 to 20'), ('Captioned steps in the finished reel', '9'),
+          ('Machine time for the whole episode', '~4 min'), ('Mistakes the client caught in the first three rounds', '3 of 3 fixed'),
+          ('Reels posted without the client approving them', '0')]
+K5_NEW = [('Editing each reel, before', 'An evening'), ('Engine time each reel', '~4 min'), ('Reels in the series', '40'),
+          ('Her notes it now checks on every reel', '3 of 3'), ('Posted without her yes', '0')]
+K5_NOTE_OLD = ('Those three were uneven caption boxes, square corners and single words stranded on their own line. '
+               'The tool now checks for all three on every reel, so nobody has to catch them twice.')
+K5_NOTE = 'Every note she gives becomes a rule the engine checks on every reel after, so nobody catches the same thing twice.'
+text('local.html', '>One shoot, one finished reel</h3>', '>Forty reels, one engine.</h3>', ref='K5')
+text('local.html', '"title": "One shoot, one finished reel"', '"title": "Forty reels, one engine."', ref='K5')
+text('local.html', ''.join(RC_ROW % r for r in K5_OLD), ''.join(RC_ROW % r for r in K5_NEW), ref='K5')
+text('local.html', rc_json(K5_OLD), rc_json(K5_NEW), ref='K5')
+text('local.html', '>' + K5_NOTE_OLD + '</p>', '>' + K5_NOTE + '</p>', ref='K5')
+text('local.html', '"note": "' + K5_NOTE_OLD + '"', '"note": "' + K5_NOTE + '"', ref='K5')
+# K5: a tap-to-see source per orange number, in row order. "3 of 3" and "0" keep theirs.
+text('local.html',
+     '''    reels: [
+      "Each class gives 16 to 20 clips, from ten seconds to a couple of minutes each.",
+      "One caption for each recipe step in the finished reel.",
+      "Computer time from the log, from the first scan to the finished file. Time people spend reviewing comes on top of this.",
+      "The client's three notes from the first rounds. The tool now checks for each one automatically.",
+      "Every reel waits for the client's yes before it posts. None has gone out without it."
+    ],''',
+     '''    reels: [
+      "Before the engine, she cut each class by hand. That took an evening.",
+      "The engine's own log for the August 2026 shoot: about four minutes from clips in to finished reel.",
+      "The full series the program has planned.",
+      "The client's three notes from the first rounds. The tool now checks for each one automatically.",
+      "Every reel waits for the client's yes before it posts. None has gone out without it."
+    ],''',
+     ref='K5')
+
+# K7: the app offer, "HOW YOU KNOW IT WORKS".
+text('local.html',
+     'The app refuses broken entries, like a recipe with no photo. It runs hundreds of automatic checks every time it changes, and your staff try it before any family does.',
+     'Your staff try every update before any family sees it.',
+     ref='K7')
 
 # ---------------- write ----------------
 if problems:

@@ -137,12 +137,10 @@ text('briefing.html', ">The programs you're least sure about<", '>Which programs
 sub('work.html', r'\s*<span class="mono"[^>]*>THE WORK</span>', '', ref='L54')
 sub('work.html', r'\s*<p[^>]*>Every number here comes from real work I can show you\. Tap a card to see the details\.</p>', '', ref='L55')
 sub('work.html', r'\s*<span class="mono"[^>]*>SHOW</span>', '', ref='L56')
-text('work.html', '<p class="num">324 tests</p>', '<p class="num">535 tests</p>', ref='F1')
+# F1 (work.html, '324 tests' to '535 tests') retired by T-22 K8: the headline is now in _build/work.html.
 text('work.html', '<h2>A seasonal cooking app for teachers and families</h2>', '<h2>A seasonal cooking app for teachers</h2>', ref='F2')
-text('work.html', "<p>What's in season, a grocery list that scales to however many people are cooking, and pictures and read-aloud for the youngest cooks. iPhone, iPad and Android.</p>",
-     '<p>Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program\'s own cards. iPhone, iPad, Android and the web.</p>', ref='F2, T-16 N12')
-text('case-reels.html', 'a seasonal cooking app for teachers and families, on iPhone, iPad and Android.',
-     'a seasonal cooking app for teachers, on iPhone, iPad and Android.', ref='F2')
+# F2, T-16 N12 (work.html, the cooking app card's body) retired by T-22 K8: the body is now in _build/work.html.
+# F2 (case-reels.html, the app line in "What's next") retired by T-22 K3: that section is off case-reels.
 sub('comp3.html', r'\s*<span class="label"[^>]*>Why this exists</span>', '', ref='L59')
 sub('404.html', r'\s*<span style="[^"]*">Josef Stephens · Santa Rosa, California</span>', '', ref='L61')
 sub('404.html', r'\s*<p style="[^"]*">404 · Off the map</p>', '', ref='L61')

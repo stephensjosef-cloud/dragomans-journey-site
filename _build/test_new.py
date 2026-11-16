@@ -1025,7 +1025,8 @@ with sync_playwright() as p:
     q = newpage(1440); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
     figs = dict(q.locator('#cards .card').evaluate_all('e => e.map(c => [c.querySelector("h2").textContent, c.querySelector(".num") ? c.querySelector(".num").textContent : null])'))
     # T-19 W4 to W6: the three figures now say what they count.
-    KEEP = {'One cooking-class shoot, one finished reel': 'An 81-second reel in about 4 minutes', 'A seasonal cooking app for teachers': '535 automatic checks',
+    # T-22 K6 and K8: the reels card's title and headline, and the app card's headline, are Josef's new lines.
+    KEEP = {'A 40-reel series on one engine.': 'An evening of editing, now about 4 minutes.', 'A seasonal cooking app for teachers': 'Their recipe cards, now an app.',
             'A banking program, checked in public': '2 AI translations of one bank program'}
     check('N10: only the three cards with a real result keep their figure', {k: v for k, v in figs.items() if v} == KEEP and len(figs) == (10 if CK_LIVE else 9), str(figs))   # T-20 F2
     for gone in ('0 → real users', 'Free</p>', '10 clips', '0 stranded words', '1 year, rung up', '×3, measurable', '25 links'):
@@ -1697,8 +1698,12 @@ with sync_playwright() as p:
     P19 = ['index', 'local', 'work', 'start', 'call', 'shotlist', 'captions', 'receipt', 'checkup', 'case-reels', 'studio', 'mainframe', 'briefing']
     check('T-19: the 13 pages named in the item', sorted(P19) == sorted({w[1] for w in W19}))
     src19 = {n: urlopen(BASE + n + '.html').read().decode('utf-8').replace('\r', '') for n in P19}
+    # T-22 replaces W4 and W5 (K6, K8) and takes W25's section off case-reels (K3); for those three
+    # lines, T-21's own page is read from git (trip/T-21's last commit).
+    T22_DONE = {'W4', 'W5', 'W25'}
+    git21 = lambda f: _sp18.run(['git', 'show', 'a0c77c98a2213a618efd2e2831d03fae424963c4:' + f], cwd=here, capture_output=True).stdout.decode('utf-8').replace('\r', '')
     for wid, n, old, new, _o, _n in W19:
-        t = words19(src19[n])
+        t = words19(git21(n + '.html') if wid in T22_DONE else src19[n])
         check(f'T-19 {wid}: {n} has the new line exactly once', t.count(new) == 1, str(t.count(new)))
         if old in new:
             check(f'T-19 {wid}: on {n} the old words are only inside the new line', t.count(old) == 1, str(t.count(old)))
@@ -2252,9 +2257,37 @@ with sync_playwright() as p:
     OLD20 = BASE + '__t20/'
     check('T-21: the T-20 pages can be read from git for comparison', t20_file('index.html') is not None and t20_file('local.html') is not None)
 
-    def both20(name, fn, w=1440):
+    # T-22 (Nov 16, 2026) changes the words on case-reels, local, work and studio. Where a check below
+    # compares words with T-20, those four pages are read as T-21 left them (trip/T-21's last commit,
+    # from git), so the check still proves exactly what T-21 changed; the T-22 block checks T-22's lines.
+    T22P = ('case-reels.html', 'local.html', 'work.html', 'studio.html')
+    T21G = 'a0c77c98a2213a618efd2e2831d03fae424963c4'
+    T21G_FILES = {}
+
+    def t21g_file(path):
+        if path not in T21G_FILES:
+            r = _sp18.run(['git', 'show', f'{T21G}:{path}'], cwd=here, capture_output=True)
+            T21G_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T21G_FILES[path]
+
+    def t21g_page(w, h=900):
+        """A page that can open T-21's own build at BASE + '__t21/<file>'."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t21/', 1)[1].split('?')[0].split('#')[0]
+            body = t21g_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__t21/**', serve)
+        return q
+    NEW21 = BASE + '__t21/'
+
+    def both20(name, fn, w=1440, words=False):
         out_ = []
-        for base_, pgf in ((BASE, lambda: newpage(w)), (OLD20, lambda: t20_page(w))):
+        cur = (NEW21, lambda: t21g_page(w)) if words and name + '.html' in T22P else (BASE, lambda: newpage(w))
+        for base_, pgf in (cur, (OLD20, lambda: t20_page(w))):
             q = pgf(); q.goto(base_ + name + '.html'); settle(q); q.wait_for_timeout(300)
             out_.append(fn(q))
         return out_
@@ -2267,21 +2300,24 @@ with sync_playwright() as p:
     TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style').forEach(e => e.remove());
       return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
     for n in ALL_HTML:
-        a, b_ = both20(n[:-5], lambda q: q.evaluate(TEXT_JS))
+        a, b_ = both20(n[:-5], lambda q: q.evaluate(TEXT_JS), words=True)   # T-22: its four pages as T-21 left them
         if n.startswith('studio'):   # the build-date stamp and the log's day count move with the day the page is built
             a, b_ = (_re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', x) for x in (a, b_))
         check(f'T-21: {n} reads word for word as on origin/main', a == b_,
               next((f'...{a[max(0, i - 40):i + 40]}... | ...{b_[max(0, i - 40):i + 40]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+    # T-22: case-reels, local, work and studio as T-21 left them, for the checks that compare words with T-20.
+    SRC21W = {n: (t21g_file(n).decode('utf-8').replace('\r\n', '\n') if n in T22P else SRC21[n]) for n in ALL_HTML}
     for n in ALL_HTML:
         old = t20_file(n).decode('utf-8').replace('\r\n', '\n')
         for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'), ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>')):
-            a = [_re.sub(r'<span style="white-space: nowrap">([^<]*)</span>', r'\1', x) for x in _re.findall(rx, SRC21[n], _re.S)]
+            a = [_re.sub(r'<span style="white-space: nowrap">([^<]*)</span>', r'\1', x) for x in _re.findall(rx, SRC21W[n], _re.S)]
             check(f'T-21: {n} keeps its {what} (no word changed)', a == _re.findall(rx, old, _re.S), str(a)[:160])
         check(f'T-21: {n} keeps every link address', _re.findall(r'href="([^"]*)"', SRC21[n]) == _re.findall(r'href="([^"]*)"', old))
     for n in ('local.html', 'mainframe.html', 'index.html'):
         rx = r'<script type="application/ld\+json">(.*?)</script>'
         check(f'T-21: {n}\'s structured data is exactly as before', _re.findall(rx, SRC21[n], _re.S) == _re.findall(rx, t20_file(n).decode('utf-8'), _re.S))
-    og_same = all(open(os.path.join(here, '..', 'og', f), 'rb').read() == t20_file('og/' + f) for f in os.listdir(os.path.join(here, '..', 'og')))
+    # T-22 K1 redraws og/case-reels.png, so that one card is read as T-21 left it.
+    og_same = all((t21g_file('og/' + f) if f == 'case-reels.png' else open(os.path.join(here, '..', 'og', f), 'rb').read()) == t20_file('og/' + f) for f in os.listdir(os.path.join(here, '..', 'og')))
     check('T-21: every share card in og/ is byte for byte as on origin/main', og_same)
 
     # G1: no hyphen pair splits at its hyphen; the pass leaves code, scripts, links and addresses alone.
@@ -2298,8 +2334,10 @@ with sync_playwright() as p:
       }
       return {split: out, seen};
     })()'''
-    LISTED = {'captions.html': ['15-minute'], 'checkup.html': ['15-minute'], 'scaler.html': ['15-minute'], 'work.html': ['15-minute', 'cooking-class'],
-              'shotlist.html': ['15-minute'], 'local.html': ['three-month', 'cooking-class'], 'start.html': ['one-page'], 'case-reels.html': ['cooking-class']}
+    # T-22: "cooking-class" left local, work and case-reels with the lines it sat in (K3 to K6); on local
+    # and work the pair a visitor now reads in those spots is "40-reel" (K4, K6). case-reels has no listed pair left.
+    LISTED = {'captions.html': ['15-minute'], 'checkup.html': ['15-minute'], 'scaler.html': ['15-minute'], 'work.html': ['15-minute', '40-reel'],
+              'shotlist.html': ['15-minute'], 'local.html': ['three-month', '40-reel'], 'start.html': ['one-page']}
     for w in (320, 390, 1440):
         for n in ALL_HTML:
             q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(600)
@@ -2310,8 +2348,9 @@ with sync_playwright() as p:
                     check(f'T-21 G1: at {w}, "{pair}" is on {n} and holds on one line', pair in r['seen'] and pair not in r['split'])
             q.close()
     q = newpage(320); q.goto(BASE + 'work.html'); settle(q)
-    h = q.evaluate("(() => { const e = [...document.querySelectorAll('#cards h2')].find(x => x.textContent.startsWith('One cooking-class shoot')); const s = e.querySelector('span'); return [s.textContent, s.getClientRects().length] })()")
-    check('T-21 G1: at 320 the work heading "One cooking-class shoot" keeps "cooking-class" on one line', h == ['cooking-class', 1], str(h))
+    # T-22 K6: the reels card's heading is now "A 40-reel series on one engine."
+    h = q.evaluate("(() => { const e = [...document.querySelectorAll('#cards h2')].find(x => x.textContent.startsWith('A 40-reel series')); const s = e.querySelector('span'); return [s.textContent, s.getClientRects().length] })()")
+    check('T-21 G1: at 320 the work heading "A 40-reel series" keeps "40-reel" on one line', h == ['40-reel', 1], str(h))
     q.close()
     for n, pairs in LISTED.items():
         for pair in pairs:
@@ -2333,7 +2372,7 @@ with sync_playwright() as p:
             src = _re.sub(r'<script\b.*?</script>|<style\b.*?</style>|<!--.*?-->', '', src, flags=_re.S)
             return sorted((a.lower(), v) for t in _re.findall(r'<[a-zA-Z][^<>]*>', src)
                           for a, v in _re.findall(r'''\s([a-zA-Z][\w:-]*)\s*=\s*("[^"]*"|'[^']*')''', t) if a.lower() not in ('style', 'class', 'data-built'))
-        check(f'T-21 G1: on {n} every attribute is as on origin/main (the pass never writes inside one)', attrs21(s) == attrs21(t20_file(n).decode('utf-8')))
+        check(f'T-21 G1: on {n} every attribute is as on origin/main (the pass never writes inside one)', attrs21(SRC21W[n]) == attrs21(t20_file(n).decode('utf-8')))   # T-22: its four pages as T-21 left them
         long_ = [x for x in _re.findall(NW + r'([^<]*)</span>', _re.sub(r'<script\b.*?</script>', '', s, flags=_re.S)) if len(x) > 24 or x.count('-') != 1]
         check(f'T-21 G1: on {n} every wrapped pair is letters or digits with one hyphen, at most 24 characters', long_ == [], str(long_))
     check('T-21 G1: three-part runs ("side-by-side", "year-to-date") and addresses are left to break as before',
@@ -2647,6 +2686,299 @@ with sync_playwright() as p:
         return got
     a, b_ = join20(BASE), join20(OLD20)
     check('T-21: the Bird League join list still sends exactly what it sent on origin/main', a == b_ and len(a) == 1, str(a) + ' | ' + str(b_))
+
+    # ---------------- T-22 (Nov 16, 2026): Kids Kitchen, process and scale ----------------
+    # Josef's lines K1 to K9, word for word. Comparisons are against T-21's own pages
+    # (trip/T-21's last commit, the base this item was cut from), read straight from git.
+    T21C = 'a0c77c98a2213a618efd2e2831d03fae424963c4'
+    T21_FILES = {}
+
+    def t21_file(path):
+        if path not in T21_FILES:
+            r = _sp18.run(['git', 'show', f'{T21C}:{path}'], cwd=here, capture_output=True)
+            T21_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T21_FILES[path]
+    check('T-22: the T-21 pages can be read from git for comparison', t21_file('case-reels.html') is not None and t21_file('og/case-reels.png') is not None)
+    SRC22 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD22 = {n: t21_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+
+    K1_H1 = 'Forty reels, one engine.'
+    K1 = ("Every cooking class used to cost the program's creator an evening of editing. "
+          "Now her phone clips go through an engine and come back as a finished reel in about four minutes.")
+    K1_TITLE = "Case study: forty reels, one engine · Dragoman's Journey"
+    K2 = [('An evening', 'Editing each reel, before'), ('~4 min', 'Each reel now'), ('40', 'Reels in the series'), ('0', 'Posted without her yes')]
+    K3_H = 'How it works'
+    K3 = ("She films the class on her phone. The clips and the recipe card go through the engine. It finds the action, "
+          "cuts the dead time and captions every step in her style. Every note she has given becomes a rule it checks on "
+          "every reel after. Nothing posts until she says yes.")
+    K4_LINE = "A 40-reel series for a children's nonprofit, cut by one engine."
+    K4_ROWS = [('Editing each reel, before', 'An evening'), ('Now', '~4 min'), ('Reels in the series', '40'), ('Posted without their yes', '0')]
+    K5_TITLE = 'Forty reels, one engine.'
+    K5_ROWS = [('Editing each reel, before', 'An evening'), ('Engine time each reel', '~4 min'), ('Reels in the series', '40'),
+               ('Her notes it now checks on every reel', '3 of 3'), ('Posted without her yes', '0')]
+    K5_NOTE = 'Every note she gives becomes a rule the engine checks on every reel after, so nobody catches the same thing twice.'
+    K5_SRC_NEW = ['Before the engine, she cut each class by hand. That took an evening.',
+                  "The engine's own log for the August 2026 shoot: about four minutes from clips in to finished reel.",
+                  'The full series the program has planned.']
+    K6 = ('An evening of editing, now about 4 minutes.', 'A 40-reel series on one engine.',
+          "A children's nonprofit used to spend an evening editing each class. Now the clips go through an engine and come back as finished, captioned reels. They approve every one.")
+    K7 = 'Your staff try every update before any family sees it.'
+    K8_HEAD = 'Their recipe cards, now an app.'
+    K8 = "The program's own recipes, in an app teachers cook from in class. iPhone, iPad, Android and the web."
+    K9 = "The program's own recipes went into the cooking app, ready to print."
+    K9_KEPT = "The kids' cooking app runs on Android as well as iPhone and iPad."
+
+    def text22(name, w=1440, before=None):
+        q = newpage(w); q.goto(BASE + name); settle(q)
+        if before:
+            before(q)
+        t = q.evaluate(TEXT_JS); q.close()
+        return t
+
+    TXT22 = {n: text22(n) for n in ('case-reels.html', 'local.html', 'work.html', 'studio.html')}
+    ONCE = {'case-reels.html': [('K1', K1_H1), ('K1', K1), ('K3', K3_H), ('K3', K3)],
+            'local.html': [('K4', K4_LINE), ('K5', K5_TITLE), ('K5', K5_NOTE), ('K7', K7)],
+            'work.html': [('K6', K6[0]), ('K6', K6[1]), ('K6', K6[2]), ('K8', K8_HEAD), ('K8', K8)],
+            'studio.html': [('K8', K8), ('K9', K9)]}
+    for n, lines in ONCE.items():
+        for kid, line in lines:
+            check(f'T-22 {kid}: "{line[:48]}" is on {n} word for word, exactly once', TXT22[n].count(line) == 1, str(TXT22[n].count(line)))
+    check('T-22: no long dash on the four changed pages', not any(d in SRC22[n] for n in TXT22 for d in ('—', '–')))
+    check('T-22: the client is never named on the four changed pages (CLIENT_ placeholders all filled)', not any('CLIENT_' in SRC22[n] for n in TXT22))
+
+    # K1: title, descriptions, share card.
+    cr = SRC22['case-reels.html']
+    meta = lambda s, rx: (_re.search(rx, s) or [None, None])[1]
+    check('T-22 K1: case-reels title follows the new h1 in the page\'s title pattern', meta(cr, r'<title>([^<]*)</title>') == K1_TITLE, str(meta(cr, r'<title>([^<]*)</title>')))
+    check('T-22 K1: case-reels og:title is the title', _html.unescape(meta(cr, r'<meta property="og:title" content="([^"]*)"') or '') == K1_TITLE)
+    check('T-22 K1: case-reels meta description is the new line, both sentences', _html.unescape(meta(cr, r'<meta name="description" content="([^"]*)"') or '') == K1)
+    check('T-22 K1: case-reels og:description is the new line, both sentences', _html.unescape(meta(cr, r'<meta property="og:description" content="([^"]*)"') or '') == K1)
+    check('T-22 K1: case-reels h1 is the new headline', [_re.sub(r'<[^>]+>', '', x) for x in _re.findall(r'<h1[^>]*>(.*?)</h1>', cr, _re.S)] == [K1_H1])
+    check('T-22 K1: case-reels og:image is its own card', meta(cr, r'<meta property="og:image" content="([^"]*)"') == 'https://dragomansjourney.com/og/case-reels.png')
+    card = urlopen(BASE + 'og/case-reels.png').read()
+    check('T-22 K1: the served case-reels card is the one tools/og.py drew', card == open(os.path.join(here, 'assets', 'og', 'case-reels.png'), 'rb').read())
+    check('T-22 K1: the case-reels card is redrawn (not T-21\'s)', card != t21_file('og/case-reels.png'))
+    check('T-22 K1: og/case-reels.png at the root is the redrawn card', open(os.path.join(here, '..', 'og', 'case-reels.png'), 'rb').read() == card)
+    check('T-22 K1: the redrawn card is 1200 by 630', card[:8] == b'\x89PNG\r\n\x1a\n' and _struct.unpack('>II', card[16:24]) == (1200, 630))
+    others = sorted(f for f in os.listdir(os.path.join(here, '..', 'og')) if f != 'case-reels.png')
+    check('T-22: every other share card in og/ is byte for byte as at T-21', len(others) == 16 and all(
+        open(os.path.join(here, '..', 'og', f), 'rb').read() == t21_file('og/' + f) for f in others), str(len(others)))
+    check('T-22: every other share card in _build/assets/og/ is byte for byte as at T-21', all(
+        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == _sp18.run(['git', 'show', f'{T21C}:_build/assets/og/{f}'], cwd=here, capture_output=True).stdout for f in others))
+
+    # K2 and K3 on case-reels, read from the page.
+    q = newpage(1440); q.goto(BASE + 'case-reels.html'); settle(q)
+    stats = q.evaluate("[...document.querySelectorAll('.stats .stat')].map(s => [s.querySelector('b').textContent, s.querySelector('span').textContent])")
+    check('T-22 K2: case-reels has these four numbers, in this order, value then label', [tuple(x) for x in stats] == K2, str(stats))
+    h2s = q.evaluate("[...document.querySelectorAll('main h2')].map(h => h.textContent.trim())")
+    check('T-22 K3: case-reels\' body is one section, then the closing call', h2s == [K3_H, 'Got a phone full of footage?'], str(h2s))
+    sec = q.evaluate("[...document.querySelector('section[aria-labelledby=c1] > div').children].map(e => e.tagName + ':' + e.textContent.replace(/\\s+/g, ' ').trim())")
+    check('T-22 K3: the section holds the one paragraph', sec == ['P:' + K3], str(sec))
+    close = q.evaluate("(() => { const s = document.querySelector('section[aria-labelledby=c7]'); return s.outerHTML })()")
+    old_close = _re.search(r'<section aria-labelledby="c7".*?</section>', OLD22['case-reels.html'], _re.S).group(0)
+    check('T-22 K3: the closing call ("Got a phone full of footage?", its line and its buttons) is as at T-21',
+          _re.sub(r'\s+', ' ', close) == _re.sub(r'\s+', ' ', old_close), close[:160])
+    q.close()
+
+    # Removed words: off case-reels, local, work and studio, page source and scripts included.
+    GONE = ['21:28', '13:33', '81 sec', '81-second', '9 captioned steps', '16 to 20', '29×', '535 automatic checks',
+            'kids as young as three', 'garden and science', 'empty pot', 'empty-pot', 'house rules', 'Seven more episodes',
+            "The kids' cooking app got its new logo, everywhere in the app.",
+            "Step-by-step videos and a full Spanish version went into the kids' cooking app.",
+            'One shoot, one finished reel', 'One cooking-class shoot', 'One cooking class, filmed on a phone',
+            'refuses broken entries', 'hundreds of automatic checks', 'Those three were uneven caption boxes']
+    for n in TXT22:
+        flat = un21(SRC22[n])
+        hits = [g for g in GONE if g.lower() in flat.lower() or g.lower() in TXT22[n].lower()]
+        check(f'T-22: none of the removed words are left on {n}', not hits, str(hits))
+        heads = [_re.sub(r'<[^>]+>|\s+', ' ', h).strip() for h in _re.findall(r'<h[1-6][^>]*>(.*?)</h[1-6]>', SRC22[n], _re.S)]
+        gone_h = [h for h in heads if h in ('The program', 'The pile', 'What I built', 'The house rules', 'Who signs off', "What's next", 'The gate')]
+        check(f'T-22 K3: none of the six section headings are left on {n}', not gone_h, str(gone_h))
+
+    # K4: the hero "Real result" card.
+    q = newpage(1440); q.goto(BASE + 'local.html'); settle(q)
+    hero = q.evaluate("""(() => { const f = document.querySelector('figure.rise3 .tear'); const head = f.querySelector('div');
+      return {head: [...head.children].map(e => e.textContent.trim()), line: f.querySelector('p').textContent.replace(/\\s+/g, ' ').trim(),
+        rows: [...f.querySelectorAll(':scope > div:nth-of-type(2) > div')].map(r => [r.querySelector('span').textContent, r.querySelector('strong').textContent]),
+        foot: [...f.querySelector(':scope > div:nth-of-type(3)').children].map(e => e.textContent.trim())} })()""")
+    check('T-22 K4: the hero card\'s title stays "KIDS\' COOKING REELS"', hero['head'] == ['REAL RESULT', "KIDS' COOKING REELS"], str(hero['head']))
+    check('T-22 K4: the hero card\'s line is the new one', hero['line'] == K4_LINE, hero['line'])
+    check('T-22 K4: the hero card has these four rows, in this order, label then value', [tuple(r) for r in hero['rows']] == K4_ROWS, str(hero['rows']))
+    check('T-22 K4: the hero card\'s client line stays', hero['foot'] == ["Client: a Sonoma County children's nonprofit"], str(hero['foot']))
+
+    # K5: Results, Reels tab, as first drawn and after the tabs redraw it.
+    def rc22(q):
+        return q.evaluate("""(() => ({title: document.getElementById('rc-title').textContent, date: document.getElementById('rc-date').textContent,
+          head: document.getElementById('rc-head').textContent.replace(/\\u00a0/g, ' '),
+          rows: [...document.querySelectorAll('#rc-rows > div')].map(r => [r.querySelector('span').textContent, (r.querySelector('.src-btn') || r.querySelector('strong')).textContent,
+                 !!r.querySelector('.src-btn'), (r.querySelector('.src-note') || {}).textContent || '']),
+          note: document.getElementById('rc-note').textContent,
+          link: (l => [l.textContent, l.getAttribute('href')])(document.getElementById('rc-link'))}))()""")
+    old_src = _re.search(r'reels: \[\s*(.*?)\s*\],', OLD22['local.html'], _re.S).group(1)
+    old_src = [_json.loads(x) for x in _re.findall(r'"(?:[^"\\]|\\.)*"', old_src)]
+    WANT_SRC = K5_SRC_NEW + old_src[3:5]
+    for when, prep in (('as first drawn', None), ('after the tabs switch away and back', lambda q: (q.click('button[data-tab="app"]'), q.wait_for_timeout(200), q.click('button[data-tab="reels"]'), q.wait_for_timeout(300)))):
+        if prep:
+            prep(q)
+        rc = rc22(q)
+        check(f'T-22 K5: the Reels tab\'s title is the new one ({when})', rc['title'] == K5_TITLE, rc['title'])
+        check(f'T-22 K5: the Reels tab\'s date label stays AUG 2026 ({when})', rc['date'] == 'AUG 2026', rc['date'])
+        check(f'T-22 K5: the Reels tab has these five rows, in this order, label then value ({when})', [(r[0], r[1]) for r in rc['rows']] == K5_ROWS, str(rc['rows']))
+        check(f'T-22 K5: every orange number in the Reels tab has a tap-to-see source ({when})', len(rc['rows']) == 5 and all(r[2] and r[3].strip() for r in rc['rows']), str(rc['rows']))
+        check(f'T-22 K5: the Reels tab\'s sources are the three new ones word for word, then the kept ones for "3 of 3" and "0" ({when})',
+              [r[3] for r in rc['rows']] == WANT_SRC, str([r[3] for r in rc['rows']]))
+        check(f'T-22 K5: the note under the rows is the new one ({when})', rc['note'] == K5_NOTE, rc['note'])
+        check(f'T-22 K5: the "Open the repo →" link stays ({when})', rc['link'] == ['Open the repo →', 'https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence'], str(rc['link']))
+    check('T-22 K5: the kept sources for "3 of 3" and "0" are T-21\'s, word for word',
+          old_src[3] == "The client's three notes from the first rounds. The tool now checks for each one automatically."
+          and old_src[4] == "Every reel waits for the client's yes before it posts. None has gone out without it.", str(old_src))
+    btns = q.locator('#rc-rows .src-btn')
+    opened = []
+    for i in range(btns.count()):
+        btns.nth(i).click(); q.wait_for_timeout(80)
+        opened.append(q.evaluate(f"(() => {{ const b = document.querySelectorAll('#rc-rows .src-btn')[{i}]; const n = document.getElementById(b.getAttribute('aria-controls')); return [b.getAttribute('aria-expanded'), !n.hidden, n.textContent] }})()"))
+    check('T-22 K5: tapping each orange number shows its source', [o[2] for o in opened] == WANT_SRC and all(o[0] == 'true' and o[1] for o in opened), str(opened)[:300])
+    # K7
+    how = q.evaluate("[...document.querySelectorAll('dt')].filter(d => d.textContent.trim() === 'HOW YOU KNOW IT WORKS').map(d => d.nextElementSibling.textContent.trim())")
+    check('T-22 K7: the app offer\'s "HOW YOU KNOW IT WORKS" is the new line', K7 in how and len(how) == 3, str(how))
+    q.close()
+    # Left alone on local: the FAQ line, the About line and the Reels offer.
+    for keep in ("Kids' programs get stricter rules: no child accounts and no child data, ever.",
+                 "This year a Sonoma County children's nonprofit became my first client",
+                 'Send your clips. Get a month of finished, captioned reels back.',
+                 '8 or 12 captioned reels a month in the style you picked, all delivered by the 5th.'):
+        check(f'T-22: local keeps "{keep[:40]}..."', TXT22['local.html'].count(keep) == 1, str(TXT22['local.html'].count(keep)))
+
+    # K6 and K8 on work.html: tags, titles and links stay.
+    def cards22(src):
+        return _re.findall(r'<article class="card" data-k="nonprofit">.*?</article>', src, _re.S)
+    new_c, old_c = cards22(un21(SRC22['work.html'])), cards22(un21(OLD22['work.html']))
+    part = lambda c, rx: [_re.sub(r'<!--.*?-->', '', x).strip() for x in _re.findall(rx, c, _re.S)]
+    check('T-22: work.html still has its two nonprofit cards', len(new_c) == 2 and len(old_c) == 2)
+    if len(new_c) == 2 and len(old_c) == 2:
+        check('T-22 K6: the reels card\'s headline, title and body are the new ones',
+              (part(new_c[0], r'<p class="num">(.*?)</p>'), part(new_c[0], r'<h2>(.*?)</h2>'), part(new_c[0], r'</h2>\s*<p>(.*?)</p>')) == ([K6[0]], [K6[1]], [K6[2]]), new_c[0][:300])
+        check('T-22 K8: the app card\'s headline and body are the new ones, its title stays',
+              (part(new_c[1], r'<p class="num">(.*?)</p>'), part(new_c[1], r'<h2>(.*?)</h2>'), part(new_c[1], r'</h2>\s*<p>(.*?)</p>')) == ([K8_HEAD], ['A seasonal cooking app for teachers'], [K8]), new_c[1][:300])
+        for i, k in ((0, 'K6'), (1, 'K8')):
+            check(f'T-22 {k}: the card\'s tags and link stay as at T-21', part(new_c[i], r'<div class="tags">.*?</div>') == part(old_c[i], r'<div class="tags">.*?</div>')
+                  and part(new_c[i], r'<a class="go"[^>]*>.*?</a>') == part(old_c[i], r'<a class="go"[^>]*>.*?</a>'), part(new_c[i], r'<a class="go"[^>]*>.*?</a>'))
+
+    # K8 and K9 on the Studio page.
+    q = newpage(1440); q.goto(BASE + 'studio.html'); settle(q)
+    kids = q.evaluate("""(() => { const c = [...document.querySelectorAll('.prod')].find(p => p.textContent.includes("A kids' cooking app"));
+      return c ? c.outerHTML : '' })()""")
+    log = q.evaluate("[...document.querySelectorAll('#log li')].map(li => [li.querySelector('time').getAttribute('datetime'), li.querySelector('.proj').textContent, li.querySelector('.line').textContent])")
+    count = q.evaluate("[document.querySelector('#stats strong').textContent, document.getElementById('log-all') ? document.getElementById('log-all').textContent : '']")
+    q.close()
+    check('T-22 K8: the Studio\'s cooking app card has the new body', K8 in kids, kids[:200])
+    old_kids = _re.search(r'<article class="prod[^"]*"[^>]*>(?:(?!</article>).)*A kids\' cooking app.*?</article>', OLD22['studio.html'], _re.S)
+    new_kids = _re.search(r'<article class="prod[^"]*"[^>]*>(?:(?!</article>).)*A kids\' cooking app.*?</article>', SRC22['studio.html'], _re.S)
+    check('T-22 K8: the Studio card differs from T-21 only by its body (tags, status, links stay)', bool(old_kids and new_kids) and
+          new_kids.group(0) == old_kids.group(0).replace("Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program's own cards. iPhone, iPad, Android and the web.", K8),
+          (new_kids.group(0)[:200] if new_kids else 'no card'))
+    kid_log = [l for l in log if l[1] == "A kids' cooking app"]
+    check('T-22 K9: the cooking app\'s log is the Oct 27 line, changed, and the Oct 6 line, kept', kid_log == [['2026-10-27', "A kids' cooking app", K9], ['2026-10-06', "A kids' cooking app", K9_KEPT]], str(kid_log))
+    old_log = [[a, b_, c] for a, b_, c in _re.findall(r'<time class="mono" datetime="([^"]+)">[^<]*</time><span class="proj">([^<]*)</span><span class="line">([^<]*)</span>', OLD22['studio.html'])]
+    old_log = [[a, _html.unescape(b_), _html.unescape(c)] for a, b_, c in old_log]
+    want_log = [l for l in old_log if l[0] not in ('2026-11-08', '2026-10-07') or l[1] != "A kids' cooking app"]
+    want_log = [[a, b_, K9 if (a, b_) == ('2026-10-27', "A kids' cooking app") else c] for a, b_, c in want_log]
+    check('T-22 K9: every other log line is as at T-21', log == want_log, str(log)[:300])
+    check('T-22 K9: the Studio\'s count matches the lines that show', count[0] == str(len(log)) and count[1] == f'See all {len(log)}', str(count) + f' / {len(log)} lines')
+    sj = _json.loads(open(os.path.join(here, 'shipped.json'), encoding='utf-8').read())
+    check('T-22 K9: shipped.json has neither removed line and the new Oct 27 line once',
+          [e for e in sj['entries'] if e['project'] == 'kids'] == [{'date': '2026-10-27', 'project': 'kids', 'line': K9}, {'date': '2026-10-06', 'project': 'kids', 'line': K9_KEPT}])
+    check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and p.get('what') == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
+
+    # Everything else is as at T-21. Pages this item doesn't touch: byte for byte (the Studio pages' stamp aside).
+    stamp = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', s)
+    for n in ALL_HTML:
+        if n in TXT22:
+            continue
+        check(f'T-22: {n} is as at T-21', stamp(SRC22[n]) == stamp(OLD22[n]),
+              next((f'...{SRC22[n][max(0, i - 40):i + 40]}...' for i in range(min(len(SRC22[n]), len(OLD22[n]))) if SRC22[n][i] != OLD22[n][i]), ''))
+
+    # The four changed pages: T-21's page with only this item's swaps applied, character for character.
+    def swap(s, old, new, n=1):
+        if s.count(old) != n:
+            raise AssertionError(f'{s.count(old)} x {old[:70]}')
+        return s.replace(old, new)
+    HR = ('<div style="display: flex; justify-content: space-between; gap: 16px; align-items: baseline"><span style="color: #3E4640">%s</span>'
+          '<span style="flex: 1; border-bottom: 1px dotted #A6AAA2; transform: translateY(-4px)"></span><strong style="font-weight: 700; color: #16201C; white-space: nowrap">%s</strong></div>')
+    RR = ('<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #2B3D35; align-items: baseline">'
+          '<span style="font-size: 14px; color: #B5C2BA; line-height: 1.45">%s</span><strong style="font-size: 18px; font-weight: 700; color: #F07A4E; text-align: right">%s</strong></div>')
+    RJ = lambda rows: '"rows": [' + ', '.join('{"k": "%s", "v": "%s"}' % r for r in rows) + ']'
+    K5_OLD = [('Clips in a typical cooking-class shoot', '16 to 20'), ('Captioned steps in the finished reel', '9'), ('Machine time for the whole episode', '~4 min'),
+              ('Mistakes the client caught in the first three rounds', '3 of 3 fixed'), ('Reels posted without the client approving them', '0')]
+    OLD_NOTE = ('Those three were uneven caption boxes, square corners and single words stranded on their own line. '
+                'The tool now checks for all three on every reel, so nobody has to catch them twice.')
+    try:
+        s = un21(OLD22['case-reels.html'])
+        s = swap(s, "Case study: one shoot, one finished reel · Dragoman's Journey", K1_TITLE, 2)
+        s = swap(s, '<meta name="description" content="How a Sonoma County children\'s nonprofit turns its kids\' cooking-class footage into finished, captioned reels with about four minutes of machine time each.">',
+                 '<meta name="description" content="' + K1 + '">')
+        s = swap(s, '<meta property="og:description" content="From a phone full of cooking-class clips to a finished, captioned reel.">', '<meta property="og:description" content="' + K1 + '">')
+        s = swap(s, '>One shoot, one finished reel</h1>', '>' + K1_H1 + '</h1><!-- T-22 K1 -->')
+        s = swap(s, ">How a Sonoma County children's nonprofit turns its kids' cooking-class footage into finished reels, without anyone giving up their evenings to edit.</p>", '>' + K1 + '</p><!-- T-22 K1 -->')
+        a_, b2 = s.index('      <div class="stats" style="margin-top:10px">\n'), s.index('      </div>\n', s.index('<div class="stats"'))
+        s = s[:a_] + '      <div class="stats" style="margin-top:10px"><!-- T-22 K2 -->\n' + ''.join(f'        <div class="stat"><b>{v}</b><span>{k}</span></div>\n' for v, k in K2) + s[b2:]
+        a_, b2 = s.index('  <section class="sec" aria-labelledby="c1">'), s.index('  <section aria-labelledby="c7"')
+        s = s[:a_] + ('  <section class="sec" aria-labelledby="c1"><!-- T-22 K3 -->\n    <h2 id="c1">How it works</h2>\n    <div>\n      <p>' + K3 + '</p>\n    </div>\n  </section>\n\n') + s[b2:]
+        check('T-22: case-reels is T-21\'s page with only K1 to K3 changed', un21(SRC22['case-reels.html']) == s,
+              next((f'...{un21(SRC22["case-reels.html"])[max(0, i - 60):i + 60]}... | ...{s[max(0, i - 60):i + 60]}...' for i in range(min(len(s), len(un21(SRC22["case-reels.html"])))) if s[i] != un21(SRC22['case-reels.html'])[i]), 'length'))
+    except AssertionError as e:
+        check('T-22: case-reels is T-21\'s page with only K1 to K3 changed', False, str(e))
+    try:
+        s = un21(OLD22['local.html'])
+        s = swap(s, '>One cooking class, filmed on a phone, turned into a finished reel. August 2026.</p>', '>' + K4_LINE + '</p>')
+        s = swap(s, ''.join(HR % r for r in [('Clips in a typical class', '16 to 20'), ('Sorts the footage at', '29× real time'), ('Captioned steps', '9'),
+                                              ('Feedback notes it now checks for itself', '3 of 3'), ('Computer time, start to finish', '~4 min')]), ''.join(HR % r for r in K4_ROWS))
+        s = swap(s, 'The app refuses broken entries, like a recipe with no photo. It runs hundreds of automatic checks every time it changes, and your staff try it before any family does.', K7)
+        s = swap(s, '>One shoot, one finished reel</h3>', '>' + K5_TITLE + '</h3>')
+        s = swap(s, '"title": "One shoot, one finished reel"', '"title": "' + K5_TITLE + '"')
+        s = swap(s, ''.join(RR % r for r in K5_OLD), ''.join(RR % (k, v) for k, v in K5_ROWS))
+        s = swap(s, RJ(K5_OLD), RJ(K5_ROWS))
+        s = swap(s, '>' + OLD_NOTE + '</p>', '>' + K5_NOTE + '</p>')
+        s = swap(s, '"note": "' + OLD_NOTE + '"', '"note": "' + K5_NOTE + '"')
+        for o, n_ in zip(old_src[:3], K5_SRC_NEW):
+            s = swap(s, '      ' + _json.dumps(o) + ',\n', '      ' + _json.dumps(n_) + ',\n')
+        check('T-22: local is T-21\'s page with only K4, K5 and K7 changed', un21(SRC22['local.html']) == s,
+              next((f'...{un21(SRC22["local.html"])[max(0, i - 60):i + 60]}... | ...{s[max(0, i - 60):i + 60]}...' for i in range(min(len(s), len(un21(SRC22["local.html"])))) if s[i] != un21(SRC22['local.html'])[i]), 'length'))
+    except AssertionError as e:
+        check('T-22: local is T-21\'s page with only K4, K5 and K7 changed', False, str(e))
+    try:
+        s = un21(OLD22['work.html'])
+        s = swap(s, '''      <p class="num">An 81-second reel in about 4 minutes</p>
+      <h2>One cooking-class shoot, one finished reel</h2>
+      <p>Phone clips from a cooking class at a Sonoma County children's nonprofit became a finished, captioned reel with about four minutes of machine time. Every reel waits for the client's yes.</p>''',
+                 '      <!-- T-22 K6 -->\n      <p class="num">%s</p>\n      <h2>%s</h2>\n      <p>%s</p>' % K6)
+        s = swap(s, '      <p class="num">535 automatic checks</p>\n', '      <!-- T-22 K8 -->\n      <p class="num">' + K8_HEAD + '</p>\n')
+        s = swap(s, "<p>Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program's own cards. iPhone, iPad, Android and the web.</p>", '<p>' + K8 + '</p>')
+        check('T-22: work is T-21\'s page with only K6 and K8 changed', un21(SRC22['work.html']) == s,
+              next((f'...{un21(SRC22["work.html"])[max(0, i - 60):i + 60]}... | ...{s[max(0, i - 60):i + 60]}...' for i in range(min(len(s), len(un21(SRC22["work.html"])))) if s[i] != un21(SRC22['work.html'])[i]), 'length'))
+    except AssertionError as e:
+        check('T-22: work is T-21\'s page with only K6 and K8 changed', False, str(e))
+    # studio.html: outside its log and its count, T-21's page with only K8's body changed.
+    unlog = lambda x: _re.sub(r'<ol class="log" id="log">.*?</ol>', '', _re.sub(r'<strong>\d+</strong> things finished|See all \d+', '#', stamp(x)), flags=_re.S)
+    s = unlog(OLD22['studio.html']).replace("Seasonal recipes a teacher leads the class through, a grocery list that scales to the class, and recipe pages that print like the program's own cards. iPhone, iPad, Android and the web.", K8)
+    check('T-22: studio is T-21\'s page with only K8 and K9 changed (log and count checked above)', unlog(SRC22['studio.html']) == s)
+
+    # Same input, same result: the forms and tools on the four changed pages are untouched code.
+    for n in TXT22:
+        js = lambda x: [_re.sub(r'\s+', ' ', j) for j in _re.findall(r'<script(?![^>]*ld\+json)[^>]*>(.*?)</script>', stamp(x), _re.S)]
+        a, b_ = js(un21(SRC22[n])), js(un21(OLD22[n]))
+        if n == 'local.html':   # the tap sources (K5) and the tabs' state data (K5) are the only script changes
+            a = [_re.sub(r'reels: \[.*?\],', '', _re.sub(r'"rc": \{"head": "RESULT · REELS".*?"linkLabel": ""\}', '', x)) for x in a]
+            b_ = [_re.sub(r'reels: \[.*?\],', '', _re.sub(r'"rc": \{"head": "RESULT · REELS".*?"linkLabel": ""\}', '', x)) for x in b_]
+        check(f'T-22: {n} runs the same scripts as at T-21 (K5\'s sources and state data aside)', a == b_)
+
+    # The look: no sideways scroll, and every new line inside its box, at 320, 390 and 1440.
+    for n in TXT22:
+        for w in (320, 390, 1440):
+            q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(200)
+            sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]')
+            check(f'T-22: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
+            q.close()
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
