@@ -992,6 +992,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-22 · Kids Kitchen, process and scale: one engine, a 40-reel series · READY
+
+**Why:** Nov 16, 2026: Josef ruled the site over-explained the nonprofit's cooking program. A stranger needs the process and the scale: each class used to cost an evening of editing, now the clips go through one engine and come back as a finished reel in about four minutes, the series is 40 reels, and nothing posts without the client's yes. The program's internals come off every page.
+
+**Done when:** every line below is on its page word for word, the one-shoot detail is gone, case-reels' share card is redrawn, each changed page was looked at at 320, 390 and 1440, axe stays at zero, all tests pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
