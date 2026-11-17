@@ -201,6 +201,11 @@ CSS = r"""
 @media (max-width:760px){.stats p{padding:14px 0}}
 .sec{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .sec h2.big{font-size:clamp(38px,4.6vw,60px)}
+.logsec{margin-top:0}
+.loghead{display:flex;flex-direction:column;gap:48px}
+@media (min-width:800px){.loghead{flex-direction:row-reverse;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:baseline;gap:8px clamp(24px,3vw,40px)}
+.loghead .stats{border:0}.loghead .stats p{padding:0}
+.loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}
 .log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
 .log li{display:grid;grid-template-columns:5.5em 13em minmax(0,1fr);gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid #DDD5C3}
 .log time{font-size:14px;color:#676D66;white-space:nowrap}
@@ -297,8 +302,13 @@ def build(studio, shipped, today):
     items = "".join(log_item(r, today, i >= FIRST) for i, r in enumerate(rows))
     toggle = (f'\n    <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false">See all {n}</button>'
               if n > FIRST else "")
-    log = (f'\n  <section class="sec" aria-labelledby="log-h">'
-           f'\n    <h2 id="log-h" class="big">Shipped lately</h2>'
+    # T-23 L7: the count sits with "Shipped lately" in one head row. Phones: the band above
+    # the heading, as before. From 800 px: beside the heading, on its baseline. The count
+    # still comes first in the page, so a screen reader hears it in the same order as before.
+    log = (f'\n  <section class="sec logsec" aria-labelledby="log-h">'
+           f'\n    <div class="loghead">{strip.replace(chr(10) + "  ", chr(10) + "      ")}'
+           f'\n      <h2 id="log-h" class="big">Shipped lately</h2>'
+           '\n    </div>'
            f'\n    <ol class="log" id="log">{items}\n    </ol>{toggle}'
            '\n  </section>')
     shown = [p for p in studio["products"] if p.get("gate") is None]
@@ -314,7 +324,7 @@ def build(studio, shipped, today):
             run.append(p)
     cards = "".join(product_card(p, p["id"] in wide) for p in shown)
     prods = f'\n  <div class="sec prods" id="products">{cards}\n  </div>'
-    return strip + log + prods + "\n"
+    return log + prods + "\n"
 
 
 PAGE_CSS = r"""

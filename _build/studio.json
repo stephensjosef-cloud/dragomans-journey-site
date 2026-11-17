@@ -20,7 +20,7 @@
      "list": {"id": "deepcuts", "button": "Join the beta", "line": "One email when a tester spot opens. No newsletter.", "count": 0},
      "link": null, "gate": null},
     {"id": "kids", "name": "A kids' cooking app", "status": "Built for a client", "kind": "Client app",
-     "what": "The program's own recipes, in an app teachers cook from in class. iPhone, iPad, Android and the web.",
+     "what": "The program's own recipes, in an app teachers cook from in class, with a grocery list that scales to the class and pages that print like their own cards. iPhone, iPad, Android and the web.",
      "proof": "535 tests, and every change checked on a real phone before it ships.",
      "image": null, "image_alt": null, "list": null,
      "link": {"href": "work.html", "label": "See the work"}, "gate": null},

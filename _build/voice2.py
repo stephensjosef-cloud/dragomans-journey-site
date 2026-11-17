@@ -195,6 +195,22 @@ text('local.html',
      'Your staff try every update before any family sees it.',
      ref='K7')
 
+# ---------------- T-23 (Nov 16, 2026): Kids Kitchen, the person back in ----------------
+# Josef's lines, word for word. Each replaces the T-22 line just written above, so the
+# T-22 edits still have to hit first. case-reels (K3b) and work (K8b) change in their
+# templates, Studio (K8b) in studio.json.
+# K5b: the note under the Reels tab's rows, drawn once in the page and once in the tabs'
+# state data, so it reads the same after the tabs switch away and back. Rows and sources stay.
+K5B_NOTE = ('She caught three things in the first rounds: uneven caption boxes, square corners and words left '
+            'alone on a line. The engine now checks for all three on every reel.')
+text('local.html', '>' + K5_NOTE + '</p>', '>' + K5B_NOTE + '</p>', ref='K5b')
+text('local.html', '"note": "' + K5_NOTE + '"', '"note": "' + K5B_NOTE + '"', ref='K5b')
+# K7b: the app offer, "HOW YOU KNOW IT WORKS".
+text('local.html',
+     '>Your staff try every update before any family sees it.<',
+     ">It won't take a broken entry, like a recipe with no photo, and your staff try every update before any family sees it.<",
+     ref='K7b')
+
 # ---------------- write ----------------
 if problems:
     print('VOICE: %d edit(s) missed, nothing written:' % len(problems))

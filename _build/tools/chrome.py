@@ -15,7 +15,9 @@ WRAP_CSS = ("p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}"
 # G1: a hyphenated pair a visitor reads ("15-minute", "three-month") never breaks at
 # its hyphen. The body font has no non-breaking hyphen glyph, so the pair sits in a
 # no-wrap span (T-20's pattern for the call link). Only letters or digits joined by
-# one hyphen, at most 24 characters; longer runs ("side-by-side") break as before.
+# one or two hyphens (T-23 L1: "year-to-date", "side-by-side"), at most 24 characters;
+# longer runs break as before. djNw() below stays at one hyphen: no text a tool script
+# writes holds a two-hyphen word.
 # G2: in a list joined by " · ", a line never starts or ends with the dot: the dot is
 # held to the words on both sides by no-break spaces, so lines break inside an item.
 # final.py runs nobreak() last over every finished page; the tool scripts use it (and
@@ -25,7 +27,7 @@ MAX_PAIR = 24
 _OPEN = r'(?:[(\["\'“‘]|&(?:quot|#x27|#39|ldquo|lsquo);)*'
 _CLOSE = r'(?:[)\]"\'”’.,;:!?…]|&(?:quot|#x27|#39|rdquo|rsquo|hellip);)*'
 _POSS = r'(?:(?:[\'’]|&#x27;|&#39;|&rsquo;)s)?'
-PAIR_TOKEN = re.compile(r'(?P<pre>' + _OPEN + r')(?P<core>[^\W_]+-[^\W_]+)(?P<post>' + _POSS + _CLOSE + ')')
+PAIR_TOKEN = re.compile(r'(?P<pre>' + _OPEN + r')(?P<core>[^\W_]+(?:-[^\W_]+){1,2})(?P<post>' + _POSS + _CLOSE + ')')
 DOT_GAP = re.compile(r'[ \t\r\n]+·[ \t\r\n]+')
 
 
@@ -188,13 +190,28 @@ def linked_tools():
     return tuple(t for t in TOOLS if t[0] != "checkup.html" or checkup_live())
 
 
+# T-23 L4: each tool's name holds one line (G1's no-wrap span), so the line can break only
+# between names, and G2 still holds: no line starts or ends with " · ". Each name after the
+# first carries its separator in front of it, in a box MT_SEP wide; the list sits MT_SEP
+# left of the text column (its first line indented back), inside a box that clips there, so
+# the separator in front of a name that starts a new row is outside the box and never shows.
+# The label stays with the first name. Same words, same dots, same no-break spaces.
+MT_SEP = 20     # px: wider than "&nbsp;·&nbsp;" at 15 px
+MT_PAD = 6      # px of room left of the column for a link's focus ring (3 px + 3 px offset)
+
+
 def more_tools(slug):
-    return " · ".join(f'<a href="{href}">{name}</a>' for href, name in linked_tools() if href != slug)
+    names = [f'<a href="{href}">{NOWRAP}{name}</span></a>' for href, name in linked_tools() if href != slug]
+    sep = (f'<span style="display:inline-block;width:{MT_SEP}px;text-align:center;text-indent:0">'
+           '&nbsp;·&nbsp;</span>')
+    return (f'<span style="display:block;margin-left:-{MT_SEP}px;text-indent:{MT_SEP}px">'
+            f'{NOWRAP}More free tools: {names[0]}</span>'
+            + "".join(f'<wbr>{NOWRAP}{sep}{n}</span>' for n in names[1:]) + '</span>')
 
 
 # Under the tool: the line to the other tools and the dark panel. A page without
 # cta_h (the Studio page, T-08) gets neither.
-TAIL = """  <p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: {more}</p>
+TAIL = """  <p class="noprint" style="margin:4px 0 -4px -{mt_pad}px;padding:4px 0 4px {mt_pad}px;overflow:hidden;font-size:15px;line-height:2;color:#5A635D">{more}</p>
   <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">{cta_h}</h2>
@@ -236,6 +253,7 @@ def page(**k):
         k["cta_btn"] = "<span>" + k["cta_btn"] + "</span>"   # the button is a flex box: one item
     if k.get("more"):
         k["more"] = keep_dots(k["more"])
+    k["mt_pad"] = MT_PAD
     k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
     k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
     # The small line over the title; a page without one (the Studio, T-16) gets no empty span.

@@ -31,6 +31,64 @@ def un21(s):
     return s
 
 
+# T-23 (Nov 16, 2026): Josef's four lines K3b, K5b, K7b, K8b, and L1 to L7 (layout only).
+# un23(s, name) takes them back out of a page's source, for the older checks that compare a
+# page with T-22's build or one before it; the T-23 block checks each of them on its own.
+T23_LINES = [   # (T-22's line, T-23's line)
+    ("She films the class on her phone. The clips and the recipe card go through the engine. It finds the action, "
+     "cuts the dead time and captions every step in her style. Every note she has given becomes a rule it checks on "
+     "every reel after. Nothing posts until she says yes.",
+     "She films the class on her phone. The clips and the recipe card go through the engine, which finds the action and "
+     "cuts the dead time. I look over what's left and choose the cuts, and it captions every step in her style. Every "
+     "mistake she has caught becomes a rule it checks on every reel after. Nothing posts until she says yes."),
+    ('Every note she gives becomes a rule the engine checks on every reel after, so nobody catches the same thing twice.',
+     'She caught three things in the first rounds: uneven caption boxes, square corners and words left alone on a line. '
+     'The engine now checks for all three on every reel.'),
+    ('Your staff try every update before any family sees it.',
+     "It won't take a broken entry, like a recipe with no photo, and your staff try every update before any family sees it."),
+    ("The program's own recipes, in an app teachers cook from in class. iPhone, iPad, Android and the web.",
+     "The program's own recipes, in an app teachers cook from in class, with a grocery list that scales to the class and "
+     "pages that print like their own cards. iPhone, iPad, Android and the web."),
+]
+T23_MORE_OLD = '<p class="noprint" style="margin:8px 0 0;font-size:15px;line-height:2;color:#5A635D">More free tools: %s</p>'
+T23_STUDIO_CSS = ('.logsec{margin-top:0}\n.loghead{display:flex;flex-direction:column;gap:48px}\n'
+                  '@media (min-width:800px){.loghead{flex-direction:row-reverse;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:baseline;gap:8px clamp(24px,3vw,40px)}\n'
+                  '.loghead .stats{border:0}.loghead .stats p{padding:0}\n'
+                  '.loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}\n')
+
+
+def back23(t):
+    """A line of text with T-23's four lines read as T-22's."""
+    for old, new in T23_LINES:
+        t = t.replace(new, old)
+    return t
+
+
+def un23(s, name):
+    import re as _r
+    for old, new in T23_LINES:
+        s = s.replace(new, old)
+    s = s.replace('<!-- T-22 K3; text is T-23 K3b -->', '<!-- T-22 K3 -->').replace('<!-- T-22 K8; body is T-23 K8b -->', '<!-- T-22 K8 -->')
+    s = s.replace('<!-- T-22 K6; T-23 L5 keeps "4 minutes." on one line -->', '<!-- T-22 K6 -->')
+    s = s.replace('about <span style="white-space: nowrap">4 minutes.</span>', 'about 4 minutes.')                                    # L5
+    s = _r.sub(r'<span style="white-space: nowrap">([^\W_]+-[^\W_]+-[^\W_]+)</span>', r'\1', s)                                     # L1
+    s = s.replace('h1.big{line-height:1}/* T-23 L2: the comma and any descender on the first line clear the line below */\n', '')    # L2
+    s = s.replace('@media (max-width:699px){#sr-dot{display:none}}\n', '')                                                            # L3
+    def more(m):                                                                                                                      # L4
+        links = _r.findall(r'<a href="([^"]*)"><span style="white-space: nowrap">([^<]*)</span></a>', m.group(0))
+        return T23_MORE_OLD % '&nbsp;·&nbsp;'.join(f'<a href="{h}">{t}</a>' for h, t in links)
+    s = _r.sub(r'<p class="noprint" style="margin:4px 0 -4px -6px;padding:4px 0 4px 6px;overflow:hidden;[^"]*">.*?</p>', more, s, flags=_r.S)
+    if name.startswith('studio'):
+        s = s.replace(T23_STUDIO_CSS, '')                                                                                             # L7
+        m = _r.search(r'\n  <section class="sec logsec" aria-labelledby="log-h">\n    <div class="loghead">(\n      <div class="stats".*?\n      </div>)'
+                      r'\n      (<h2 id="log-h" class="big">Shipped lately</h2>)\n    </div>', s, _r.S)
+        if m:
+            s = s[:m.start()] + m.group(1).replace('\n    ', '\n') + '\n  <section class="sec" aria-labelledby="log-h">\n    ' + m.group(2) + s[m.end():]
+    if name == 'studio.html':                                                                                                         # L6
+        s = _r.sub(r'\n  <section aria-labelledby="next-h".*?</section>(?=\n</main>)', '', s, flags=_r.S)
+    return s
+
+
 def route_fonts(page):
     def gf(route):
         u = route.request.url
@@ -1225,7 +1283,7 @@ with sync_playwright() as p:
             check(f'T-18: {n} keeps its {rx[1:12]}... as at T-17', _re.findall(rx, new_src[n], _re.S) == _re.findall(rx, old_src[n], _re.S))
     for n in TOOLS6[:5]:
         for rx in (r'<p class="noprint"[^>]*>More free tools:.*?</p>', r'<section aria-labelledby="more-h".*?</section>'):
-            a, b_ = _re.findall(rx, new_src[n], _re.S), _re.findall(rx, old_src[n], _re.S)
+            a, b_ = _re.findall(rx, un23(new_src[n], n + '.html'), _re.S), _re.findall(rx, old_src[n], _re.S)   # T-23 L4: the line's new markup out
             if n == 'receipt' and 'more-h' in rx:   # T-19 W21 changed the panel's line; the rest stays as at T-17
                 b_ = [x.replace('Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.',
                                 'The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.') for x in b_]
@@ -1946,7 +2004,7 @@ with sync_playwright() as p:
     sm = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
     check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
     old_ck = t19_file('checkup.html').decode('utf-8').replace('\r\n', '\n')
-    new_ck = un21(SRC20['checkup.html']).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out
+    new_ck = un21(un23(SRC20['checkup.html'], 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out
     check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck)
     check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
     WORK_CARD = r'\n    <article class="card" data-k="free">(?:(?!</article>).)*?href="checkup\.html".*?</article>'
@@ -1971,7 +2029,7 @@ with sync_playwright() as p:
                 break
         if built:
             outd = os.path.join(bd, 'out')
-            rd = lambda f: un21(open(os.path.join(outd, f), encoding='utf-8').read())   # T-21: line-breaking spans out
+            rd = lambda f: un21(un23(open(os.path.join(outd, f), encoding='utf-8').read(), f))   # T-21: line-breaking spans out; T-23: its changes out
             old = lambda f: t19_file(f).decode('utf-8')
             check('T-20 F2 (address set): the work page card comes back exactly as before',
                   _re.findall(WORK_CARD, rd('work.html'), _re.S) == _re.findall(WORK_CARD, old('work.html'), _re.S) and len(_re.findall(WORK_CARD, rd('work.html'), _re.S)) == 1)
@@ -2317,7 +2375,7 @@ with sync_playwright() as p:
         for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'), ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>')):
             a = [_re.sub(r'<span style="white-space: nowrap">([^<]*)</span>', r'\1', x) for x in _re.findall(rx, SRC21W[n], _re.S)]
             check(f'T-21: {n} keeps its {what} (no word changed)', a == _re.findall(rx, old, _re.S), str(a)[:160])
-        check(f'T-21: {n} keeps every link address', _re.findall(r'href="([^"]*)"', SRC21[n]) == _re.findall(r'href="([^"]*)"', old))
+        check(f'T-21: {n} keeps every link address', _re.findall(r'href="([^"]*)"', un23(SRC21[n], n)) ==_re.findall(r'href="([^"]*)"', old))
     for n in ('local.html', 'mainframe.html', 'index.html'):
         rx = r'<script type="application/ld\+json">(.*?)</script>'
         check(f'T-21: {n}\'s structured data is exactly as before', _re.findall(rx, SRC21[n], _re.S) == _re.findall(rx, t20_file(n).decode('utf-8'), _re.S))
@@ -2378,10 +2436,10 @@ with sync_playwright() as p:
             return sorted((a.lower(), v) for t in _re.findall(r'<[a-zA-Z][^<>]*>', src)
                           for a, v in _re.findall(r'''\s([a-zA-Z][\w:-]*)\s*=\s*("[^"]*"|'[^']*')''', t) if a.lower() not in ('style', 'class', 'data-built'))
         check(f'T-21 G1: on {n} every attribute is as on origin/main (the pass never writes inside one)', attrs21(SRC21W[n]) == attrs21(t20_file(n).decode('utf-8')))   # T-22: its four pages as T-21 left them
-        long_ = [x for x in _re.findall(NW + r'([^<]*)</span>', _re.sub(r'<script\b.*?</script>', '', s, flags=_re.S)) if len(x) > 24 or x.count('-') != 1]
+        long_ = [x for x in _re.findall(NW + r'([^<]*)</span>', _re.sub(r'<script\b.*?</script>', '', un23(s, n), flags=_re.S)) if len(x) > 24 or x.count('-') != 1]   # T-23's spans (L1, L4, L5) out: its own block checks them
         check(f'T-21 G1: on {n} every wrapped pair is letters or digits with one hyphen, at most 24 characters', long_ == [], str(long_))
-    check('T-21 G1: three-part runs ("side-by-side", "year-to-date") and addresses are left to break as before',
-          'side-by-side' in SRC21['mainframe.html'] and NW + 'side-by-side' not in SRC21['mainframe.html'] and 'stephensjosef-cloud' in SRC21['mainframe.html'] and NW + 'stephensjosef' not in SRC21['mainframe.html'])
+    check('T-21 G1: three-part runs ("side-by-side", "year-to-date") and addresses are left to break as before (T-23 L1 now wraps the three-part runs: read with its spans out)',
+          'side-by-side' in un23(SRC21['mainframe.html'], 'mainframe.html') and NW + 'side-by-side' not in un23(SRC21['mainframe.html'], 'mainframe.html') and 'stephensjosef-cloud' in SRC21['mainframe.html'] and NW + 'stephensjosef' not in SRC21['mainframe.html'])
     # The tools' own scripts use the same span where they write such text.
     q = newpage(390); q.goto(BASE + 'shotlist.html'); settle(q)
     q.evaluate("document.querySelector('.chip[data-k=\"type\"][data-v=\"gym\"]').click()"); q.wait_for_timeout(150)
@@ -2400,7 +2458,10 @@ with sync_playwright() as p:
       const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {acceptNode(n) {
         const p = n.parentElement; if (!p || p.closest('script,style,textarea,svg,[hidden],[aria-hidden="true"]')) return 2;
         return p.getClientRects().length ? 1 : 2; }});
-      const box = (n, i) => { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); return [...r.getClientRects()].find(x => x.width > 0.5); };
+      // T-23 L4: a dot clipped out of sight by a box that hides its overflow is not on screen, so it is not counted.
+      const shown = (n, x) => { for (let e = n.parentElement; e && e !== document.body; e = e.parentElement) { if (getComputedStyle(e).overflowX === 'visible') continue;
+        const c = e.getBoundingClientRect(); if (x.right <= c.left + 0.5 || x.left >= c.right - 0.5) return false; } return true; };
+      const box = (n, i) => { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); return [...r.getClientRects()].find(x => x.width > 0.5 && shown(n, x)); };
       const chars = []; let n;
       while ((n = w.nextNode())) for (let i = 0; i < n.data.length; i++) if (/\S/.test(n.data[i]) && n.data[i] !== ' ') chars.push([n, i]);
       chars.forEach(([n, i], k) => {
@@ -2704,7 +2765,7 @@ with sync_playwright() as p:
             T21_FILES[path] = r.stdout if r.returncode == 0 else None
         return T21_FILES[path]
     check('T-22: the T-21 pages can be read from git for comparison', t21_file('case-reels.html') is not None and t21_file('og/case-reels.png') is not None)
-    SRC22 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC22 = {n: un23(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-23: its changes out (its block checks them)
     OLD22 = {n: t21_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
 
     K1_H1 = 'Forty reels, one engine.'
@@ -2740,7 +2801,9 @@ with sync_playwright() as p:
         t = q.evaluate(TEXT_JS); q.close()
         return t
 
-    TXT22 = {n: text22(n) for n in ('case-reels.html', 'local.html', 'work.html', 'studio.html')}
+    # T-23: its four lines read as T-22's, and the Studio's closing call (L6) out of the way; the T-23 block checks them.
+    drop_box = lambda q: q.evaluate("""document.querySelector('section[aria-labelledby="next-h"]').remove()""")
+    TXT22 = {n: back23(text22(n, before=drop_box if n == 'studio.html' else None)) for n in ('case-reels.html', 'local.html', 'work.html', 'studio.html')}
     ONCE = {'case-reels.html': [('K1', K1_H1), ('K1', K1), ('K3', K3_H), ('K3', K3)],
             'local.html': [('K4', K4_LINE), ('K5', K5_TITLE), ('K5', K5_NOTE), ('K7', K7)],
             'work.html': [('K6', K6[0]), ('K6', K6[1]), ('K6', K6[2]), ('K8', K8_HEAD), ('K8', K8)],
@@ -2777,7 +2840,7 @@ with sync_playwright() as p:
     check('T-22 K2: case-reels has these four numbers, in this order, value then label', [tuple(x) for x in stats] == K2, str(stats))
     h2s = q.evaluate("[...document.querySelectorAll('main h2')].map(h => h.textContent.trim())")
     check('T-22 K3: case-reels\' body is one section, then the closing call', h2s == [K3_H, 'Got a phone full of footage?'], str(h2s))
-    sec = q.evaluate("[...document.querySelector('section[aria-labelledby=c1] > div').children].map(e => e.tagName + ':' + e.textContent.replace(/\\s+/g, ' ').trim())")
+    sec = [back23(x) for x in q.evaluate("[...document.querySelector('section[aria-labelledby=c1] > div').children].map(e => e.tagName + ':' + e.textContent.replace(/\\s+/g, ' ').trim())")]   # T-23 K3b read as K3
     check('T-22 K3: the section holds the one paragraph', sec == ['P:' + K3], str(sec))
     close = q.evaluate("(() => { const s = document.querySelector('section[aria-labelledby=c7]'); return s.outerHTML })()")
     old_close = _re.search(r'<section aria-labelledby="c7".*?</section>', OLD22['case-reels.html'], _re.S).group(0)
@@ -2832,7 +2895,7 @@ with sync_playwright() as p:
         check(f'T-22 K5: every orange number in the Reels tab has a tap-to-see source ({when})', len(rc['rows']) == 5 and all(r[2] and r[3].strip() for r in rc['rows']), str(rc['rows']))
         check(f'T-22 K5: the Reels tab\'s sources are the three new ones word for word, then the kept ones for "3 of 3" and "0" ({when})',
               [r[3] for r in rc['rows']] == WANT_SRC, str([r[3] for r in rc['rows']]))
-        check(f'T-22 K5: the note under the rows is the new one ({when})', rc['note'] == K5_NOTE, rc['note'])
+        check(f'T-22 K5: the note under the rows is the new one ({when}; T-23 K5b read as K5)', back23(rc['note']) == K5_NOTE, rc['note'])
         check(f'T-22 K5: the "Open the repo →" link stays ({when})', rc['link'] == ['Open the repo →', 'https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence'], str(rc['link']))
     check('T-22 K5: the kept sources for "3 of 3" and "0" are T-21\'s, word for word',
           old_src[3] == "The client's three notes from the first rounds. The tool now checks for each one automatically."
@@ -2844,7 +2907,7 @@ with sync_playwright() as p:
         opened.append(q.evaluate(f"(() => {{ const b = document.querySelectorAll('#rc-rows .src-btn')[{i}]; const n = document.getElementById(b.getAttribute('aria-controls')); return [b.getAttribute('aria-expanded'), !n.hidden, n.textContent] }})()"))
     check('T-22 K5: tapping each orange number shows its source', [o[2] for o in opened] == WANT_SRC and all(o[0] == 'true' and o[1] for o in opened), str(opened)[:300])
     # K7
-    how = q.evaluate("[...document.querySelectorAll('dt')].filter(d => d.textContent.trim() === 'HOW YOU KNOW IT WORKS').map(d => d.nextElementSibling.textContent.trim())")
+    how = [back23(x) for x in q.evaluate("[...document.querySelectorAll('dt')].filter(d => d.textContent.trim() === 'HOW YOU KNOW IT WORKS').map(d => d.nextElementSibling.textContent.trim())")]   # T-23 K7b read as K7
     check('T-22 K7: the app offer\'s "HOW YOU KNOW IT WORKS" is the new line', K7 in how and len(how) == 3, str(how))
     q.close()
     # Left alone on local: the FAQ line, the About line and the Reels offer.
@@ -2873,6 +2936,7 @@ with sync_playwright() as p:
     q = newpage(1440); q.goto(BASE + 'studio.html'); settle(q)
     kids = q.evaluate("""(() => { const c = [...document.querySelectorAll('.prod')].find(p => p.textContent.includes("A kids' cooking app"));
       return c ? c.outerHTML : '' })()""")
+    kids = back23(kids)   # T-23 K8b read as K8
     log = q.evaluate("[...document.querySelectorAll('#log li')].map(li => [li.querySelector('time').getAttribute('datetime'), li.querySelector('.proj').textContent, li.querySelector('.line').textContent])")
     count = q.evaluate("[document.querySelector('#stats strong').textContent, document.getElementById('log-all') ? document.getElementById('log-all').textContent : '']")
     q.close()
@@ -2893,7 +2957,7 @@ with sync_playwright() as p:
     sj = _json.loads(open(os.path.join(here, 'shipped.json'), encoding='utf-8').read())
     check('T-22 K9: shipped.json has neither removed line and the new Oct 27 line once',
           [e for e in sj['entries'] if e['project'] == 'kids'] == [{'date': '2026-10-27', 'project': 'kids', 'line': K9}, {'date': '2026-10-06', 'project': 'kids', 'line': K9_KEPT}])
-    check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and p.get('what') == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
+    check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and back23(p.get('what')) == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
 
     # Everything else is as at T-21. Pages this item doesn't touch: byte for byte (the Studio pages' stamp aside).
     stamp = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', s)
@@ -2984,6 +3048,252 @@ with sync_playwright() as p:
             sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]')
             check(f'T-22: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
             q.close()
+
+    # ---------------- T-23 (Nov 16, 2026): Kids Kitchen, the person back in, plus layout leftovers ----------------
+    # Josef's lines K3b, K5b, K7b and K8b, word for word, and L1 to L7 (layout only). Comparisons are
+    # against T-22's own pages (origin/main at 98eef4f, the base this item was cut from), read from git.
+    T22C = '98eef4f93f38a732b8ac1c9b458dd747e8803f4f'
+    T22_FILES = {}
+
+    def t22_file(path):
+        if path not in T22_FILES:
+            r = _sp18.run(['git', 'show', f'{T22C}:{path}'], cwd=here, capture_output=True)
+            T22_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T22_FILES[path]
+
+    def t22_page(w, h=900):
+        """A page that can open T-22's own build at BASE + '__t22/<file>'."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t22/', 1)[1].split('?')[0].split('#')[0]
+            body = t22_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__t22/**', serve)
+        return q
+    OLD23B = BASE + '__t22/'
+    check('T-23: the T-22 pages can be read from git for comparison', t22_file('studio.html') is not None and t22_file('og/case-reels.png') is not None)
+    SRC23 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD23 = {n: t22_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    K3_22, K5_22, K7_22, K8_22 = (o for o, _ in T23_LINES)
+    K3B, K5B, K7B, K8B = (n_ for _, n_ in T23_LINES)
+    stamp23 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', s)
+    TOOLS23 = ('captions.html', 'checkup.html', 'receipt.html', 'scaler.html', 'shotlist.html')
+    CHANGED23 = ['captions.html', 'case-reels.html', 'checkup.html', 'local.html', 'mainframe.html', 'receipt.html', 'scaler.html',
+                 'shotlist.html', 'studio-birdleague.html', 'studio-deepcuts.html', 'studio.html', 'work.html']
+
+    # The whole build: T-22's pages with only T-23's changes. un23() takes each change back out,
+    # and what is left is T-22's page byte for byte (the Studio pages' build stamp aside).
+    for n in ALL_HTML:
+        a, b_ = stamp23(un23(SRC23[n], n)), stamp23(OLD23[n])
+        check(f'T-23: {n} is T-22\'s page with only T-23\'s changes', a == b_,
+              next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+    got23 = sorted(n for n in ALL_HTML if stamp23(SRC23[n]) != stamp23(OLD23[n]))
+    check('T-23: the pages that changed are these twelve and no others', got23 == CHANGED23, str(got23))
+    for n in ALL_HTML:
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
+                         ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>')):
+            check(f'T-23: {n} keeps its {what}', _re.findall(rx, SRC23[n], _re.S) == _re.findall(rx, OLD23[n], _re.S))
+    ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
+    check('T-23: every share card in og/ is byte for byte as at T-22', len(ogs) == 17 and all(
+        open(os.path.join(here, '..', 'og', f), 'rb').read() == t22_file('og/' + f) for f in ogs), str(len(ogs)))
+    check('T-23: every share card in _build/assets/og/ is byte for byte as at T-22', all(
+        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == t22_file('_build/assets/og/' + f) for f in ogs))
+    check('T-23: no em dash on any changed page, and no new en dash (the scaler\'s parser reads "1–2" ranges, as at T-22)',
+          not any('—' in SRC23[n] for n in CHANGED23) and all(SRC23[n].count('–') == OLD23[n].count('–') for n in CHANGED23))
+
+    # Words: every page reads as at T-22, apart from the four lines (and the Studio's closing call, L6).
+    TXT23 = {}
+    BOX23 = None
+    for n in ALL_HTML:
+        q = newpage(1440); q.goto(BASE + n); settle(q)
+        TXT23[n] = q.evaluate(TEXT_JS)
+        if n == 'studio.html':
+            BOX23 = q.evaluate("(() => { const s = document.querySelector('section[aria-labelledby=\"next-h\"]'); return s ? s.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() : '' })()")
+        q.close()
+        q = t22_page(1440); q.goto(OLD23B + n); settle(q)
+        old_t = q.evaluate(TEXT_JS); q.close()
+        a = TXT23[n]
+        for o, n_ in T23_LINES:
+            a = a.replace(n_, o)
+        if n == 'studio.html' and BOX23:
+            a = a.replace(' ' + BOX23 + ' ', ' ', 1)
+        if n.startswith('studio'):
+            a, old_t = (_re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', x) for x in (a, old_t))
+        check(f'T-23: {n} reads word for word as at T-22, apart from K3b, K5b, K7b, K8b and L6\'s closing call', a == old_t,
+              next((f'...{a[max(0, i - 40):i + 40]}... | ...{old_t[max(0, i - 40):i + 40]}...' for i in range(min(len(a), len(old_t))) if a[i] != old_t[i]), f'{len(a)} vs {len(old_t)}'))
+    for kid, n, line, old in (('K3b', 'case-reels.html', K3B, K3_22), ('K5b', 'local.html', K5B, K5_22), ('K7b', 'local.html', K7B, K7_22),
+                              ('K8b', 'work.html', K8B, K8_22), ('K8b', 'studio.html', K8B, K8_22)):
+        check(f'T-23 {kid}: "{line[:48]}" is on {n} word for word, exactly once', TXT23[n].count(line) == 1, str(TXT23[n].count(line)))
+        check(f'T-23 {kid}: T-22\'s line ("{old[:40]}...") is gone from {n}, text and source', old not in TXT23[n] and old not in un21(SRC23[n]))
+    for n in ALL_HTML:
+        check(f'T-23: none of T-22\'s four replaced lines is on {n}', not any(o in un21(SRC23[n]) for o, _ in T23_LINES))
+    check('T-23 K5b: the note is in the tabs\' state data once, word for word', SRC23['local.html'].count('"note": "' + K5B + '"') == 1)
+    q = newpage(390); q.goto(BASE + 'local.html'); settle(q)
+    notes = [q.evaluate("document.getElementById('rc-note').textContent")]
+    for away in ('app', 'method'):
+        q.click(f'button[data-tab="{away}"]'); q.wait_for_timeout(200); q.click('button[data-tab="reels"]'); q.wait_for_timeout(300)
+        notes.append(q.evaluate("document.getElementById('rc-note').textContent"))
+    rows = q.evaluate("[...document.querySelectorAll('#rc-rows > div')].map(r => [r.querySelector('span').textContent, (r.querySelector('.src-btn') || r.querySelector('strong')).textContent])")
+    q.close()
+    check('T-23 K5b: the Reels note reads K5b as first drawn and after switching to Apps and to COBOL checking and back', notes == [K5B] * 3, str(notes))
+    check('T-23 K5b: the Reels rows stay as T-22 left them', [tuple(r) for r in rows] == K5_ROWS, str(rows))
+    # Where each line lives, with its ID.
+    rd = lambda f: open(os.path.join(here, f), encoding='utf-8').read()
+    check('T-23 K3b: in _build/case-reels.html with its ID', 'T-23 K3b' in rd('case-reels.html') and rd('case-reels.html').count(K3B) == 1)
+    check('T-23 K5b and K7b: voice2.py edits with their IDs', rd('voice2.py').count("ref='K5b'") == 2 and rd('voice2.py').count("ref='K7b'") == 1)
+    check('T-23 K8b: in _build/work.html with its ID, and the kids product in studio.json', 'T-23 K8b' in rd('work.html') and rd('work.html').count(K8B) == 1
+          and any(p.get('id') == 'kids' and p.get('what') == K8B for p in _json.loads(rd('studio.json'))['products']))
+    check('T-23: the Studio card\'s proof line stays', "535 tests, and every change checked on a real phone before it ships." in TXT23['studio.html'])
+
+    # L1: a two-hyphen word up to 24 characters never breaks, on any page, at 320, 390 and 1440.
+    L1_JS = r'''(() => {
+      const out = []; const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {acceptNode(n) {
+        const p = n.parentElement; if (!p || p.closest('script,style,code,pre,textarea,svg,[hidden]')) return 2; return p.getClientRects().length ? 1 : 2; }});
+      let n; while ((n = w.nextNode())) { for (const m of n.data.matchAll(/(?<![\w-])[A-Za-z0-9]+(?:-[A-Za-z0-9]+){2}(?![\w-])/g)) {
+        const tops = new Set(); for (let i = m.index; i < m.index + m[0].length; i++) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1);
+          const b = [...r.getClientRects()].find(x => x.width > 0.5); if (b) tops.add(Math.round(b.top)); }
+        out.push([m[0], !!n.parentElement.closest('[style*="white-space: nowrap"]'), tops.size]); } }
+      return out; })()'''
+    seen23 = set()
+    for n in ALL_HTML:
+        for w in (320, 390, 1440):
+            q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(200)
+            r = [x for x in q.evaluate(L1_JS) if len(x[0]) <= 24]; q.close()
+            seen23.update(x[0] for x in r)
+            check(f'T-23 L1: at {w}, every two-hyphen word on {n} is in a no-wrap span and on one line', all(x[1] and x[2] == 1 for x in r), str([x for x in r if not (x[1] and x[2] == 1)]))
+            if n == 'mainframe.html':
+                check(f'T-23 L1: "year-to-date" on mainframe is on one line at {w}', any(x[0] == 'year-to-date' and x[2] == 1 for x in r), str(r))
+    check('T-23 L1: the two-hyphen words found are year-to-date, side-by-side and DEP-INTEREST-YTD', seen23 == {'year-to-date', 'side-by-side', 'DEP-INTEREST-YTD'}, str(seen23))
+    nws = [x for n in ALL_HTML for x in _re.findall(r'<span style="white-space: nowrap">([^<]*)</span>', SRC23[n])]
+    check('T-23 L1: no new span holds more than two hyphens or more than 24 characters',
+          not [x for x in nws if '-' in x and (x.count('-') > 2 or len(x) > 24) and x not in _re.findall(r'<span style="white-space: nowrap">([^<]*)</span>', ''.join(OLD23.values()))])
+    check('T-23 L1: nothing new is wrapped inside script, style, code or pre', all(
+        len(_re.findall(r'<(script|style|code|pre)\b[^>]*>(?:(?!</\1>).)*white-space: nowrap', SRC23[n], _re.S)) ==
+        len(_re.findall(r'<(script|style|code|pre)\b[^>]*>(?:(?!</\1>).)*white-space: nowrap', OLD23[n], _re.S)) for n in ALL_HTML))
+    check('T-23 L1: no address or email holds a new span', not any(_re.search(r'(?:href|src|content)="[^"]*<span', SRC23[n]) for n in ALL_HTML))
+
+    # L2: case-reels' h1 lines don't touch: each line's ink clears the next.
+    INK23 = r'''(() => {
+      const el = document.querySelector('h1'); const cs = getComputedStyle(el); const cv = document.createElement('canvas').getContext('2d');
+      cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; const lines = [];
+      const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) for (let i = 0; i < n.data.length; i++) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1);
+        const b = [...r.getClientRects()].find(x => x.width > 0.5); if (!b) continue;
+        let L = lines.find(l => Math.abs(l.top - b.top) < 4); if (!L) { L = {top: b.top, text: ''}; lines.push(L); } L.text += n.data[i]; }
+      return lines.map(l => { const t = cs.textTransform === 'uppercase' ? l.text.toUpperCase() : l.text; const m = cv.measureText(t.trim()); const base = l.top + m.fontBoundingBoxAscent;
+        return [t.trim(), base - m.actualBoundingBoxAscent, base + m.actualBoundingBoxDescent]; }); })()'''
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'case-reels.html'); settle(q)
+        ln = q.evaluate(INK23); lh = q.evaluate("[getComputedStyle(document.querySelector('h1')).lineHeight, getComputedStyle(document.querySelector('h1')).fontSize]"); q.close()
+        gaps = [round(ln[i + 1][1] - ln[i][2], 1) for i in range(len(ln) - 1)]
+        check(f'T-23 L2: at {w}, each line of case-reels\' h1 clears the next (ink gaps {gaps})', len(ln) >= 2 and all(g >= 1 for g in gaps), str(ln))
+        check(f'T-23 L2: at {w}, case-reels\' h1 line height is its font size', lh[0] == lh[1], str(lh))
+
+    # L3: local's reply-status words share the closing buttons' left edge at every width.
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'local.html'); settle(q)
+        r = q.evaluate('''(() => { const a = document.querySelector('#contact a.btn-blaze').getBoundingClientRect().left; const s = document.getElementById('sr-status');
+          const g = document.createRange(); g.selectNodeContents(s); const t = g.getClientRects()[0]; const d = document.getElementById('sr-dot');
+          return [a, t ? t.left : null, s.textContent, getComputedStyle(d).display, d.getBoundingClientRect().right]; })()''')
+        q.close()
+        check(f'T-23 L3: at {w}, the reply-status line starts on the buttons\' left edge', r[1] is not None and abs(r[0] - r[1]) <= 1 and r[2].startswith("I'm "), str(r))
+        if w < 700:
+            check(f'T-23 L3: at {w}, the dot is not shown (no empty slot in front of the words)', r[3] == 'none', str(r))
+        else:
+            check(f'T-23 L3: at {w}, the dot shows, hanging left of the words', r[3] != 'none' and r[4] < r[1], str(r))
+
+    # L4: the "More free tools" names never wrap, and no visible dot starts or ends a row.
+    MT_JS = r'''(() => { const p = [...document.querySelectorAll('main p')].find(x => x.textContent.includes('More free tools:')); const pb = p.getBoundingClientRect();
+      const links = [...p.querySelectorAll('a')].map(a => { const rs = [...a.getClientRects()].filter(x => x.width > 0.5); return [a.textContent, new Set(rs.map(x => Math.round(x.top))).size, Math.round(rs[0].top), rs[0].left, rs[rs.length - 1].right]; });
+      const dots = []; const w = document.createTreeWalker(p, NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) { const i = n.data.indexOf('·'); if (i < 0) continue; const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1);
+        const b = r.getClientRects()[0]; dots.push([Math.round(b.top), b.left >= pb.left && b.right <= pb.right, b.right <= pb.left]); }
+      return {links, dots, pl: pb.left, over: p.scrollWidth > p.clientWidth, text: p.textContent.replace(/[\s ]+/g, ' ').trim()}; })()'''
+    for t in TOOLS23:
+        for w in (320, 390, 1440):
+            q = newpage(w); q.goto(BASE + t); settle(q); q.wait_for_timeout(200)
+            r = q.evaluate(MT_JS); q.close()
+            L = r['links']
+            check(f'T-23 L4: at {w}, no tool name in {t}\'s "More free tools" line wraps', len(L) >= 3 and all(x[1] == 1 for x in L), str(L))
+            # dot k sits between name k and name k+1
+            okd = len(r['dots']) == len(L) - 1
+            for k, (top, vis, hid) in enumerate(r['dots'] if okd else []):
+                same_row = L[k][2] == L[k + 1][2]
+                okd = okd and ((vis and same_row and abs(top - L[k][2]) <= 2) or (hid and not same_row))
+            check(f'T-23 L4: at {w}, on {t} a dot shows only between two names on one row, and the dot in front of a name that starts a row is out of sight', okd, str(r['dots']) + ' ' + str(L))
+            check(f'T-23 L4: at {w}, a name that starts a row sits on the line\'s left edge with room for its focus ring', all(x[3] - r['pl'] >= 5.5 for x in L), str([x[3] - r['pl'] for x in L]))
+            check(f'T-23 L4: at {w}, {t}\'s "More free tools" line has no sideways overflow', not r['over'])
+            check(f'T-23 L4: {t}\'s "More free tools" line reads as before', r['text'] == 'More free tools: ' + ' · '.join(x[0] for x in L), r['text'])
+
+    # L5: "4 minutes." on one line, and every number with its unit in a card headline on work, local and case-reels.
+    PAIR_JS = r'''([sel, needle]) => [...document.querySelectorAll(sel)].filter(e => e.textContent.includes(needle)).map(el => {
+      const k = el.textContent.indexOf(needle); const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n, pos = 0; const tops = new Set();
+      while ((n = w.nextNode())) { for (let i = 0; i < n.data.length; i++, pos++) { if (pos < k || pos >= k + needle.length || !n.data[i].trim()) continue;
+        const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); const b = [...r.getClientRects()].find(x => x.width > 0.5); if (b) tops.add(Math.round(b.top)); } }
+      return tops.size; })'''
+    PAIRS23 = [('work.html', 'p.num', '4 minutes.'), ('work.html', 'p.num', '2 AI'), ('local.html', 'figure.rise3 strong', '~4 min'),
+               ('local.html', '#rc-rows strong, #rc-rows .src-btn', '~4 min'), ('local.html', '#rc-rows strong, #rc-rows .src-btn', '3 of 3'),
+               ('case-reels.html', '.stat b', '~4 min')]
+    for w in (320, 390, 1440):
+        for n, sel, needle in PAIRS23:
+            q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(200)
+            r = q.evaluate(PAIR_JS, [sel, needle]); q.close()
+            check(f'T-23 L5: at {w}, "{needle}" on {n} is on one line', len(r) >= 1 and all(x == 1 for x in r), str(r))
+    check('T-23 L5: "4 minutes." sits in a no-wrap span on work', SRC23['work.html'].count('about <span style="white-space: nowrap">4 minutes.</span></p>') == 1)
+
+    # L6: the Studio page ends with work's closing call box, the same markup, words and links.
+    BOX_WORDS = ['Your pile could be next', 'Two weeks, $1,500, and it comes off the build price. Or start with a free 15-minute call.']
+    BOX_LINKS = [['Start a Blueprint →', 'start.html'], ['Free 15-minute call', 'call.html']]
+    boxes = {}
+    for n in ('work.html', 'studio.html'):
+        q = newpage(1440); q.goto(BASE + n); settle(q)
+        boxes[n] = q.evaluate('''(() => { const s = [...document.querySelectorAll('section[aria-labelledby="next-h"]')];
+          if (s.length !== 1) return {n: s.length}; const x = s[0];
+          return {n: 1, html: x.outerHTML, words: [x.querySelector('h2').textContent, x.querySelector('p').textContent],
+                  links: [...x.querySelectorAll('a')].map(a => [a.textContent, a.getAttribute('href')]),
+                  last: x === document.querySelector('main').lastElementChild, prev: (x.previousElementSibling || {}).id || ''}; })()''')
+        q.close()
+    st, wk = boxes['studio.html'], boxes['work.html']
+    check('T-23 L6: studio has one closing call box', st.get('n') == 1, str(st.get('n')))
+    check('T-23 L6: studio\'s box is work\'s box, the same markup character for character', st.get('html') == wk.get('html') and bool(st.get('html')))
+    check('T-23 L6: the box\'s words are work\'s exactly', st.get('words') == BOX_WORDS and wk.get('words') == BOX_WORDS, str(st.get('words')))
+    check('T-23 L6: the box\'s links are "Start a Blueprint →" to start.html and "Free 15-minute call" to call.html', st.get('links') == BOX_LINKS and wk.get('links') == BOX_LINKS, str(st.get('links')))
+    check('T-23 L6: on studio the box comes right after the products and ends the page\'s main', st.get('last') is True and st.get('prev') == 'products', str(st.get('prev')))
+    check('T-23 L6: built from work\'s source, not a copy (neither studio.py nor its page holds the box; enhance.py lifts it from work.html)',
+          'next-h' not in rd('studio.html') and 'next-h' not in rd(os.path.join('tools', 'studio.py')) and 'def add_closing_call' in rd('enhance.py')
+          and '(HERE / "work.html")' in rd('enhance.py'))
+    from collections import Counter as _C23
+    check('T-23 L6: studio\'s links are T-22\'s plus start.html and call.html', _C23(_re.findall(r'href="([^"]*)"', SRC23['studio.html'])) - _C23(_re.findall(r'href="([^"]*)"', OLD23['studio.html'])) == _C23(['start.html', 'call.html'])
+          and not (_C23(_re.findall(r'href="([^"]*)"', OLD23['studio.html'])) - _C23(_re.findall(r'href="([^"]*)"', SRC23['studio.html']))))
+
+    # L7: the count sits with "Shipped lately" on wide screens; on phones it stays as at T-22.
+    L7_JS = r'''(() => { const h = document.getElementById('log-h'), s = document.querySelector('#stats strong'), st = document.getElementById('stats');
+      const probe = el => { const z = document.createElement('span'); z.style.cssText = 'display:inline-block;width:0;height:0'; el.appendChild(z); const y = z.getBoundingClientRect().top; z.remove(); return y; };
+      const g = document.createRange(); g.selectNodeContents(h); const hr = g.getClientRects();
+      return {hb: probe(h), sb: probe(s), hRight: hr[hr.length - 1].right, sLeft: s.getBoundingClientRect().left, stW: st.getBoundingClientRect().width,
+              mainW: document.querySelector('main').clientWidth, st: [st.getBoundingClientRect().top, st.getBoundingClientRect().height], h: [h.getBoundingClientRect().top, h.getBoundingClientRect().height],
+              n: s.textContent, lines: document.querySelectorAll('#log li').length, all: (document.getElementById('log-all') || {}).textContent || ''}; })()'''
+    for w in (1024, 1440):
+        q = newpage(w); q.goto(BASE + 'studio.html'); settle(q)
+        r = q.evaluate(L7_JS); q.close()
+        check(f'T-23 L7: at {w}, the count sits beside "Shipped lately", on its baseline', abs(r['hb'] - r['sb']) <= 1.5 and r['sLeft'] > r['hRight'], str(r))
+        check(f'T-23 L7: at {w}, the count is no longer a full-width band', r['stW'] < r['mainW'] / 2, str(r))
+        check(f'T-23 L7: at {w}, the count still equals the log lines that show', r['n'] == str(r['lines']) and r['all'] == f'See all {r["lines"]}', str(r))
+    for w in (320, 390):
+        q = newpage(w); q.goto(BASE + 'studio.html'); settle(q); r = q.evaluate(L7_JS); q.close()
+        q = t22_page(w); q.goto(OLD23B + 'studio.html'); settle(q); o = q.evaluate(L7_JS); q.close()
+        check(f'T-23 L7: at {w}, the count band and the heading sit where they did at T-22', all(abs(a - b_) <= 1 for a, b_ in zip(r['st'] + r['h'], o['st'] + o['h'])), f'{r["st"] + r["h"]} vs {o["st"] + o["h"]}')
+        check(f'T-23 L7: at {w}, the count still equals the log lines that show', r['n'] == str(r['lines']) == o['n'], str(r))
+
+    # No sideways scroll on any changed page.
+    for n in CHANGED23:
+        for w in (320, 390, 1440):
+            q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(200)
+            sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]'); q.close()
+            check(f'T-23: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

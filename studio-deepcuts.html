@@ -57,6 +57,11 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 @media (max-width:760px){.stats p{padding:14px 0}}
 .sec{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .sec h2.big{font-size:clamp(38px,4.6vw,60px)}
+.logsec{margin-top:0}
+.loghead{display:flex;flex-direction:column;gap:48px}
+@media (min-width:800px){.loghead{flex-direction:row-reverse;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:baseline;gap:8px clamp(24px,3vw,40px)}
+.loghead .stats{border:0}.loghead .stats p{padding:0}
+.loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}
 .log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
 .log li{display:grid;grid-template-columns:5.5em 13em minmax(0,1fr);gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid #DDD5C3}
 .log time{font-size:14px;color:#676D66;white-space:nowrap}
@@ -145,7 +150,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-16 59e68e317259fc3b -->
+<!-- studio.py 2026-11-16 54906d7f3789984c -->
   <section class="sec" aria-labelledby="log-h">
     <h2 id="log-h" class="big">Shipped lately</h2>
     <ol class="log solo" id="log">

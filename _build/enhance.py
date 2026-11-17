@@ -350,6 +350,24 @@ def fix_linkedin():
         p.write_text(t, encoding="utf-8")
 
 
+# T-23 L6: the Studio page ends with the work page's closing call box. It is not a copy
+# kept by hand: the box is lifted out of _build/work.html (the one source) at build time
+# and put at the end of studio.html's <main>, before plain.py, intent.py, voice2.py and
+# final.py run, so every later pass (the plain-words sentence, the button colour, the
+# no-wrap spans) treats both pages alike and they come out the same.
+CLOSING_CALL = re.compile(r'\n  <section aria-labelledby="next-h".*?</section>\n', re.S)
+
+
+def add_closing_call():
+    src = CLOSING_CALL.findall((HERE / "work.html").read_text(encoding="utf-8"))
+    assert len(src) == 1, "work.html: expected one closing call box"
+    p = OUT / "studio.html"
+    t = p.read_text(encoding="utf-8")
+    assert 'id="next-h"' not in t, "studio.html already has a closing call box"
+    t = rep(t, "\n</main>", "\n" + src[0].lstrip("\n").rstrip("\n") + "\n</main>")
+    p.write_text(t, encoding="utf-8")
+
+
 def add_pages():
     for f in STUDIO_PAGES:
         src = HERE / f
@@ -360,6 +378,7 @@ def add_pages():
         t = (HERE / f).read_text(encoding="utf-8")
         t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
         (OUT / f).write_text(t, encoding="utf-8")
+    add_closing_call()
     if PHOTO.exists():
         shutil.copy(PHOTO, OUT / "josef.jpg")
         shutil.copy(PHOTO.with_name("josef-bw.jpg"), OUT / "josef-bw.jpg")
@@ -709,6 +728,10 @@ def layout_mainframe_t21():
 #  - 700 px and up: the reply-status dot hangs left of the text, so the line shares the
 #    left edge of the buttons above it.
 #    Narrower, the dot stays beside its text instead of sitting alone on a line above it.
+#    T-23 L3: narrower than 700 px the phone gutter (16 px) has no room for the dot to hang,
+#    and beside the text it pushed the words 19 px in from the buttons (an empty slot half
+#    the time, as it blinks). So there the dot is not shown and the words share the
+#    buttons' left edge at every width. The words still say which state it is.
 #  - Up to 699 px: "How it works" reads as one line through all three steps: a vertical
 #    rule from the first dot to the last, each dot on it, every step the same.
 #  - Up to 529 px: the "Start here" tiles size to their words (no 104 px floor); the grid
@@ -731,6 +754,7 @@ LOCAL_T21_CSS = """<style>
 #contact p:has(>#sr-dot){position:relative}
 #sr-dot{position:absolute;left:-19px;top:50%;margin-top:-4.5px}
 }
+@media (max-width:699px){#sr-dot{display:none}}
 @media (max-width:699px){
 #route ol{grid-template-columns:minmax(0,1fr)!important;border-top:0!important}
 #route ol>li{padding:0 0 34px 34px!important}
