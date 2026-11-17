@@ -1099,6 +1099,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-24 · Exhibit A says what is stored · READY
+
+**Why:** Nov 17, 2026: on mainframe, Exhibit A's buttons "A fraction" and "A percentage" choose what the field stores, while on comp3 "Read as a percentage" means how a reader interprets the number, so the same word means opposite things. Exhibit A also shows the bytes 03 50 00 0C while "The real data" card shows 00 03 50 0C, and nothing says which is which. Both byte strings are correct packings of 3.5 and 0.035; only the words change, so every label now names what is stored. "The bank" comes out because the public run is a synthetic example with no bank.
+
+**Done when:** A1 to A7 are on their pages word for word, both Exhibit A states and both comp3 example buttons are seen at 320, 390 and 1440, axe stays at zero, all tests pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
