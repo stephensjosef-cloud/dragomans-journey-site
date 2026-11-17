@@ -1053,6 +1053,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-23 · Kids Kitchen, the person back in, plus layout leftovers · READY
+
+**Why:** Nov 16, 2026: three fresh readers compared T-22's lines with the ones they replaced. The new headlines and before-and-after numbers won on clarity and on wanting to hire. The old lines were trusted more where they showed a person choosing the cuts, the mistakes the client caught, and what the app actually does, so four lines put that back. Seven small layout fixes from the last two checks ride along.
+
+**Done when:** the four lines are on their pages word for word, L1 to L7 are in and seen at 320, 390 and 1440, axe stays at zero, all tests pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
