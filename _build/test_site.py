@@ -147,7 +147,7 @@ with sync_playwright() as p:
     check('mf fraction: pressed', pg.get_attribute('button[data-reading="fraction"]', 'aria-pressed') == 'true' and pg.get_attribute('button[data-reading="percent"]', 'aria-pressed') == 'false')
     check('mf fraction: values', [pg.inner_text(f'#mf-{k}') for k in ['bytes', 'value', 'rate', 'interest']] == ['00 03 50 0C', '0.03500', '0.0029167', '$2.92'])
     check('mf fraction: color', '#12161F' in pg.get_attribute('#mf-interest', 'style'))
-    check('mf fraction: verdict', pg.inner_text('#mf-verdict') == 'What the bank means: 3.5% a year, stored as a fraction.')
+    check('mf fraction: verdict', pg.inner_text('#mf-verdict') == 'Same code, right answer: 3.5% a year.')   # T-24 A4
     pg.click('button[data-reading="percent"]')
     check('mf percent: restores default markup', pg.inner_html('figure') == exa0)
     for k, rows in [('c', 4), ('d', 4)]:

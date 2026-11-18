@@ -90,8 +90,9 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
     <div style="display:flex;flex-direction:column;gap:10px">
       <span class="label">Try one</span>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
-        <button type="button" class="chip" data-b="03 50 00 0C" data-p="S9(2)V9(5)">Exhibit A, read as a percentage</button>
-        <button type="button" class="chip" data-b="00 03 50 0C" data-p="S9(2)V9(5)">Exhibit A, as the bank stored it</button>
+        <!-- T-24 A6: each example names what Exhibit A's field stores -->
+        <button type="button" class="chip" data-b="03 50 00 0C" data-p="S9(2)V9(5)">Exhibit A, stored as 3.5</button>
+        <button type="button" class="chip" data-b="00 03 50 0C" data-p="S9(2)V9(5)">Exhibit A, stored as 0.035</button>
         <button type="button" class="chip" data-b="00 12 34 56 7D" data-p="S9(7)V99">A negative balance</button>
         <button type="button" class="chip" data-b="03 50 0A 0C" data-p="S9(2)V9(5)">A damaged field</button>
       </div>
@@ -187,11 +188,12 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
     var signed = v.neg ? -v.n : v.n;
     var asFraction = money(1000n * signed, scale * 12n);
     var asPercent = money(1000n * signed, scale * 12n * 100n);
+    // T-24 A7: the box labels say what each figure means; the math and figures stay.
     return '<div style="display:flex;flex-direction:column;gap:12px">' +
       '<span class="label">If this field is an annual rate</span>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:12px">' +
-      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">Read as a fraction</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asFraction) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
-      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">Read as a percentage</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asPercent) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
+      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">What the code charges</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asFraction) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
+      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">If it means a percent</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asPercent) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
       '</div><p style="margin:0;font-size:15px;color:#3A4252">Same bytes, same picture clause. The code alone can\'t say which column is right.</p></div>';
   }
 

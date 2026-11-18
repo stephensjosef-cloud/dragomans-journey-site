@@ -89,6 +89,35 @@ def un23(s, name):
     return s
 
 
+# T-24 (Nov 17, 2026): Josef's seven lines A1 to A7, Exhibit A says what is stored (mainframe A1 to A5,
+# comp3 A6 and A7). un24(s) takes them back out of a page's source or text, for the older checks that
+# compare a page with T-23's build or one before it; the T-24 block checks each of them on its own.
+T24_LINES = [   # (ID, page, T-23's words, T-24's words), in the order un24() swaps them back
+    ('A1', 'mainframe.html', 'The code never divides by 100. The field definition allows two readings. See each one:',
+                             'The code never divides by 100, and the field fits 3.5% stored either way. See each one:'),
+    ('A2', 'mainframe.html', 'A fraction', 'Stored as 0.035'),
+    ('A3', 'mainframe.html', 'A percentage', 'Stored as 3.5'),
+    ('A4', 'mainframe.html', 'What the bank means: 3.5% a year, stored as a fraction.', 'Same code, right answer: 3.5% a year.'),
+    ('A5', 'mainframe.html', "The only one that can't be wrong about what your business actually stored.",
+                             "Reads 0.035: a fraction. The only one that can't be wrong about what your business actually stored."),
+    ('A6', 'comp3.html', 'Exhibit A, read as a percentage', 'Exhibit A, stored as 3.5'),
+    ('A6', 'comp3.html', 'Exhibit A, as the bank stored it', 'Exhibit A, stored as 0.035'),
+    ('A7', 'comp3.html', 'Read as a fraction', 'What the code charges'),
+    ('A7', 'comp3.html', 'Read as a percentage', 'If it means a percent'),
+]
+T24_NOTES = ("        <!-- T-24 A6: each example names what Exhibit A's field stores -->\n",
+             "    // T-24 A7: the box labels say what each figure means; the math and figures stay.\n")
+
+
+def un24(s):
+    """A page's source or text with T-24's seven lines read as T-23's (and its two code comments out)."""
+    for c in T24_NOTES:
+        s = s.replace(c, '').replace(c.replace('\n', '\r\n'), '')
+    for _id, _n, old, new in T24_LINES:
+        s = s.replace(new, old).replace(new.upper(), old.upper())   # upper: comp3's labels as innerText shows them
+    return s
+
+
 def route_fonts(page):
     def gf(route):
         u = route.request.url
@@ -120,7 +149,7 @@ with sync_playwright() as p:
     check('decoder default value 3.50000', '3.50000' in out(), out()[:200])
     check('decoder default fraction reading $291.67', '$291.67' in out())
     check('decoder default percentage reading $2.92', '$2.92' in out())
-    pg.click('text=Exhibit A, as the bank stored it'); pg.wait_for_timeout(100)
+    pg.click('text=Exhibit A, stored as 0.035'); pg.wait_for_timeout(100)   # T-24 A6: was "Exhibit A, as the bank stored it"
     check('bank-stored value 0.03500', '0.03500' in out(), out()[:200])
     check('bank-stored fraction reading $2.92', '$2.92' in out())
     pg.click('text=A negative balance'); pg.wait_for_timeout(100)
@@ -1568,6 +1597,7 @@ with sync_playwright() as p:
         return [sorted(l for l in q.inner_text('#out').split('\n') if l.strip()), _re.sub(r'.*#', '#', q.url)]
     for steps in ([], [('chip', 'A damaged field')], [('chip', 'A negative balance')], [('mode', '#mode-enc'), ('#in', '-12.345'), ('#pic', 'S9(5)V99')]):
         a, b_ = both('comp3', lambda q: dec(q, steps))
+        a = [sorted(un24(l) for l in a[0]), a[1]]   # T-24 A7: the two result labels read back as T-23's
         check(f'T-18: decoder shows the same readouts and share link as T-17 for {steps or "the opening example"}', a == b_)
     q = newpage(390, 844); q.goto(BASE + 'comp3.html'); q.wait_for_timeout(300)
     check('T-18 S27: "Free tool" over the title', q.locator('h1').evaluate('e => e.previousElementSibling.textContent') == 'Free tool')
@@ -1761,8 +1791,12 @@ with sync_playwright() as p:
     # lines, T-21's own page is read from git (trip/T-21's last commit).
     T22_DONE = {'W4', 'W5', 'W25'}
     git21 = lambda f: _sp18.run(['git', 'show', 'a0c77c98a2213a618efd2e2831d03fae424963c4:' + f], cwd=here, capture_output=True).stdout.decode('utf-8').replace('\r', '')
+    # T-24 A1 replaces W29's line (the mainframe lead-in); for that line, T-23's own page is read from git
+    # (origin/main at 78bf1e6, the base T-24 was cut from). The T-24 block checks A1.
+    T24_DONE = {'W29'}
+    git23 = lambda f: _sp18.run(['git', 'show', '78bf1e632a752b8ea9ef89536e342bcf9ed90758:' + f], cwd=here, capture_output=True).stdout.decode('utf-8').replace('\r', '')
     for wid, n, old, new, _o, _n in W19:
-        t = words19(git21(n + '.html') if wid in T22_DONE else src19[n])
+        t = words19(git21(n + '.html') if wid in T22_DONE else git23(n + '.html') if wid in T24_DONE else src19[n])
         check(f'T-19 {wid}: {n} has the new line exactly once', t.count(new) == 1, str(t.count(new)))
         if old in new:
             check(f'T-19 {wid}: on {n} the old words are only inside the new line', t.count(old) == 1, str(t.count(old)))
@@ -1924,7 +1958,8 @@ with sync_playwright() as p:
                     continue
                 # T-22: W4, W5 and W25 are replaced by K6's and K8's headlines and K3's paragraph; the same fit check runs on those.
                 new = {'W4': 'An evening of editing, now about 4 minutes.', 'W5': 'Their recipe cards, now an app.',
-                       'W25': 'She films the class on her phone.'}.get(wid, new)
+                       'W25': 'She films the class on her phone.',
+                       'W29': 'The code never divides by 100, and the field fits 3.5% stored either way. See each one:'}.get(wid, new)   # T-24 A1 replaces W29
                 if wid == 'W11':
                     fill_start(q); q.click('#bp-send'); q.wait_for_timeout(700)
                 f_ = q.evaluate(FIT_JS, new)
@@ -2128,8 +2163,9 @@ with sync_playwright() as p:
         hs = q.evaluate("[...document.querySelectorAll('.t20-read button')].map(b => Math.round(b.getBoundingClientRect().height))")
         check(f'T-20 F6: at {w} the two Exhibit A reading buttons are the same height', len(hs) == 2 and hs[0] == hs[1], str(hs))
         sel = q.evaluate("[...document.querySelectorAll('.t20-read button')].map(b => [b.textContent, b.getAttribute('aria-pressed'), getComputedStyle(b).backgroundColor])")
-        check(f'T-20 F6: at {w} "A percentage" starts selected, filled dark, and "A fraction" is a plain outline',
-              sel == [['A fraction', 'false', 'rgba(0, 0, 0, 0)'], ['A percentage', 'true', 'rgb(18, 22, 31)']], str(sel))
+        # T-24 A2, A3: the buttons now read "Stored as 0.035" and "Stored as 3.5" (were "A fraction" and "A percentage").
+        check(f'T-20 F6: at {w} "Stored as 3.5" starts selected, filled dark, and "Stored as 0.035" is a plain outline',
+              sel == [['Stored as 0.035', 'false', 'rgba(0, 0, 0, 0)'], ['Stored as 3.5', 'true', 'rgb(18, 22, 31)']], str(sel))
     q = newpage(1440); q.goto(BASE + 'mainframe.html'); settle(q)
     tops = q.evaluate("[...document.querySelectorAll('.t20-steps > li > p:last-child')].map(p => Math.round(p.getBoundingClientRect().top))")
     check('T-20 F6: at 1440 step IV\'s divider and price line sit level with I to III', len(tops) == 4 and len(set(tops)) == 1, str(tops))
@@ -2271,6 +2307,7 @@ with sync_playwright() as p:
             q.wait_for_timeout(150)
             return q.inner_text('#out')
         a, b_ = both19('comp3', dec20)
+        a = un24(a)   # T-24 A7: the two result labels read back as T-23's
         check(f'T-20: the decoder gives the same readings as before for {steps or "the opening example"}', a == b_, a[:200] + ' | ' + b_[:200])
     def sent19(base_, name, fill, btn, done):
         q = newpage(1440) if base_ == BASE else t19_page(1440)
@@ -2364,6 +2401,7 @@ with sync_playwright() as p:
       return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
     for n in ALL_HTML:
         a, b_ = both20(n[:-5], lambda q: q.evaluate(TEXT_JS), words=True)   # T-22: its four pages as T-21 left them
+        a = un24(a)   # T-24: A1 to A7 read back as T-23's (the T-24 block checks them)
         if n.startswith('studio'):   # the build-date stamp and the log's day count move with the day the page is built
             a, b_ = (_re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', x) for x in (a, b_))
         check(f'T-21: {n} reads word for word as on origin/main', a == b_,
@@ -2706,6 +2744,7 @@ with sync_playwright() as p:
             q.wait_for_timeout(150)
             return q.evaluate("document.getElementById('out').textContent.replace(/\\s+/g, ' ').trim()")
         a, b_ = both20('comp3', dec21)
+        a = un24(a)   # T-24 A7: the two result labels read back as T-23's
         check(f'T-21: the decoder gives the same readings as on origin/main for {steps or "the opening example"}', a == b_, a[:200] + ' | ' + b_[:200])
     for tab in ('b', 'c', 'd'):
         def ex21(q):
@@ -2718,6 +2757,7 @@ with sync_playwright() as p:
             q.evaluate(f"document.querySelector('[data-reading=\"{reading}\"]').click()"); q.wait_for_timeout(150)
             return [q.inner_text('#mf-value'), q.inner_text('#mf-rate'), q.inner_text('#mf-interest'), q.inner_text('#mf-verdict')]
         a, b_ = both20('mainframe', rd21)
+        a = [un24(x) for x in a]   # T-24 A4: the fraction verdict reads back as T-23's
         check(f'T-21: Exhibit A\'s "{reading}" reading gives the same numbers as on origin/main', a == b_, str(a) + ' | ' + str(b_))
     sel = both20('mainframe', lambda q: q.evaluate("[...document.querySelectorAll('[data-reading]')].map(b => b.dataset.reading + '=' + b.getAttribute('aria-pressed'))"))
     check('T-21: Exhibit A starts on the same reading as on origin/main', sel[0] == sel[1], str(sel))
@@ -2765,7 +2805,7 @@ with sync_playwright() as p:
             T21_FILES[path] = r.stdout if r.returncode == 0 else None
         return T21_FILES[path]
     check('T-22: the T-21 pages can be read from git for comparison', t21_file('case-reels.html') is not None and t21_file('og/case-reels.png') is not None)
-    SRC22 = {n: un23(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-23: its changes out (its block checks them)
+    SRC22 = {n: un23(un24(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n')), n) for n in ALL_HTML}   # T-23: its changes out (its block checks them); T-24: A1 to A7 read back as T-23's
     OLD22 = {n: t21_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
 
     K1_H1 = 'Forty reels, one engine.'
@@ -2960,7 +3000,8 @@ with sync_playwright() as p:
     check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and back23(p.get('what')) == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
 
     # Everything else is as at T-21. Pages this item doesn't touch: byte for byte (the Studio pages' stamp aside).
-    stamp = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', s)
+    # T-24: the Studio's data-built day moves with the day the page is built (T-21's word checks already allow for it).
+    stamp = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
     for n in ALL_HTML:
         if n in TXT22:
             continue
@@ -3075,11 +3116,12 @@ with sync_playwright() as p:
         return q
     OLD23B = BASE + '__t22/'
     check('T-23: the T-22 pages can be read from git for comparison', t22_file('studio.html') is not None and t22_file('og/case-reels.png') is not None)
-    SRC23 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC23 = {n: un24(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n')) for n in ALL_HTML}   # T-24: A1 to A7 read back as T-23's (its block checks them)
     OLD23 = {n: t22_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     K3_22, K5_22, K7_22, K8_22 = (o for o, _ in T23_LINES)
     K3B, K5B, K7B, K8B = (n_ for _, n_ in T23_LINES)
-    stamp23 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', s)
+    # T-24: the Studio's data-built day moves with the day the page is built (T-21's word checks already allow for it).
+    stamp23 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
     TOOLS23 = ('captions.html', 'checkup.html', 'receipt.html', 'scaler.html', 'shotlist.html')
     CHANGED23 = ['captions.html', 'case-reels.html', 'checkup.html', 'local.html', 'mainframe.html', 'receipt.html', 'scaler.html',
                  'shotlist.html', 'studio-birdleague.html', 'studio-deepcuts.html', 'studio.html', 'work.html']
@@ -3115,7 +3157,7 @@ with sync_playwright() as p:
         q.close()
         q = t22_page(1440); q.goto(OLD23B + n); settle(q)
         old_t = q.evaluate(TEXT_JS); q.close()
-        a = TXT23[n]
+        a = un24(TXT23[n])   # T-24: A1 to A7 read back as T-23's (the T-24 block checks them)
         for o, n_ in T23_LINES:
             a = a.replace(n_, o)
         if n == 'studio.html' and BOX23:
@@ -3294,6 +3336,181 @@ with sync_playwright() as p:
             q = newpage(w); q.goto(BASE + n); settle(q); q.wait_for_timeout(200)
             sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]'); q.close()
             check(f'T-23: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
+
+    # ---------------- T-24 (Nov 17, 2026): Exhibit A says what is stored ----------------
+    # Josef's lines A1 to A7, word for word (mainframe A1 to A5, comp3 A6 and A7). Comparisons are
+    # against T-23's own pages (origin/main at 78bf1e6, the base this item was cut from), read from git.
+    T23C = '78bf1e632a752b8ea9ef89536e342bcf9ed90758'
+    T23_FILES = {}
+
+    def t23_file(path):
+        if path not in T23_FILES:
+            r = _sp18.run(['git', 'show', f'{T23C}:{path}'], cwd=here, capture_output=True)
+            T23_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T23_FILES[path]
+
+    def t23_page(w, h=900):
+        """A page that can open T-23's own build at BASE + '__t23/<file>'."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t23/', 1)[1].split('?')[0].split('#')[0]
+            body = t23_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__t23/**', serve)
+        return q
+    OLD24B = BASE + '__t23/'
+    check('T-24: the T-23 pages can be read from git for comparison', t23_file('mainframe.html') is not None and t23_file('comp3.html') is not None)
+    SRC24 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD24 = {n: t23_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT24 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ('mainframe.html', 'comp3.html')}
+    # The Studio pages carry the day they were built (a comment and data-built); nothing else on them moves.
+    stamp24 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
+    OLD_PHRASES24 = ('A fraction', 'A percentage', 'Read as a fraction', 'Read as a percentage', 'read as a percentage',
+                     'as the bank stored it', 'What the bank means', 'field definition allows two readings')
+
+    # The whole build: T-23's pages with only T-24's seven lines. un24() swaps each back, and what is left
+    # is T-23's page byte for byte (the Studio pages' build day aside).
+    for n in ALL_HTML:
+        a, b_ = stamp24(un24(SRC24[n])), stamp24(OLD24[n])
+        check(f'T-24: {n} is T-23\'s page with only T-24\'s lines', a == b_,
+              next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+    got24 = sorted(n for n in ALL_HTML if stamp24(SRC24[n]) != stamp24(OLD24[n]))
+    check('T-24: the pages that changed are comp3.html and mainframe.html and no others', got24 == ['comp3.html', 'mainframe.html'], str(got24))
+    check('T-24: the root mainframe.html and comp3.html are the built pages', all(ROOT24[n] == SRC24[n] for n in ROOT24))
+    for n in ALL_HTML:
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
+                         ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
+                         ('structured data', r'<script type="application/ld\+json">.*?</script>')):
+            check(f'T-24: {n} keeps its {what}', _re.findall(rx, SRC24[n], _re.S) == _re.findall(rx, OLD24[n], _re.S))
+    ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
+    check('T-24: every share card in og/ is byte for byte as at T-23', len(ogs) == 17 and all(
+        open(os.path.join(here, '..', 'og', f), 'rb').read() == t23_file('og/' + f) for f in ogs), str(len(ogs)))
+    check('T-24: every share card in _build/assets/og/ is byte for byte as at T-23', all(
+        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == t23_file('_build/assets/og/' + f) for f in ogs))
+    check('T-24: no em dash on mainframe or comp3, and no new en dash',
+          not any('—' in SRC24[n] for n in ROOT24) and all(SRC24[n].count('–') == OLD24[n].count('–') for n in ROOT24))
+
+    # Each line, word for word, exactly once in its page's source; every old phrase gone.
+    for aid, n, old, new in T24_LINES:
+        check(f'T-24 {aid}: {n} holds "{new}" exactly once', SRC24[n].count(new) == 1 and ROOT24[n].count(new) == 1, str(SRC24[n].count(new)))
+    for n in ROOT24:
+        for ph in OLD_PHRASES24:
+            check(f'T-24: "{ph}" is gone from {n}', ph not in SRC24[n] and ph not in ROOT24[n])
+    check('T-24 A6: the two example buttons keep their data-b and data-p values, in the same order',
+          _re.findall(r'<button type="button" class="chip" (data-b="[^"]*" data-p="[^"]*")>', SRC24['comp3.html'])
+          == _re.findall(r'<button type="button" class="chip" (data-b="[^"]*" data-p="[^"]*")>', OLD24['comp3.html']))
+    check('T-24 A6: "Exhibit A, stored as 3.5" is the 03 50 00 0C button and "Exhibit A, stored as 0.035" the 00 03 50 0C one',
+          'data-b="03 50 00 0C" data-p="S9(2)V9(5)">Exhibit A, stored as 3.5</button>' in SRC24['comp3.html']
+          and 'data-b="00 03 50 0C" data-p="S9(2)V9(5)">Exhibit A, stored as 0.035</button>' in SRC24['comp3.html'])
+
+    # Where each line lives, with its ID: mainframe's in voice2.py (the canvas isn't touched), comp3's in its template.
+    rd = lambda f: open(os.path.join(here, f), encoding='utf-8').read()
+    v2 = rd('voice2.py')
+    check('T-24: voice2.py writes A1 to A5, each with its ID', all(f"ref='{a}')" in v2 for a in ('A1', 'A2', 'A3', 'A4', 'A5')))
+    check('T-24: the Mainframe canvas is as at T-23', open(os.path.join(here, 'canvas', 'Mainframe.dc.html'), 'rb').read().replace(b'\r\n', b'\n')
+          == t23_file('_build/canvas/Mainframe.dc.html').replace(b'\r\n', b'\n'))
+    c3 = rd('comp3.html')
+    check('T-24: _build/comp3.html carries A6 and A7 with their IDs, and A6 and A7 word for word',
+          'T-24 A6' in c3 and 'T-24 A7' in c3 and all(c3.count(new) == 1 for _a, n, _o, new in T24_LINES if n == 'comp3.html'))
+
+    # What a reader sees: each shown line exactly once in the page's text, after its scripts run.
+    TXT24_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style').forEach(e => e.remove());
+      return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
+    MF24_JS = r'''(() => { const bs = [...document.querySelectorAll('button[data-reading]')];
+      const lines = e => { const g = document.createRange(); g.selectNodeContents(e); return new Set([...g.getClientRects()].filter(r => r.width > 0).map(r => Math.round(r.top))).size; };
+      return {btn: bs.map(b => [b.textContent, b.getAttribute('aria-pressed'), getComputedStyle(b).backgroundColor]),
+              h: bs.map(b => Math.round(b.getBoundingClientRect().height * 10) / 10), lines: bs.map(lines),
+              w: bs.map(b => Math.round(b.getBoundingClientRect().width)), gw: Math.round(bs[0].parentElement.getBoundingClientRect().width),
+              row: new Set(bs.map(b => Math.round(b.getBoundingClientRect().top))).size,
+              vals: ['bytes', 'value', 'rate', 'interest'].map(k => document.getElementById('mf-' + k).textContent),
+              color: document.getElementById('mf-interest').getAttribute('style'), verdict: document.getElementById('mf-verdict').textContent}; })()'''
+    # A number token split across two lines anywhere in the element holding a line (or in the whole page).
+    SPLIT24_JS = r'''([sel, toks]) => { const out = []; const roots = sel ? [...document.querySelectorAll(sel)] : [document.body];
+      for (const root of roots) { const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let t;
+        while ((t = tw.nextNode())) { if (t.parentElement.closest('script, style')) continue;
+          for (const k of toks) { let i = t.data.indexOf(k);
+            while (i >= 0) { const g = document.createRange(); g.setStart(t, i); g.setEnd(t, i + k.length);
+              const tops = new Set([...g.getClientRects()].filter(r => r.width > 0).map(r => Math.round(r.top)));
+              if (tops.size > 1) out.push(k + ' in ' + t.data.slice(0, 60)); i = t.data.indexOf(k, i + 1); } } } }
+      return out; }'''
+    TOKS24 = ['0.035', '3.5%', '3.5', '0.03500', '3.50000', '$291.67', '$2.92']
+    PCT_VERDICT = 'Correct to the code, line for line. 100 times too much interest.'
+    A1, A2, A3, A4, A5 = (new for _a, _n, _o, new in T24_LINES[:5])
+    A6a, A6b, A7a, A7b = (new for _a, _n, _o, new in T24_LINES[5:])
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'mainframe.html'); settle(q); q.wait_for_timeout(200)
+        r = q.evaluate(MF24_JS); t = q.evaluate(TXT24_JS)
+        check(f'T-24: at {w} mainframe shows A1, A2, A3 and A5 exactly once each as it loads, and not A4',
+              all(t.count(x) == 1 for x in (A1, A2, A3, A5)) and t.count(A4) == 0, str([t.count(x) for x in (A1, A2, A3, A4, A5)]))
+        check(f'T-24: at {w} as loaded, "Stored as 3.5" is selected (filled dark) and "Stored as 0.035" is a plain outline',
+              r['btn'] == [[A2, 'false', 'rgba(0, 0, 0, 0)'], [A3, 'true', 'rgb(18, 22, 31)']], str(r['btn']))
+        check(f'T-24: at {w} as loaded, Exhibit A shows 03 50 00 0C, 3.50000, 0.2916667, $291.67 and the percent verdict',
+              r['vals'] == ['03 50 00 0C', '3.50000', '0.2916667', '$291.67'] and r['verdict'] == PCT_VERDICT and '#A93F17' in r['color'], str(r['vals']) + r['verdict'])
+        check(f'T-24: at {w} as loaded, the two Exhibit A buttons are the same height and each label is on one line',
+              len(set(r['h'])) == 1 and r['lines'] == [1, 1], f"{r['h']} {r['lines']}")
+        if w < 400:
+            check(f'T-24: at {w} the two buttons are stacked, each the group\'s full width', r['row'] == 2 and set(r['w']) == {r['gw']}, str(r))
+        else:
+            check(f'T-24: at {w} the two buttons sit side by side', r['row'] == 1, str(r))
+        sp = q.evaluate(SPLIT24_JS, [None, TOKS24])
+        check(f'T-24: at {w} as loaded, no "0.035", "3.5" or "3.5%" (or Exhibit A figure) splits across lines on mainframe', not sp, str(sp))
+        q.click('button[data-reading="fraction"]'); q.wait_for_timeout(500)   # the buttons' fill fades in 160 ms
+        r = q.evaluate(MF24_JS); t = q.evaluate(TXT24_JS)
+        check(f'T-24: at {w} after tapping "Stored as 0.035", it is selected and "Stored as 3.5" is not',
+              r['btn'] == [[A2, 'true', 'rgb(18, 22, 31)'], [A3, 'false', 'rgba(0, 0, 0, 0)']], str(r['btn']))
+        check(f'T-24: at {w} after tapping "Stored as 0.035", Exhibit A shows 00 03 50 0C, 0.03500, 0.0029167, $2.92 and A4',
+              r['vals'] == ['00 03 50 0C', '0.03500', '0.0029167', '$2.92'] and r['verdict'] == A4 and '#12161F' in r['color'], str(r['vals']) + r['verdict'])
+        check(f'T-24: at {w} after the tap, A4 shows exactly once and the percent verdict is gone', t.count(A4) == 1 and t.count(PCT_VERDICT) == 0)
+        check(f'T-24: at {w} after the tap, the two buttons are the same height and each label is on one line',
+              len(set(r['h'])) == 1 and r['lines'] == [1, 1], f"{r['h']} {r['lines']}")
+        sp = q.evaluate(SPLIT24_JS, [None, TOKS24])
+        check(f'T-24: at {w} after the tap, no number splits across lines on mainframe', not sp, str(sp))
+        q.click('button[data-reading="percent"]'); q.wait_for_timeout(150)
+        check(f'T-24: at {w} tapping "Stored as 3.5" brings back the first state', q.evaluate(MF24_JS)['verdict'] == PCT_VERDICT)
+        sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]')
+        check(f'T-24: mainframe has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
+        q.close()
+
+    # comp3: the example buttons and the two result boxes. Same input, same figures as at T-23.
+    BOX24_JS = r'''(() => { const o = {}; document.querySelectorAll('#out .label').forEach(l => { const v = l.nextElementSibling;
+      if (v && v.classList.contains('mono')) o[l.textContent] = v.textContent; }); return o; })()'''
+    CHIP24_JS = r'''(() => [...document.querySelectorAll('button.chip[data-b]')].map(b => { const g = document.createRange(); g.selectNodeContents(b);
+      return [b.textContent, new Set([...g.getClientRects()].filter(r => r.width > 0).map(r => Math.round(r.top))).size, Math.round(b.getBoundingClientRect().height)]; }))()'''
+    LAB24_JS = r'''(() => [...document.querySelectorAll('#out .label')].map(l => { const g = document.createRange(); g.selectNodeContents(l);
+      return [l.textContent, new Set([...g.getClientRects()].filter(r => r.width > 0).map(r => Math.round(r.top))).size]; }))()'''
+    OUT24_JS = "document.getElementById('out').textContent.replace(/\\s+/g, ' ').trim()"
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'comp3.html'); settle(q); q.wait_for_timeout(200)
+        o = t23_page(w); o.goto(OLD24B + 'comp3.html'); settle(o); o.wait_for_timeout(200)
+        bx = q.evaluate(BOX24_JS)
+        check(f'T-24 A7: at {w} the default input 03 50 00 0C reads $291.67 under "What the code charges" and $2.92 under "If it means a percent"',
+              bx == {A7a: '$291.67', A7b: '$2.92'}, str(bx))
+        t = q.evaluate(TXT24_JS)
+        check(f'T-24: at {w} comp3 shows A6 and A7 exactly once each', all(t.count(x) == 1 for x in (A6a, A6b, A7a, A7b)), str([t.count(x) for x in (A6a, A6b, A7a, A7b)]))
+        ch, cho = q.evaluate(CHIP24_JS), o.evaluate(CHIP24_JS)
+        check(f'T-24 A6: at {w} the example buttons keep their layout: no button has more lines than at T-23',
+              len(ch) == len(cho) == 4 and all(a[1] <= b_[1] for a, b_ in zip(ch, cho)), f'{ch} vs {cho}')
+        check(f'T-24 A6: at {w} "Exhibit A, stored as 3.5" and "Exhibit A, stored as 0.035" are each on one line', [c[1] for c in ch[:2]] == [1, 1], str(ch))
+        for lbl, want in ((A6a, {A7a: '$291.67', A7b: '$2.92'}), (A6b, None)):
+            q.click(f'button.chip:text-is("{lbl}")'); q.wait_for_timeout(150)
+            o.click(f'button.chip:text-is("{un24(lbl)}")'); o.wait_for_timeout(150)
+            bx = q.evaluate(BOX24_JS)
+            if want:
+                check(f'T-24: at {w} after tapping "{lbl}", "What the code charges" shows $291.67 and "If it means a percent" shows $2.92', bx == want, str(bx))
+            else:
+                check(f'T-24: at {w} after tapping "{lbl}", "What the code charges" shows $2.92', bx.get(A7a) == '$2.92', str(bx))
+            a, b_ = un24(q.evaluate(OUT24_JS)), o.evaluate(OUT24_JS)
+            check(f'T-24: at {w} after tapping "{lbl}", the decoder reads exactly as at T-23 apart from the two labels', a == b_, f'{a[:200]} | {b_[:200]}')
+            lb = q.evaluate(LAB24_JS)
+            check(f'T-24 A7: at {w} after tapping "{lbl}", each result label is on one line', all(x[1] == 1 for x in lb if x[0] in (A7a, A7b)) and sum(x[0] in (A7a, A7b) for x in lb) == 2, str(lb))
+            sp = q.evaluate(SPLIT24_JS, [None, TOKS24])
+            check(f'T-24: at {w} after tapping "{lbl}", no number splits across lines on comp3', not sp, str(sp))
+        sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]')
+        check(f'T-24: comp3 has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
+        q.close(); o.close()
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

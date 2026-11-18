@@ -211,6 +211,31 @@ text('local.html',
      ">It won't take a broken entry, like a recipe with no photo, and your staff try every update before any family sees it.<",
      ref='K7b')
 
+# ---------------- T-24 (Nov 17, 2026): Exhibit A says what is stored ----------------
+# Josef's lines, word for word. Every label names what the field stores, and the bank
+# comes out (the public run is a synthetic example). The old words come from the canvas
+# through plain.py and W29; the canvas file isn't touched. comp3 (A6, A7) changes in
+# _build/comp3.html. Exhibit A's numbers and its starting state stay as they are.
+# A1: the line above the two buttons, chained after W29 (which still has to hit).
+text('mainframe.html',
+     "The code never divides by 100. The field definition allows two readings. See each one:",
+     "The code never divides by 100, and the field fits 3.5% stored either way. See each one:",
+     ref='A1')
+# A2, A3: the two buttons. Their data-reading values, styles and starting state stay.
+text('mainframe.html', '>A fraction</button>', '>Stored as 0.035</button>', ref='A2')
+text('mainframe.html', '>A percentage</button>', '>Stored as 3.5</button>', ref='A3')
+# A4: the verdict for the fraction state. It is drawn only from the page's state data
+# (D.readings.fraction.ex.verdict); the percent verdict stays as plain.py wrote it.
+text('mainframe.html',
+     '"verdict": "What the bank means: 3.5% a year, stored as a fraction."',
+     '"verdict": "Same code, right answer: 3.5% a year."',
+     ref='A4')
+# A5: the "4 · THE REAL DATA" card, the caption under 00 03 50 0C (plain.py writes the old line).
+text('mainframe.html',
+     ">The only one that can't be wrong about what your business actually stored.</p>",
+     ">Reads 0.035: a fraction. The only one that can't be wrong about what your business actually stored.</p>",
+     ref='A5')
+
 # ---------------- write ----------------
 if problems:
     print('VOICE: %d edit(s) missed, nothing written:' % len(problems))
