@@ -200,8 +200,45 @@ def un26(s, name=None):
         return s
     if '\r\n' in s:   # a page read as served on Windows (CRLF): swap in LF, then back
         return un26(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    s = un27(s, name)   # T-27: the shelf out first, so every older check that reads through un26() sees T-26's page
     s = _r.sub(r'\.gal\{gap:28px\}\n(?:[^\n]*\n)*?@media \(min-width:800px\)\{\.grow\{[^\n]*\n\n', '', s)
     return _r.sub(r'\n  <section class="sec gal" aria-labelledby="gallery-h">.*?\n  </section>', '', s, flags=_r.S)
+
+
+# T-27 (Nov 18, 2026): the ChuckleFits shelf on studio.html (its CSS and one block inside the ChuckleFits card),
+# and the card's "Visit the shop" address tagged. un27(s, name) takes the shelf back out and the tag off that
+# address, for the older checks that compare studio.html with T-26's build or one before it (un26() calls it
+# first); the T-27 block checks the shelf on its own.
+T27_TAG = 'utm_source=dragomansjourney&utm_medium=studio&utm_campaign=shelf'
+T27_WHAT = ('My humor shirt shop. I write every line on every shirt.', 'My humor shirt shop.')   # (T-26's line, T-27's: Josef cut the second sentence, Nov 18)
+
+
+def un27(s, name=None):
+    import re as _r
+    if name not in (None, 'studio.html'):
+        return s
+    if '\r\n' in s:
+        return un27(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    s = _r.sub(r'\.shelf\{margin:[^\n]*\n(?:[^\n]*\n)*?@media \(min-width:1200px\)\{\.shelf ul\{[^\n]*\n\n', '', s)
+    s = _r.sub(r'\n        <div class="shelf" role="region".*?\n        </div>', '', s, flags=_r.S)
+    s = s.replace(f'<p>{T27_WHAT[1]}</p>', f'<p>{T27_WHAT[0]}</p>')
+    return s.replace('href="https://chucklefits.com/?' + T27_TAG.replace('&', '&amp;') + '"', 'href="https://chucklefits.com"')
+
+
+def back27(t):
+    """A page's text with T-27's cut line read back as T-26's (Josef cut "I write every line on every shirt.", Nov 18)."""
+    return t.replace(T27_WHAT[1] + ' Visit the shop', T27_WHAT[0] + ' Visit the shop')
+
+
+# The snapshot's six, in its order (T-27, chucklefits-shelf-2026-11-18.json): (handle, name, kind, price as shown).
+T27_SHELF = [
+    ('thats-coo-womens-baby-tee', "That's Coo", 'Baby tee', 'From $28'),
+    ('i-hold-a-grudge-womens-t-shirt', 'I Hold A Grudge', "Women's tee", 'From $28'),
+    ('bird-watchin-buddies-unisex-classic-tee', 'Bird Watchin Buddies', 'Tee', 'From $26'),
+    ('easy-tiger-unisex-classic-tee', 'Easy Tiger', 'Tee', 'From $26'),
+    ('as-far-as-i-know-im-delightful', "As Far As I Know, I'm Delightful", 'Tee', 'From $26'),
+    ('love-your-mother-5-panel-cap', 'Love Your Mother', 'Cap', 'From $26'),
+]
 
 
 # The item's words, as given (T-26): (app, [(group label, group caption, numbered, [(file, caption, alt)])]).
@@ -821,6 +858,7 @@ with sync_playwright() as p:
         _shutil.copytree(os.path.join(here, 'tools'), os.path.join(bd, 'tools'), ignore=_shutil.ignore_patterns('__pycache__'))
         _shutil.copy(os.path.join(here, 'shipped.json'), bd)
         _shutil.copytree(os.path.join(here, 'assets', 'gallery'), os.path.join(bd, 'assets', 'gallery'))   # T-26: studio.py reads the gallery's images
+        _shutil.copytree(os.path.join(here, 'assets', 'shelf'), os.path.join(bd, 'assets', 'shelf'))   # T-27: studio.py reads the shelf's photos
         for state in ('hidden', 'shown'):
             sj = _json.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
             for x in sj['products']:
@@ -872,7 +910,8 @@ with sync_playwright() as p:
         if x.get('image'):
             check(f'studio card {x["id"]}: image', card.locator(f'img[src="{x["image"]}"]').get_attribute('alt') == x['image_alt'])
         if x.get('link'):
-            lk = card.locator(f'a[href="{x["link"]["href"]}"]')
+            lhref = x['link']['href'].rstrip('/') + '/?' + x['link_tag'] if x.get('link_tag') else x['link']['href']   # T-27: the shop link carries the shelf tag
+            lk = card.locator(f'a[href="{lhref}"]')
             check(f'studio card {x["id"]}: link', lk.count() == 1 and lk.inner_text().startswith(x['link']['label']))
         if x.get('list'):
             # T-10: the join button sits in a small form; its mailto is the form's action and the fallback.
@@ -2519,7 +2558,8 @@ with sync_playwright() as p:
     # Every word as it was: each page's text content (after its scripts run), with the new
     # spans out of the way and a no-break space read as a space, matches origin/main.
     # T-26: the page text readers leave the gallery section out (on older builds it isn't there); the T-26 block checks its words.
-    TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"]').forEach(e => e.remove());
+    # T-27: and the ChuckleFits shelf (.shelf), likewise; the T-27 block checks its words.
+    TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"], .shelf').forEach(e => e.remove());
       return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
     for n in ALL_HTML:
         a, b_ = both20(n[:-5], lambda q: q.evaluate(TEXT_JS), words=True)   # T-22: its four pages as T-21 left them
@@ -3279,7 +3319,7 @@ with sync_playwright() as p:
         q.close()
         q = t22_page(1440); q.goto(OLD23B + n); settle(q)
         old_t = q.evaluate(TEXT_JS); q.close()
-        a = un24(TXT23[n])   # T-24: A1 to A7 read back as T-23's (the T-24 block checks them)
+        a = back27(un24(TXT23[n]))   # T-24: A1 to A7 read back as T-23's (the T-24 block checks them); T-27: the ChuckleFits line read back as T-26's
         for o, n_ in T23_LINES:
             a = a.replace(n_, o)
         if n == 'studio.html' and BOX23:
@@ -3555,7 +3595,7 @@ with sync_playwright() as p:
           'T-24 A6' in c3 and 'T-24 A7' in c3 and all(c3.count(new) == 1 for _a, n, _o, new in T24_LINES if n == 'comp3.html'))
 
     # What a reader sees: each shown line exactly once in the page's text, after its scripts run.
-    TXT24_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"]').forEach(e => e.remove());
+    TXT24_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"], .shelf').forEach(e => e.remove());
       return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
     MF24_JS = r'''(() => { const bs = [...document.querySelectorAll('button[data-reading]')];
       const lines = e => { const g = document.createRange(); g.selectNodeContents(e); return new Set([...g.getClientRects()].filter(r => r.width > 0).map(r => Math.round(r.top))).size; };
@@ -3741,7 +3781,7 @@ with sync_playwright() as p:
             q = newpage(w); q.goto(BASE + n); settle(q); a = q.evaluate(TEXT_JS); q.close()
             o = t24_page(w); o.goto(OLD25B + n); settle(o); b_ = o.evaluate(TEXT_JS); o.close()
             if n.startswith('studio'):   # the log's day count moves with the day the page is built
-                a, b_ = day25(a), day25(b_)
+                a, b_ = day25(back27(a)), day25(b_)   # T-27: the ChuckleFits line read back as T-26's (its block checks it)
             check(f'T-25: {n} reads word for word as at T-24 at {w}', a == b_,
                   next((f'...{a[max(0, i - 40):i + 40]}... | ...{b_[max(0, i - 40):i + 40]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
 
@@ -4042,8 +4082,8 @@ with sync_playwright() as p:
     outd = os.path.join(here, 'out')
     outf = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
     t25tree = set(_sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n'))
-    check('T-26: the build adds only gallery/ (every other file in out/ was at the root at T-25)',
-          sorted(f for f in outf if f not in t25tree) == sorted('gallery/' + g for g in GAL26), str([f for f in outf if f not in t25tree][:25]))
+    check('T-26: the build adds only gallery/ (every other file in out/ was at the root at T-25; T-27\'s images/shelf/ aside, its block checks it)',
+          sorted(f for f in outf if f not in t25tree and not f.startswith('images/shelf/')) == sorted('gallery/' + g for g in GAL26), str([f for f in outf if f not in t25tree][:25]))
     for n in ALL_HTML:
         for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
                          ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
@@ -4210,7 +4250,7 @@ with sync_playwright() as p:
                   len({round(f['t']) for f in bt['figs']}) == 1 and abs(bt['figs'][0]['w'] - 3 - (bt['figs'][0]['h'] - 3) * 660 / 762) < 1.5, str(bt['figs'])[:200])
         # Keyboard: from the last link before the gallery, Tab reaches each row in order, with the page's standard focus ring.
         names26 = [f'{a}, {l.lower()}' for a, gs in T26_APPS for l, *_r in gs]
-        q.focus('a[href="https://chucklefits.com"]')
+        q.focus('a[href="https://chucklefits.com/?' + T27_TAG + '"]')   # T-27: the shop link now carries the shelf tag
         seen, rings = [], []
         for _k in range(len(names26)):
             q.keyboard.press('Tab')
@@ -4224,6 +4264,276 @@ with sync_playwright() as p:
             q.keyboard.press('ArrowRight'); q.wait_for_timeout(600)
             x1 = q.evaluate("[document.querySelector('.grow[aria-label=\"Bird League, now\"]').scrollLeft, scrollX]")
             check(f'T-26: at {w}, a focused row scrolls sideways with the arrow keys, and the page doesn\'t', x0 == 0 and x1[0] > 0 and x1[1] == 0, f'{x0} {x1}')
+        q.close()
+
+    # ---------------- T-27 (Nov 18, 2026): the ChuckleFits shelf on the Studio page ----------------
+    # Six products from the Nov 18 shop snapshot inside the ChuckleFits card, each one link to its shop page with
+    # the shelf tag; "Visit the shop" tagged too; nothing else changed. Comparisons are against T-26's own build
+    # (origin/main at 58a8075, the base this item was cut from), read from git.
+    import pathlib as _pl27
+    T26C = '58a8075efe480ab26b2f58562707a53cd67425f2'
+    T26_FILES = {}
+
+    def t26_file(path):
+        if path not in T26_FILES:
+            r = _sp18.run(['git', 'show', f'{T26C}:{path}'], cwd=here, capture_output=True)
+            T26_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T26_FILES[path]
+    check('T-27: the T-26 files can be read from git for comparison', t26_file('studio.html') is not None and t26_file('gallery/birdsighted-5-rank.jpg') is not None)
+    SRC27 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD27 = {n: t26_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT27 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    stamp27 = lambda s: _re.sub(STAMP26, '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
+    TAGQ = T27_TAG.replace('&', '&amp;')
+    SHOP27 = 'https://chucklefits.com/?' + T27_TAG
+    H27 = [h for h, *_r in T27_SHELF]
+    sj27 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+    cf27 = next(x for x in sj27['products'] if x['id'] == 'chucklefits')
+    shelf27 = cf27.get('shelf') or []
+
+    # The whole build: studio.html is T-26's page with only the shelf and the two tagged shop addresses; every other
+    # page is byte for byte T-26's (the two product pages differ only by studio.py's stamp line: studio.json's hash).
+    check('T-27: un27() takes something out of studio.html (the shelf is there)', un27(SRC27['studio.html'], 'studio.html') != SRC27['studio.html'])
+    for n in ALL_HTML:
+        if n == 'studio.html':
+            a, b_ = stamp27(un27(SRC27[n], n)), stamp27(OLD27[n])
+            check('T-27: studio.html is T-26\'s page with only the shelf (its CSS and its block) added and the shop addresses tagged, the build day aside', a == b_,
+                  next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+        elif n.startswith('studio-'):
+            dl = [(x, y) for x, y in zip(SRC27[n].split('\n'), OLD27[n].split('\n')) if x != y]
+            check(f'T-27: {n} is T-26\'s page apart from studio.py\'s stamp line', SRC27[n].count('\n') == OLD27[n].count('\n')
+                  and all(_re.fullmatch(STAMP26, x) and _re.fullmatch(STAMP26, y) for x, y in dl), str(dl[:2]))
+        else:
+            check(f'T-27: {n} is byte for byte as at T-26', SRC27[n] == OLD27[n])
+    check('T-27: every root page is the built page', all(ROOT27[n] == SRC27[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT27[n] != SRC27[n]]))
+    t26tree = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T26C], cwd=here, capture_output=True, text=True).stdout.split('\n') if f]
+    pub26 = [f for f in t26tree if not f.startswith('_build/') and not f.endswith('.html')]
+    check('T-27: every other public file at the root (sitemap, robots, images, gallery, share cards...) is byte for byte as at T-26',
+          len(pub26) > 40 and all(rb26(f) == t26_file(f).replace(b'\r\n', b'\n') for f in pub26),
+          str([f for f in pub26 if rb26(f) != t26_file(f).replace(b'\r\n', b'\n')][:5]))
+    outf27 = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
+    check('T-27: the build adds only images/shelf/ with the six photos (every other file in out/ was at the root at T-26)',
+          sorted(f for f in outf27 if f not in set(t26tree)) == sorted(f'images/shelf/{h}.jpg' for h in H27), str([f for f in outf27 if f not in set(t26tree)][:10]))
+    for n in ALL_HTML:
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
+                         ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
+                         ('structured data', r'<script type="application/ld\+json">.*?</script>'),
+                         ('alt texts', r'\balt="[^"]*"'), ('aria-labels', r'\baria-label="[^"]*"'), ('placeholders', r'\bplaceholder="[^"]*"'),
+                         ('labels', r'<label\b[^>]*>.*?</label>')):
+            check(f'T-27: {n} keeps its {what} (the shelf\'s own aside)',
+                  _re.findall(rx, un27(SRC27[n], n), _re.S) == _re.findall(rx, OLD27[n], _re.S))
+
+    # studio.json: the snapshot's six in its order, the tag, and the note in _about.
+    check('T-27: studio.json\'s chucklefits product carries the snapshot\'s link_tag', cf27.get('link_tag') == T27_TAG, str(cf27.get('link_tag')))
+    check('T-27: studio.json\'s shelf holds the snapshot\'s six, in its order', [x.get('handle') for x in shelf27] == H27, str([x.get('handle') for x in shelf27]))
+    for (h, nm, kd, pr), x in zip(T27_SHELF, shelf27):
+        check(f'T-27: studio.json shelf {h}: name, kind and price as in the snapshot, the local photo path, an alt, tags',
+              x.get('name') == nm and x.get('kind') == kd and 'From $' + x.get('price', '').replace('.00', '') == pr
+              and x.get('image') == f'images/shelf/{h}.jpg' and len(x.get('alt', '')) > 40 and isinstance(x.get('tags'), list) and len(x['tags']) > 0, str(x)[:160])
+    check('T-27: no shelf product has a tag containing "unhinged"', not any('unhinged' in tg.lower() for x in shelf27 for tg in x.get('tags', [])))
+    sw27 = ' '.join(x.get(k, '') for x in shelf27 for k in ('name', 'kind', 'alt'))
+    check('T-27: the shelf\'s words have no em dash and only straight apostrophes', '—' not in sw27 and '’' not in sw27 and '‘' not in sw27 and "'" in sw27)
+    check('T-27: studio.json\'s _about says the shelf lives there and is refreshed from a new shop snapshot',
+          'ChuckleFits shelf lives in' in sj27['_about'] and 'refreshed from a new shop snapshot' in sj27['_about'])
+
+    # The photos: six, 480 px wide, byte for byte in _build/assets/shelf/, out/images/shelf/, served, and images/shelf/ at the root, tracked in git.
+    ass27 = os.path.join(here, 'assets', 'shelf')
+    rts27 = os.path.join(here, '..', 'images', 'shelf')
+    check('T-27: _build/assets/shelf/ holds exactly the six photos', sorted(os.listdir(ass27)) == sorted(h + '.jpg' for h in H27), str(sorted(os.listdir(ass27))))
+    check('T-27: images/shelf/ at the root holds exactly the same six', os.path.isdir(rts27) and sorted(os.listdir(rts27)) == sorted(h + '.jpg' for h in H27))
+    for h in H27:
+        f0 = open(os.path.join(ass27, h + '.jpg'), 'rb').read()
+        check(f'T-27: images/shelf/{h}.jpg at the root, in out/ and as served is byte for byte _build/assets/shelf/{h}.jpg',
+              f0 == open(os.path.join(rts27, h + '.jpg'), 'rb').read() == open(os.path.join(outd, 'images', 'shelf', h + '.jpg'), 'rb').read()
+              == urlopen(BASE + f'images/shelf/{h}.jpg').read())
+        wh = _studio.jpeg_size(_pl27.Path(os.path.join(ass27, h + '.jpg')))
+        check(f'T-27: {h}.jpg is a JPEG 480 px wide', f0[:2] == b'\xff\xd8' and wh[0] == 480 and wh[1] > 0, str(wh))
+    tracked27 = _sp18.run(['git', 'ls-files', '--full-name', '_build/assets/shelf', 'images/shelf'], cwd=os.path.join(here, '..'), capture_output=True, text=True).stdout.split()
+    check('T-27: images/shelf/ at the root and _build/assets/shelf/ are tracked in git, six files each',
+          sorted(tracked27) == sorted([f'_build/assets/shelf/{h}.jpg' for h in H27] + [f'images/shelf/{h}.jpg' for h in H27]), str(tracked27))
+    check('T-27: no page hotlinks the shop\'s images', not any('cdn.shopify.com' in SRC27[n] for n in ALL_HTML))
+
+    # The code: studio.py prints the shelf from studio.json, its CSS on studio.html only; enhance.py copies the photos.
+    spy27 = open(os.path.join(here, 'tools', 'studio.py'), encoding='utf-8').read()
+    check('T-27: studio.py holds none of the shelf\'s names or alts (it prints them from studio.json)',
+          not any(x[k] in spy27 for x in shelf27 for k in ('name', 'alt')))
+    check('T-27: the shelf\'s CSS is on studio.html and on no product page', '.shelf{' in SRC27['studio.html']
+          and not any('.shelf{' in SRC27[n] for n in ALL_HTML if n != 'studio.html'))
+    enh27 = open(os.path.join(here, 'enhance.py'), encoding='utf-8').read()
+    check('T-27: enhance.py copies _build/assets/shelf/ to out/images/shelf/', '(HERE / "assets" / "shelf")' in enh27 and 'OUT / "images" / "shelf"' in enh27)
+
+    # The unhinged rule: in a temp copy, a shelf product with such a tag stops studio.py, named, and no page is written.
+    tmp27 = _tmp.mkdtemp()
+    try:
+        bd27 = os.path.join(tmp27, '_build')
+        os.makedirs(bd27)
+        _shutil.copytree(os.path.join(here, 'tools'), os.path.join(bd27, 'tools'), ignore=_shutil.ignore_patterns('__pycache__'))
+        _shutil.copy(os.path.join(here, 'shipped.json'), bd27)
+        for dd in ('gallery', 'shelf'):
+            _shutil.copytree(os.path.join(here, 'assets', dd), os.path.join(bd27, 'assets', dd))
+        for case, tagv, pick in (('as is', None, None), ('tagged "unhinged"', 'unhinged', 3), ('tagged "Unhinged Humor"', 'Unhinged Humor', 0)):
+            sjx = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+            cfx = next(x for x in sjx['products'] if x['id'] == 'chucklefits')
+            if tagv:
+                cfx['shelf'][pick]['tags'].append(tagv)
+            _json26.dump(sjx, open(os.path.join(bd27, 'studio.json'), 'w', encoding='utf-8'))
+            for f in _pl27.Path(bd27).glob('studio*.html'):
+                f.unlink()
+            r = _sp.run([sys.executable, 'studio.py', '..'], cwd=os.path.join(bd27, 'tools'), capture_output=True, text=True)
+            made = os.path.exists(os.path.join(bd27, 'studio.html'))
+            if tagv is None:
+                check('T-27: in a temp copy, studio.py builds the page with the shelf as it is', r.returncode == 0 and made, r.stderr[-200:])
+            else:
+                h = cfx['shelf'][pick]['handle']
+                check(f'T-27: in a temp copy, a shelf product {case} stops studio.py, naming the product, and no page is written',
+                      r.returncode != 0 and h in r.stderr and 'unhinged' in r.stderr.lower() and not made, (r.stderr or r.stdout)[-240:])
+    finally:
+        _shutil.rmtree(tmp27, ignore_errors=True)
+
+    # The words: no discount or offer anywhere; inside the card no sale, bundle or shipping and no "$45"; no ChuckleFits on the Mainframe pages.
+    for n in ALL_HTML:
+        hit = _re.findall(r'discount|free shipping|% off', SRC27[n], _re.I)
+        check(f'T-27: {n} says nothing of a discount, free shipping or "% off"', not hit, str(hit[:3]))
+    for n in ('mainframe.html', 'comp3.html', 'briefing.html'):
+        check(f'T-27: "ChuckleFits" is nowhere on {n}', 'chucklefits' not in SRC27[n].lower() and 'chucklefits' not in ROOT27[n].lower())
+    card27 = _re.search(r'<article class="prod[^"]*" data-id="chucklefits">.*?</article>', SRC27['studio.html'], _re.S)
+    card27 = card27.group(0) if card27 else ''
+    cardtxt27 = _html.unescape(_re.sub(r'<[^>]+>', ' ', card27)) + ' ' + ' '.join(_html.unescape(x) for x in _re.findall(r'\b(?:alt|aria-label)="([^"]*)"', card27))
+    check('T-27: the ChuckleFits card holds none of the whole words "sale", "bundle" or "shipping"', bool(card27) and not _re.search(r'\b(?:sale|bundle|shipping)\b', cardtxt27, _re.I),
+          str(_re.findall(r'\b(?:sale|bundle|shipping)\b', cardtxt27, _re.I)))
+    check('T-27: no "$45" price stands alone in the ChuckleFits card', bool(card27) and not _re.search(r'\$45\b', card27))
+    check('T-27: no em dash on studio.html, and no new en dash', '—' not in SRC27['studio.html'] and SRC27['studio.html'].count('–') == OLD27['studio.html'].count('–'))
+    shoplinks = [(n, x) for n in ALL_HTML for x in _re.findall(r'href="(https?://(?:www\.)?chucklefits\.com[^"]*)"', SRC27[n])]
+    check('T-27: every shop link on the site carries the tag (seven, all on studio.html)',
+          len(shoplinks) == 7 and all(n == 'studio.html' and x.endswith('?' + TAGQ) for n, x in shoplinks), str(shoplinks[:3]))
+    check('T-27: the ChuckleFits card\'s line is "My humor shirt shop." (Josef cut "I write every line on every shirt."), in studio.json and on the page',
+          cf27['what'] == T27_WHAT[1] and card27.count(f'<p>{T27_WHAT[1]}</p>') == 1 and 'I write every line' not in SRC27['studio.html']
+          and all('I write every line' not in SRC27[n] for n in ALL_HTML))
+    check('T-27: "Visit the shop" keeps its words and goes to the shop\'s front page with the tag',
+          card27.count(f'<a class="go" href="https://chucklefits.com/?{TAGQ}">Visit the shop ↗</a>') == 1)
+
+    # The markup, as the browser reads it: inside the card, between its "what" line and its link row.
+    SHELF27_JS = r'''() => { const c = document.querySelector('[data-id="chucklefits"]'); if (!c) return null;
+      const sh = c.querySelectorAll('.shelf'); if (sh.length !== 1) return {n: sh.length}; const s = sh[0];
+      return {n: 1, order: [...c.children].map(e => e.tagName + (e.className ? '.' + e.className : '')),
+        region: [s.getAttribute('role'), s.getAttribute('aria-label'), s.getAttribute('tabindex')],
+        lists: [...s.children].map(e => e.tagName), lis: s.querySelectorAll('ul > li').length,
+        items: [...s.querySelectorAll('ul > li')].map(li => { const a = li.querySelectorAll('a'), x = a[0], im = x ? x.querySelectorAll('img') : [];
+          return {links: a.length, kids: li.children.length, href: x && x.getAttribute('href'), target: x && x.getAttribute('target'),
+            parts: x ? [...x.children].map(e => e.tagName + (e.className ? '.' + e.className : '')) : [],
+            src: im[0] && im[0].getAttribute('src'), alt: im[0] && im[0].getAttribute('alt'), w: im[0] && im[0].getAttribute('width'), h: im[0] && im[0].getAttribute('height'),
+            loading: im[0] && im[0].getAttribute('loading'), decoding: im[0] && im[0].getAttribute('decoding'),
+            nw: im[0] && im[0].naturalWidth, nh: im[0] && im[0].naturalHeight,
+            name: (x.querySelector('.sn') || {}).textContent, kind: (x.querySelector('.sk') || {}).textContent, price: (x.querySelector('.sp') || {}).textContent}; }),
+        text: c.innerText.replace(/\s+/g, ' ').trim()}; }'''
+    LOAD27_JS = r'''async () => { const s = document.querySelector('.shelf'); const imgs = [...s.querySelectorAll('img')];
+      s.scrollLeft = s.scrollWidth; await new Promise(f => setTimeout(f, 150)); s.scrollLeft = 0;
+      imgs.forEach(i => { i.loading = 'eager'; });
+      await Promise.all(imgs.map(i => i.complete && i.naturalWidth ? 1 : new Promise(f => { i.onload = f; i.onerror = f; })));
+      await Promise.all(imgs.map(i => i.decode().catch(() => 0))); await new Promise(f => setTimeout(f, 300)); return imgs.filter(i => i.naturalWidth > 0).length; }'''
+    LOOK27_JS = r'''() => { const c = document.querySelector('[data-id="chucklefits"]'), cs = getComputedStyle(c), cr = c.getBoundingClientRect();
+      const s = c.querySelector('.shelf'), ss = getComputedStyle(s), ul = s.querySelector('ul'), ref = document.querySelector('.prod.feature img');
+      const st = e => getComputedStyle(e), R = e => { const r = e.getBoundingClientRect(); return {l: r.left, r: r.right, t: r.top, b: r.bottom, w: r.width, h: r.height}; };
+      const inner = {l: cr.left + parseFloat(cs.borderLeftWidth), r: cr.right - parseFloat(cs.borderRightWidth)};
+      const content = {l: inner.l + parseFloat(cs.paddingLeft), r: inner.r - parseFloat(cs.paddingRight)};
+      return {page: [document.documentElement.scrollWidth, innerWidth, scrollX], inner, content, card: R(c),
+        shelf: {ox: ss.overflowX, snap: ss.scrollSnapType, sw: s.scrollWidth, cw: s.clientWidth, disp: st(ul).display, r: R(s)},
+        items: [...s.querySelectorAll('li')].map(li => { const im = li.querySelector('img'), sn = li.querySelector('.sn'), sk = li.querySelector('.sk'), sp = li.querySelector('.sp');
+          return {li: R(li), img: R(im), sn: R(sn), sk: R(sk), sp: R(sp), snOver: sn.scrollWidth > sn.clientWidth + 1,
+            snap: st(li).scrollSnapAlign,
+            border: [st(im).borderTopWidth, st(im).borderTopStyle, st(im).borderTopColor, st(im).borderTopLeftRadius].join(' '),
+            snFont: [st(sn).fontFamily.split(',')[0].replace(/["']/g, ''), st(sn).fontWeight, st(sn).fontSize, st(sn).color].join(' '),
+            skFont: [st(sk).fontSize, st(sk).color], spFont: [st(sp).fontSize, st(sp).color]}; }),
+        refBorder: [st(ref).borderTopWidth, st(ref).borderTopStyle, st(ref).borderTopColor, st(ref).borderTopLeftRadius].join(' ')}; }'''
+    for w in (320, 390, 800, 1024, 1199, 1200, 1440):
+        q = newpage(w)
+        q.goto(BASE + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready')
+        q.locator('[data-id="chucklefits"]').scroll_into_view_if_needed()
+        M0 = q.evaluate(SHELF27_JS)   # the markup as served, before LOAD27_JS makes the photos eager to measure them
+        nl = q.evaluate(LOAD27_JS)
+        M = q.evaluate(SHELF27_JS)
+        if M and M0 and M.get('items') and M0.get('items'):
+            for it, it0 in zip(M['items'], M0['items']):
+                it['loading'], it['decoding'] = it0['loading'], it0['decoding']
+        L = q.evaluate(LOOK27_JS)
+        phone = w < 800
+        check(f'T-27: at {w}, the six photos load', nl == 6, str(nl))
+        check(f'T-27: at {w}, studio.html has no sideways scroll', L['page'][0] <= L['page'][1] and L['page'][2] == 0, str(L['page']))
+        if w in (390, 1440):
+            check(f'T-27: at {w}, one shelf, inside the ChuckleFits card, between its "what" line and its link row',
+                  bool(M) and M.get('n') == 1 and M['order'] == ['H2', 'DIV.meta', 'P', 'DIV.shelf', 'DIV.acts'], str(M and M.get('order')))
+            check(f'T-27: at {w}, the shelf is a region named "ChuckleFits shirts", tabindex 0, holding one list of six items',
+                  M['region'] == ['region', 'ChuckleFits shirts', '0'] and M['lists'] == ['UL'] and M['lis'] == 6, str([M['region'], M['lists'], M['lis']]))
+            for (h, nm, kd, pr), x, it in zip(T27_SHELF, shelf27, M['items']):
+                wh = _studio.jpeg_size(_pl27.Path(os.path.join(ass27, h + '.jpg')))
+                check(f'T-27: at {w}, {h}: one link to its shop page with the tag, opening in the same tab',
+                      it['links'] == 1 and it['kids'] == 1 and it['href'] == f'https://chucklefits.com/products/{h}?{T27_TAG}' and it['target'] is None, str(it['href']))
+                check(f'T-27: at {w}, {h}: the link holds its photo, then its name, kind and price', it['parts'] == ['IMG', 'SPAN.sn', 'SPAN.sk', 'SPAN.sp'], str(it['parts']))
+                check(f'T-27: at {w}, {h}: name "{nm}", kind "{kd}", price "{pr}", as in studio.json', [it['name'], it['kind'], it['price']] == [nm, kd, pr]
+                      and [it['name'], it['kind']] == [x['name'], x['kind']], str([it['name'], it['kind'], it['price']]))
+                check(f'T-27: at {w}, {h}: its photo is local, with studio.json\'s alt, width and height from the file, lazy, async',
+                      it['src'] == f'images/shelf/{h}.jpg' and it['alt'] == x['alt'] and [it['w'], it['h']] == [str(wh[0]), str(wh[1])]
+                      and [it['nw'], it['nh']] == list(wh) and it['loading'] == 'lazy' and it['decoding'] == 'async', str(it)[:200])
+            want27 = ' '.join(['CHUCKLEFITS', 'Live', T27_WHAT[1]] + [f'{nm} {kd} {pr}' for _h, nm, kd, pr in T27_SHELF] + ['Visit the shop ↗'])
+            check(f'T-27: at {w}, the card reads its old words (its line cut to "{T27_WHAT[1]}", Josef) plus each product\'s name, kind and price, and nothing else', M['text'] == want27, M['text'][:300])
+        its = L['items']
+        check(f'T-27: at {w}, every photo has the card images\' 1.5px #CFC6B2 border and 2px radius', all(x['border'] == L['refBorder'] for x in its), str([its[0]['border'], L['refBorder']]))
+        check(f'T-27: at {w}, names in Instrument Sans 700, kind and price smaller in #5A635D',
+              all(x['snFont'].startswith('Instrument Sans 700 ') for x in its)
+              and all(x['skFont'][1] == x['spFont'][1] == 'rgb(90, 99, 93)' and float(x['skFont'][0][:-2]) < float(x['snFont'].split(' ')[3][:-2]) for x in its),
+              str([its[0]['snFont'], its[0]['skFont'], its[0]['spFont']]))
+        check(f'T-27: at {w}, no name runs past its card, and each name, kind and price sits under its own photo, in order',
+              all(not x['snOver'] and x['li']['l'] - 0.5 <= x[k]['l'] and x[k]['r'] <= x['li']['r'] + 0.5 for x in its for k in ('img', 'sn', 'sk', 'sp'))
+              and all(x['img']['b'] <= x['sn']['t'] < x['sk']['t'] < x['sp']['t'] for x in its), str(its[0])[:240])
+        check(f'T-27: at {w}, every photo is square at the item\'s width', all(abs(x['img']['w'] - x['li']['w']) < 1 and abs(x['img']['w'] - x['img']['h']) < 1 for x in its),
+              str([(round(x['img']['w']), round(x['img']['h'])) for x in its][:2]))
+        if phone:
+            check(f'T-27: at {w}, the six sit in one row that scrolls sideways inside the card (overflow-x auto, scroll-snap)',
+                  L['shelf']['ox'] == 'auto' and L['shelf']['snap'].startswith('x mandatory') and L['shelf']['disp'] == 'flex'
+                  and len({round(x['li']['t']) for x in its}) == 1 and L['shelf']['sw'] > L['shelf']['cw'] and all(x['snap'] == 'start' for x in its),
+                  str([L['shelf'], [round(x['li']['t']) for x in its]]))
+            cut = [x for x in its if x['li']['l'] < L['inner']['r'] < x['li']['r']]
+            check(f'T-27: at {w}, the next product shows cut at the card\'s edge, so the row reads as more',
+                  len(cut) == 1 and 0.25 < (L['inner']['r'] - cut[0]['li']['l']) / cut[0]['li']['w'] < 0.9, str([(round(x['li']['l']), round(x['li']['r'])) for x in its] + [L['inner']]))
+            check(f'T-27: at {w}, the row starts on the card\'s content edge', abs(its[0]['li']['l'] - L['content']['l']) < 1, f'{its[0]["li"]["l"]} vs {L["content"]["l"]}')
+            q.evaluate("document.querySelector('.shelf').scrollLeft = 1e5"); q.wait_for_timeout(600)
+            E = q.evaluate(LOOK27_JS)
+            last = E['items'][-1]['li']
+            check(f'T-27: at {w}, scrolled to its end, the row\'s last product ends on the card\'s content edge, inside the card, and the page doesn\'t move',
+                  abs(last['r'] - E['content']['r']) < 1.5 and last['l'] >= E['inner']['l'] and E['page'][2] == 0 and E['page'][0] <= E['page'][1],
+                  f'{last} {E["content"]} {E["page"]}')
+            q.evaluate("document.querySelector('.shelf').scrollLeft = 0"); q.wait_for_timeout(300)
+        else:
+            per = 3 if w < 1200 else 6
+            rows = sorted({round(x['li']['t']) for x in its})
+            check(f'T-27: at {w}, {per} across ({6 // per} row{"s" if per == 3 else ""}), nothing to scroll',
+                  len(rows) == 6 // per and all(sum(1 for x in its if round(x['li']['t']) == t) == per for t in rows) and L['shelf']['sw'] <= L['shelf']['cw'] + 1,
+                  str([rows, L['shelf']['sw'], L['shelf']['cw']]))
+            ws = [x['li']['w'] for x in its]
+            gaps = [round(its[i + 1]['li']['l'] - its[i]['li']['r'], 1) for i in range(per - 1)]
+            check(f'T-27: at {w}, the products are one even width with even gaps, inside the card\'s content edges',
+                  max(ws) - min(ws) < 1 and max(gaps) - min(gaps) < 1 and min(x['li']['l'] for x in its) >= L['content']['l'] - 0.5
+                  and max(x['li']['r'] for x in its) <= L['content']['r'] + 0.5, str([ws[:2], gaps, L['content']]))
+        # Keyboard: from the last link before the shelf, Tab reaches the row, then its six links in order, then "Visit the shop".
+        q.focus('[data-id="tools"] a.go')
+        seen = []
+        for _k in range(8):
+            q.keyboard.press('Tab')
+            seen.append(q.evaluate("(() => { const e = document.activeElement; return e.getAttribute('aria-label') || e.getAttribute('href'); })()"))
+        want_tab = ['ChuckleFits shirts'] + [f'https://chucklefits.com/products/{h}?{T27_TAG}' for h in H27] + [SHOP27]
+        check(f'T-27: at {w}, Tab reaches the row, then its six links in order, then "Visit the shop"', seen == want_tab, str(seen))
+        q.focus('.shelf')
+        ring = q.evaluate("(() => { const s = getComputedStyle(document.activeElement); return [s.outlineStyle, s.outlineWidth, s.outlineColor, s.outlineOffset].join(' '); })()")
+        check(f'T-27: at {w}, the focused row shows the page\'s standard focus ring (3px solid #E8592B, 3px out)', ring == 'solid 3px rgb(232, 89, 43) 3px', ring)
+        if phone:
+            q.evaluate("document.querySelector('.shelf').scrollLeft = 0"); q.wait_for_timeout(400)   # Tab above scrolled it along
+            x0 = q.evaluate("document.querySelector('.shelf').scrollLeft")
+            q.keyboard.press('ArrowRight'); q.wait_for_timeout(700)
+            x1 = q.evaluate("[document.querySelector('.shelf').scrollLeft, scrollX]")
+            check(f'T-27: at {w}, the focused row scrolls sideways with the arrow keys, and the page doesn\'t', x0 == 0 and x1[0] > 0 and x1[1] == 0, f'{x0} {x1}')
+            q.locator('.shelf a').last.focus(); q.wait_for_timeout(600)
+            x2 = q.evaluate("[document.querySelector('.shelf').scrollLeft, scrollX, (() => { const r = document.activeElement.getBoundingClientRect(), c = document.querySelector('[data-id=chucklefits]').getBoundingClientRect(); return r.right <= c.right && r.left >= c.left; })()]")
+            check(f'T-27: at {w}, tabbing to the last product scrolls the row to show it inside the card, and the page doesn\'t move sideways', x2[0] > 0 and x2[1] == 0 and x2[2], str(x2))
         q.close()
 
     check('no page errors', not errors, '; '.join(errors[:3]))
