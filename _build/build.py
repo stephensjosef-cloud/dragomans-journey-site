@@ -91,7 +91,10 @@ def page(path, title, desc, canonical, helmet, body, script, jsonld=None):
 
 
 def js(template, data):
-    return template.replace("/*DATA*/null", json.dumps(data, ensure_ascii=False))
+    # T-25 T1: /*NBJS*/ becomes djNb(), final.py's line-breaking rule for text a tab redraws.
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "tools"))
+    import chrome
+    return template.replace("/*DATA*/null", json.dumps(data, ensure_ascii=False)).replace("/*NBJS*/", chrome.NB_JS)
 
 
 # ---------------------------------------------------------------- Fork / index
@@ -289,6 +292,7 @@ def build_local():
 (function () {
   var D = /*DATA*/null;
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  /*NBJS*/
   function $(id) { return document.getElementById(id); }
 
   // Picker: four options, message, link, matching engine card.
@@ -317,12 +321,13 @@ def build_local():
       btn.setAttribute('aria-selected', v.tabs[i].on);
       btn.setAttribute('style', v.tabs[i].style);
     });
-    $('rc-head').textContent = rc.head;
-    $('rc-date').textContent = rc.date;
-    $('rc-title').textContent = rc.title;
-    // T-21 G2: a value like "iPhone · iPad · Android" keeps each dot with its neighbours, as on the built page.
-    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v).replace(/ · /g, '&nbsp;·&nbsp;')); }).join('');
-    $('rc-note').textContent = rc.note;
+    // T-25 T1: redrawn text gets final.py's spans and held dots (djNb), so switching tabs
+    // and back gives the markup the page was built with (T-21 G2 did this for the values only).
+    $('rc-head').innerHTML = djNb(esc(rc.head));
+    $('rc-date').innerHTML = djNb(esc(rc.date));
+    $('rc-title').innerHTML = djNb(esc(rc.title));
+    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', djNb(esc(r.k))).replace('{v}', djNb(esc(r.v))); }).join('');
+    $('rc-note').innerHTML = djNb(esc(rc.note));
     var link = $('rc-link');
     if (rc.hasLink) { link.setAttribute('href', rc.link); link.textContent = rc.linkLabel + ' →'; }
     link.hidden = !rc.hasLink;
@@ -450,6 +455,7 @@ def build_mainframe():
 (function () {
   var D = /*DATA*/null;
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  /*NBJS*/
   function $(id) { return document.getElementById(id); }
 
   // Exhibit A: fraction or percentage reading.
@@ -477,11 +483,13 @@ def build_mainframe():
       btn.setAttribute('aria-selected', v.tabs[i].on);
       btn.setAttribute('style', v.tabs[i].style);
     });
-    $('xb-code').textContent = x.code;
-    $('xb-title').textContent = x.title;
-    $('xb-body').textContent = x.body;
-    $('xb-lesson').textContent = x.lesson;
-    $('xb-rows').innerHTML = x.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v)); }).join('');
+    // T-25 T1: redrawn text gets final.py's spans (djNb), so Exhibit B after a round trip
+    // keeps "year-to-date" and "DEP-INTEREST-YTD" whole, as the page was built.
+    $('xb-code').innerHTML = djNb(esc(x.code));
+    $('xb-title').innerHTML = djNb(esc(x.title));
+    $('xb-body').innerHTML = djNb(esc(x.body));
+    $('xb-lesson').innerHTML = djNb(esc(x.lesson));
+    $('xb-rows').innerHTML = x.rows.map(function (r) { return D.row.replace('{k}', djNb(esc(r.k))).replace('{v}', djNb(esc(r.v))); }).join('');
   }
   tabs.forEach(function (btn) { btn.addEventListener('click', function () { exhibit(btn.getAttribute('data-ex')); }); });
 

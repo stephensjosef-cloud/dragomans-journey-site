@@ -1,5 +1,17 @@
 from chrome import write
-import sys
+import re, sys
+
+# T-25 F2: an amount never splits from itself or from its unit. A whole number, a
+# fraction ("1 1/2", "1½", "1/2", "2.5") and the word after it ("cups", "tbsp", "g",
+# "large eggs") sit in one no-wrap span. One rule, written twice: keep_amounts() here for
+# the words in the page, and amtNw() in the script for every line render() writes, so new
+# results are covered too. Only escaped text, never markup; the words and the math are
+# untouched (amtNw() runs after esc(), on the finished strings).
+AMOUNT = re.compile(r"(^|[\s(])((?:\d+\s+\d+/\d+|\d+\s*[¼-¾⅐-⅞]|\d+/\d+|\d*\.?\d+|[¼-¾⅐-⅞])(?:\s+(?:(?:large|small|medium|ripe)\s+)?[A-Za-z][A-Za-z.]*)?)")
+
+
+def keep_amounts(text):
+    return AMOUNT.sub(lambda m: m.group(1) + ('<span style="white-space: nowrap">' + m.group(2) + '</span>' if re.search(r"\s", m.group(2)) else m.group(2)), text)
 
 CSS = r"""
 .lay{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:28px;align-items:start}
@@ -34,7 +46,7 @@ BODY = r"""
 1/2 tsp cinnamon
 1 1/2 tbsp butter, for the pan
 pinch of salt</textarea>
-      <p class="private" style="margin-top:8px">One ingredient per line, any format: 1 1/2 cups, 1½ cups, 3 Tbsp, 200 g, 2 large eggs.</p>
+      <p class="private" style="margin-top:8px">{HINT}</p>
       <div class="who">
         <label><span>Recipe serves</span><input id="serves" type="number" min="1" step="1" value="4"></label>
         <label><span>Grown-ups</span><input id="adults" type="number" min="0" step="1" value="2"></label>
@@ -57,9 +69,11 @@ pinch of salt</textarea>
     </section>
   </div>
 """
+BODY = BODY.replace("{HINT}", keep_amounts("One ingredient per line, any format: 1 1/2 cups, 1½ cups, 3 Tbsp, 200 g, 2 large eggs."))
 
 SCRIPT = r"""
 (function(){
+function amtNw(h){return String(h).replace(/(^|[\s(])((?:\d+\s+\d+\/\d+|\d+\s*[¼-¾⅐-⅞]|\d+\/\d+|\d*\.?\d+|[¼-¾⅐-⅞])(?:\s+(?:(?:large|small|medium|ripe)\s+)?[A-Za-z][A-Za-z.]*)?)/g,function(m,a,b){return /\s/.test(b)?a+'<span style="white-space: nowrap">'+b+'</span>':m})}
 var UF={'½':.5,'⅓':1/3,'⅔':2/3,'¼':.25,'¾':.75,'⅕':.2,'⅖':.4,'⅗':.6,'⅘':.8,'⅙':1/6,'⅚':5/6,'⅛':.125,'⅜':.375,'⅝':.625,'⅞':.875};
 var UNITS=[
  [/^(cups?|c\.?)$/i,'vol',48],[/^(tablespoons?|tbsps?\.?|tbs\.?|T)$/,'vol',3],[/^(tablespoons?|tbsps?\.?|tbs\.?)$/i,'vol',3],
@@ -152,14 +166,14 @@ function render(){
   var portions=A+K/2,f=portions/serves,batches=f>3?Math.ceil(f/2.5):1;
   var showF=st.batch==='one'&&batches>1?f/batches:f;
   document.getElementById('fac').textContent='×'+(Math.round(f*100)/100);
-  document.getElementById('facl').textContent=(Math.round(portions*10)/10)+' portions from a recipe that serves '+serves+'.';
-  document.getElementById('warn').innerHTML=batches>1?'<p class="warn"><b>Make it in '+batches+' batches.</b> Most home pots, pans and mixing bowls top out at two or three times a recipe. Past that, things cook unevenly and pans crowd. Switch to "One batch" for the amounts per round.</p>':'';
+  document.getElementById('facl').innerHTML=amtNw(esc((Math.round(portions*10)/10)+' portions from a recipe that serves '+serves+'.'));
+  document.getElementById('warn').innerHTML=batches>1?'<p class="warn"><b>'+amtNw('Make it in '+batches+' batches.')+'</b> Most home pots, pans and mixing bowls top out at two or three times a recipe. Past that, things cook unevenly and pans crowd. Switch to "One batch" for the amounts per round.</p>':'';
   document.getElementById('batchrow').hidden=batches<2;
   if(batches<2)st.batch='all';
   document.querySelectorAll('[data-b]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.b===st.batch))});
   var rows=document.getElementById('rec').value.split(/\n/).map(parse).filter(Boolean).map(function(p){return scaleLine(p,showF)});
   lastRows=rows;
-  document.getElementById('out').innerHTML=rows.map(function(r){return '<tr><td class="amt">'+esc(r.amt)+(r.was?'<span class="was">was '+esc(r.was)+'</span>':'')+'</td><td>'+esc(r.name)+'</td><td class="note">'+esc(r.note||'')+'</td></tr>'}).join('')||'<tr><td colspan="3" class="note">Paste some ingredients to start.</td></tr>';
+  document.getElementById('out').innerHTML=rows.map(function(r){return '<tr><td class="amt">'+amtNw(esc(r.amt))+(r.was?'<span class="was">was '+amtNw(esc(r.was))+'</span>':'')+'</td><td>'+amtNw(esc(r.name))+'</td><td class="note">'+amtNw(esc(r.note||''))+'</td></tr>'}).join('')||'<tr><td colspan="3" class="note">Paste some ingredients to start.</td></tr>';
 }
 document.addEventListener('click',function(e){var b=e.target.closest('[data-b]');if(b){st.batch=b.dataset.b;render()}});
 ['rec','serves','adults','kids'].forEach(function(id){document.getElementById(id).addEventListener('input',render)});

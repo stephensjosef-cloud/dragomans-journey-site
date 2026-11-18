@@ -25,13 +25,24 @@ with sync_playwright() as p:
     FONT_CSS = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts-test.css')).read()
     FONT_DIR = '/tmp/claude-0/-home-claude/16ca1681-18c1-58d3-954a-5698233dc3a8/scratchpad/fonts'
     FONT_FILES = {os.path.basename(f): f for f in glob.glob(FONT_DIR + '/*/package/files/*.woff2')}
+    # T-25 T1: FONT_DIR exists only on the Linux sandbox. Without it (Windows, or any machine without
+    # those fontsource files) every /testfont/ request raised a KeyError inside the handler, the route
+    # was never answered and pages hung. Then the request goes on to the live Google Fonts instead,
+    # and the css2 request is still counted, so every check below reads the same.
+    FONT_MODE = 'local fontsource files in FONT_DIR' if FONT_FILES else 'live Google Fonts (FONT_DIR missing)'
+    print('fonts:', FONT_MODE)
     gf_hits = []
     def gf(route):
         u = route.request.url
         if 'fonts.googleapis.com/css2' in u:
             gf_hits.append(u)
+            if not FONT_FILES:
+                route.continue_()
+                return
             route.fulfill(status=200, content_type='text/css', body=FONT_CSS, headers={'access-control-allow-origin': '*'})
-        elif '/testfont/' in u:
+        elif not FONT_FILES:
+            route.continue_()
+        elif u.rsplit('/', 1)[1] in FONT_FILES:
             route.fulfill(status=200, path=FONT_FILES[u.rsplit('/', 1)[1]], content_type='font/woff2', headers={'access-control-allow-origin': '*'})
         else:
             route.abort()

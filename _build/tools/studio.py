@@ -327,6 +327,17 @@ def build(studio, shipped, today):
     return log + prods + "\n"
 
 
+# T-25 F4: on phones the count was its own band (a dark rule over "11", a thin one under
+# it, then the heading and the log's rule), so it read apart from "Shipped lately". Under
+# 800 px it now sits the way T-23 L7 set it from 800 px: the heading, then the count on
+# the next line, no band rules, the log's rule under both. studio.html only (the product
+# pages have no count); the count and its words are untouched.
+LOG_PHONE_CSS = r"""
+@media (max-width:799px){.loghead{flex-direction:row-reverse;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:baseline;gap:8px 24px}
+.loghead .stats{border:0}.loghead .stats p{padding:0}
+.loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}
+"""
+
 PAGE_CSS = r"""
 .kick a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:underline;text-underline-offset:3px}
 .kick a:hover{color:#E9EEE9}
@@ -385,7 +396,7 @@ def main(out_dir):
           title=title,
           description=lede.replace('"', "&quot;"),
           kicker="", h1=hero["h1"], lede=t(hero["intro"]),
-          css=CSS, body=stamp + body, script=SCRIPT, more="")
+          css=CSS + LOG_PHONE_CSS, body=stamp + body, script=SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
     rows = visible(studio, shipped, today)

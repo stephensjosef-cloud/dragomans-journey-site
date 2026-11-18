@@ -21,7 +21,13 @@ CSS = r"""
 .cardline{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;background:#fff;border:1.5px solid #CFC6B2;border-radius:2px;cursor:pointer;text-align:left;font:inherit;color:#16201C;width:100%}
 .cardline[aria-pressed="true"]{border-color:#16201C;box-shadow:inset 4px 0 0 #E8592B}
 .cardline .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:#6B716A}
-.cardline .t{white-space:pre-line;font-size:15px;line-height:1.35;text-wrap:pretty}
+/* T-25 F3: each part is drawn the way the reel draws it: the fitter's own lines, never
+   reflowed to the page's width. The text box is the reel's caption width (--k = text size
+   over that width, set by render()), scaled down to fit the card, never above 15px. */
+.cardline .t{container-type:inline-size;min-width:0}
+.cardline .t>span{display:block;white-space:pre;font-size:min(15px,calc(100cqi * var(--k,0.066)));line-height:1.35}
+/* On a small phone the seconds sit under the words, so the drawing gets the card's width. */
+@media (max-width:420px){.cardline{grid-template-columns:auto minmax(0,1fr);row-gap:4px}.cardline .s{grid-column:2}}
 .cardline .s{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
 .legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:#5A635D}
 .legend i{display:inline-block;width:12px;height:12px;background:rgba(232,89,43,.45);border:1px dashed #E8592B;margin-right:6px;vertical-align:-1px}
@@ -186,7 +192,8 @@ function render(){
   var secs=parseFloat(document.getElementById('secs').value)||0;
   var need=cards.reduce(function(a,c){return a+readSecs(c.text)},0);
   var sub=document.getElementById('k-sub');sub.hidden=cards.length<2;sub.textContent=cards.length>1?('Two lines fit on a phone, so this caption shows in '+cards.length+' parts. Tap one to see it.'):'';
-  document.getElementById('cards').innerHTML=cards.map(function(c,i){return '<button type="button" class="cardline" data-card="'+i+'" aria-pressed="'+(i===st.card)+'"><span class="n">'+(i+1)+'</span><span class="t">'+esc(c.lines.join('\n'))+'</span><span class="s">'+readSecs(c.text)+' s</span></button>'}).join('');
+  document.getElementById('cards').style.setProperty('--k',String(SIZES[st.size][1]/MAXW));
+  document.getElementById('cards').innerHTML=cards.map(function(c,i){return '<button type="button" class="cardline" data-card="'+i+'" aria-pressed="'+(i===st.card)+'"><span class="n">'+(i+1)+'</span><span class="t"><span>'+esc(c.lines.join('\n'))+'</span></span><span class="s">'+readSecs(c.text)+' s</span></button>'}).join('');
   var L=draw(),v=[],hits=[];
   if(!cards.length){v.push(['warn','Type a caption to check it.'])}
   else{

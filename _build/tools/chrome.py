@@ -55,6 +55,17 @@ def nobreak(text):
 NW_JS = (r"""function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,"""
          r"""function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}""")
 
+# T-25 T1: nobreak() itself, for the tabs on local.html and mainframe.html that redraw their
+# text (build.py). Without it a tab round trip dropped final.py's spans and held dots, so
+# "year-to-date", "DEP-INTEREST-YTD" and "RESULT · REELS" could split again after a switch.
+# Same rule, piece for piece: escaped text, split at spaces, one or two hyphens, at most 24
+# characters, then " · " held to both neighbours. The page's text is never changed.
+NB_JS = (r"""function djNb(s){return String(s).split(/(\s+|&nbsp;|&#160;)/).map(function(p){"""
+         r"""if(p.indexOf('-')<0)return p;"""
+         r"""var m=p.match(/^((?:[(\["'“‘]|&(?:quot|#x27|#39|ldquo|lsquo);)*)([\p{L}\p{N}]+(?:-[\p{L}\p{N}]+){1,2})((?:(?:['’]|&#x27;|&#39;|&rsquo;)s)?(?:[)\]"'”’.,;:!?…]|&(?:quot|#x27|#39|rdquo|rsquo|hellip);)*)$/u);"""
+         r"""return m&&m[2].length<=""" + str(MAX_PAIR) + r"""?m[1]+'<span style="white-space: nowrap">'+m[2]+'</span>'+m[3]:p;"""
+         r"""}).join('').replace(/[ \t\r\n]+·[ \t\r\n]+/g,'&nbsp;·&nbsp;')}""")
+
 # The closing call band under each tool (G6): on wide screens the words and the button
 # sit as one group, the button on the right, the words filling the rest.
 BAND_CSS = ("@media (min-width:800px){section[aria-labelledby=\"more-h\"]{grid-template-columns:minmax(0,1fr) auto!important;column-gap:clamp(48px,6vw,96px)!important}"

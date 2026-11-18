@@ -368,6 +368,26 @@ def add_closing_call():
     p.write_text(t, encoding="utf-8")
 
 
+# T-25 F5: the closing call box (work.html's, which add_closing_call() sets on studio.html,
+# and case-reels.html's, the same box with its own words) read lopsided on wide screens:
+# two equal columns, the buttons left in the right one, 120 to 140 px short of the edge.
+# From 900 px the button row is exactly as wide as its buttons and ends on the box's
+# right padding, so the space inside the box is the same on the left and the right.
+# One rule, written here once into the three pages; phones keep their one column.
+CALL_BOX_CSS = ('<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]'
+                '{grid-template-columns:minmax(0,1fr) auto!important}}</style>\n')
+CALL_BOX_PAGES = {"work.html": "next-h", "studio.html": "next-h", "case-reels.html": "c7"}
+
+
+def balance_closing_call():
+    for f, h in CALL_BOX_PAGES.items():
+        p = OUT / f
+        t = p.read_text(encoding="utf-8")
+        assert t.count(f'<section aria-labelledby="{h}"') == 1, f + ": expected one closing call box"
+        assert CALL_BOX_CSS not in t
+        p.write_text(rep(t, "</head>", CALL_BOX_CSS + "</head>"), encoding="utf-8")
+
+
 def add_pages():
     for f in STUDIO_PAGES:
         src = HERE / f
@@ -379,6 +399,7 @@ def add_pages():
         t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
         (OUT / f).write_text(t, encoding="utf-8")
     add_closing_call()
+    balance_closing_call()
     if PHOTO.exists():
         shutil.copy(PHOTO, OUT / "josef.jpg")
         shutil.copy(PHOTO.with_name("josef-bw.jpg"), OUT / "josef-bw.jpg")

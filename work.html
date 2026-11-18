@@ -50,6 +50,7 @@ a{color:#A93F17}a:hover{color:#16201C}
 @media (min-width:800px){.card.feature{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
 </style>
+<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>
 <style>
 .djm-btn{display:none}
 @media (max-width:699px){
@@ -102,8 +103,8 @@ a{color:#A93F17}a:hover{color:#16201C}
   <div class="grid" id="cards">
     <article class="card" data-k="nonprofit">
       <div class="tags"><span class="tag">Nonprofit</span><span class="tag">Reels</span></div>
-      <!-- T-22 K6; T-23 L5 keeps "4 minutes." on one line -->
-      <p class="num">An evening of editing, now about <span style="white-space: nowrap">4 minutes.</span></p>
+      <!-- T-22 K6; T-23 L5 keeps "4 minutes." on one line; T-25 F1: "of editing," and "now about" are held too, so no line holds one word ("about 4 minutes." whole is wider than the card at 320 and 1440) -->
+      <p class="num">An evening <span style="white-space: nowrap">of editing,</span> <span style="white-space: nowrap">now about</span> <span style="white-space: nowrap">4 minutes.</span></p>
       <h2>A <span style="white-space: nowrap">40-reel</span> series on one engine.</h2>
       <p>A children's nonprofit used to spend an evening editing each class. Now the clips go through an engine and come back as finished, captioned reels. They approve every one.</p>
       <a class="go" href="case-reels.html">Read the case study →</a>

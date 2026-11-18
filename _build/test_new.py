@@ -118,6 +118,66 @@ def un24(s):
     return s
 
 
+# T-25 (Nov 17, 2026): F1 to F5 and T1, layout, wrapping and test code only, not one word. un25(s, name)
+# swaps T-25's changes back out of a built page's source, for the older checks that compare markup with
+# T-24's build or one before it; the T-25 block checks each of them on its own.
+T25_SWAPS = [   # (page, T-24's text, T-25's text), exactly as built; un25() swaps each back
+    ('captions.html',
+     '.cardline .t{white-space:pre-line;font-size:15px;line-height:1.35;text-wrap:pretty}\n',
+     "/* T-25 F3: each part is drawn the way the reel draws it: the fitter's own lines, never\n   reflowed to the page's width. The text box is the reel's caption width (--k = text size\n   over that width, set by render()), scaled down to fit the card, never above 15px. */\n.cardline .t{container-type:inline-size;min-width:0}\n.cardline .t>span{display:block;white-space:pre;font-size:min(15px,calc(100cqi * var(--k,0.066)));line-height:1.35}\n/* On a small phone the seconds sit under the words, so the drawing gets the card's width. */\n@media (max-width:420px){.cardline{grid-template-columns:auto minmax(0,1fr);row-gap:4px}.cardline .s{grid-column:2}}\n"),
+    ('captions.html',
+     '  document.getElementById(\'cards\').innerHTML=cards.map(function(c,i){return \'<button type="button" class="cardline" data-card="\'+i+\'" aria-pressed="\'+(i===st.card)+\'"><span class="n">\'+(i+1)+\'</span><span class="t">\'+esc(c.lines.join(\'\\n\'))+\'</span><span class="s">\'+readSecs(c.text)+\' s</span></button>\'}).join(\'\');\n',
+     '  document.getElementById(\'cards\').style.setProperty(\'--k\',String(SIZES[st.size][1]/MAXW));\n  document.getElementById(\'cards\').innerHTML=cards.map(function(c,i){return \'<button type="button" class="cardline" data-card="\'+i+\'" aria-pressed="\'+(i===st.card)+\'"><span class="n">\'+(i+1)+\'</span><span class="t"><span>\'+esc(c.lines.join(\'\\n\'))+\'</span></span><span class="s">\'+readSecs(c.text)+\' s</span></button>\'}).join(\'\');\n'),
+    ('case-reels.html',
+     '',
+     '<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>\n'),
+    ('local.html',
+     '',
+     '  function djNb(s){return String(s).split(/(\\s+|&nbsp;|&#160;)/).map(function(p){if(p.indexOf(\'-\')<0)return p;var m=p.match(/^((?:[(\\["\'“‘]|&(?:quot|#x27|#39|ldquo|lsquo);)*)([\\p{L}\\p{N}]+(?:-[\\p{L}\\p{N}]+){1,2})((?:(?:[\'’]|&#x27;|&#39;|&rsquo;)s)?(?:[)\\]"\'”’.,;:!?…]|&(?:quot|#x27|#39|rdquo|rsquo|hellip);)*)$/u);return m&&m[2].length<=24?m[1]+\'<span style="white-space: nowrap">\'+m[2]+\'</span>\'+m[3]:p;}).join(\'\').replace(/[ \\t\\r\\n]+·[ \\t\\r\\n]+/g,\'&nbsp;·&nbsp;\')}\n'),
+    ('local.html',
+     '    $(\'rc-head\').textContent = rc.head;\n    $(\'rc-date\').textContent = rc.date;\n    $(\'rc-title\').textContent = rc.title;\n    // T-21 G2: a value like "iPhone · iPad · Android" keeps each dot with its neighbours, as on the built page.\n    $(\'rc-rows\').innerHTML = rc.rows.map(function (r) { return D.row.replace(\'{k}\', esc(r.k)).replace(\'{v}\', esc(r.v).replace(/ · /g, \'&nbsp;·&nbsp;\')); }).join(\'\');\n    $(\'rc-note\').textContent = rc.note;\n',
+     "    // T-25 T1: redrawn text gets final.py's spans and held dots (djNb), so switching tabs\n    // and back gives the markup the page was built with (T-21 G2 did this for the values only).\n    $('rc-head').innerHTML = djNb(esc(rc.head));\n    $('rc-date').innerHTML = djNb(esc(rc.date));\n    $('rc-title').innerHTML = djNb(esc(rc.title));\n    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', djNb(esc(r.k))).replace('{v}', djNb(esc(r.v))); }).join('');\n    $('rc-note').innerHTML = djNb(esc(rc.note));\n"),
+    ('mainframe.html',
+     '',
+     '  function djNb(s){return String(s).split(/(\\s+|&nbsp;|&#160;)/).map(function(p){if(p.indexOf(\'-\')<0)return p;var m=p.match(/^((?:[(\\["\'“‘]|&(?:quot|#x27|#39|ldquo|lsquo);)*)([\\p{L}\\p{N}]+(?:-[\\p{L}\\p{N}]+){1,2})((?:(?:[\'’]|&#x27;|&#39;|&rsquo;)s)?(?:[)\\]"\'”’.,;:!?…]|&(?:quot|#x27|#39|rdquo|rsquo|hellip);)*)$/u);return m&&m[2].length<=24?m[1]+\'<span style="white-space: nowrap">\'+m[2]+\'</span>\'+m[3]:p;}).join(\'\').replace(/[ \\t\\r\\n]+·[ \\t\\r\\n]+/g,\'&nbsp;·&nbsp;\')}\n'),
+    ('mainframe.html',
+     "    $('xb-code').textContent = x.code;\n    $('xb-title').textContent = x.title;\n    $('xb-body').textContent = x.body;\n    $('xb-lesson').textContent = x.lesson;\n    $('xb-rows').innerHTML = x.rows.map(function (r) { return D.row.replace('{k}', esc(r.k)).replace('{v}', esc(r.v)); }).join('');\n",
+     '    // T-25 T1: redrawn text gets final.py\'s spans (djNb), so Exhibit B after a round trip\n    // keeps "year-to-date" and "DEP-INTEREST-YTD" whole, as the page was built.\n    $(\'xb-code\').innerHTML = djNb(esc(x.code));\n    $(\'xb-title\').innerHTML = djNb(esc(x.title));\n    $(\'xb-body\').innerHTML = djNb(esc(x.body));\n    $(\'xb-lesson\').innerHTML = djNb(esc(x.lesson));\n    $(\'xb-rows\').innerHTML = x.rows.map(function (r) { return D.row.replace(\'{k}\', djNb(esc(r.k))).replace(\'{v}\', djNb(esc(r.v))); }).join(\'\');\n'),
+    ('scaler.html',
+     '      <p class="private" style="margin-top:8px">One ingredient per line, any format: 1 1/2 cups, 1½ cups, 3 Tbsp, 200 g, 2 large eggs.</p>\n',
+     '      <p class="private" style="margin-top:8px">One ingredient per line, any format: <span style="white-space: nowrap">1 1/2 cups</span>, <span style="white-space: nowrap">1½ cups</span>, <span style="white-space: nowrap">3 Tbsp</span>, <span style="white-space: nowrap">200 g</span>, <span style="white-space: nowrap">2 large eggs.</span></p>\n'),
+    ('scaler.html',
+     '',
+     'function amtNw(h){return String(h).replace(/(^|[\\s(])((?:\\d+\\s+\\d+\\/\\d+|\\d+\\s*[¼-¾⅐-⅞]|\\d+\\/\\d+|\\d*\\.?\\d+|[¼-¾⅐-⅞])(?:\\s+(?:(?:large|small|medium|ripe)\\s+)?[A-Za-z][A-Za-z.]*)?)/g,function(m,a,b){return /\\s/.test(b)?a+\'<span style="white-space: nowrap">\'+b+\'</span>\':m})}\n'),
+    ('scaler.html',
+     '  document.getElementById(\'facl\').textContent=(Math.round(portions*10)/10)+\' portions from a recipe that serves \'+serves+\'.\';\n  document.getElementById(\'warn\').innerHTML=batches>1?\'<p class="warn"><b>Make it in \'+batches+\' batches.</b> Most home pots, pans and mixing bowls top out at two or three times a recipe. Past that, things cook unevenly and pans crowd. Switch to "One batch" for the amounts per round.</p>\':\'\';\n',
+     '  document.getElementById(\'facl\').innerHTML=amtNw(esc((Math.round(portions*10)/10)+\' portions from a recipe that serves \'+serves+\'.\'));\n  document.getElementById(\'warn\').innerHTML=batches>1?\'<p class="warn"><b>\'+amtNw(\'Make it in \'+batches+\' batches.\')+\'</b> Most home pots, pans and mixing bowls top out at two or three times a recipe. Past that, things cook unevenly and pans crowd. Switch to "One batch" for the amounts per round.</p>\':\'\';\n'),
+    ('scaler.html',
+     '  document.getElementById(\'out\').innerHTML=rows.map(function(r){return \'<tr><td class="amt">\'+esc(r.amt)+(r.was?\'<span class="was">was \'+esc(r.was)+\'</span>\':\'\')+\'</td><td>\'+esc(r.name)+\'</td><td class="note">\'+esc(r.note||\'\')+\'</td></tr>\'}).join(\'\')||\'<tr><td colspan="3" class="note">Paste some ingredients to start.</td></tr>\';\n',
+     '  document.getElementById(\'out\').innerHTML=rows.map(function(r){return \'<tr><td class="amt">\'+amtNw(esc(r.amt))+(r.was?\'<span class="was">was \'+amtNw(esc(r.was))+\'</span>\':\'\')+\'</td><td>\'+amtNw(esc(r.name))+\'</td><td class="note">\'+amtNw(esc(r.note||\'\'))+\'</td></tr>\'}).join(\'\')||\'<tr><td colspan="3" class="note">Paste some ingredients to start.</td></tr>\';\n'),
+    ('studio.html',
+     '',
+     '@media (max-width:799px){.loghead{flex-direction:row-reverse;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:baseline;gap:8px 24px}\n.loghead .stats{border:0}.loghead .stats p{padding:0}\n.loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}\n\n'),
+    ('studio.html',
+     '',
+     '<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>\n'),
+    ('work.html',
+     '',
+     '<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>\n'),
+    ('work.html',
+     '      <!-- T-22 K6; T-23 L5 keeps "4 minutes." on one line -->\n      <p class="num">An evening of editing, now about <span style="white-space: nowrap">4 minutes.</span></p>\n',
+     '      <!-- T-22 K6; T-23 L5 keeps "4 minutes." on one line; T-25 F1: "of editing," and "now about" are held too, so no line holds one word ("about 4 minutes." whole is wider than the card at 320 and 1440) -->\n      <p class="num">An evening <span style="white-space: nowrap">of editing,</span> <span style="white-space: nowrap">now about</span> <span style="white-space: nowrap">4 minutes.</span></p>\n'),
+]
+
+
+def un25(s, name=None):
+    """A built page's source with T-25's changes swapped back (name: only that page's)."""
+    for n, old, new in T25_SWAPS:
+        if name is None or n == name:
+            s = s.replace(new, old)
+    return s
+
+
 def route_fonts(page):
     def gf(route):
         u = route.request.url
@@ -3511,6 +3571,308 @@ with sync_playwright() as p:
         sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]')
         check(f'T-24: comp3 has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
         q.close(); o.close()
+
+    # ---------------- T-25 (Nov 17, 2026): layout leftovers, no words change ----------------
+    # F1 to F5 and T1: layout, wrapping and test code only, not one word. Comparisons are against
+    # T-24's own pages (origin/main at fd4b14e, the base this item was cut from), read from git.
+    T24C = 'fd4b14ec5669aa11d8695f8a2f6d077904a6b8ee'
+    T24_FILES = {}
+
+    def t24_file(path):
+        if path not in T24_FILES:
+            r = _sp18.run(['git', 'show', f'{T24C}:{path}'], cwd=here, capture_output=True)
+            T24_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T24_FILES[path]
+
+    def t24_page(w, h=900):
+        """A page that can open T-24's own build at BASE + '__t24/<file>'."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__t24/', 1)[1].split('?')[0].split('#')[0]
+            body = t24_file(path)
+            if body is None:
+                return route.fulfill(status=404, body='')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__t24/**', serve)
+        return q
+    OLD25B = BASE + '__t24/'
+    check('T-25: the T-24 pages can be read from git for comparison', t24_file('work.html') is not None and t24_file('og/work.png') is not None)
+    SRC25 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD25 = {n: t24_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT25 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    stamp25 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
+    CHANGED25 = ['captions.html', 'case-reels.html', 'local.html', 'mainframe.html', 'scaler.html', 'studio.html', 'work.html']
+
+    # The whole build: T-24's pages with only T-25's changes. un25() swaps each back, and what is
+    # left is T-24's page byte for byte (the Studio pages' build day aside).
+    for n in ALL_HTML:
+        a, b_ = stamp25(un25(SRC25[n], n)), stamp25(OLD25[n])
+        check(f'T-25: {n} is T-24\'s page with only T-25\'s changes', a == b_,
+              next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+    got25 = sorted(n for n in ALL_HTML if stamp25(SRC25[n]) != stamp25(OLD25[n]))
+    check('T-25: the pages that changed are these seven and no others', got25 == CHANGED25, str(got25))
+    check('T-25: every root page is the built page', all(ROOT25[n] == SRC25[n] for n in ALL_HTML),
+          str([n for n in ALL_HTML if ROOT25[n] != SRC25[n]]))
+    for n in ALL_HTML:
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
+                         ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
+                         ('structured data', r'<script type="application/ld\+json">.*?</script>'),
+                         ('alt texts', r'\balt="[^"]*"'), ('aria-labels', r'\baria-label="[^"]*"'), ('placeholders', r'\bplaceholder="[^"]*"'),
+                         ('labels', r'<label\b[^>]*>.*?</label>')):
+            check(f'T-25: {n} keeps its {what}', _re.findall(rx, SRC25[n], _re.S) == _re.findall(rx, OLD25[n], _re.S))
+    ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
+    check('T-25: every share card in og/ is byte for byte as at T-24', len(ogs) == 17 and all(
+        open(os.path.join(here, '..', 'og', f), 'rb').read() == t24_file('og/' + f) for f in ogs), str(len(ogs)))
+    check('T-25: every share card in _build/assets/og/ is byte for byte as at T-24', all(
+        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == t24_file('_build/assets/og/' + f) for f in ogs))
+    check('T-25: no em dash on any changed page, and no new en dash',
+          not any('—' in SRC25[n] for n in CHANGED25) and all(SRC25[n].count('–') == OLD25[n].count('–') for n in CHANGED25))
+
+    # Where each fix lives.
+    rd = lambda f: open(os.path.join(here, f), encoding='utf-8').read()
+    ch25, bp25, sc25, ca25, st25, en25, ts25 = (rd(f) for f in ('tools/chrome.py', 'build.py', 'tools/scaler.py', 'tools/captions.py',
+                                                              'tools/studio.py', 'enhance.py', 'test_site.py'))
+    check('T-25 T1: tools/chrome.py holds djNb() (NB_JS), and build.py writes it into the local and mainframe scripts and uses it in both tab redraws',
+          'NB_JS = ' in ch25 and bp25.count('  /*NBJS*/\n') == 2 and '"/*NBJS*/", chrome.NB_JS' in bp25
+          and "$('rc-head').innerHTML = djNb(esc(rc.head));" in bp25 and "$('xb-body').innerHTML = djNb(esc(x.body));" in bp25)
+    check('T-25 T1: djNb() is on local.html and mainframe.html once each, and on no other page',
+          all(SRC25[n].count('function djNb(s)') == (1 if n in ('local.html', 'mainframe.html') else 0) for n in ALL_HTML))
+    check('T-25 T1: test_site.py falls back to the live Google Fonts when its font folder is missing, and still counts the css2 requests',
+          "if not FONT_FILES:" in ts25 and 'route.continue_()' in ts25 and 'gf_hits.append(u)' in ts25 and "FONT_MODE" in ts25)
+    check('T-25 F2: tools/scaler.py writes the hint through keep_amounts() and every result through amtNw()',
+          'keep_amounts("One ingredient per line' in sc25 and sc25.count('amtNw(esc(') == 5 and "amtNw('Make it in '" in sc25)
+    check('T-25 F3: tools/captions.py sets --k from the text size and the reel\'s caption width, and draws each part with white-space:pre',
+          "style.setProperty('--k',String(SIZES[st.size][1]/MAXW))" in ca25 and 'white-space:pre;' in ca25 and 'white-space:pre-line' not in ca25)
+    check('T-25 F4: tools/studio.py writes LOG_PHONE_CSS into studio.html only',
+          'css=CSS + LOG_PHONE_CSS' in st25 and all(('@media (max-width:799px){.loghead' in SRC25[n]) == (n == 'studio.html') for n in ALL_HTML))
+    CALLCSS25 = '<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>'
+    check('T-25 F5: enhance.py writes the closing box rule once into work, studio and case-reels, and nowhere else',
+          'CALL_BOX_CSS = ' in en25 and all(SRC25[n].count(CALLCSS25) == (1 if n in ('work.html', 'studio.html', 'case-reels.html') else 0) for n in ALL_HTML))
+    check('T-25 F5: the three closing boxes are still built from their sources (work\'s on studio, character for character)',
+          _re.findall(r'<section aria-labelledby="next-h".*?</section>', SRC25['studio.html'], _re.S)
+          == _re.findall(r'<section aria-labelledby="next-h".*?</section>', SRC25['work.html'], _re.S) != [])
+
+    # Words: every page reads word for word as at T-24, as loaded, at 1440 and 390.
+    day25 = lambda s: _re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', s)
+    for w in (1440, 390):
+        for n in ALL_HTML:
+            q = newpage(w); q.goto(BASE + n); settle(q); a = q.evaluate(TEXT_JS); q.close()
+            o = t24_page(w); o.goto(OLD25B + n); settle(o); b_ = o.evaluate(TEXT_JS); o.close()
+            if n.startswith('studio'):   # the log's day count moves with the day the page is built
+                a, b_ = day25(a), day25(b_)
+            check(f'T-25: {n} reads word for word as at T-24 at {w}', a == b_,
+                  next((f'...{a[max(0, i - 40):i + 40]}... | ...{b_[max(0, i - 40):i + 40]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+
+    # Shared measuring: the lines a box's words fall on (by the words' own rectangles).
+    LINES25_JS = r'''(el) => { if (typeof el === 'string') el = document.querySelector(el); if (!el) return null;
+      const words = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) { const re = /\S+/g; let m; while ((m = re.exec(n.data))) {
+        const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length);
+        const rs = [...r.getClientRects()].filter(x => x.width > 0); if (!rs.length) continue;
+        words.push({t: m[0], top: rs[0].top, h: rs[0].height}); } }
+      const lines = []; words.forEach(x => { let L = lines.find(l => Math.abs(l.mid - (x.top + x.h / 2)) < Math.max(6, x.h / 3));
+        if (!L) { L = {mid: x.top + x.h / 2, w: []}; lines.push(L); } L.w.push(x.t); });
+      lines.sort((a, b) => a.mid - b.mid); return lines.map(l => l.w.join(' ')); }'''
+    CARDH25_JS = r'''() => [...document.querySelectorAll('main h2, main h3, main h4, main .num')]
+      .filter(e => e.offsetParent && e.closest('article, .card, [data-card]'))
+      .map(e => [e.textContent.replace(/\s+/g, ' ').trim(), (''' + LINES25_JS + r''')(e)])
+      .filter(x => x[1].length > 1 && x[1].some(l => l.split(' ').length === 1))'''
+
+    # F1: the reels headline leaves no word alone at 320, 390 and 1440 ("about 4 minutes." whole is wider than the card at 320
+    # and 1440, so "of editing," and "now about" are held instead, with T-23's "4 minutes."), and no card headline on work,
+    # local or case-reels leaves a word alone that T-24 didn't. Three card headlines can't be held by a span without running
+    # past their card (measured in the Receipt); they are T-25's open question, so here they must be exactly as at T-24.
+    REELS25 = 'An evening of editing, now about 4 minutes.'
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'work.html'); settle(q)
+        ln = q.evaluate(LINES25_JS, '.card .num')
+        check(f'T-25 F1: at {w} the reels headline ends "now about / 4 minutes.", "4 minutes." on one line',
+              ln is not None and ln[-2:] == ['now about', '4 minutes.'], str(ln))
+        check(f'T-25 F1: at {w} the reels headline leaves no word alone on a line', ln is not None and all(len(l.split(' ')) > 1 for l in ln), str(ln))
+        nw = q.evaluate('''() => { const n = document.querySelector('.card .num'), ss = [...n.querySelectorAll('span')];
+          return [ss.map(s => [s.textContent, getComputedStyle(s).whiteSpace]), Math.max(...ss.map(s => Math.round(s.getBoundingClientRect().right))), Math.round(n.getBoundingClientRect().right)] }''')
+        check(f'T-25 F1: at {w} "of editing,", "now about" and "4 minutes." are no-wrap spans that stay inside the card',
+              nw[0] == [['of editing,', 'nowrap'], ['now about', 'nowrap'], ['4 minutes.', 'nowrap']] and nw[1] <= nw[2], str(nw))
+        q.close()
+        for n in ('work.html', 'local.html', 'case-reels.html'):
+            q = newpage(w); q.goto(BASE + n); settle(q); now = q.evaluate(CARDH25_JS); q.close()
+            o = t24_page(w); o.goto(OLD25B + n); settle(o); was = o.evaluate(CARDH25_JS); o.close()
+            check(f'T-25 F1: at {w} no card headline on {n} leaves a word alone that T-24 didn\'t, and the reels headline none',
+                  all(x in was for x in now) and not any(x[0] == REELS25 for x in now), f'now {now} | T-24 {was}')
+            check(f'T-25 F1: at {w} the card headlines on {n} with a word alone are only the ones in T-25\'s question',
+                  all(x[0] in ('2 AI translations of one bank program', 'Reels from your phone videos', 'Busywork, automated') for x in now), str(now))
+
+    # F2: no amount splits from itself or its unit, in the hint and in results after changing the numbers;
+    # the scaler gives the same results for the same inputs as at T-24.
+    AMT25_JS = r'''() => { const SEL = '#out td, #out .was, #facl, #warn p, .lay .private';
+      const RX = /(\d+\s+\d+\/\d+|\d+\s*[¼-¾⅐-⅞]|\d+\/\d+|\d*\.?\d+|[¼-¾⅐-⅞])(\s+(?:(?:large|small|medium|ripe)\s+)?[A-Za-z][A-Za-z.]*)?/g;
+      let found = 0; const bad = [];
+      document.querySelectorAll(SEL).forEach(el => {
+        const nodes = []; let txt = ''; const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
+        while ((n = w.nextNode())) { if (n.parentElement.closest(SEL) !== el) continue; nodes.push([n, txt.length]); txt += n.data; }
+        const at = i => { for (let k = nodes.length - 1; k >= 0; k--) if (nodes[k][1] <= i) return [nodes[k][0], i - nodes[k][1]]; };
+        let m; while ((m = RX.exec(txt))) { if (!/\s/.test(m[0])) continue; found++;
+          const r = document.createRange(), s = at(m.index), e = at(m.index + m[0].length - 1); r.setStart(s[0], s[1]); r.setEnd(e[0], e[1] + 1);
+          const tops = new Set([...r.getClientRects()].filter(x => x.width > 0).map(x => Math.round(x.top + x.height / 2)));
+          if (tops.size > 1) bad.push(m[0]); } });
+      return [found, bad]; }'''
+    RES25_JS = '''() => ['out', 'fac', 'facl', 'warn'].map(i => document.getElementById(i).textContent.replace(/\\s+/g, ' ').trim())'''
+    REC25 = '1½ cups flour\n1 1/2 cups butter, soft\n2 large eggs\n3 Tbsp honey\n200 g oats\n12 pinches of salt'
+    SC25 = [('as loaded', None, None, None, False), ('1 grown-up, 7 kids', '1', '7', None, False),
+            ('3 grown-ups, 40 kids', '3', '40', None, False), ('3 grown-ups, 40 kids, one batch', '3', '40', None, True),
+            ('a typed recipe, 2 grown-ups, 9 kids', '2', '9', REC25, False)]
+    for w in (320, 390):
+        for label, ad, kd, rec, one in SC25:
+            res = []
+            for base, opener in ((BASE, newpage), (OLD25B, t24_page)):
+                q = opener(w); q.goto(base + 'scaler.html'); settle(q)
+                if rec is not None:
+                    q.fill('#rec', rec)
+                if ad is not None:
+                    q.fill('#adults', ad); q.fill('#kids', kd)
+                if one:
+                    q.click('[data-b="one"]')
+                q.wait_for_timeout(150)
+                res.append((q.evaluate(RES25_JS), q.evaluate(AMT25_JS) if base == BASE else None))
+                if base == BASE and w == 390 and label == 'a typed recipe, 2 grown-ups, 9 kids':
+                    q.screenshot(path=f'{SHOTS}/t25-scaler-typed-390.png', full_page=True)
+                q.close()
+            (r_now, amt), (r_old, _) = res
+            check(f'T-25 F2: at {w}, {label}: the scaler\'s results are exactly as at T-24', r_now == r_old, f'{r_now} | {r_old}')
+            check(f'T-25 F2: at {w}, {label}: no amount splits from itself or its unit (hint and results)', amt[0] >= 5 and not amt[1], str(amt))
+
+    # F3: the example's part 1 on two lines at every width, drawn at the reel's proportions; the fitter's results unchanged.
+    CAP25_JS = r'''() => [...document.querySelectorAll('.cardline .t>span')].map(e => { const r = document.createRange(); r.selectNodeContents(e);
+      const tops = new Set([...r.getClientRects()].filter(x => x.width > 0).map(x => Math.round(x.top)));
+      return [tops.size, e.textContent.split('\n').length, e.scrollWidth <= e.parentElement.clientWidth + 1, parseFloat(getComputedStyle(e).fontSize)]; })'''
+    FIT25_JS = r'''() => [document.getElementById('cards').textContent, document.getElementById('k-sub').textContent,
+      document.getElementById('verdicts').textContent, document.getElementById('v-text').textContent]'''
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'captions.html'); settle(q); q.wait_for_timeout(200)
+        cp = q.evaluate(CAP25_JS)
+        check(f'T-25 F3: at {w} the example\'s part 1 is on two lines, under "Two lines fit on a phone"',
+              len(cp) >= 2 and cp[0][0] == 2 and 'Two lines fit on a phone' in q.evaluate("document.getElementById('k-sub').textContent"), str(cp))
+        check(f'T-25 F3: at {w} every part shows exactly the fitter\'s lines, none reflowed, none running past its box',
+              all(c[0] == c[1] and c[2] for c in cp), str(cp))
+        check(f'T-25 F3: at {w} the parts are drawn at 11 px or more and never above 15 px', all(11 <= c[3] <= 15 for c in cp), str(cp))
+        q.close()
+    CAPS25 = [None, 'Fresh sourdough comes out of the oven at 7 every morning. Come early, because the first batch is always gone by 9.',
+              'Our Saturday class is full. The next one opens on the first, and every family on the list hears first. Sign up at the front desk or tap the link.',
+              'Short one.']
+    for w in (390, 1440):
+        for cap in CAPS25:
+            for extra in ((), ('[data-k="size"][data-v="l"]',), ('[data-k="app"][data-v="tiktok"]', '[data-k="size"][data-v="s"]')):
+                got = []
+                for base, opener in ((BASE, newpage), (OLD25B, t24_page)):
+                    q = opener(w); q.goto(base + 'captions.html'); settle(q); q.wait_for_timeout(150)
+                    if cap is not None:
+                        q.fill('#cap', cap); q.wait_for_timeout(300)
+                    if extra:
+                        q.click('#f-look')
+                    for sel in extra:
+                        q.click(sel)
+                    q.wait_for_timeout(150)
+                    got.append(q.evaluate(FIT25_JS)); q.close()
+                check(f'T-25 F3: at {w} the fitter gives the same parts, lines and verdicts as at T-24 for {"the default" if cap is None else repr(cap[:24])} {list(extra)}',
+                      got[0] == got[1], f'{got[0]} | {got[1]}')
+
+    # F4: around "Shipped lately" no two horizontal rules within 24 px, and the count reads with the heading; the count equals the log lines that show.
+    RULES25_JS = r'''() => { const h = document.getElementById('log-h').getBoundingClientRect(), ys = [];
+      document.querySelectorAll('body *').forEach(e => { const r = e.getBoundingClientRect(); if (r.width < 120 || !e.offsetParent) return; const s = getComputedStyle(e);
+        [[r.top, s.borderTopWidth, s.borderTopStyle], [r.bottom, s.borderBottomWidth, s.borderBottomStyle]].forEach(b => {
+          if (parseFloat(b[1]) > 0 && b[2] !== 'none') ys.push(Math.round(b[0])); });
+        if (e.tagName === 'HR') ys.push(Math.round(r.top)); });
+      const near = [...new Set(ys.filter(y => y > h.top - 240 && y < h.bottom + 160))].sort((a, b) => a - b);
+      const gaps = near.slice(1).map((y, i) => y - near[i]).filter(g => g > 1);
+      const c = document.querySelector('#stats strong').getBoundingClientRect(), t = document.querySelector('#stats p').getBoundingClientRect();
+      const ruleBetween = near.some(y => y > Math.min(h.bottom, t.top) && y < Math.max(h.bottom, t.top));
+      return {near, gaps, head: [Math.round(h.top), Math.round(h.bottom)], count: [Math.round(t.top), Math.round(t.bottom)], ruleBetween,
+              n: document.querySelector('#stats strong').textContent.trim(), lis: document.querySelectorAll('#log li').length,
+              all: (document.getElementById('log-all') || {}).textContent || ''}; }'''
+    for w in (320, 390, 1024, 1440):
+        q = newpage(w); q.goto(BASE + 'studio.html'); settle(q)
+        r = q.evaluate(RULES25_JS)
+        if w != 1024:
+            check(f'T-25 F4: at {w} no two horizontal rules sit within 24 px of each other around "Shipped lately"', all(g >= 24 for g in r['gaps']), str(r))
+        check(f'T-25 F4: at {w} the count reads with "Shipped lately": no rule between them, and it starts within 24 px of the heading',
+              not r['ruleBetween'] and (r['count'][0] - r['head'][1] <= 24 if w < 800 else abs(r['count'][1] - r['head'][1]) <= 24), str(r))
+        check(f'T-25 F4: at {w} the count ({r["n"]}) equals the log lines that show and "See all"', r['n'] == str(r['lis']) and r['all'] == f'See all {r["lis"]}', str(r))
+        if w < 800:
+            check(f'T-25 F4: at {w} the heading comes first on screen and the count right under it', r['head'][1] <= r['count'][0] + 2, str(r))
+        q.close()
+    check('T-25 F4: the count still comes first in the page, before the heading',
+          SRC25['studio.html'].index('id="stats"') < SRC25['studio.html'].index('id="log-h"'))
+
+    # F5: the closing box's inner left and right space match within 8 px at 1024 and 1440 on all three pages.
+    BOX25_JS = r'''(h) => { const s = document.querySelector('section[aria-labelledby="' + h + '"]'), b = s.getBoundingClientRect();
+      const rs = []; s.querySelectorAll('h2, p').forEach(e => { const r = document.createRange(); r.selectNodeContents(e); rs.push(...[...r.getClientRects()].filter(x => x.width > 0)); });
+      s.querySelectorAll('a').forEach(a => rs.push(a.getBoundingClientRect()));
+      return [Math.round(Math.min(...rs.map(r => r.left)) - b.left), Math.round(b.right - Math.max(...rs.map(r => r.right)))]; }'''
+    for w in (1024, 1440):
+        for n, h in (('case-reels.html', 'c7'), ('work.html', 'next-h'), ('studio.html', 'next-h')):
+            q = newpage(w); q.goto(BASE + n); settle(q); lr = q.evaluate(BOX25_JS, h); q.close()
+            o = t24_page(w); o.goto(OLD25B + n); settle(o); lr0 = o.evaluate(BOX25_JS, h); o.close()
+            check(f'T-25 F5: at {w} the closing box on {n} has the same space inside on the left and the right, within 8 px (T-24: {lr0})',
+                  abs(lr[0] - lr[1]) <= 8, f'{lr} (T-24 {lr0})')
+
+    # T1: a tab round trip gives back the markup the page was built with, so no hyphen pair or held dot is lost.
+    for w in (390, 1440):
+        q = newpage(w); q.goto(BASE + 'local.html'); settle(q)
+        p0 = q.inner_html('#proof')
+        for t in ('app', 'method', 'reels'):
+            q.click(f'button[data-tab="{t}"]')
+        check(f'T-25 T1: at {w} local\'s Results after Apps, COBOL checking and back to Reels is the built markup, byte for byte', q.inner_html('#proof') == p0)
+        check(f'T-25 T1: at {w} local\'s "RESULT · REELS" keeps its dot held after the round trip', '&nbsp;·&nbsp;' in q.inner_html('#rc-head'))
+        q.close()
+        q = newpage(w); q.goto(BASE + 'mainframe.html'); settle(q)
+        s0 = q.inner_html('#s2')
+        for t in ('c', 'd', 'b'):
+            q.click(f'button[data-ex="{t}"]')
+        check(f'T-25 T1: at {w} mainframe\'s Exhibit B after C, D and back is the built markup, byte for byte', q.inner_html('#s2') == s0)
+        q.close()
+    # Every tab, as redrawn, reads exactly as at T-24, and holds no hyphen pair outside a no-wrap span (two-hyphen words included).
+    PAIRS25_JS = r'''(sel) => { const out = [], w = document.createTreeWalker(document.querySelector(sel), NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) { if (n.parentElement.closest('[style*="nowrap"], script, style')) continue;
+        for (const m of n.data.matchAll(/(?:^|\s)[(“"'‘]*([\p{L}\p{N}]+(?:-[\p{L}\p{N}]+){1,2})(?=$|[\s)”"'’.,;:!?…]|['’]s)/gu)) if (m[1].length <= 24) out.push(m[1]); }
+      return out; }'''
+    SPLIT25_JS = r'''(sel) => [...document.querySelectorAll(sel + ' span[style*="nowrap"]')].filter(s => /-/.test(s.textContent)).map(s => {
+      const r = document.createRange(); r.selectNodeContents(s); return [s.textContent, new Set([...r.getClientRects()].filter(x => x.width > 0).map(x => Math.round(x.top))).size]; })
+      .filter(x => x[1] > 1)'''
+    for w in (320, 390, 1440):
+        for n, sel, btn, tabs in (('local.html', '#proof', 'data-tab', ('app', 'method', 'reels')), ('mainframe.html', '#s2', 'data-ex', ('c', 'd', 'b'))):
+            q = newpage(w); q.goto(BASE + n); settle(q)
+            o = t24_page(w); o.goto(OLD25B + n); settle(o)
+            for t in tabs:
+                q.click(f'button[{btn}="{t}"]'); o.click(f'button[{btn}="{t}"]'); q.wait_for_timeout(60)
+                tq = q.evaluate(f"document.querySelector('{sel}').textContent.replace(/[\\s\\u00a0]+/g, ' ').trim()")
+                to = o.evaluate(f"document.querySelector('{sel}').textContent.replace(/[\\s\\u00a0]+/g, ' ').trim()")
+                check(f'T-25 T1: at {w} {n} tab "{t}" reads word for word as at T-24', tq == to, f'{tq[:160]} | {to[:160]}')
+                pr = q.evaluate(PAIRS25_JS, sel)
+                check(f'T-25 T1: at {w} {n} tab "{t}" has every hyphen pair in a no-wrap span', not pr, str(pr))
+                sp = q.evaluate(SPLIT25_JS, sel)
+                check(f'T-25 T1: at {w} {n} tab "{t}" splits no hyphen pair across lines', not sp, str(sp))
+            q.close(); o.close()
+
+    # T1: test_site.py runs to the end on this machine, with no hang.
+    import tempfile as _tmp25
+    try:
+        rs = _sp18.run([sys.executable, os.path.join(here, 'test_site.py'), BASE, _tmp25.mkdtemp(prefix='t25site')],
+                       cwd=here, capture_output=True, timeout=900)
+        so = rs.stdout.decode('utf-8', 'replace')
+    except Exception as e:   # a hang shows here as a timeout
+        rs, so = None, f'{type(e).__name__}: {e}'
+    m25 = _re.search(r'(\d+)/(\d+) passed', so)
+    check('T-25 T1: test_site.py runs to the end with no hang, and every check passes',
+          rs is not None and rs.returncode == 0 and m25 is not None and m25.group(1) == m25.group(2), so[-400:])
+    check('T-25 T1: test_site.py says which fonts it used', so.startswith('fonts: '), so[:80])
+
+    # No sideways scroll on the changed pages.
+    for w in (320, 390, 1440):
+        for n in CHANGED25:
+            q = newpage(w); q.goto(BASE + n); settle(q)
+            sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]'); q.close()
+            check(f'T-25: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
