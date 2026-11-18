@@ -1148,6 +1148,26 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-25 · Layout leftovers, no words change · READY
+
+**Why:** Nov 17, 2026: small things the T-23 check found that need no new words, plus the three test_site.py failures that predate T-24 and the font route that stops test_site.py from running on Windows.
+
+**Done when:** F1 to F5 are in and seen at 320, 390 and 1440, T1's three failures are explained and fixed, no visible word changed on any page, axe stays at zero, all tests pass.
+
+**The rule for words in this item:** not one visible word, title, description, alt text or label changes on any page. Every fix is layout, wrapping or test code.
+
+**Build:**
+- **F1, work.html reels headline.** "about 4 minutes." stays together (L5's no-wrap span, widened), so no line holds a single word at 320, 390 and 1440; every other card headline on work, local and case-reels checked the same way.
+- **F2, scaler.html amounts.** A whole amount, a fraction and its unit stay on one line in the hint and in every result, where the text is generated. Arithmetic and results unchanged.
+- **F3, captions.html example.** "Two lines fit on a phone": part 1 on two lines at 320, 390 and 1440, drawn at a real phone reel's proportions and scaled, not reflowed. The fitter's results for typed text unchanged.
+- **F4, studio.html on phones.** The count reads with "Shipped lately"; no two horizontal rules within 24 px. The count still equals the log lines that show.
+- **F5, the closing call box** (case-reels, work, studio, one source): inner left and right space within 8 px at 1024 and 1440.
+- **T1, _build/test_site.py.** The font route falls back when its Linux folder is missing; each of the three failures traced to the page or the test, with evidence, and fixed there without loosening a check.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
