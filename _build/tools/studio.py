@@ -33,7 +33,7 @@ that show, and one join box with the line from its list ("line"). Its card
 links there ("More on <name>", T-16) and the page links back ("← The Studio"). A page whose product is gated or loses its list is deleted here. og.py, build.py (sitemap)
 and enhance.py all take the page list from product_pages().
 
-Gallery (T-26): "Inside the apps" on studio.html, after the product cards, from
+Gallery (T-26): one section on studio.html, after the product cards, from
 studio.json's "gallery" and the images in _build/assets/gallery/ (see gallery()).
 
 enhance.py copies studio.html into the site, and refuses to if either JSON
@@ -330,7 +330,7 @@ def build(studio, shipped, today):
     return log + prods + gallery(studio) + "\n"
 
 
-# T-26 (Nov 18, 2026): "Inside the apps", after the product cards and before the closing
+# T-26 (Nov 18, 2026): the gallery section, after the product cards and before the closing
 # call box (enhance.py adds that last in <main>). Every word is in studio.json's "gallery";
 # this adds only the step numbers of a group marked "numbered" ("1. ", "2. ", ...). The
 # images are _build/assets/gallery/ (enhance.py copies them to gallery/), each <img> with its

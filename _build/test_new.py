@@ -191,6 +191,53 @@ def un25(s, name=None):
     return s
 
 
+# T-26 (Nov 18, 2026): "Inside the apps", a gallery on studio.html (its CSS and one section), nothing else.
+# un26(s, name) takes both back out of a built page's source, for the older checks that compare studio.html
+# with T-25's build or one before it; the T-26 block checks the gallery on its own.
+def un26(s, name=None):
+    import re as _r
+    if name not in (None, 'studio.html'):
+        return s
+    if '\r\n' in s:   # a page read as served on Windows (CRLF): swap in LF, then back
+        return un26(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    s = _r.sub(r'\.gal\{gap:28px\}\n(?:[^\n]*\n)*?@media \(min-width:800px\)\{\.grow\{[^\n]*\n\n', '', s)
+    return _r.sub(r'\n  <section class="sec gal" aria-labelledby="gallery-h">.*?\n  </section>', '', s, flags=_r.S)
+
+
+# The item's words, as given (T-26): (app, [(group label, group caption, numbered, [(file, caption, alt)])]).
+T26_HEADING = 'Inside the apps'
+T26_APPS = [
+    ('Deepcuts', [
+        ('Then', None, False, [
+            ('deepcuts-then-spreadsheet.jpg', 'A spreadsheet', 'Deepcuts as a spreadsheet: indie games ranked by match score, each with its developer.')]),
+        ('Now', 'November 2026', False, [
+            ('deepcuts-now-dig.jpg', None, "Today's Dig in the Deepcuts app: one game picked for you, with its fit score and why it was picked."),
+            ('deepcuts-now-keeps.jpg', None, 'Your Keeps: the games you saved, each with Started, Finished and Bounced buttons.'),
+            ('deepcuts-now-rooms.jpg', None, 'The Rooms screen: rooms for games, gifts, records and books, each marked open.'),
+            ('deepcuts-now-taste.jpg', None, 'A taste profile, The Grand Strategist, with sliders from Depth to Breadth and Solo to Social.')])]),
+    ('Bird League', [
+        ('Then', None, False, [
+            ('birdleague-then-sketch.jpg', 'A Figma sketch', 'A photo of the first Bird League sketch in Figma: a green header, a gray map box and four tabs.'),
+            ('birdleague-then-firstbuild.jpg', 'The first build', 'An early Bird League screen that names birds by sound and still says mock data.')]),
+        ('Now', 'November 2026', False, [
+            ('birdleague-now-home.jpg', None, "Bird League's home screen: a countdown to the Winter Big Day, the trophy case and recent sightings."),
+            ('birdleague-now-log.jpg', None, "The Log screen: type a bird's name or identify it by sound or photo, then log it to your leagues or your life list."),
+            ('birdleague-now-leagues.jpg', None, "A league card: this week's matchup, your rank, your points and the days left in the season."),
+            ('birdleague-now-wall.jpg', None, "The life list wall: birds grouped by family, with the ones you've seen in color."),
+            ('birdleague-now-lifelist.jpg', None, "The life list: 141 species, and how many of the birds reported near home you've seen."),
+            ('birdleague-now-records.jpg', None, 'Life list records: the heaviest, lightest and widest-winged birds seen, and a size parade.'),
+            ('birdleague-now-profile.jpg', None, 'A player profile: lifetime points, species, sightings, leagues and the next goals.'),
+            ('birdleague-now-badges.jpg', None, 'The badge case: earned badges in color and locked ones in gray.')])]),
+    ('Birdsighted', [
+        ('One case, start to finish', None, True, [
+            ('birdsighted-1-cases.jpg', 'Pick a case', "Birdsighted's case files: twelve cases, two marked solved, plus a training case and an eye test."),
+            ('birdsighted-2-read.jpg', 'Read the clues', 'Case 01, Creek at First Light: a question about jays diving at one pine, with two answers to choose from.'),
+            ('birdsighted-3-results.jpg', 'See what you missed', "The case's results: rings on the scene mark each clue found or missed, a lookalike, the hidden bird and a secret."),
+            ('birdsighted-4-lesson.jpg', 'Learn why', "A clue's lesson: whitewash on a cliff ledge, and what it says about the birds that perch there."),
+            ('birdsighted-5-rank.jpg', 'Earn your rank', 'The marks earned on a case and the field rank they add up to.')])]),
+]
+
+
 def route_fonts(page):
     def gf(route):
         u = route.request.url
@@ -773,6 +820,7 @@ with sync_playwright() as p:
         os.makedirs(bd)
         _shutil.copytree(os.path.join(here, 'tools'), os.path.join(bd, 'tools'), ignore=_shutil.ignore_patterns('__pycache__'))
         _shutil.copy(os.path.join(here, 'shipped.json'), bd)
+        _shutil.copytree(os.path.join(here, 'assets', 'gallery'), os.path.join(bd, 'assets', 'gallery'))   # T-26: studio.py reads the gallery's images
         for state in ('hidden', 'shown'):
             sj = _json.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
             for x in sj['products']:
@@ -2074,7 +2122,7 @@ with sync_playwright() as p:
             out_.append(fn(q))
         return out_
 
-    SRC20 = {n: urlopen(BASE + n).read().decode('utf-8') for n in ALL_HTML}
+    SRC20 = {n: un26(urlopen(BASE + n).read().decode('utf-8'), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it; "November 2026" holds "November 20")
     sys.path.insert(0, os.path.join(here, 'tools'))
     import chrome as _chrome20
     WRAP20 = _chrome20.WRAP_CSS
@@ -2465,12 +2513,13 @@ with sync_playwright() as p:
             out_.append(fn(q))
         return out_
 
-    SRC21 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}   # git holds LF
+    SRC21 = {n: un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # git holds LF; T-26: the gallery out (its block checks it)
     NW = '<span style="white-space: nowrap">'
 
     # Every word as it was: each page's text content (after its scripts run), with the new
     # spans out of the way and a no-break space read as a space, matches origin/main.
-    TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style').forEach(e => e.remove());
+    # T-26: the page text readers leave the gallery section out (on older builds it isn't there); the T-26 block checks its words.
+    TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"]').forEach(e => e.remove());
       return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
     for n in ALL_HTML:
         a, b_ = both20(n[:-5], lambda q: q.evaluate(TEXT_JS), words=True)   # T-22: its four pages as T-21 left them
@@ -2878,7 +2927,7 @@ with sync_playwright() as p:
             T21_FILES[path] = r.stdout if r.returncode == 0 else None
         return T21_FILES[path]
     check('T-22: the T-21 pages can be read from git for comparison', t21_file('case-reels.html') is not None and t21_file('og/case-reels.png') is not None)
-    SRC22 = {n: un23(un24(un25(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n)), n) for n in ALL_HTML}   # T-23: its changes out (its block checks them); T-24: A1 to A7 read back as T-23's; T-25: its layout swaps out
+    SRC22 = {n: un23(un24(un25(un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n)), n) for n in ALL_HTML}   # T-26: the gallery out first   # T-23: its changes out (its block checks them); T-24: A1 to A7 read back as T-23's; T-25: its layout swaps out
     OLD22 = {n: t21_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
 
     K1_H1 = 'Forty reels, one engine.'
@@ -3189,7 +3238,7 @@ with sync_playwright() as p:
         return q
     OLD23B = BASE + '__t22/'
     check('T-23: the T-22 pages can be read from git for comparison', t22_file('studio.html') is not None and t22_file('og/case-reels.png') is not None)
-    SRC23 = {n: un24(un25(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n)) for n in ALL_HTML}   # T-24: A1 to A7 read back as T-23's (its block checks them); T-25: its layout swaps out
+    SRC23 = {n: un24(un25(un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n)) for n in ALL_HTML}   # T-26: the gallery out first   # T-24: A1 to A7 read back as T-23's (its block checks them); T-25: its layout swaps out
     OLD23 = {n: t22_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     K3_22, K5_22, K7_22, K8_22 = (o for o, _ in T23_LINES)
     K3B, K5B, K7B, K8B = (n_ for _, n_ in T23_LINES)
@@ -3369,14 +3418,17 @@ with sync_playwright() as p:
           if (s.length !== 1) return {n: s.length}; const x = s[0];
           return {n: 1, html: x.outerHTML, words: [x.querySelector('h2').textContent, x.querySelector('p').textContent],
                   links: [...x.querySelectorAll('a')].map(a => [a.textContent, a.getAttribute('href')]),
-                  last: x === document.querySelector('main').lastElementChild, prev: (x.previousElementSibling || {}).id || ''}; })()''')
+                  last: x === document.querySelector('main').lastElementChild, prev: (x.previousElementSibling || {}).id || '',
+                  prevGal: !!(x.previousElementSibling && x.previousElementSibling.getAttribute('aria-labelledby') === 'gallery-h'
+                              && (x.previousElementSibling.previousElementSibling || {}).id === 'products')}; })()''')
         q.close()
     st, wk = boxes['studio.html'], boxes['work.html']
     check('T-23 L6: studio has one closing call box', st.get('n') == 1, str(st.get('n')))
     check('T-23 L6: studio\'s box is work\'s box, the same markup character for character', st.get('html') == wk.get('html') and bool(st.get('html')))
     check('T-23 L6: the box\'s words are work\'s exactly', st.get('words') == BOX_WORDS and wk.get('words') == BOX_WORDS, str(st.get('words')))
     check('T-23 L6: the box\'s links are "Start a Blueprint →" to start.html and "Free 15-minute call" to call.html', st.get('links') == BOX_LINKS and wk.get('links') == BOX_LINKS, str(st.get('links')))
-    check('T-23 L6: on studio the box comes right after the products and ends the page\'s main', st.get('last') is True and st.get('prev') == 'products', str(st.get('prev')))
+    check('T-23 L6: on studio the box comes right after the products (T-26: or right after the gallery, which comes right after them) and ends the page\'s main',
+          st.get('last') is True and (st.get('prev') == 'products' or st.get('prevGal') is True), str(st.get('prev')))
     check('T-23 L6: built from work\'s source, not a copy (neither studio.py nor its page holds the box; enhance.py lifts it from work.html)',
           'next-h' not in rd('studio.html') and 'next-h' not in rd(os.path.join('tools', 'studio.py')) and 'def add_closing_call' in rd('enhance.py')
           and '(HERE / "work.html")' in rd('enhance.py'))
@@ -3449,7 +3501,7 @@ with sync_playwright() as p:
         return q
     OLD24B = BASE + '__t23/'
     check('T-24: the T-23 pages can be read from git for comparison', t23_file('mainframe.html') is not None and t23_file('comp3.html') is not None)
-    SRC24 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC24 = {n: un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it)
     OLD24 = {n: t23_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT24 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ('mainframe.html', 'comp3.html')}
     # The Studio pages carry the day they were built (a comment and data-built); nothing else on them moves.
@@ -3503,7 +3555,7 @@ with sync_playwright() as p:
           'T-24 A6' in c3 and 'T-24 A7' in c3 and all(c3.count(new) == 1 for _a, n, _o, new in T24_LINES if n == 'comp3.html'))
 
     # What a reader sees: each shown line exactly once in the page's text, after its scripts run.
-    TXT24_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style').forEach(e => e.remove());
+    TXT24_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"]').forEach(e => e.remove());
       return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
     MF24_JS = r'''(() => { const bs = [...document.querySelectorAll('button[data-reading]')];
       const lines = e => { const g = document.createRange(); g.selectNodeContents(e); return new Set([...g.getClientRects()].filter(r => r.width > 0).map(r => Math.round(r.top))).size; };
@@ -3624,9 +3676,9 @@ with sync_playwright() as p:
         return q
     OLD25B = BASE + '__t24/'
     check('T-25: the T-24 pages can be read from git for comparison', t24_file('work.html') is not None and t24_file('og/work.png') is not None)
-    SRC25 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC25 = {n: un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it)
     OLD25 = {n: t24_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
-    ROOT25 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT25 = {n: un26(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-26: as SRC25
     stamp25 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
     CHANGED25 = ['captions.html', 'case-reels.html', 'local.html', 'mainframe.html', 'scaler.html', 'studio.html', 'work.html']
 
@@ -3946,6 +3998,233 @@ with sync_playwright() as p:
             q = newpage(w); q.goto(BASE + n); settle(q)
             sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]'); q.close()
             check(f'T-25: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
+
+    # ---------------- T-26 (Nov 18, 2026): "Inside the apps", a gallery on the Studio page ----------------
+    # One section on studio.html, every word from studio.json's "gallery", 20 images from _build/assets/gallery/.
+    # Comparisons are against T-25's own build (origin/main at 00948bb, the base this item was cut from), read from git.
+    import json as _json26
+    T25C = '00948bba14a57eb3364caa74fe814a13237e460e'
+    T25_FILES = {}
+
+    def t25_file(path):
+        if path not in T25_FILES:
+            r = _sp18.run(['git', 'show', f'{T25C}:{path}'], cwd=here, capture_output=True)
+            T25_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T25_FILES[path]
+    check('T-26: the T-25 files can be read from git for comparison', t25_file('studio.html') is not None and t25_file('og/work.png') is not None)
+    SRC26 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD26 = {n: t25_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT26 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    STAMP26 = r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->'
+    GAL26 = [it[0] for _a, gs in T26_APPS for _g in gs for it in _g[3]]
+
+    # The whole build: studio.html is T-25's page with only the gallery added; every other page is byte for byte
+    # T-25's (the two product pages differ only by studio.py's stamp line: the build day and studio.json's hash).
+    check('T-26: un26() takes something out of studio.html (the gallery is there)', un26(SRC26['studio.html'], 'studio.html') != SRC26['studio.html'])
+    for n in ALL_HTML:
+        if n == 'studio.html':
+            a, b_ = stamp25(un26(SRC26[n], n)), stamp25(OLD26[n])
+            check('T-26: studio.html is T-25\'s page with only the gallery (its CSS and its section) added, the build day aside', a == b_,
+                  next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+        elif n.startswith('studio-'):
+            dl = [(x, y) for x, y in zip(SRC26[n].split('\n'), OLD26[n].split('\n')) if x != y]
+            check(f'T-26: {n} is T-25\'s page apart from studio.py\'s stamp line', SRC26[n].count('\n') == OLD26[n].count('\n')
+                  and all(_re.fullmatch(STAMP26, x) and _re.fullmatch(STAMP26, y) for x, y in dl), str(dl[:2]))
+        else:
+            check(f'T-26: {n} is byte for byte as at T-25', SRC26[n] == OLD26[n])
+    check('T-26: every root page is the built page', all(ROOT26[n] == SRC26[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT26[n] != SRC26[n]]))
+    rb26 = lambda f: open(os.path.join(here, '..', f), 'rb').read().replace(b'\r\n', b'\n')   # a Windows checkout may hold CRLF
+    pub25 = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n')
+             if f and not f.startswith('_build/') and not f.endswith('.html')]
+    check('T-26: every other public file at the root (sitemap, robots, images, share cards...) is byte for byte as at T-25',
+          len(pub25) > 20 and all(rb26(f) == t25_file(f).replace(b'\r\n', b'\n') for f in pub25),
+          str([f for f in pub25 if rb26(f) != t25_file(f).replace(b'\r\n', b'\n')][:5]))
+    outd = os.path.join(here, 'out')
+    outf = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
+    t25tree = set(_sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n'))
+    check('T-26: the build adds only gallery/ (every other file in out/ was at the root at T-25)',
+          sorted(f for f in outf if f not in t25tree) == sorted('gallery/' + g for g in GAL26), str([f for f in outf if f not in t25tree][:25]))
+    for n in ALL_HTML:
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
+                         ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
+                         ('structured data', r'<script type="application/ld\+json">.*?</script>'),
+                         ('alt texts', r'\balt="[^"]*"'), ('aria-labels', r'\baria-label="[^"]*"'), ('placeholders', r'\bplaceholder="[^"]*"'),
+                         ('labels', r'<label\b[^>]*>.*?</label>')):
+            check(f'T-26: {n} keeps its {what} (the gallery\'s own aside)',
+                  _re.findall(rx, un26(SRC26[n], n), _re.S) == _re.findall(rx, OLD26[n], _re.S))
+
+    # The images: the item's 20, byte for byte, in _build/assets/gallery/, out/gallery/, served, and gallery/ at the root (tracked in git).
+    asg = os.path.join(here, 'assets', 'gallery')
+    check('T-26: _build/assets/gallery/ holds exactly the item\'s 20 images', sorted(os.listdir(asg)) == sorted(GAL26) and len(GAL26) == 20, str(sorted(os.listdir(asg))))
+    rootg = os.path.join(here, '..', 'gallery')
+    check('T-26: gallery/ at the root holds exactly the same 20 files', os.path.isdir(rootg) and sorted(os.listdir(rootg)) == sorted(GAL26))
+    for g in GAL26:
+        src = open(os.path.join(asg, g), 'rb').read()
+        check(f'T-26: gallery/{g} at the root, in out/ and as served is byte for byte _build/assets/gallery/{g}',
+              os.path.isfile(os.path.join(rootg, g)) and open(os.path.join(rootg, g), 'rb').read() == src
+              and open(os.path.join(outd, 'gallery', g), 'rb').read() == src and urlopen(BASE + 'gallery/' + g).read() == src and src[:2] == b'\xff\xd8')
+    trk = _sp18.run(['git', 'ls-files', '--', '../gallery', 'assets/gallery'], cwd=here, capture_output=True, text=True).stdout.split()
+    check('T-26: gallery/ at the root and _build/assets/gallery/ are tracked in git, 20 files each',
+          sorted(trk) == sorted(['../gallery/' + g for g in GAL26] + ['assets/gallery/' + g for g in GAL26]) or
+          sorted(trk) == sorted(['gallery/' + g for g in GAL26] + ['_build/assets/gallery/' + g for g in GAL26]), str(trk[:3]) + f' ({len(trk)})')
+
+    # The words: studio.json holds the item's words character for character, and the page prints them from there.
+    sj26 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+    want26 = {'heading': T26_HEADING, 'apps': [{'name': a, 'groups': [dict({'label': l}, **({'caption': c} if c else {}), **({'numbered': True} if num else {}),
+              items=[dict({'file': f}, **({'caption': fc} if fc else {}), alt=alt) for f, fc, alt in its]) for l, c, num, its in gs]} for a, gs in T26_APPS]}
+    check('T-26: studio.json\'s "gallery" holds the item\'s words character for character, in order', sj26.get('gallery') == want26)
+    check('T-26: studio.json\'s _about says the gallery\'s words live in "gallery" too', 'The gallery\'s words live in "gallery" too' in sj26['_about'])
+    gw26 = _json26.dumps(sj26['gallery'], ensure_ascii=False)
+    check('T-26: the gallery\'s words have no em dash and only straight apostrophes', '—' not in gw26 and '’' not in gw26 and '‘' not in gw26 and "'" in gw26)
+    check('T-26: no em dash on studio.html, and no new en dash', '—' not in SRC26['studio.html'] and SRC26['studio.html'].count('–') == OLD26['studio.html'].count('–'))
+    st26, en26 = (open(os.path.join(here, f), encoding='utf-8').read() for f in ('tools/studio.py', 'enhance.py'))
+    check('T-26: studio.py holds none of the gallery\'s words (it prints them from studio.json) and writes its CSS into studio.html only',
+          'def gallery(studio)' in st26 and 'css=CSS + LOG_PHONE_CSS + GALLERY_CSS' in st26
+          and not any(s in st26 for s in [T26_HEADING, 'November 2026', 'One case, start to finish', 'Pick a case', 'A spreadsheet', 'A Figma sketch'])
+          and all(('.gal{gap:28px}' in SRC26[n]) == (n == 'studio.html') for n in ALL_HTML))
+    check('T-26: enhance.py copies _build/assets/gallery/ to out/gallery/, as it copies bird-league-then-now.jpg',
+          '(HERE / "assets" / "gallery").glob("*.jpg")' in en26 and 'shutil.copy(jpg, OUT / "gallery" / jpg.name)' in en26)
+    check('T-26: the gallery is one section on studio.html and on no other page',
+          SRC26['studio.html'].count('aria-labelledby="gallery-h"') == 1 and not any('gallery-h' in SRC26[n] for n in ALL_HTML if n != 'studio.html'))
+
+    GAL26_JS = r'''() => { const ss = document.querySelectorAll('section[aria-labelledby="gallery-h"]'); if (ss.length !== 1) return null; const sec = ss[0];
+      const h2 = sec.querySelector('h2'), tx = [], w = document.createTreeWalker(sec, NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) { const s = n.data.replace(/\s+/g, ' ').trim(); if (s) tx.push(s); }
+      return {place: [sec.parentElement.tagName, sec.previousElementSibling && sec.previousElementSibling.id,
+                      sec.nextElementSibling && sec.nextElementSibling.getAttribute('aria-labelledby')],
+        h2: [h2.id, h2.className, h2.textContent, sec.querySelectorAll('h2').length], text: tx,
+        apps: [...sec.querySelectorAll(':scope > .gapp')].map(a => ({h3: [...a.querySelectorAll('h3')].map(h => h.textContent),
+          first: a.firstElementChild.tagName,
+          groups: [...a.querySelectorAll('.ggroup')].map(g => { const r = g.querySelector('.grow');
+            return {label: [...g.querySelectorAll('.ghead .label')].map(e => e.textContent), cap: [...g.querySelectorAll('.ghead .gcap')].map(e => e.textContent),
+              row: [r.getAttribute('role'), r.getAttribute('tabindex'), r.getAttribute('aria-label')],
+              items: [...r.children].map(f => ({tag: f.tagName, imgs: f.querySelectorAll('img').length, caps: [...f.querySelectorAll('figcaption')].map(c => c.textContent),
+                capLast: !f.querySelector('figcaption') || f.lastElementChild.tagName === 'FIGCAPTION',
+                src: f.querySelector('img').getAttribute('src'), alt: f.querySelector('img').getAttribute('alt'),
+                w: f.querySelector('img').getAttribute('width'), h: f.querySelector('img').getAttribute('height'),
+                loading: f.querySelector('img').getAttribute('loading'), decoding: f.querySelector('img').getAttribute('decoding')}))}; })}))}; }'''
+    q = newpage(1440); q.goto(BASE + 'studio.html'); settle(q); G = q.evaluate(GAL26_JS)
+    nat = q.evaluate('''async (srcs) => Promise.all(srcs.map(s => new Promise(r => { const i = new Image(); i.onload = () => r([i.naturalWidth, i.naturalHeight]); i.onerror = () => r(null); i.src = s; })))''',
+                     ['gallery/' + g for g in GAL26])
+    q.close()
+    check('T-26: one gallery section on studio.html', G is not None)
+    G = G or {'place': [], 'h2': [], 'text': [], 'apps': []}
+    check('T-26: the section sits in <main>, right after the product cards and right before "Your pile could be next"', G['place'] == ['MAIN', 'products', 'next-h'], str(G['place']))
+    check('T-26: its heading is one h2#gallery-h.big, "Inside the apps"', G['h2'] == ['gallery-h', 'big', T26_HEADING, 1], str(G['h2']))
+    want_text = [T26_HEADING]
+    for a, gs in T26_APPS:
+        want_text.append(a)
+        for l, c, num, its in gs:
+            want_text += [l] + ([c] if c else []) + [f'{k}. {fc}' if num else fc for k, (_f, fc, _alt) in enumerate(its, 1) if fc]
+    check('T-26: the section\'s words are exactly the item\'s, in order, and nothing else', G['text'] == want_text, f'{G["text"][:8]} vs {want_text[:8]}')
+    check('T-26: the three apps in order, each one h3 with its name, first in its block', [x['h3'] for x in G['apps']] == [[a] for a, _g in T26_APPS]
+          and all(x['first'] == 'H3' for x in G['apps']), str([x['h3'] for x in G['apps']]))
+    nimg = 0
+    for (a, gs), ga in zip(T26_APPS, G['apps']):
+        check(f'T-26: {a} has its groups in order', [g['label'] for g in ga['groups']] == [[l] for l, *_r in gs], str([g['label'] for g in ga['groups']]))
+        for (l, c, num, its), gg in zip(gs, ga['groups']):
+            check(f'T-26: {a}, "{l}": its caption on the group is {c!r}', gg['cap'] == ([c] if c else []), str(gg['cap']))
+            check(f'T-26: {a}, "{l}": its row is a region, tabindex 0, named "{a}, {l.lower()}"', gg['row'] == ['region', '0', f'{a}, {l.lower()}'], str(gg['row']))
+            check(f'T-26: {a}, "{l}": its images in order', [x['src'] for x in gg['items']] == ['gallery/' + f for f, *_r in its], str([x['src'] for x in gg['items']]))
+            for (f, fc, alt), it in zip(its, gg['items']):
+                nimg += 1
+                k = GAL26.index(f)
+                check(f'T-26: {f}: a <figure> with one <img>, its alt, its width and height from the file, lazy, async',
+                      it['tag'] == 'FIGURE' and it['imgs'] == 1 and it['alt'] == alt and nat[k] is not None
+                      and [int(it['w']), int(it['h'])] == nat[k] and it['loading'] == 'lazy' and it['decoding'] == 'async', f'{it} {nat[k]}')
+                cap = (f'{its.index((f, fc, alt)) + 1}. {fc}' if num else fc) if fc else None
+                check(f'T-26: {f}: a <figcaption> only when it has a caption ({cap!r}), after its image',
+                      it['caps'] == ([cap] if cap else []) and it['capLast'], str(it['caps']))
+    check('T-26: 20 images in the section', nimg == 20 and sum(len(g['items']) for x in G['apps'] for g in x['groups']) == 20)
+    check('T-26: Birdsighted\'s captions read "1. Pick a case" to "5. Earn your rank"',
+          [c for g in G['apps'][2]['groups'] for x in g['items'] for c in x['caps']] == ['1. Pick a case', '2. Read the clues', '3. See what you missed', '4. Learn why', '5. Earn your rank']
+          if len(G['apps']) == 3 else False)
+
+    # The look, measured with every image loaded, at 320, 390, 1024 and 1440.
+    LOAD26_JS = r'''async () => { const imgs = [...document.querySelectorAll('section[aria-labelledby="gallery-h"] img')];
+      for (const r of document.querySelectorAll('section[aria-labelledby="gallery-h"] .grow')) { r.scrollLeft = r.scrollWidth; await new Promise(f => setTimeout(f, 120)); r.scrollLeft = 0; }
+      imgs.forEach(i => { i.loading = 'eager'; });
+      await Promise.all(imgs.map(i => i.complete && i.naturalWidth ? 1 : new Promise(f => { i.onload = f; i.onerror = f; })));
+      await Promise.all(imgs.map(i => i.decode().catch(() => 0))); return imgs.filter(i => i.naturalWidth > 0).length; }'''
+    LOOK26_JS = r'''() => { const sec = document.querySelector('section[aria-labelledby="gallery-h"]'), sr = sec.getBoundingClientRect();
+      const cs = e => getComputedStyle(e), ref = document.querySelector('.prod.feature img'), lab = sec.querySelector('.ghead .label'), lh = document.getElementById('log-h'), gh = document.getElementById('gallery-h');
+      const pick = (e, ks) => ks.map(k => cs(e)[k]);
+      return {sec: [sr.left, sr.right], vw: innerWidth, page: [document.documentElement.scrollWidth, document.documentElement.clientWidth, scrollX],
+        h2: [pick(gh, ['fontFamily', 'fontSize', 'fontWeight', 'textTransform', 'lineHeight']), pick(lh, ['fontFamily', 'fontSize', 'fontWeight', 'textTransform', 'lineHeight'])],
+        label: pick(lab, ['fontFamily', 'fontSize', 'letterSpacing', 'textTransform']),
+        border: [[...sec.querySelectorAll('img')].map(i => pick(i, ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderTopLeftRadius', 'borderBottomRightRadius']).join(' ')),
+                 pick(ref, ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderTopLeftRadius', 'borderBottomRightRadius']).join(' ')],
+        rows: [...sec.querySelectorAll('.grow')].map(r => { const rr = r.getBoundingClientRect();
+          return {name: r.getAttribute('aria-label'), sw: r.scrollWidth, cw: r.clientWidth, ox: cs(r).overflowX, snap: cs(r).scrollSnapType, wrap: cs(r).flexWrap, right: rr.right,
+            figs: [...r.querySelectorAll('figure')].map(f => { const i = f.querySelector('img'), b = i.getBoundingClientRect(), c = f.querySelector('figcaption'), cb = c && c.getBoundingClientRect();
+              return {f: i.getAttribute('src'), nw: i.naturalWidth, nh: i.naturalHeight, l: b.left, r: b.right, t: b.top, b: b.bottom, w: b.width, h: b.height,
+                      cap: cb && [cb.left, cb.right, cb.top, cb.bottom, c.scrollWidth <= c.clientWidth + 1], snap: cs(f).scrollSnapAlign}; })}; })}; }'''
+    for w in (320, 390, 1024, 1440):
+        q = newpage(w); q.goto(BASE + 'studio.html'); settle(q)
+        q.locator('#gallery-h').scroll_into_view_if_needed(); nl = q.evaluate(LOAD26_JS); q.wait_for_timeout(150)
+        L = q.evaluate(LOOK26_JS)
+        phone = w < 800
+        shot = 200 if phone else 220
+        check(f'T-26: at {w}, all 20 images load', nl == 20, str(nl))
+        check(f'T-26: at {w}, studio.html has no sideways scroll', L['page'][0] <= L['page'][1] and L['page'][2] == 0, str(L['page']))
+        check(f'T-26: at {w}, the heading is styled like "Shipped lately" (.big at the section size)', L['h2'][0] == L['h2'][1], str(L['h2']))
+        check(f'T-26: at {w}, the group labels are styled like the page\'s .label (JetBrains Mono, 12 px, 0.08em, capitals)',
+              'JetBrains Mono' in L['label'][0] and L['label'][1:] == ['12px', '0.96px', 'uppercase'], str(L['label']))
+        check(f'T-26: at {w}, every image has the Bird League card image\'s 1.5px #CFC6B2 border and 2px radius',
+              all(x == L['border'][1] for x in L['border'][0]) and _re.fullmatch(r'1(?:\.5)?px solid rgb\(207, 198, 178\) 2px 2px', L['border'][1]) is not None
+              and 'border:1.5px solid #CFC6B2;border-radius:2px' in SRC26['studio.html'].split('.grow img{', 1)[-1].split('}', 1)[0],
+              f"{L['border'][1]} / {L['border'][0][:1]}")
+        for r in L['rows']:
+            figs = r['figs']
+            hs = {round(f['h'], 1) for f in figs}
+            ph = [f for f in figs if (f['nw'], f['nh']) == (660, 1349)]
+            check(f'T-26: at {w}, "{r["name"]}": every image the same height, and phone shots about {shot} px wide',
+                  max(hs) - min(hs) < 0.6 and all(abs(f['w'] - shot) <= 1.5 for f in ph), f'{hs} {[round(f["w"], 1) for f in ph][:3]}')
+            check(f'T-26: at {w}, "{r["name"]}": every image keeps its own shape (border aside)',
+                  all(abs((f['w'] - 3) / (f['h'] - 3) - f['nw'] / f['nh']) < 0.01 for f in figs), str([(round(f['w'], 1), round(f['h'], 1), f['nw'], f['nh']) for f in figs][:3]))
+            check(f'T-26: at {w}, "{r["name"]}": each caption sits under its own image, inside its width, not cut',
+                  all(f['cap'] is None or (f['cap'][2] >= f['b'] - 0.5 and f['cap'][0] >= f['l'] - 1 and f['cap'][1] <= f['r'] + 1 and f['cap'][3] - f['b'] < 60 and f['cap'][4]) for f in figs),
+                  str([(f['f'], f['cap'], f['l'], f['r'], f['b']) for f in figs if f['cap']][:2]))
+            if phone:
+                fits = r['name'] == 'Deepcuts, then'
+                check(f'T-26: at {w}, "{r["name"]}" is one row that scrolls sideways inside itself (overflow-x auto, scroll-snap)',
+                      r['ox'] == 'auto' and r['snap'].startswith('x') and r['wrap'] == 'nowrap' and len({round(f['t']) for f in figs}) == 1
+                      and all(f['snap'] == 'start' for f in figs) and ((r['sw'] <= r['cw']) if fits else (r['sw'] > r['cw'])), str(r)[:200])
+                if not fits:
+                    edge = min(r['right'], L['vw'])
+                    check(f'T-26: at {w}, "{r["name"]}" shows there is more: an image runs on past the screen\'s edge', any(f['l'] < edge - 4 < f['r'] or f['l'] < edge < f['r'] for f in figs),
+                          str([(round(f['l']), round(f['r'])) for f in figs][:3]) + f' edge {edge}')
+                    e = q.evaluate('''(name) => { const r = [...document.querySelectorAll('.grow')].find(x => x.getAttribute('aria-label') === name); r.scrollLeft = r.scrollWidth;
+                      return new Promise(f => setTimeout(() => { const im = [...r.querySelectorAll('img')], last = im[im.length - 1].getBoundingClientRect(), s = r.closest('section').getBoundingClientRect();
+                        const out = [r.scrollLeft, r.scrollWidth - r.clientWidth, last.left, last.right, s.right, scrollX, document.documentElement.scrollWidth, innerWidth]; r.scrollLeft = 0; f(out); }, 400)); }''', r['name'])
+                    check(f'T-26: at {w}, "{r["name"]}" scrolls to its end inside itself, its last image ending inside the section, the page not moving sideways',
+                          e[0] == e[1] > 0 and e[3] <= e[4] + 1 and e[3] >= e[4] - 2 and e[2] >= 0 and e[5] == 0 and e[6] <= e[7], str(e))
+            else:
+                check(f'T-26: at {w}, "{r["name"]}" wraps into rows inside the section, with nothing to scroll',
+                      r['wrap'] == 'wrap' and r['sw'] <= r['cw'] and all(f['r'] <= L['sec'][1] + 0.5 and f['l'] >= L['sec'][0] - 0.5 for f in figs), str(r)[:200])
+        if w == 1440:
+            bs = next(r for r in L['rows'] if r['name'].startswith('Birdsighted'))
+            check('T-26: at 1440, Birdsighted\'s five steps sit in one row', len({round(f['t']) for f in bs['figs']}) == 1, str([round(f['t']) for f in bs['figs']]))
+            bt = next(r for r in L['rows'] if r['name'] == 'Bird League, then')
+            check('T-26: at 1440, the Figma photo sits beside the first build at the same height, unstretched',
+                  len({round(f['t']) for f in bt['figs']}) == 1 and abs(bt['figs'][0]['w'] - 3 - (bt['figs'][0]['h'] - 3) * 660 / 762) < 1.5, str(bt['figs'])[:200])
+        # Keyboard: from the last link before the gallery, Tab reaches each row in order, with the page's standard focus ring.
+        names26 = [f'{a}, {l.lower()}' for a, gs in T26_APPS for l, *_r in gs]
+        q.focus('a[href="https://chucklefits.com"]')
+        seen, rings = [], []
+        for _k in range(len(names26)):
+            q.keyboard.press('Tab')
+            seen.append(q.evaluate("document.activeElement.getAttribute('aria-label')"))
+            rings.append(q.evaluate("(() => { const s = getComputedStyle(document.activeElement); return [s.outlineStyle, s.outlineWidth, s.outlineColor, s.outlineOffset].join(' '); })()"))
+        check(f'T-26: at {w}, Tab reaches the five rows in order, right after the last product link', seen == names26, str(seen))
+        check(f'T-26: at {w}, a focused row shows the page\'s standard focus ring (3px solid #E8592B, 3px out)',
+              all(x == 'solid 3px rgb(232, 89, 43) 3px' for x in rings), str(rings[:2]))
+        if phone:
+            q.focus('.grow[aria-label="Bird League, now"]'); x0 = q.evaluate("document.querySelector('.grow[aria-label=\"Bird League, now\"]').scrollLeft")
+            q.keyboard.press('ArrowRight'); q.wait_for_timeout(600)
+            x1 = q.evaluate("[document.querySelector('.grow[aria-label=\"Bird League, now\"]').scrollLeft, scrollX]")
+            check(f'T-26: at {w}, a focused row scrolls sideways with the arrow keys, and the page doesn\'t', x0 == 0 and x1[0] > 0 and x1[1] == 0, f'{x0} {x1}')
+        q.close()
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()
