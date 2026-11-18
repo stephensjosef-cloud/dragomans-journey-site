@@ -1257,6 +1257,26 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-27 · ChuckleFits shelf on the Studio page · READY
+
+**Why:** Nov 18, 2026: Josef wants ChuckleFits brought into the site; six all-ages shirts from the shop, each tapping through to it, with no discounts shown.
+
+**Done when:** the six show inside the ChuckleFits card with their photos, names, kinds and prices from `studio.json`; every shop link carries the tag; no product tagged unhinged can get in; no discount or offer appears; seen at 320, 390 and 1440; nothing else changed; axe 0; all tests pass.
+
+**Receipt:**
+
+---
+
+## T-28 · ChuckleFits card on the Work page · GATED
+
+**Gate:** Josef gives one line, in his own words, on why he built the shop. Claude writes no ChuckleFits jokes or brand voice.
+
+**Build:** a card in work.html's "My own builds", `data-k="own"`, tags "My own build", "Shop", "Live", h2 "ChuckleFits", then Josef's line, then three plain facts: a shirt finder with three sliders; product details that AI shopping assistants can read; every shirt printed when it's ordered. No sales numbers, no discount or offer, a link to the shop with `?utm_source=dragomansjourney&utm_medium=work`. Never on the Mainframe pages. Rebuild, test (card counts change: update the tests to match), look at 320, 390 and 1440.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
