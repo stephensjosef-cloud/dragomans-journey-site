@@ -1253,6 +1253,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 - **Josef, by hand:**
   1. Confirm "El Concle" (readable on Bird League's Home and Profile screens, with the league names "Corny Boys" and "The Perch") is your own player and fine to show. If not, send blurred copies of `birdleague-now-home.jpg` and `birdleague-now-profile.jpg` to the vault folder and ask Claude to copy them in and rebuild.
   2. Paste the report into Claude chat for the second check, then say "push it". That merges this into `main` and the site goes live.
+- **Answer (Josef, Nov 18, 2026), to step 1:** "Yes, it's me." El Concle is Josef's own player, fine to show. The images stay as they are; nothing else changed.
 
 ---
 
