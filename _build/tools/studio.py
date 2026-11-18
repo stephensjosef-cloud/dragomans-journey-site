@@ -33,6 +33,9 @@ that show, and one join box with the line from its list ("line"). Its card
 links there ("More on <name>", T-16) and the page links back ("← The Studio"). A page whose product is gated or loses its list is deleted here. og.py, build.py (sitemap)
 and enhance.py all take the page list from product_pages().
 
+Gallery (T-26): "Inside the apps" on studio.html, after the product cards, from
+studio.json's "gallery" and the images in _build/assets/gallery/ (see gallery()).
+
 enhance.py copies studio.html into the site, and refuses to if either JSON
 file changed since this script last ran.
 """
@@ -324,7 +327,94 @@ def build(studio, shipped, today):
             run.append(p)
     cards = "".join(product_card(p, p["id"] in wide) for p in shown)
     prods = f'\n  <div class="sec prods" id="products">{cards}\n  </div>'
-    return log + prods + "\n"
+    return log + prods + gallery(studio) + "\n"
+
+
+# T-26 (Nov 18, 2026): "Inside the apps", after the product cards and before the closing
+# call box (enhance.py adds that last in <main>). Every word is in studio.json's "gallery";
+# this adds only the step numbers of a group marked "numbered" ("1. ", "2. ", ...). The
+# images are _build/assets/gallery/ (enhance.py copies them to gallery/), each <img> with its
+# width and height read from the file. On phones each group is one row that scrolls sideways
+# inside the page (a focusable region named "<app>, <group>"); from 800 px it wraps into rows.
+GALLERY_DIR = HERE / "assets" / "gallery"
+SOF = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+
+
+def jpeg_size(path):
+    """(width, height) from a JPEG's frame header, no image library needed."""
+    b = path.read_bytes()
+    assert b[:2] == b"\xff\xd8", f"{path.name}: not a JPEG"
+    i = 2
+    while i + 4 <= len(b):
+        assert b[i] == 0xFF, f"{path.name}: bad JPEG marker at {i}"
+        m = b[i + 1]
+        if m == 0xFF:                       # fill byte
+            i += 1
+            continue
+        i += 2
+        if m == 0x01 or 0xD0 <= m <= 0xD7:   # markers with no length
+            continue
+        if m in SOF:
+            return int.from_bytes(b[i + 5:i + 7], "big"), int.from_bytes(b[i + 3:i + 5], "big")
+        i += int.from_bytes(b[i:i + 2], "big")
+    raise AssertionError(f"{path.name}: no JPEG frame header")
+
+
+def gallery(studio):
+    g = studio.get("gallery")
+    if not g:
+        return ""
+    out = ['\n  <section class="sec gal" aria-labelledby="gallery-h">',
+           f'\n    <h2 id="gallery-h" class="big">{t(g["heading"])}</h2>']
+    for app in g["apps"]:
+        out.append(f'\n    <div class="gapp">\n      <h3>{t(app["name"])}</h3>')
+        for grp in app["groups"]:
+            cap = f'<p class="gcap">{t(grp["caption"])}</p>' if grp.get("caption") else ""
+            name = f'{app["name"]}, {grp["label"].lower()}'
+            out.append(f'\n      <div class="ggroup">'
+                       f'\n        <div class="ghead"><p class="label">{t(grp["label"])}</p>{cap}</div>'
+                       f'\n        <div class="grow" role="region" tabindex="0" aria-label="{a(name)}">')
+            for n, it in enumerate(grp["items"], 1):
+                f = GALLERY_DIR / it["file"]
+                assert f.is_file(), f"studio.json gallery: {it['file']} is not in assets/gallery"
+                w, h = jpeg_size(f)
+                for s in (it["alt"], it.get("caption") or ""):
+                    assert "—" not in s, "em dash in studio.json gallery: " + s
+                fc = ""
+                if it.get("caption"):
+                    fc = f'<figcaption>{f"{n}. " if grp.get("numbered") else ""}{t(it["caption"])}</figcaption>'
+                out.append(f'\n          <figure><img src="gallery/{a(it["file"])}" width="{w}" height="{h}" '
+                           f'loading="lazy" decoding="async" alt="{a(it["alt"])}">{fc}</figure>')
+            out.append('\n        </div>\n      </div>')
+        out.append('\n    </div>')
+    out.append('\n  </section>')
+    return "".join(out)
+
+
+# Phone shots are 660 by 1349: 200 px wide on phones and 220 px from 800 px, their 1.5 px
+# border included (so five fit across at 1440 with a 10 px gap). Every
+# image in a row gets that same height and keeps its own shape (the spreadsheet and the
+# Figma photo come out wider). Border and radius as the Bird League card's image. The
+# row's focus ring is the page's standard one (chrome.py), since it's a tab stop too.
+# Under 800 px a row runs on to the screen's right edge, the page gutter (chrome.py's .wrap)
+# becoming padding inside it, so the next image shows at the edge and the last one still ends
+# on the section's edge when the row is scrolled to its end.
+GALLERY_CSS = r"""
+.gal{gap:28px}
+.gapp{display:flex;flex-direction:column;gap:16px}
+.gapp h3{margin:0;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,3vw,40px);line-height:.95}
+.ggroup{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ghead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
+.ghead .label{margin:0;color:#676D66}
+.ghead .gcap{margin:0;font-size:14px;color:#5A635D}
+.grow{--h:calc(197px * 1349 / 660 + 3px);display:flex;align-items:flex-start;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
+.grow figure{flex:none;margin:0;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start}
+.grow img{display:block;height:var(--h);width:auto;max-width:none;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
+.grow figcaption{contain:inline-size;font-size:14px;line-height:1.4;color:#3B4540}
+.dj .grow:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+@media (max-width:799px){.grow{margin-right:calc(-1 * clamp(16px,4vw,48px));padding-right:clamp(16px,4vw,48px)}}
+@media (min-width:800px){.grow{--h:calc(217px * 1349 / 660 + 3px);flex-wrap:wrap;overflow:visible;gap:18px 10px;padding-bottom:0}}
+"""
 
 
 # T-25 F4: on phones the count was its own band (a dark rule over "11", a thin one under
@@ -396,7 +486,7 @@ def main(out_dir):
           title=title,
           description=lede.replace('"', "&quot;"),
           kicker="", h1=hero["h1"], lede=t(hero["intro"]),
-          css=CSS + LOG_PHONE_CSS, body=stamp + body, script=SCRIPT, more="")
+          css=CSS + LOG_PHONE_CSS + GALLERY_CSS, body=stamp + body, script=SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
     rows = visible(studio, shipped, today)

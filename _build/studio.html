@@ -100,6 +100,21 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .loghead .stats{border:0}.loghead .stats p{padding:0}
 .loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}
 
+.gal{gap:28px}
+.gapp{display:flex;flex-direction:column;gap:16px}
+.gapp h3{margin:0;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,3vw,40px);line-height:.95}
+.ggroup{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ghead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
+.ghead .label{margin:0;color:#676D66}
+.ghead .gcap{margin:0;font-size:14px;color:#5A635D}
+.grow{--h:calc(197px * 1349 / 660 + 3px);display:flex;align-items:flex-start;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
+.grow figure{flex:none;margin:0;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start}
+.grow img{display:block;height:var(--h);width:auto;max-width:none;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
+.grow figcaption{contain:inline-size;font-size:14px;line-height:1.4;color:#3B4540}
+.dj .grow:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+@media (max-width:799px){.grow{margin-right:calc(-1 * clamp(16px,4vw,48px));padding-right:clamp(16px,4vw,48px)}}
+@media (min-width:800px){.grow{--h:calc(217px * 1349 / 660 + 3px);flex-wrap:wrap;overflow:visible;gap:18px 10px;padding-bottom:0}}
+
 </style>
 </head>
 <body>
@@ -128,10 +143,10 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-17 54906d7f3789984c -->
+<!-- studio.py 2026-11-18 02389c77b280fd83 -->
   <section class="sec logsec" aria-labelledby="log-h">
     <div class="loghead">
-      <div class="stats" id="stats" data-built="2026-11-17">
+      <div class="stats" id="stats" data-built="2026-11-18">
         <p><strong>11</strong> things finished since Oct 6</p>
       </div>
       <h2 id="log-h" class="big">Shipped lately</h2>
@@ -194,6 +209,63 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
         <div class="acts"><a class="go" href="https://chucklefits.com">Visit the shop ↗</a></div>
     </article>
   </div>
+  <section class="sec gal" aria-labelledby="gallery-h">
+    <h2 id="gallery-h" class="big">Inside the apps</h2>
+    <div class="gapp">
+      <h3>Deepcuts</h3>
+      <div class="ggroup">
+        <div class="ghead"><p class="label">Then</p></div>
+        <div class="grow" role="region" tabindex="0" aria-label="Deepcuts, then">
+          <figure><img src="gallery/deepcuts-then-spreadsheet.jpg" width="660" height="1233" loading="lazy" decoding="async" alt="Deepcuts as a spreadsheet: indie games ranked by match score, each with its developer."><figcaption>A spreadsheet</figcaption></figure>
+        </div>
+      </div>
+      <div class="ggroup">
+        <div class="ghead"><p class="label">Now</p><p class="gcap">November 2026</p></div>
+        <div class="grow" role="region" tabindex="0" aria-label="Deepcuts, now">
+          <figure><img src="gallery/deepcuts-now-dig.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Today's Dig in the Deepcuts app: one game picked for you, with its fit score and why it was picked."></figure>
+          <figure><img src="gallery/deepcuts-now-keeps.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Your Keeps: the games you saved, each with Started, Finished and Bounced buttons."></figure>
+          <figure><img src="gallery/deepcuts-now-rooms.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The Rooms screen: rooms for games, gifts, records and books, each marked open."></figure>
+          <figure><img src="gallery/deepcuts-now-taste.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="A taste profile, The Grand Strategist, with sliders from Depth to Breadth and Solo to Social."></figure>
+        </div>
+      </div>
+    </div>
+    <div class="gapp">
+      <h3>Bird League</h3>
+      <div class="ggroup">
+        <div class="ghead"><p class="label">Then</p></div>
+        <div class="grow" role="region" tabindex="0" aria-label="Bird League, then">
+          <figure><img src="gallery/birdleague-then-sketch.jpg" width="660" height="762" loading="lazy" decoding="async" alt="A photo of the first Bird League sketch in Figma: a green header, a gray map box and four tabs."><figcaption>A Figma sketch</figcaption></figure>
+          <figure><img src="gallery/birdleague-then-firstbuild.jpg" width="501" height="1014" loading="lazy" decoding="async" alt="An early Bird League screen that names birds by sound and still says mock data."><figcaption>The first build</figcaption></figure>
+        </div>
+      </div>
+      <div class="ggroup">
+        <div class="ghead"><p class="label">Now</p><p class="gcap">November 2026</p></div>
+        <div class="grow" role="region" tabindex="0" aria-label="Bird League, now">
+          <figure><img src="gallery/birdleague-now-home.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Bird League's home screen: a countdown to the Winter Big Day, the trophy case and recent sightings."></figure>
+          <figure><img src="gallery/birdleague-now-log.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The Log screen: type a bird's name or identify it by sound or photo, then log it to your leagues or your life list."></figure>
+          <figure><img src="gallery/birdleague-now-leagues.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="A league card: this week's matchup, your rank, your points and the days left in the season."></figure>
+          <figure><img src="gallery/birdleague-now-wall.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The life list wall: birds grouped by family, with the ones you've seen in color."></figure>
+          <figure><img src="gallery/birdleague-now-lifelist.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The life list: 141 species, and how many of the birds reported near home you've seen."></figure>
+          <figure><img src="gallery/birdleague-now-records.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Life list records: the heaviest, lightest and widest-winged birds seen, and a size parade."></figure>
+          <figure><img src="gallery/birdleague-now-profile.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="A player profile: lifetime points, species, sightings, leagues and the next goals."></figure>
+          <figure><img src="gallery/birdleague-now-badges.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The badge case: earned badges in color and locked ones in gray."></figure>
+        </div>
+      </div>
+    </div>
+    <div class="gapp">
+      <h3>Birdsighted</h3>
+      <div class="ggroup">
+        <div class="ghead"><p class="label">One case, start to finish</p></div>
+        <div class="grow" role="region" tabindex="0" aria-label="Birdsighted, one case, start to finish">
+          <figure><img src="gallery/birdsighted-1-cases.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Birdsighted's case files: twelve cases, two marked solved, plus a training case and an eye test."><figcaption>1. Pick a case</figcaption></figure>
+          <figure><img src="gallery/birdsighted-2-read.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Case 01, Creek at First Light: a question about jays diving at one pine, with two answers to choose from."><figcaption>2. Read the clues</figcaption></figure>
+          <figure><img src="gallery/birdsighted-3-results.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The case's results: rings on the scene mark each clue found or missed, a lookalike, the hidden bird and a secret."><figcaption>3. See what you missed</figcaption></figure>
+          <figure><img src="gallery/birdsighted-4-lesson.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="A clue's lesson: whitewash on a cliff ledge, and what it says about the birds that perch there."><figcaption>4. Learn why</figcaption></figure>
+          <figure><img src="gallery/birdsighted-5-rank.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The marks earned on a case and the field rank they add up to."><figcaption>5. Earn your rank</figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
 
 </main>
 

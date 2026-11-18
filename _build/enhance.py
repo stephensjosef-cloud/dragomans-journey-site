@@ -407,6 +407,10 @@ def add_pages():
         shutil.copy(PHOTO, OUT / "josef.jpg")
         shutil.copy(PHOTO.with_name("josef-bw.jpg"), OUT / "josef-bw.jpg")
     shutil.copy(HERE / "assets" / "bird-league-then-now.jpg", OUT / "bird-league-then-now.jpg")
+    # T-26: the Studio gallery's images, _build/assets/gallery/ to gallery/, byte for byte.
+    (OUT / "gallery").mkdir(exist_ok=True)
+    for jpg in sorted((HERE / "assets" / "gallery").glob("*.jpg")):
+        shutil.copy(jpg, OUT / "gallery" / jpg.name)
 
 
 def enhance_index():
