@@ -1215,6 +1215,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-26 · Inside the apps, a gallery on the Studio page · READY
+
+**Why:** Nov 18, 2026: Josef wants the Studio page to show Deepcuts and Bird League growing from their first versions, and Birdsighted as one case played start to finish.
+
+**Done when:** the section shows on `studio.html` with every word from `studio.json`, its 20 images come from `_build/assets/gallery/`, it is seen at 320, 390 and 1440, no other page or word changed, axe stays at zero, all tests pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
