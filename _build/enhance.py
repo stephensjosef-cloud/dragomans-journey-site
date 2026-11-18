@@ -165,6 +165,7 @@ LOCAL_JS = r"""
   };
   var rowsEl = document.getElementById('rc-rows');
   var foot = document.getElementById('rc-src-foot');
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function current() {
     var on = document.querySelector('button[data-tab][aria-selected="true"]');
     return on ? on.getAttribute('data-tab') : 'reels';
@@ -192,7 +193,9 @@ LOCAL_JS = r"""
       note.id = id;
       note.className = 'src-note';
       note.hidden = true;
-      note.textContent = s;
+      // T-25 T1: a note is text this script writes, so it gets final.py's spans (djNb, from
+      // the tabs' script): "grown-up" in the Apps tab's fourth note stays whole when shown.
+      note.innerHTML = djNb(esc(s));
       row.appendChild(note);
       btn.addEventListener('click', function () {
         var open = btn.getAttribute('aria-expanded') === 'true';
@@ -200,7 +203,7 @@ LOCAL_JS = r"""
         note.hidden = open;
       });
     });
-    foot.textContent = FOOT[tab] || '';
+    foot.innerHTML = djNb(esc(FOOT[tab] || ''));
     busy = false;
   }
   new MutationObserver(function () { decorate(); }).observe(rowsEl, { childList: true });

@@ -37,6 +37,8 @@ a{color:#A93F17}a:hover{color:#16201C}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .tag{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:4px 10px;background:#EAE3D3;color:#3B4540;border-radius:2px}
 .card .num{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(44px,5vw,60px);line-height:.95;color:#C2461B;margin:4px 0 0}
+/* T-25, Josef's ruling (Nov 17, 2026): the banking card's figure gets the balanced wrap the site's headings use. Same size, same words. */
+.card[data-k="banking"] .num{text-wrap:balance}
 .card h2{margin:0;font-size:22px;line-height:1.25;font-weight:700}
 .card p{margin:0;font-size:16px;color:#3B4540}
 .card a.go{margin-top:auto;padding-top:8px;font-weight:700;text-decoration:none;color:#16201C}

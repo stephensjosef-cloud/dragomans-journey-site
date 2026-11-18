@@ -288,11 +288,13 @@ def build_local():
         v = V[sk]
         data["tabs"][k] = {"tabs": [{"on": t["on"], "style": t["style"]} for t in v["tabs"]], "rc": v["rc"]}
 
+    # T-25 T1: djNb() sits just outside the tabs' function, the one copy on the page, so the
+    # tap-to-see sources (enhance.py's LOCAL_JS) write their notes through it too.
     script = js(r"""
+/*NBJS*/
 (function () {
   var D = /*DATA*/null;
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-  /*NBJS*/
   function $(id) { return document.getElementById(id); }
 
   // Picker: four options, message, link, matching engine card.

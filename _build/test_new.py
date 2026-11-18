@@ -131,9 +131,18 @@ T25_SWAPS = [   # (page, T-24's text, T-25's text), exactly as built; un25() swa
     ('case-reels.html',
      '',
      '<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>\n'),
+    ('local.html',   # this session: djNb() moved just outside the tabs' function, so LOCAL_JS's notes use the same one copy
+     '<script>\n(function () {\n  var D = ',
+     '<script>\nfunction djNb(s){return String(s).split(/(\\s+|&nbsp;|&#160;)/).map(function(p){if(p.indexOf(\'-\')<0)return p;var m=p.match(/^((?:[(\\["\'“‘]|&(?:quot|#x27|#39|ldquo|lsquo);)*)([\\p{L}\\p{N}]+(?:-[\\p{L}\\p{N}]+){1,2})((?:(?:[\'’]|&#x27;|&#39;|&rsquo;)s)?(?:[)\\]"\'”’.,;:!?…]|&(?:quot|#x27|#39|rdquo|rsquo|hellip);)*)$/u);return m&&m[2].length<=24?m[1]+\'<span style="white-space: nowrap">\'+m[2]+\'</span>\'+m[3]:p;}).join(\'\').replace(/[ \\t\\r\\n]+·[ \\t\\r\\n]+/g,\'&nbsp;·&nbsp;\')}\n(function () {\n  var D = '),
+    ('local.html',   # the "grown-up" finding: the tap-to-see notes and their footer go through djNb()
+     "  var foot = document.getElementById('rc-src-foot');\n",
+     "  var foot = document.getElementById('rc-src-foot');\n  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\n"),
     ('local.html',
-     '',
-     '  function djNb(s){return String(s).split(/(\\s+|&nbsp;|&#160;)/).map(function(p){if(p.indexOf(\'-\')<0)return p;var m=p.match(/^((?:[(\\["\'“‘]|&(?:quot|#x27|#39|ldquo|lsquo);)*)([\\p{L}\\p{N}]+(?:-[\\p{L}\\p{N}]+){1,2})((?:(?:[\'’]|&#x27;|&#39;|&rsquo;)s)?(?:[)\\]"\'”’.,;:!?…]|&(?:quot|#x27|#39|rdquo|rsquo|hellip);)*)$/u);return m&&m[2].length<=24?m[1]+\'<span style="white-space: nowrap">\'+m[2]+\'</span>\'+m[3]:p;}).join(\'\').replace(/[ \\t\\r\\n]+·[ \\t\\r\\n]+/g,\'&nbsp;·&nbsp;\')}\n'),
+     '      note.textContent = s;\n',
+     '      // T-25 T1: a note is text this script writes, so it gets final.py\'s spans (djNb, from\n      // the tabs\' script): "grown-up" in the Apps tab\'s fourth note stays whole when shown.\n      note.innerHTML = djNb(esc(s));\n'),
+    ('local.html',
+     "    foot.textContent = FOOT[tab] || '';\n",
+     "    foot.innerHTML = djNb(esc(FOOT[tab] || ''));\n"),
     ('local.html',
      '    $(\'rc-head\').textContent = rc.head;\n    $(\'rc-date\').textContent = rc.date;\n    $(\'rc-title\').textContent = rc.title;\n    // T-21 G2: a value like "iPhone · iPad · Android" keeps each dot with its neighbours, as on the built page.\n    $(\'rc-rows\').innerHTML = rc.rows.map(function (r) { return D.row.replace(\'{k}\', esc(r.k)).replace(\'{v}\', esc(r.v).replace(/ · /g, \'&nbsp;·&nbsp;\')); }).join(\'\');\n    $(\'rc-note\').textContent = rc.note;\n',
      "    // T-25 T1: redrawn text gets final.py's spans and held dots (djNb), so switching tabs\n    // and back gives the markup the page was built with (T-21 G2 did this for the values only).\n    $('rc-head').innerHTML = djNb(esc(rc.head));\n    $('rc-date').innerHTML = djNb(esc(rc.date));\n    $('rc-title').innerHTML = djNb(esc(rc.title));\n    $('rc-rows').innerHTML = rc.rows.map(function (r) { return D.row.replace('{k}', djNb(esc(r.k))).replace('{v}', djNb(esc(r.v))); }).join('');\n    $('rc-note').innerHTML = djNb(esc(rc.note));\n"),
@@ -164,6 +173,10 @@ T25_SWAPS = [   # (page, T-24's text, T-25's text), exactly as built; un25() swa
     ('work.html',
      '',
      '<style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>\n'),
+    ('work.html',    # Josef's ruling (Nov 17, 2026): the "2 AI" figure gets the headings' balanced wrap
+     '',
+     "/* T-25, Josef's ruling (Nov 17, 2026): the banking card's figure gets the balanced wrap the site's headings use. Same size, same words. */\n"
+     '.card[data-k="banking"] .num{text-wrap:balance}\n'),
     ('work.html',
      '      <!-- T-22 K6; T-23 L5 keeps "4 minutes." on one line -->\n      <p class="num">An evening of editing, now about <span style="white-space: nowrap">4 minutes.</span></p>\n',
      '      <!-- T-22 K6; T-23 L5 keeps "4 minutes." on one line; T-25 F1: "of editing," and "now about" are held too, so no line holds one word ("about 4 minutes." whole is wider than the card at 320 and 1440) -->\n      <p class="num">An evening <span style="white-space: nowrap">of editing,</span> <span style="white-space: nowrap">now about</span> <span style="white-space: nowrap">4 minutes.</span></p>\n'),
@@ -2534,7 +2547,7 @@ with sync_playwright() as p:
             return sorted((a.lower(), v) for t in _re.findall(r'<[a-zA-Z][^<>]*>', src)
                           for a, v in _re.findall(r'''\s([a-zA-Z][\w:-]*)\s*=\s*("[^"]*"|'[^']*')''', t) if a.lower() not in ('style', 'class', 'data-built'))
         check(f'T-21 G1: on {n} every attribute is as on origin/main (the pass never writes inside one)', attrs21(SRC21W[n]) == attrs21(t20_file(n).decode('utf-8')))   # T-22: its four pages as T-21 left them
-        long_ = [x for x in _re.findall(NW + r'([^<]*)</span>', _re.sub(r'<script\b.*?</script>', '', un23(s, n), flags=_re.S)) if len(x) > 24 or x.count('-') != 1]   # T-23's spans (L1, L4, L5) out: its own block checks them
+        long_ = [x for x in _re.findall(NW + r'([^<]*)</span>', _re.sub(r'<script\b.*?</script>', '', un23(un25(s, n), n), flags=_re.S)) if len(x) > 24 or x.count('-') != 1]   # T-23's spans (L1, L4, L5) out: its own block checks them; T-25's too (F1's held phrases, F2's amounts)
         check(f'T-21 G1: on {n} every wrapped pair is letters or digits with one hyphen, at most 24 characters', long_ == [], str(long_))
     check('T-21 G1: three-part runs ("side-by-side", "year-to-date") and addresses are left to break as before (T-23 L1 now wraps the three-part runs: read with its spans out)',
           'side-by-side' in un23(SRC21['mainframe.html'], 'mainframe.html') and NW + 'side-by-side' not in un23(SRC21['mainframe.html'], 'mainframe.html') and 'stephensjosef-cloud' in SRC21['mainframe.html'] and NW + 'stephensjosef' not in SRC21['mainframe.html'])
@@ -2865,7 +2878,7 @@ with sync_playwright() as p:
             T21_FILES[path] = r.stdout if r.returncode == 0 else None
         return T21_FILES[path]
     check('T-22: the T-21 pages can be read from git for comparison', t21_file('case-reels.html') is not None and t21_file('og/case-reels.png') is not None)
-    SRC22 = {n: un23(un24(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n')), n) for n in ALL_HTML}   # T-23: its changes out (its block checks them); T-24: A1 to A7 read back as T-23's
+    SRC22 = {n: un23(un24(un25(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n)), n) for n in ALL_HTML}   # T-23: its changes out (its block checks them); T-24: A1 to A7 read back as T-23's; T-25: its layout swaps out
     OLD22 = {n: t21_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
 
     K1_H1 = 'Forty reels, one engine.'
@@ -3176,7 +3189,7 @@ with sync_playwright() as p:
         return q
     OLD23B = BASE + '__t22/'
     check('T-23: the T-22 pages can be read from git for comparison', t22_file('studio.html') is not None and t22_file('og/case-reels.png') is not None)
-    SRC23 = {n: un24(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n')) for n in ALL_HTML}   # T-24: A1 to A7 read back as T-23's (its block checks them)
+    SRC23 = {n: un24(un25(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n)) for n in ALL_HTML}   # T-24: A1 to A7 read back as T-23's (its block checks them); T-25: its layout swaps out
     OLD23 = {n: t22_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     K3_22, K5_22, K7_22, K8_22 = (o for o, _ in T23_LINES)
     K3B, K5B, K7B, K8B = (n_ for _, n_ in T23_LINES)
@@ -3384,8 +3397,21 @@ with sync_playwright() as p:
         check(f'T-23 L7: at {w}, the count sits beside "Shipped lately", on its baseline', abs(r['hb'] - r['sb']) <= 1.5 and r['sLeft'] > r['hRight'], str(r))
         check(f'T-23 L7: at {w}, the count is no longer a full-width band', r['stW'] < r['mainW'] / 2, str(r))
         check(f'T-23 L7: at {w}, the count still equals the log lines that show', r['n'] == str(r['lines']) and r['all'] == f'See all {r["lines"]}', str(r))
+    def un25_page(w, h=900):
+        """T-25: a page that opens this build at BASE + '__un25/<file>' with T-25's swaps taken out (un25),
+        for the positions T-23 L7 compares with T-22 on phones (T-25 F4 moves them on purpose; its block checks F4)."""
+        q = newpage(w, h)
+        def serve(route):
+            path = route.request.url.split('/__un25/', 1)[1].split('?')[0].split('#')[0]
+            body = urlopen(BASE + path).read()
+            if path.endswith('.html'):
+                body = un25(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
+            route.fulfill(status=200, body=body, content_type='text/html' if path.endswith('.html') else
+                          'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+        q.route('**/__un25/**', serve)
+        return q
     for w in (320, 390):
-        q = newpage(w); q.goto(BASE + 'studio.html'); settle(q); r = q.evaluate(L7_JS); q.close()
+        q = un25_page(w); q.goto(BASE + '__un25/studio.html'); settle(q); r = q.evaluate(L7_JS); q.close()   # T-25: read through un25 (F4)
         q = t22_page(w); q.goto(OLD23B + 'studio.html'); settle(q); o = q.evaluate(L7_JS); q.close()
         check(f'T-23 L7: at {w}, the count band and the heading sit where they did at T-22', all(abs(a - b_) <= 1 for a, b_ in zip(r['st'] + r['h'], o['st'] + o['h'])), f'{r["st"] + r["h"]} vs {o["st"] + o["h"]}')
         check(f'T-23 L7: at {w}, the count still equals the log lines that show', r['n'] == str(r['lines']) == o['n'], str(r))
@@ -3434,10 +3460,10 @@ with sync_playwright() as p:
     # The whole build: T-23's pages with only T-24's seven lines. un24() swaps each back, and what is left
     # is T-23's page byte for byte (the Studio pages' build day aside).
     for n in ALL_HTML:
-        a, b_ = stamp24(un24(SRC24[n])), stamp24(OLD24[n])
+        a, b_ = stamp24(un24(un25(SRC24[n], n))), stamp24(OLD24[n])   # T-25: its layout swaps out first (its block checks them)
         check(f'T-24: {n} is T-23\'s page with only T-24\'s lines', a == b_,
               next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
-    got24 = sorted(n for n in ALL_HTML if stamp24(SRC24[n]) != stamp24(OLD24[n]))
+    got24 = sorted(n for n in ALL_HTML if stamp24(un25(SRC24[n], n)) != stamp24(OLD24[n]))   # T-25's seven pages read with its swaps out
     check('T-24: the pages that changed are comp3.html and mainframe.html and no others', got24 == ['comp3.html', 'mainframe.html'], str(got24))
     check('T-24: the root mainframe.html and comp3.html are the built pages', all(ROOT24[n] == SRC24[n] for n in ROOT24))
     for n in ALL_HTML:
@@ -3634,8 +3660,11 @@ with sync_playwright() as p:
     ch25, bp25, sc25, ca25, st25, en25, ts25 = (rd(f) for f in ('tools/chrome.py', 'build.py', 'tools/scaler.py', 'tools/captions.py',
                                                               'tools/studio.py', 'enhance.py', 'test_site.py'))
     check('T-25 T1: tools/chrome.py holds djNb() (NB_JS), and build.py writes it into the local and mainframe scripts and uses it in both tab redraws',
-          'NB_JS = ' in ch25 and bp25.count('  /*NBJS*/\n') == 2 and '"/*NBJS*/", chrome.NB_JS' in bp25
+          'NB_JS = ' in ch25 and bp25.count('/*NBJS*/\n') == 2 and bp25.count('\n/*NBJS*/\n(function () {\n') == 1 and '"/*NBJS*/", chrome.NB_JS' in bp25
           and "$('rc-head').innerHTML = djNb(esc(rc.head));" in bp25 and "$('xb-body').innerHTML = djNb(esc(x.body));" in bp25)
+    check('T-25 T1 (grown-up): enhance.py writes the tap-to-see notes and their footer on local through djNb(), not as plain text',
+          'note.innerHTML = djNb(esc(s));' in en25 and "foot.innerHTML = djNb(esc(FOOT[tab] || ''));" in en25
+          and 'note.textContent' not in en25 and 'foot.textContent' not in en25)
     check('T-25 T1: djNb() is on local.html and mainframe.html once each, and on no other page',
           all(SRC25[n].count('function djNb(s)') == (1 if n in ('local.html', 'mainframe.html') else 0) for n in ALL_HTML))
     check('T-25 T1: test_site.py falls back to the live Google Fonts when its font folder is missing, and still counts the css2 requests',
@@ -3682,8 +3711,9 @@ with sync_playwright() as p:
     # F1: the reels headline leaves no word alone at 320, 390 and 1440 ("about 4 minutes." whole is wider than the card at 320
     # and 1440, so "of editing," and "now about" are held instead, with T-23's "4 minutes."), and no card headline on work,
     # local or case-reels leaves a word alone that T-24 didn't. Three card headlines can't be held by a span without running
-    # past their card (measured in the Receipt); they are T-25's open question, so here they must be exactly as at T-24.
+    # past their card (measured in the Receipt); Josef ruled on them (Nov 17, 2026): the balanced wrap, checked after this loop.
     REELS25 = 'An evening of editing, now about 4 minutes.'
+    RULED25 = ('2 AI translations of one bank program', 'Reels from your phone videos', 'Busywork, automated')
     for w in (320, 390, 1440):
         q = newpage(w); q.goto(BASE + 'work.html'); settle(q)
         ln = q.evaluate(LINES25_JS, '.card .num')
@@ -3698,10 +3728,37 @@ with sync_playwright() as p:
         for n in ('work.html', 'local.html', 'case-reels.html'):
             q = newpage(w); q.goto(BASE + n); settle(q); now = q.evaluate(CARDH25_JS); q.close()
             o = t24_page(w); o.goto(OLD25B + n); settle(o); was = o.evaluate(CARDH25_JS); o.close()
-            check(f'T-25 F1: at {w} no card headline on {n} leaves a word alone that T-24 didn\'t, and the reels headline none',
-                  all(x in was for x in now) and not any(x[0] == REELS25 for x in now), f'now {now} | T-24 {was}')
-            check(f'T-25 F1: at {w} the card headlines on {n} with a word alone are only the ones in T-25\'s question',
-                  all(x[0] in ('2 AI translations of one bank program', 'Reels from your phone videos', 'Busywork, automated') for x in now), str(now))
+            check(f'T-25 F1: at {w} no card headline on {n} leaves a word alone that T-24 didn\'t, and the reels headline none (the three under Josef\'s ruling checked below)',
+                  all(x in was for x in now if x[0] not in RULED25) and not any(x[0] == REELS25 for x in now), f'now {now} | T-24 {was}')
+            check(f'T-25 F1: at {w} the card headlines on {n} with a word alone are only the three under Josef\'s ruling',
+                  all(x[0] in RULED25 for x in now), str(now))
+
+    # Josef's ruling (Nov 17, 2026): the three card headlines that left a word alone get the balanced wrap the site's
+    # headings use (text-wrap: balance), with no smaller type, no new words and no span; what still leaves a word alone
+    # after that stays as it is ("left as is, Josef's ruling"). Each reads as measured for the Receipt.
+    HEAD25_JS = r'''([text, LINES]) => { const e = [...document.querySelectorAll('main h2, main h3, main .num')].find(x => x.textContent.replace(/\s+/g, ' ').trim() === text);
+      if (!e) return null; const cs = getComputedStyle(e), b = e.getBoundingClientRect();
+      const rs = []; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) { const r = document.createRange(); r.selectNodeContents(n); rs.push(...[...r.getClientRects()].filter(x => x.width > 0)); }
+      return {wrap: cs.textWrapStyle || cs.textWrap, size: cs.fontSize, spans: e.querySelectorAll('span').length,
+              inside: rs.every(r => r.right <= b.right + 0.5 && r.left >= b.left - 0.5), lines: (new Function('return ' + LINES))()(e)}; }'''
+    WANT25 = {320: {'2 AI translations of one bank program': ['2 AI', 'translations', 'of one', 'bank program'],
+                    'Reels from your phone videos': ['Reels', 'from your', 'phone videos'], 'Busywork, automated': ['Busywork,', 'automated']},
+              390: {'2 AI translations of one bank program': ['2 AI translations of', 'one bank program'],
+                    'Reels from your phone videos': ['Reels from your', 'phone videos'], 'Busywork, automated': ['Busywork,', 'automated']},
+              1440: {'2 AI translations of one bank program': ['2 AI', 'translations', 'of one bank', 'program'],
+                     'Reels from your phone videos': ['Reels from your', 'phone videos'], 'Busywork, automated': ['Busywork,', 'automated']}}
+    for w in (320, 390, 1440):
+        for n, text in (('work.html', RULED25[0]), ('local.html', RULED25[1]), ('local.html', RULED25[2])):
+            q = newpage(w); q.goto(BASE + n); settle(q); now = q.evaluate(HEAD25_JS, [text, LINES25_JS]); q.close()
+            o = t24_page(w); o.goto(OLD25B + n); settle(o); was = o.evaluate(HEAD25_JS, [text, LINES25_JS]); o.close()
+            check(f'T-25 ruling: at {w} "{text}" on {n} has the balanced wrap, at T-24\'s type size, with no span added',
+                  now is not None and was is not None and now['wrap'] == 'balance' and now['size'] == was['size'] and now['spans'] == was['spans'] == 0, f'{now} | T-24 {was}')
+            check(f'T-25 ruling: at {w} "{text}" on {n} stays inside its card', now is not None and now['inside'], str(now))
+            check(f'T-25 ruling: at {w} "{text}" on {n} reads {" / ".join(WANT25[w][text])}', now is not None and now['lines'] == WANT25[w][text], str(now and now['lines']))
+    check('T-25 ruling: work.html carries the balance rule for the banking card\'s figure only, and local\'s two headlines already had the headings\' rule',
+          SRC25['work.html'].count('.card[data-k="banking"] .num{text-wrap:balance}') == 1 and SRC25['work.html'].count('<article class="card" data-k="banking">') == 1
+          and ':is(h1,h2,h3,h4,button,' in SRC25['local.html'] and OLD25['local.html'].count(':is(h1,h2,h3,h4,button,') == SRC25['local.html'].count(':is(h1,h2,h3,h4,button,'))
 
     # F2: no amount splits from itself or its unit, in the hint and in results after changing the numbers;
     # the scaler gives the same results for the same inputs as at T-24.
@@ -3853,6 +3910,22 @@ with sync_playwright() as p:
                 sp = q.evaluate(SPLIT25_JS, sel)
                 check(f'T-25 T1: at {w} {n} tab "{t}" splits no hyphen pair across lines', not sp, str(sp))
             q.close(); o.close()
+
+    # T1 (grown-up): the Apps tab's fourth tap-to-see note, written by LOCAL_JS after the tab redraws, keeps
+    # "grown-up" in a no-wrap span and on one line once tapped open; its words are T-24's.
+    for w in (320, 390, 1440):
+        res = []
+        for base, opener in ((BASE, newpage), (OLD25B, t24_page)):
+            q = opener(w); q.goto(base + 'local.html'); settle(q)
+            q.click('button[data-tab="app"]'); q.wait_for_timeout(60)
+            q.click('button[aria-controls="src-app-3"]'); q.wait_for_timeout(60)
+            res.append(q.evaluate('''() => { const n = document.getElementById('src-app-3'), s = [...n.querySelectorAll('span[style*="nowrap"]')].find(x => x.textContent === 'grown-up');
+              const tops = s ? new Set((() => { const r = document.createRange(); r.selectNodeContents(s); return [...r.getClientRects()].filter(x => x.width > 0).map(x => Math.round(x.top)); })()).size : 0;
+              return [n.hidden, n.textContent, !!s, tops]; }'''))
+            q.close()
+        (hid, txt, wrapped, tops), (_h, txt0, _w, _t) = res
+        check(f'T-25 T1 (grown-up): at {w} the Apps tab\'s fourth note opens on tap with "grown-up" in a no-wrap span, on one line, and reads as at T-24',
+              not hid and wrapped and tops == 1 and txt == txt0 and 'the grown-up does.' in txt, str(res))
 
     # T1: test_site.py runs to the end on this machine, with no hang.
     import tempfile as _tmp25
