@@ -411,6 +411,10 @@ def add_pages():
     (OUT / "gallery").mkdir(exist_ok=True)
     for jpg in sorted((HERE / "assets" / "gallery").glob("*.jpg")):
         shutil.copy(jpg, OUT / "gallery" / jpg.name)
+    # T-27: the ChuckleFits shelf's photos, _build/assets/shelf/ to images/shelf/, byte for byte.
+    (OUT / "images" / "shelf").mkdir(parents=True, exist_ok=True)
+    for jpg in sorted((HERE / "assets" / "shelf").glob("*.jpg")):
+        shutil.copy(jpg, OUT / "images" / "shelf" / jpg.name)
 
 
 def enhance_index():

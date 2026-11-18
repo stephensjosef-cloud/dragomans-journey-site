@@ -115,6 +115,21 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 @media (max-width:799px){.grow{margin-right:calc(-1 * clamp(16px,4vw,48px));padding-right:clamp(16px,4vw,48px)}}
 @media (min-width:800px){.grow{--h:calc(217px * 1349 / 660 + 3px);flex-wrap:wrap;overflow:visible;gap:18px 10px;padding-bottom:0}}
 
+.shelf{margin:-6px calc(-1 * clamp(22px,2.6vw,30px)) 0 -6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-left:6px;scrollbar-width:thin}
+.shelf ul{list-style:none;margin:0;display:flex;gap:12px;width:max-content;padding:6px clamp(22px,2.6vw,30px) 10px 6px}
+.shelf li{flex:none;width:calc((100vw - 2 * clamp(16px,4vw,48px) - 37px) / 1.6);margin:0;scroll-snap-align:start}
+@media (min-width:480px){.shelf li{width:calc((100vw - 2 * clamp(16px,4vw,48px) - 49px) / 2.6)}}
+.shelf a{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:#16201C}
+.shelf img{display:block;width:100%;height:auto;margin-bottom:8px;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
+.shelf .sn{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1.25;overflow-wrap:break-word}
+.shelf .sk,.shelf .sp{font-size:14px;line-height:1.35;color:#5A635D}
+.shelf a:hover .sn{color:#A93F17}
+.dj .shelf:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+@media (min-width:800px){.shelf{margin:-6px -6px 0;overflow:visible}
+.shelf ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 18px;width:auto;padding:6px}
+.shelf li{width:auto}}
+@media (min-width:1200px){.shelf ul{grid-template-columns:repeat(6,minmax(0,1fr))}}
+
 </style>
 <style>@media (min-width:900px){section[aria-labelledby="next-h"],section[aria-labelledby="c7"]{grid-template-columns:minmax(0,1fr) auto!important}}</style>
 <style>
@@ -156,7 +171,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-18 02389c77b280fd83 -->
+<!-- studio.py 2026-11-18 044c19bec04600e1 -->
   <section class="sec logsec" aria-labelledby="log-h">
     <div class="loghead">
       <div class="stats" id="stats" data-built="2026-11-18">
@@ -219,7 +234,17 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
         <h2>ChuckleFits</h2>
         <div class="meta"><span class="pill">Live</span></div>
         <p>My humor shirt shop. I write every line on every shirt.</p>
-        <div class="acts"><a class="go" href="https://chucklefits.com">Visit the shop ↗</a></div>
+        <div class="shelf" role="region" aria-label="ChuckleFits shirts" tabindex="0">
+          <ul>
+            <li><a href="https://chucklefits.com/products/thats-coo-womens-baby-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/thats-coo-womens-baby-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="That's Coo baby tee: a white baby tee with black sleeves, printed with a painting of a pigeon on a city street and the words that's coo under it."><span class="sn">That's Coo</span><span class="sk">Baby tee</span><span class="sp">From $28</span></a></li>
+            <li><a href="https://chucklefits.com/products/i-hold-a-grudge-womens-t-shirt?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/i-hold-a-grudge-womens-t-shirt.jpg" width="480" height="480" loading="lazy" decoding="async" alt="I Hold A Grudge women's tee: a white tee printed with a painting of a crow on a branch at sunset and the words I hold a grudge under it."><span class="sn">I Hold A Grudge</span><span class="sk">Women's tee</span><span class="sp">From $28</span></a></li>
+            <li><a href="https://chucklefits.com/products/bird-watchin-buddies-unisex-classic-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/bird-watchin-buddies-unisex-classic-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Bird Watchin Buddies tee: a white tee printed with two small birds in a pink circle and the words Bird Watchin Buddies around them."><span class="sn">Bird Watchin Buddies</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
+            <li><a href="https://chucklefits.com/products/easy-tiger-unisex-classic-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/easy-tiger-unisex-classic-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Easy Tiger tee: a white tee printed with a black drawing of a tiger lying down and the word Easy above its back."><span class="sn">Easy Tiger</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
+            <li><a href="https://chucklefits.com/products/as-far-as-i-know-im-delightful?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/as-far-as-i-know-im-delightful.jpg" width="480" height="480" loading="lazy" decoding="async" alt="As Far As I Know, I'm Delightful tee: a white tee printed with the words As far as I know over a snarling wolf's head, and the words I'm delightful under it."><span class="sn">As Far As I Know, I'm Delightful</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
+            <li><a href="https://chucklefits.com/products/love-your-mother-5-panel-cap?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/love-your-mother-5-panel-cap.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Love Your Mother cap: a cream cap with a royal blue brim, embroidered with an outline of the Earth and the words Love your mother."><span class="sn">Love Your Mother</span><span class="sk">Cap</span><span class="sp">From $26</span></a></li>
+          </ul>
+        </div>
+        <div class="acts"><a class="go" href="https://chucklefits.com/?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf">Visit the shop ↗</a></div>
     </article>
   </div>
   <section class="sec gal" aria-labelledby="gallery-h">

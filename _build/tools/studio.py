@@ -36,6 +36,9 @@ and enhance.py all take the page list from product_pages().
 Gallery (T-26): one section on studio.html, after the product cards, from
 studio.json's "gallery" and the images in _build/assets/gallery/ (see gallery()).
 
+Shelf (T-27): the ChuckleFits card's products, from that product's "shelf" in
+studio.json and the photos in _build/assets/shelf/ (see shelf()).
+
 enhance.py copies studio.html into the site, and refuses to if either JSON
 file changed since this script last ran.
 """
@@ -178,9 +181,13 @@ def product_card(p, wide=False):
              f'<p>{t(p["what"])}</p>']
     if p.get("proof"):
         parts.append(f'<p class="proof"><strong>{t(p["proof"])}</strong></p>')
+    if p.get("shelf"):
+        parts.append(shelf(p))
     acts = []
     if p.get("link"):
         href = p["link"]["href"]
+        if p.get("link_tag"):                          # T-27: the shop link carries the tag
+            href = href.rstrip("/") + "/?" + p["link_tag"]
         arrow = "↗" if href.startswith("http") else "→"
         acts.append(f'<a class="go" href="{a(href)}">{t(p["link"]["label"])} {arrow}</a>')
     if page_slug(p):
@@ -417,6 +424,73 @@ GALLERY_CSS = r"""
 """
 
 
+# T-27 (Nov 18, 2026): the ChuckleFits shelf, inside that product's card, between its "what"
+# line and its link row. Every word is in studio.json's "shelf" (name, kind, alt); this adds
+# only the price as "From $<price>" (no cents when they're .00). Each product is one link to
+# its shop page, the tag from "link_tag" on the address, opening in the same tab like the
+# card's own shop link. Photos: _build/assets/shelf/<handle>.jpg (480 px wide; enhance.py
+# copies them to images/shelf/), width and height read from the file. A product whose tags
+# contain "unhinged" stops the build, named, so it can never reach the page.
+SHELF_DIR = HERE / "assets" / "shelf"
+SHOP = "https://chucklefits.com"
+
+
+def shelf_price(s):
+    whole, _, cents = s.partition(".")
+    assert whole.isdigit() and (cents == "" or (cents.isdigit() and len(cents) == 2)), f"shelf price {s!r}"
+    return f'From ${whole}' if cents in ("", "00") else f'From ${whole}.{cents}'
+
+
+def shelf(p):
+    tag = p.get("link_tag")
+    assert tag, f'studio.json: {p["id"]} has a shelf but no link_tag'
+    items = []
+    for it in p["shelf"]:
+        for tg in it.get("tags", []):
+            if "unhinged" in tg.lower():
+                raise SystemExit(f'studio.json shelf: "{it["handle"]}" ({it["name"]}) has the tag '
+                                 f'"{tg}"; a product tagged unhinged can\'t be on the site. Take it off the shelf.')
+        for s in (it["name"], it["kind"], it["alt"]):
+            assert "—" not in s, "em dash in studio.json shelf: " + s
+        assert it["image"] == f'images/shelf/{it["handle"]}.jpg', f'shelf image path for {it["handle"]}'
+        f = SHELF_DIR / f'{it["handle"]}.jpg'
+        assert f.is_file(), f'studio.json shelf: {f.name} is not in assets/shelf'
+        w, h = jpeg_size(f)
+        href = f'{SHOP}/products/{quote(it["handle"], safe="-")}?{tag}'
+        items.append(f'\n            <li><a href="{a(href)}"><img src="{a(it["image"])}" width="{w}" height="{h}" '
+                     f'loading="lazy" decoding="async" alt="{a(it["alt"])}">'
+                     f'<span class="sn">{t(it["name"])}</span><span class="sk">{t(it["kind"])}</span>'
+                     f'<span class="sp">{shelf_price(it["price"])}</span></a></li>')
+    return (f'<div class="shelf" role="region" aria-label="{a(p["name"])} shirts" tabindex="0">'
+            f'\n          <ul>{"".join(items)}\n          </ul>\n        </div>')
+
+
+# Phones (under 800 px): one row that scrolls sideways inside the card, snapping at each
+# product's start, and running on into the card's right padding so the next product shows at
+# the edge; scrolled to its end, the last one ends on the card's content edge. Each product is
+# sized from the screen width so about 1.6 show under 480 px and 2.6 from 480 px: the next one
+# is always cut partway, never hidden and never almost whole. 6 px of room
+# round the list keeps the links' focus rings in view. From 800 px three across, from 1200 px
+# six. Photo border and radius as the card images; name in the page's sans at 700, kind and
+# price smaller in #5A635D. The row is a tab stop with the page's standard focus ring.
+SHELF_CSS = r"""
+.shelf{margin:-6px calc(-1 * clamp(22px,2.6vw,30px)) 0 -6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-left:6px;scrollbar-width:thin}
+.shelf ul{list-style:none;margin:0;display:flex;gap:12px;width:max-content;padding:6px clamp(22px,2.6vw,30px) 10px 6px}
+.shelf li{flex:none;width:calc((100vw - 2 * clamp(16px,4vw,48px) - 37px) / 1.6);margin:0;scroll-snap-align:start}
+@media (min-width:480px){.shelf li{width:calc((100vw - 2 * clamp(16px,4vw,48px) - 49px) / 2.6)}}
+.shelf a{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:#16201C}
+.shelf img{display:block;width:100%;height:auto;margin-bottom:8px;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
+.shelf .sn{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1.25;overflow-wrap:break-word}
+.shelf .sk,.shelf .sp{font-size:14px;line-height:1.35;color:#5A635D}
+.shelf a:hover .sn{color:#A93F17}
+.dj .shelf:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+@media (min-width:800px){.shelf{margin:-6px -6px 0;overflow:visible}
+.shelf ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 18px;width:auto;padding:6px}
+.shelf li{width:auto}}
+@media (min-width:1200px){.shelf ul{grid-template-columns:repeat(6,minmax(0,1fr))}}
+"""
+
+
 # T-25 F4: on phones the count was its own band (a dark rule over "11", a thin one under
 # it, then the heading and the log's rule), so it read apart from "Shipped lately". Under
 # 800 px it now sits the way T-23 L7 set it from 800 px: the heading, then the count on
@@ -486,7 +560,7 @@ def main(out_dir):
           title=title,
           description=lede.replace('"', "&quot;"),
           kicker="", h1=hero["h1"], lede=t(hero["intro"]),
-          css=CSS + LOG_PHONE_CSS + GALLERY_CSS, body=stamp + body, script=SCRIPT, more="")
+          css=CSS + LOG_PHONE_CSS + GALLERY_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
     rows = visible(studio, shipped, today)
