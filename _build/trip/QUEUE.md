@@ -1347,6 +1347,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-30 · Each paragraph lives on one page · READY
+
+**Why:** Nov 18, 2026: the same paragraphs show word for word on two pages: the kids' app and COBOL descriptions on Studio and Work, and the four free-tool descriptions on Local and Work. Josef keeps the full story on Work; Studio and Local name each thing and link to it.
+
+**Done when:** the kids' app and COBOL descriptions show only on Work, and the four free-tool descriptions show only on Work; Studio and Local keep each item's name and link; Free tools' paragraph on Studio is at most 34em wide; nothing else changes; seen at 320, 390 and 1440; axe 0; all tests pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
