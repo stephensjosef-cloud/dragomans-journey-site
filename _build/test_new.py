@@ -302,6 +302,10 @@ T30_LOCAL = [   # (tool page, the paragraph's inner HTML as T-29 built it on loc
                     'you can actually measure, eggs rounded up, and a <span style="white-space: nowrap">heads-up</span> when it\'s '
                     'time to cook in batches.'),
 ]
+# T-30 (Josef, Nov 19): the Website checkup card, which shows on local.html only once CHECKUP_URL is set (T-20 F2), loses its
+# description the same way; un30() puts it back when that card is on the page. Today it isn't, so this changes nothing.
+T30_LOCAL_LIVE = [('checkup.html', "Paste your site's address and get a plain report of what's broken, worst first, and whether a machine "
+                                   'can read the facts AI tools need.')]
 T30_LOCAL_P = '<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">'
 T30_CSS = '.prod.wide>p:not(.proof){max-width:34em}\n\n'
 T30_LINK = ('<a href="{}" style="margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; '
@@ -327,7 +331,7 @@ def un30(s, name=None):
             s = _r.sub(r'(\n    <article class="prod[^"]*" data-id="' + pid + r'">\n        <h2>[^<]*</h2>\n        <div class="meta">[^\n]*?</div>)'
                        r'(?!\n        ' + _r.escape(para) + ')', lambda m: m.group(1) + '\n        ' + para, s, count=1)
     if name in (None, 'local.html'):
-        for href, inner in T30_LOCAL:
+        for href, inner in T30_LOCAL + T30_LOCAL_LIVE:
             s = _r.sub(r'(<h3 style="[^"]*">[^<]*</h3>)(\n        ' + _r.escape(T30_LINK.format(href)) + ')',
                        lambda m: m.group(1) + '\n        ' + T30_LOCAL_P + inner + '</p>' + m.group(2), s, count=1)
     return s
@@ -416,10 +420,23 @@ with sync_playwright() as p:
         route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
                       'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
 
+    # T-30: BASE + '__un30/<file>' serves this build with un30() applied, so studio.html and local.html there are T-29's
+    # pages (the stamp line aside); the older checks that read those pages' text or layout as at T-29 open UN30.
+    UN30 = BASE + '__un30/'
+
+    def serve30(route):
+        path = route.request.url.split('/__un30/', 1)[1].split('?')[0].split('#')[0]
+        body = urlopen(BASE + path).read()
+        if path.endswith('.html'):
+            body = un30(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
+        route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
+                      'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+
     def newpage(w, h=900):
         pg = b.new_page(viewport={'width': w, 'height': h})
         route_fonts(pg)
         pg.route('**/__un29/**', serve29)
+        pg.route('**/__un30/**', serve30)
         pg.on('pageerror', lambda e: errors.append(str(e)))
         return pg
 
@@ -716,7 +733,7 @@ with sync_playwright() as p:
     q = newpage(1440); q.goto(BASE + 'work.html#free'); q.wait_for_timeout(300)
     check('work.html#free opens on the free tools', q.get_attribute('.filt[data-f="free"]', 'aria-pressed') == 'true'
           and q.locator('#cards .card:visible').count() == q.locator('#cards .card[data-k~="free"]').count())
-    src = urlopen(BASE + 'local.html').read().decode('utf-8')
+    src = un30(urlopen(BASE + 'local.html').read().decode('utf-8'), 'local.html')   # T-30: the four descriptions back (they live on work.html now; the T-30 block checks it)
     sec = _re.search(r'<section id="tools".*?</section>', src, _re.S)
     sec = sec.group(0) if sec else ''
     check('local free tools section sits right before contact', bool(sec) and bool(_re.search(_re.escape(sec) + r'\s*<section id="contact"', src)))
@@ -2348,7 +2365,7 @@ with sync_playwright() as p:
                 break
         if built:
             outd = os.path.join(bd, 'out')
-            rd = lambda f: un21(un23(open(os.path.join(outd, f), encoding='utf-8').read(), f))   # T-21: line-breaking spans out; T-23: its changes out
+            rd = lambda f: un21(un23(un30(open(os.path.join(outd, f), encoding='utf-8').read(), f), f))   # T-21: line-breaking spans out; T-23: its changes out; T-30: the descriptions back
             old = lambda f: t19_file(f).decode('utf-8')
             check('T-20 F2 (address set): the work page card comes back exactly as before',
                   _re.findall(WORK_CARD, rd('work.html'), _re.S) == _re.findall(WORK_CARD, old('work.html'), _re.S) and len(_re.findall(WORK_CARD, rd('work.html'), _re.S)) == 1)
@@ -3091,7 +3108,7 @@ with sync_playwright() as p:
             T21_FILES[path] = r.stdout if r.returncode == 0 else None
         return T21_FILES[path]
     check('T-22: the T-21 pages can be read from git for comparison', t21_file('case-reels.html') is not None and t21_file('og/case-reels.png') is not None)
-    SRC22 = {n: un23(un24(un25(un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n)), n) for n in ALL_HTML}   # T-26: the gallery out first   # T-23: its changes out (its block checks them); T-24: A1 to A7 read back as T-23's; T-25: its layout swaps out
+    SRC22 = {n: un23(un24(un25(un26(un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n), n)), n) for n in ALL_HTML}   # T-26: the gallery out first   # T-23: its changes out (its block checks them); T-24: A1 to A7 read back as T-23's; T-25: its layout swaps out   # T-30: local's descriptions back
     OLD22 = {n: t21_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
 
     K1_H1 = 'Forty reels, one engine.'
@@ -3121,7 +3138,7 @@ with sync_playwright() as p:
     K9_KEPT = "The kids' cooking app runs on Android as well as iPhone and iPad."
 
     def text22(name, w=1440, before=None):
-        q = newpage(w); q.goto(BASE + name); settle(q)
+        q = newpage(w); q.goto((UN29 if name == 'studio.html' else BASE) + name); settle(q)   # T-30: studio's kids' line back (un29() calls un30())
         if before:
             before(q)
         t = q.evaluate(TEXT_JS); q.close()
@@ -3259,7 +3276,7 @@ with sync_playwright() as p:
                   and part(new_c[i], r'<a class="go"[^>]*>.*?</a>') == part(old_c[i], r'<a class="go"[^>]*>.*?</a>'), part(new_c[i], r'<a class="go"[^>]*>.*?</a>'))
 
     # K8 and K9 on the Studio page.
-    q = newpage(1440); q.goto(BASE + 'studio.html'); settle(q)
+    q = newpage(1440); q.goto(UN29 + 'studio.html'); settle(q)   # T-30: the kids' card with its line, as at T-29 (un29() calls un30())
     kids = q.evaluate("""(() => { const c = [...document.querySelectorAll('.prod')].find(p => p.textContent.includes("A kids' cooking app"));
       return c ? c.outerHTML : '' })()""")
     kids = back23(kids)   # T-23 K8b read as K8
@@ -3402,7 +3419,7 @@ with sync_playwright() as p:
         return q
     OLD23B = BASE + '__t22/'
     check('T-23: the T-22 pages can be read from git for comparison', t22_file('studio.html') is not None and t22_file('og/case-reels.png') is not None)
-    SRC23 = {n: un24(un25(un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n)) for n in ALL_HTML}   # T-26: the gallery out first   # T-24: A1 to A7 read back as T-23's (its block checks them); T-25: its layout swaps out
+    SRC23 = {n: un24(un25(un26(un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n), n)) for n in ALL_HTML}   # T-26: the gallery out first   # T-24: A1 to A7 read back as T-23's (its block checks them); T-25: its layout swaps out   # T-30: local's descriptions back
     OLD23 = {n: t22_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     K3_22, K5_22, K7_22, K8_22 = (o for o, _ in T23_LINES)
     K3B, K5B, K7B, K8B = (n_ for _, n_ in T23_LINES)
@@ -3436,7 +3453,7 @@ with sync_playwright() as p:
     TXT23 = {}
     BOX23 = None
     for n in ALL_HTML:
-        q = newpage(1440); q.goto((UN29 if n == 'studio.html' else BASE) + n); settle(q)   # T-29: studio's text as at T-27 (un29): TEXT_JS leaves the gallery out, which now holds the two cards' words
+        q = newpage(1440); q.goto((UN29 if n == 'studio.html' else UN30 if n == 'local.html' else BASE) + n); settle(q)   # T-30: local's descriptions back (un30)   # T-29: studio's text as at T-27 (un29): TEXT_JS leaves the gallery out, which now holds the two cards' words
         TXT23[n] = q.evaluate(TEXT_JS)
         if n == 'studio.html':
             BOX23 = q.evaluate("(() => { const s = document.querySelector('section[aria-labelledby=\"next-h\"]'); return s ? s.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() : '' })()")
@@ -3665,7 +3682,7 @@ with sync_playwright() as p:
         return q
     OLD24B = BASE + '__t23/'
     check('T-24: the T-23 pages can be read from git for comparison', t23_file('mainframe.html') is not None and t23_file('comp3.html') is not None)
-    SRC24 = {n: un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it)
+    SRC24 = {n: un26(un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it)   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD24 = {n: t23_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT24 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ('mainframe.html', 'comp3.html')}
     # The Studio pages carry the day they were built (a comment and data-built); nothing else on them moves.
@@ -3840,9 +3857,9 @@ with sync_playwright() as p:
         return q
     OLD25B = BASE + '__t24/'
     check('T-25: the T-24 pages can be read from git for comparison', t24_file('work.html') is not None and t24_file('og/work.png') is not None)
-    SRC25 = {n: un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it)
+    SRC25 = {n: un26(un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it)   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD25 = {n: t24_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
-    ROOT25 = {n: un26(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-26: as SRC25
+    ROOT25 = {n: un26(un30(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # T-26: as SRC25   # T-30: as SRC25
     stamp25 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
     CHANGED25 = ['captions.html', 'case-reels.html', 'local.html', 'mainframe.html', 'scaler.html', 'studio.html', 'work.html']
 
@@ -3902,7 +3919,7 @@ with sync_playwright() as p:
     day25 = lambda s: _re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', s)
     for w in (1440, 390):
         for n in ALL_HTML:
-            q = newpage(w); q.goto((UN29 if n == 'studio.html' else BASE) + n); settle(q); a = q.evaluate(TEXT_JS); q.close()   # T-29: as above (un29)
+            q = newpage(w); q.goto((UN29 if n == 'studio.html' else UN30 if n == 'local.html' else BASE) + n); settle(q); a = q.evaluate(TEXT_JS); q.close()   # T-29: as above (un29); T-30: local's descriptions back (un30)
             o = t24_page(w); o.goto(OLD25B + n); settle(o); b_ = o.evaluate(TEXT_JS); o.close()
             if n.startswith('studio'):   # the log's day count moves with the day the page is built
                 a, b_ = day25(back27(a)), day25(b_)   # T-27: the ChuckleFits line read back as T-26's (its block checks it)
@@ -4176,9 +4193,9 @@ with sync_playwright() as p:
             T25_FILES[path] = r.stdout if r.returncode == 0 else None
         return T25_FILES[path]
     check('T-26: the T-25 files can be read from git for comparison', t25_file('studio.html') is not None and t25_file('og/work.png') is not None)
-    SRC26 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC26 = {n: un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD26 = {n: t25_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
-    ROOT26 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT26 = {n: un30(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: as SRC26
     STAMP26 = r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->'
     GAL26 = [it[0] for _a, gs in T26_APPS for _g in gs for it in _g[3]]
 
@@ -4405,9 +4422,9 @@ with sync_playwright() as p:
             T26_FILES[path] = r.stdout if r.returncode == 0 else None
         return T26_FILES[path]
     check('T-27: the T-26 files can be read from git for comparison', t26_file('studio.html') is not None and t26_file('gallery/birdsighted-5-rank.jpg') is not None)
-    SRC27 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC27 = {n: un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD27 = {n: t26_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
-    ROOT27 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT27 = {n: un30(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: as SRC27
     stamp27 = lambda s: _re.sub(STAMP26, '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
     TAGQ = T27_TAG.replace('&', '&amp;')
     SHOP27 = 'https://chucklefits.com/?' + T27_TAG
@@ -4674,9 +4691,9 @@ with sync_playwright() as p:
             T27_FILES[path] = r.stdout if r.returncode == 0 else None
         return T27_FILES[path]
     check('T-29: the T-27 files can be read from git for comparison', t27_file('studio.html') is not None and t27_file('images/shelf/love-your-mother-5-panel-cap.jpg') is not None)
-    SRC29 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC29 = {n: un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD29 = {n: t27_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
-    ROOT29 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT29 = {n: un30(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: as SRC29
     S29 = SRC29['studio.html']
     sj29 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
     P29 = {x['id']: x for x in sj29['products']}
@@ -4760,7 +4777,7 @@ with sync_playwright() as p:
          e.tagName === 'A' ? e.getAttribute('href') : e.tagName === 'FORM' ? e.dataset.list : e.textContent]) : null,
       groups: [...g.querySelectorAll('.ggroup')].map(x => x.outerHTML), text: g.innerText.split('\n').map(x => x.trim()).filter(Boolean)}))'''
     for w in (320, 390, 1440):
-        q = newpage(w); q.goto(BASE + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready'); q.wait_for_timeout(300)
+        q = newpage(w); q.goto(UN30 + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready'); q.wait_for_timeout(300)   # T-30: the two "what" lines back, the 34em rule out (un30)
         o = newpage(w); o.goto(UN29 + 'studio.html', wait_until='networkidle'); o.evaluate('document.fonts.ready'); o.wait_for_timeout(300)
         main29, main27 = q.evaluate(MAIN29_JS), o.evaluate(MAIN29_JS)
         check(f'T-29: at {w}, main reads: the log, "Inside the apps", the products grid (kids, cobol, tools, chucklefits), the closing box',
@@ -4841,7 +4858,7 @@ with sync_playwright() as p:
         return [a.dataset.id, Math.round(c.width), Math.round(c.height), [...a.querySelectorAll('h2, .pill, p, .shelf li, .shelf img, a.go')].map(e => { const r = R(e);
           return [e.tagName, Math.round(r.left - c.left), Math.round(r.top - c.top), Math.round(r.width), Math.round(r.height)]; })]; }); }'''
     for w in (320, 390, 800, 1024, 1200, 1440):
-        q = newpage(w); q.goto(BASE + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready'); q.wait_for_timeout(300)
+        q = newpage(w); q.goto(UN30 + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready'); q.wait_for_timeout(300)   # T-30: the 34em rule out (un30); the T-30 block checks the card with it
         o = newpage(w); o.goto(UN29 + 'studio.html', wait_until='networkidle'); o.evaluate('document.fonts.ready'); o.wait_for_timeout(300)
         C29, C27 = {x[0]: x for x in q.evaluate(CARDS29_JS)}, {x[0]: x for x in o.evaluate(CARDS29_JS)}
         q.close(); o.close()
@@ -4915,7 +4932,7 @@ with sync_playwright() as p:
     WHAT30 = {pid: t30_text(para) for pid, para in T30_STUDIO}                        # the two paragraphs' words
     DESC30 = {href: t30_text(inner) for href, inner in T30_LOCAL}                     # the four tools' descriptions' words
     SIX30 = list(WHAT30.values()) + list(DESC30.values())
-    stamp30 = lambda s: _re.sub(STAMP26, '', s)
+    stamp30 = lambda s: _re.sub(STAMP26, '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))   # the build day aside, as stamp25/stamp27 (Josef, Nov 19)
 
     # un30() itself, proved against T-29's own files: it puts the six paragraphs back byte for byte and takes the rule out.
     check('T-30: un30() changes studio.html and local.html (the paragraphs are gone)', un30(S30, 'studio.html') != S30 and un30(L30, 'local.html') != L30)
