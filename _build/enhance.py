@@ -453,20 +453,21 @@ def nav_pair(t, link_rx, ft):
 
 
 def tool_cards():
-    """The tool cards, read from the work page so the words always match it."""
+    """The tool cards: each tool's name and link, read from the work page so the words always
+    match it. T-30 (Nov 18, 2026): the description stays on the work page only; each card
+    here names the tool and links to it."""
     work = (OUT / "work.html").read_text(encoding="utf-8")
     cards = []
     articles = re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', work, re.S)
     for href in LINKED_TOOLS:
-        m = [re.search(r'<h2>([^<]*)</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + re.escape(href) + r'">([^<]*)</a>', a)
+        m = [re.search(r'<h2>([^<]*)</h2>\s*<p>[^<]*</p>\s*<a class="go" href="' + re.escape(href) + r'">([^<]*)</a>', a)
              for a in articles]
         m = [x for x in m if x]
         assert len(m) == 1, "work page card for " + href
-        h, p, go = m[0].groups()
+        h, go = m[0].groups()
         cards.append(f"""
       <article style="display: flex; flex-direction: column; gap: 10px; padding: clamp(18px, 2vw, 24px); background: #FBF8F1; border: 1.5px solid #CFC6B2; border-radius: 2px">
         <h3 style="margin: 0; font-size: 20px; line-height: 1.25; font-weight: 700; color: #16201C">{h}</h3>
-        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">{p}</p>
         <a href="{href}" style="margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: #16201C; text-decoration: none">{go}</a>
       </article>""")
     return "".join(cards)

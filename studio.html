@@ -126,6 +126,8 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .gtext{flex:0 1 34em}
 .gjoin{flex:1 1 0;min-width:0}}
 
+.prod.wide>p:not(.proof){max-width:34em}
+
 .shelf{margin:-6px calc(-1 * clamp(22px,2.6vw,30px)) 0 -6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-left:6px;scrollbar-width:thin}
 .shelf ul{list-style:none;margin:0;display:flex;gap:12px;width:max-content;padding:6px clamp(22px,2.6vw,30px) 10px 6px}
 .shelf li{flex:none;width:calc((100vw - 2 * clamp(16px,4vw,48px) - 37px) / 1.6);margin:0;scroll-snap-align:start}
@@ -182,7 +184,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-18 a399c9a94d322576 -->
+<!-- studio.py 2026-11-18 666f6a196f4e820c -->
   <section class="sec logsec" aria-labelledby="log-h">
     <div class="loghead">
       <div class="stats" id="stats" data-built="2026-11-18">
@@ -283,14 +285,12 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
     <article class="prod" data-id="kids">
         <h2>A kids' cooking app</h2>
         <div class="meta"><span class="pill">Built for a client</span></div>
-        <p>The program's own recipes, in an app teachers cook from in class, with a grocery list that scales to the class and pages that print like their own cards. iPhone, iPad, Android and the web.</p>
         <p class="proof"><strong>535 tests, and every change checked on a real phone before it ships.</strong></p>
         <div class="acts"><a class="go" href="work.html">See the work →</a></div>
     </article>
     <article class="prod" data-id="cobol">
         <h2>COBOL, checked in public</h2>
         <div class="meta"><span class="pill">Public</span></div>
-        <p>Two different AIs translated the same COBOL interest program. The code, the prompts and every miss are published for anyone to rerun.</p>
         <div class="acts"><a class="go" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Open the repo ↗</a></div>
     </article>
     <article class="prod wide" data-id="tools">

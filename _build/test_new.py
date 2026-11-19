@@ -247,6 +247,8 @@ T29_GPROD = (r'\n      <div class="gprod">\n        <div class="gtext">\n       
 
 def un29(s, name=None):
     import re as _r
+    if name in (None, 'studio.html'):
+        s = un30(s, 'studio.html')   # T-30: the two "what" lines back first, so every older check through un29() sees T-29's page
     if name not in (None, 'studio.html') or '<div class="gprod">' not in s:
         return s
     if '\r\n' in s:
@@ -274,6 +276,69 @@ def un29(s, name=None):
         m = _r.search(r'\n  <div class="sec prods" id="products">.*?\n  </div>', s, _r.S)
         s = s[:m.end()] + gal.group(0) + s[m.end():]
     return s
+
+
+# T-30 (Nov 18, 2026): each paragraph lives on one page. The kids' app and COBOL cards on studio.html print no "what"
+# line (studio.json's "what" is null), the four tool cards on local.html print no description (enhance.py's
+# tool_cards() reads only each name and link from work.html), and a studio card that spans its row keeps its
+# description at most 34em wide (one CSS rule). work.html keeps all six paragraphs. un30(s, name) puts the six
+# paragraphs back byte for byte where they were and takes the rule out, so studio.html and local.html read as at
+# T-29 (studio's stamp line aside), for the older checks that read those pages as they were at T-29 (un29() calls it
+# first for studio.html); the T-30 block checks the new pages, and proves un30() against T-29's own files from git.
+T30_STUDIO = [   # (card id, the paragraph as T-29 built it, right after the card's pill)
+    ('kids', "<p>The program's own recipes, in an app teachers cook from in class, with a grocery list that scales to the class "
+             "and pages that print like their own cards. iPhone, iPad, Android and the web.</p>"),
+    ('cobol', '<p>Two different AIs translated the same COBOL interest program. The code, the prompts and every miss are '
+              'published for anyone to rerun.</p>'),
+]
+T30_LOCAL = [   # (tool page, the paragraph's inner HTML as T-29 built it on local.html, right after the card's h3)
+    ('shotlist.html', 'Pick what you run and what the reel should do. Get the 10 clips to film, how long each lasts, and the order '
+                      'to shoot them in one lap of the room.'),
+    ('captions.html', "Type a caption once. It breaks the lines evenly, splits it into screens, checks it against each app's buttons, "
+                      'times it, and hands you a <span style="white-space: nowrap">see-through</span> PNG.'),
+    ('receipt.html', 'Tap the chores that eat your week and get a receipt for a year of them, with an honest read on which ones '
+                     'could come back and which should stay human.'),
+    ('scaler.html', 'Paste any ingredient list, count <span style="white-space: nowrap">grown-ups</span> and kids, and get amounts '
+                    'you can actually measure, eggs rounded up, and a <span style="white-space: nowrap">heads-up</span> when it\'s '
+                    'time to cook in batches.'),
+]
+T30_LOCAL_P = '<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3B4540">'
+T30_CSS = '.prod.wide>p:not(.proof){max-width:34em}\n\n'
+T30_LINK = ('<a href="{}" style="margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; '
+            'font-weight: 700; color: #16201C; text-decoration: none">')
+
+
+def t30_text(h):
+    """A paragraph's visible words: its HTML with the tags out."""
+    import re as _r
+    return _r.sub(r'<[^>]+>', '', h)
+
+
+def un30(s, name=None):
+    """studio.html or local.html as T-29 built it: the six paragraphs back, T-30's CSS rule out. Idempotent."""
+    import re as _r
+    if name not in (None, 'studio.html', 'local.html'):
+        return s
+    if '\r\n' in s:
+        return un30(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    if name in (None, 'studio.html'):
+        s = s.replace(T30_CSS, '', 1)
+        for pid, para in T30_STUDIO:
+            s = _r.sub(r'(\n    <article class="prod[^"]*" data-id="' + pid + r'">\n        <h2>[^<]*</h2>\n        <div class="meta">[^\n]*?</div>)'
+                       r'(?!\n        ' + _r.escape(para) + ')', lambda m: m.group(1) + '\n        ' + para, s, count=1)
+    if name in (None, 'local.html'):
+        for href, inner in T30_LOCAL:
+            s = _r.sub(r'(<h3 style="[^"]*">[^<]*</h3>)(\n        ' + _r.escape(T30_LINK.format(href)) + ')',
+                       lambda m: m.group(1) + '\n        ' + T30_LOCAL_P + inner + '</p>' + m.group(2), s, count=1)
+    return s
+
+
+T30_WHAT29 = {pid: t30_text(para) for pid, para in T30_STUDIO}   # kids' and COBOL's "what" in studio.json as at T-29
+
+
+def what29(p):
+    """A studio.json product's "what" as at T-29: T-30 set kids' and COBOL's to null (their words live on work.html)."""
+    return T30_WHAT29[p['id']] if p.get('what') is None and p.get('id') in T30_WHAT29 else p.get('what')
 
 
 # The snapshot's six, in its order (T-27, chucklefits-shelf-2026-11-18.json): (handle, name, kind, price as shown).
@@ -960,7 +1025,7 @@ with sync_playwright() as p:
         txt = card.inner_text()
         check(f'studio card {x["id"]}: name, status and what from the JSON',
               card.locator('h2').inner_text().upper() == x['name'].upper() and card.locator('.pill').inner_text() == x['status']
-              and x['what'] in txt)
+              and what29(x) in txt)   # T-30: kids' and COBOL's "what" as at T-29 (null in studio.json now), as on the page through un29()/un30()
         # T-16 N6: the kind stays in the JSON but isn't printed on the card.
         check(f'studio card {x["id"]}: no kind label (T-16)', card.locator('.kind').count() == 0
               and x['kind'].upper() not in card.locator('.meta').inner_text().upper(), card.locator('.meta').inner_text())
@@ -3218,7 +3283,7 @@ with sync_playwright() as p:
     sj = _json.loads(open(os.path.join(here, 'shipped.json'), encoding='utf-8').read())
     check('T-22 K9: shipped.json has neither removed line and the new Oct 27 line once',
           [e for e in sj['entries'] if e['project'] == 'kids'] == [{'date': '2026-10-27', 'project': 'kids', 'line': K9}, {'date': '2026-10-06', 'project': 'kids', 'line': K9_KEPT}])
-    check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and back23(p.get('what')) == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
+    check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and back23(what29(p)) == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
 
     # Everything else is as at T-21. Pages this item doesn't touch: byte for byte (the Studio pages' stamp aside).
     # T-24: the Studio's data-built day moves with the day the page is built (T-21's word checks already allow for it).
@@ -3408,7 +3473,7 @@ with sync_playwright() as p:
     check('T-23 K3b: in _build/case-reels.html with its ID', 'T-23 K3b' in rd('case-reels.html') and rd('case-reels.html').count(K3B) == 1)
     check('T-23 K5b and K7b: voice2.py edits with their IDs', rd('voice2.py').count("ref='K5b'") == 2 and rd('voice2.py').count("ref='K7b'") == 1)
     check('T-23 K8b: in _build/work.html with its ID, and the kids product in studio.json', 'T-23 K8b' in rd('work.html') and rd('work.html').count(K8B) == 1
-          and any(p.get('id') == 'kids' and p.get('what') == K8B for p in _json.loads(rd('studio.json'))['products']))
+          and any(p.get('id') == 'kids' and what29(p) == K8B for p in _json.loads(rd('studio.json'))['products']))   # T-30: the kids' "what" as at T-29 (null now; the T-30 block checks it)
     check('T-23: the Studio card\'s proof line stays', "535 tests, and every change checked on a real phone before it ships." in TXT23['studio.html'])
 
     # L1: a two-hyphen word up to 24 characters never breaks, on any page, at 320, 390 and 1440.
@@ -4826,6 +4891,222 @@ with sync_playwright() as p:
                   and f.locator('input[name="email"]').is_visible() and f.locator('button').is_enabled() and f.locator('button').inner_text() == x['list']['button']
                   and f.locator('.jf-ok').inner_text().strip() == '', str(got))
             q.close()
+
+    # ---------------- T-30 (Nov 18, 2026): each paragraph lives on one page ----------------
+    # The kids' app and COBOL cards on studio.html print no "what" line, and the four tool cards on local.html print no
+    # description; work.html keeps all six. A studio card that spans its row keeps its description at most 34em wide.
+    # Comparisons are against T-29's own build (origin/main at d1117bd, the base this item was cut from), read from git.
+    T29C = 'd1117bd'
+    T29_FILES = {}
+
+    def t29_file(path):
+        if path not in T29_FILES:
+            r = _sp18.run(['git', 'show', f'{T29C}:{path}'], cwd=here, capture_output=True)
+            T29_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T29_FILES[path]
+    check('T-30: the T-29 files can be read from git for comparison', t29_file('studio.html') is not None and t29_file('local.html') is not None)
+    SRC30 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD30 = {n: t29_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT30 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    S30, L30, W30 = SRC30['studio.html'], SRC30['local.html'], SRC30['work.html']
+    sj30 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+    sj29 = _json26.loads(t29_file('_build/studio.json').decode('utf-8'))
+    P30 = {x['id']: x for x in sj30['products']}
+    WHAT30 = {pid: t30_text(para) for pid, para in T30_STUDIO}                        # the two paragraphs' words
+    DESC30 = {href: t30_text(inner) for href, inner in T30_LOCAL}                     # the four tools' descriptions' words
+    SIX30 = list(WHAT30.values()) + list(DESC30.values())
+    stamp30 = lambda s: _re.sub(STAMP26, '', s)
+
+    # un30() itself, proved against T-29's own files: it puts the six paragraphs back byte for byte and takes the rule out.
+    check('T-30: un30() changes studio.html and local.html (the paragraphs are gone)', un30(S30, 'studio.html') != S30 and un30(L30, 'local.html') != L30)
+    check('T-30: un30() gives T-29\'s studio.html byte for byte, the stamp line aside', stamp30(un30(S30, 'studio.html')) == stamp30(OLD30['studio.html']))
+    check('T-30: un30() gives T-29\'s local.html byte for byte', un30(L30, 'local.html') == OLD30['local.html'])
+    check('T-30: un30() leaves T-29\'s own files as they are (it only puts back what is missing)',
+          un30(OLD30['studio.html'], 'studio.html') == OLD30['studio.html'] and un30(OLD30['local.html'], 'local.html') == OLD30['local.html'])
+    check('T-30: un30() leaves every other page alone', all(un30(SRC30[n], n) == SRC30[n] for n in ALL_HTML if n not in ('studio.html', 'local.html')))
+    check('T-30: the six paragraphs in un30() are T-29\'s, word for word: on T-29\'s studio.html, local.html and work.html',
+          all(para in OLD30['studio.html'] for _p, para in T30_STUDIO) and all(T30_LOCAL_P + inner + '</p>' in OLD30['local.html'] for _h, inner in T30_LOCAL)
+          and all(para in OLD30['work.html'] for _p, para in T30_STUDIO) and all(f'<p>{inner}</p>' in OLD30['work.html'] for _h, inner in T30_LOCAL))
+
+    # The whole build: studio.html and local.html are T-29's minus the paragraphs (studio: plus the rule, stamp aside);
+    # the product pages differ only by the stamp line; every other page and public file byte for byte as at T-29.
+    for n in ALL_HTML:
+        if n == 'studio.html':
+            a, b_ = stamp30(un30(S30, n)), stamp30(OLD30[n])
+            check('T-30: studio.html is T-29\'s page with only the two "what" lines out and the 34em rule in, the stamp line aside', a == b_,
+                  next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+        elif n == 'local.html':
+            check('T-30: local.html is T-29\'s page with only the four tool descriptions out', un30(L30, n) == OLD30[n])
+        elif n.startswith('studio-'):
+            dl = [(x, y) for x, y in zip(SRC30[n].split('\n'), OLD30[n].split('\n')) if x != y]
+            check(f'T-30: {n} is T-29\'s page apart from studio.py\'s stamp line (studio.json\'s hash)', SRC30[n].count('\n') == OLD30[n].count('\n')
+                  and all(_re.fullmatch(STAMP26, x) and _re.fullmatch(STAMP26, y) for x, y in dl), str(dl[:2]))
+        else:
+            check(f'T-30: {n} is byte for byte as at T-29', SRC30[n] == OLD30[n])
+    check('T-30: the pages that changed are studio.html and local.html (and the product pages\' stamp line)',
+          sorted(n for n in ALL_HTML if SRC30[n] != OLD30[n] and not n.startswith('studio-')) == ['local.html', 'studio.html'])
+    check('T-30: every root page is the built page', all(ROOT30[n] == SRC30[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT30[n] != SRC30[n]]))
+    t29tree = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T29C], cwd=here, capture_output=True, text=True).stdout.split('\n') if f]
+    pub29 = [f for f in t29tree if not f.startswith('_build/') and not f.endswith('.html')]
+    check('T-30: every other public file at the root (sitemap, robots, images, gallery, shelf, share cards) is byte for byte as at T-29',
+          len(pub29) >= 52 and all(rb26(f) == t29_file(f).replace(b'\r\n', b'\n') for f in pub29), str([f for f in pub29 if rb26(f) != t29_file(f).replace(b'\r\n', b'\n')][:5]))
+    outf30 = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
+    check('T-30: the build adds no file (everything in out/ was at the root at T-29)', len(outf30) >= 60 and [f for f in outf30 if f not in set(t29tree)] == [],
+          str([f for f in outf30 if f not in set(t29tree)][:5]))
+    for n in ALL_HTML:
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
+                         ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
+                         ('structured data', r'<script type="application/ld\+json">.*?</script>'), ('scripts', r'<script>.*?</script>'),
+                         ('alt texts', r'\balt="[^"]*"'), ('aria-labels', r'\baria-label="[^"]*"'), ('labels', r'<label\b[^>]*>.*?</label>')):
+            check(f'T-30: {n} keeps its {what}', sorted(_re.findall(rx, SRC30[n], _re.S)) == sorted(_re.findall(rx, OLD30[n], _re.S)))
+    check('T-30: no em dash on studio.html, local.html or work.html, and no new en dash',
+          all('—' not in SRC30[n] and SRC30[n].count('–') == OLD30[n].count('–') for n in ('studio.html', 'local.html', 'work.html')))
+
+    # Where each paragraph lives now: work.html once, studio.html and local.html never (source and markup).
+    for pid, para in T30_STUDIO:
+        check(f'T-30: the {pid} paragraph is on work.html exactly once and on studio.html zero times',
+              W30.count(para) == 1 and WHAT30[pid] not in S30 and WHAT30[pid] not in _html.unescape(S30), str([W30.count(para), S30.count(WHAT30[pid])]))
+    for href, inner in T30_LOCAL:
+        check(f'T-30: the {href} description is on work.html exactly once and on local.html zero times',
+              W30.count(f'<p>{inner}</p>') == 1 and inner not in L30 and DESC30[href] not in _re.sub(r'<[^>]+>', '', L30), str([W30.count(f'<p>{inner}</p>'), L30.count(inner)]))
+    for pid, nm in (('kids', "A kids' cooking app"), ('cobol', 'COBOL, checked in public')):
+        card = _re.search(r'<article class="prod[^"]*" data-id="' + pid + r'">.*?</article>', S30, _re.S).group(0)
+        sents = [x.strip() for x in _re.split(r'(?<=\.)\s+', WHAT30[pid]) if x.strip()]
+        check(f'T-30: the {pid} card holds none of its "what" sentences', len(sents) >= 2 and not any(x in card for x in sents), str(sents))
+        want = ([f'<h2>{nm}</h2>', f'<div class="meta"><span class="pill">{P30[pid]["status"]}</span></div>']
+                + ([f'<p class="proof"><strong>{P30[pid]["proof"]}</strong></p>'] if P30[pid].get('proof') else [])
+                + ['<div class="acts">'])
+        kids_ = _re.findall(r'\n        (<[^\n]*)', card)
+        check(f'T-30: the {pid} card reads name, pill,{" proof," if P30[pid].get("proof") else ""} link, in that order, and nothing else',
+              [k if not k.startswith('<div class="acts">') else '<div class="acts">' for k in kids_] == want and card.count('<p') == (1 if P30[pid].get('proof') else 0), str(kids_))
+    check('T-30: the kids\' card keeps "Built for a client", its bold proof line and "See the work →"',
+          '<span class="pill">Built for a client</span>' in S30 and '<p class="proof"><strong>535 tests, and every change checked on a real phone before it ships.</strong></p>' in S30
+          and '<a class="go" href="work.html">See the work →</a>' in S30)
+    check('T-30: the COBOL card keeps "Public" and "Open the repo ↗"', '<span class="pill">Public</span>' in S30
+          and '<a class="go" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Open the repo ↗</a>' in S30)
+    TOOLS30_RX = r'<article style="[^"]*">\s*<h3 style="[^"]*">([^<]*)</h3>\s*(<p [^>]*>.*?</p>\s*)?<a href="([^"]*)" style="[^"]*">([^<]*)</a>\s*</article>'
+    sec30 = lambda s: _re.search(r'<section id="tools".*?</section>', s, _re.S).group(0)
+    t30, t29_ = _re.findall(TOOLS30_RX, sec30(L30), _re.S), _re.findall(TOOLS30_RX, sec30(OLD30['local.html']), _re.S)
+    check('T-30: local\'s tools section holds the same tools in the same order, with the same names, hrefs and link words as at T-29',
+          [(h, a_, g) for h, _p, a_, g in t30] == [(h, a_, g) for h, _p, a_, g in t29_] and len(t30) == 4
+          and [g for _h, _p, _a, g in t30] == ['Plan your reel →', 'Fit a caption →', 'Ring it up →', 'Scale a recipe →'], str([t30, t29_]))
+    check('T-30: local\'s tool cards have no description paragraph (each card is its name and its link)',
+          all(_p == '' for _h, _p, _a, _g in t30) and '<p' not in sec30(L30) and sec30(L30).count('<article') == 4)
+    WCARDS30 = {m[1]: (m[0], m[2]) for m in _re.findall(r'<h2>([^<]*)</h2>\s*<p>.*?</p>\s*<a class="go" href="([^"]*)">([^<]*)</a>', W30, _re.S)}
+    check('T-30: each tool\'s name and link words on local.html are the work page card\'s (read from it)',
+          all(WCARDS30.get(a_) == (h, g) for h, _p, a_, g in t30), str([(h, a_, g, WCARDS30.get(a_)) for h, _p, a_, g in t30]))
+    check('T-30: the work page\'s free-tool cards are as at T-29, descriptions and all',
+          _re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', W30, _re.S) == _re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', OLD30['work.html'], _re.S))
+
+    # studio.json, studio.py, enhance.py: the two "what" lines are null, _about says what that means, nothing else changed.
+    check('T-30: what29() gives kids\' and COBOL\'s "what" exactly as in T-29\'s studio.json, and every other product\'s as it is',
+          all(what29(P30[x['id']]) == x['what'] for x in sj29['products']) and what29(dict(id='kids', what='x')) == 'x')
+    check('T-30: studio.json\'s kids and cobol products have "what": null', P30['kids'].get('what', 0) is None and P30['cobol'].get('what', 0) is None)
+    check('T-30: studio.json is T-29\'s apart from those two "what" lines and one sentence in _about',
+          {k: v for k, v in sj30.items() if k != 'products' and k != '_about'} == {k: v for k, v in sj29.items() if k != 'products' and k != '_about'}
+          and [dict(x, what=None) if x['id'] in ('kids', 'cobol') else x for x in sj29['products']] == sj30['products']
+          and sj30['_about'] == sj29['_about'] + ' A product whose "what" is null shows no description line, because its description lives on the Work page.')
+    import importlib.util as _ilu30
+    _spec30 = _ilu30.spec_from_file_location('studio30', os.path.join(here, 'tools', 'studio.py'))
+    _st30 = _ilu30.module_from_spec(_spec30); _spec30.loader.exec_module(_st30)
+    _card30 = _st30.product_card(dict(P30['kids']))
+    check('T-30: studio.py\'s product_card() prints no line for a null "what" and still prints one when it is set',
+          '<p>' not in _card30.replace('<p class="proof">', '') and '<p>Some words.</p>' in _st30.product_card(dict(P30['kids'], what='Some words.')), _card30)
+    spy30 = open(os.path.join(here, 'tools', 'studio.py'), encoding='utf-8').read()
+    check('T-30: the 34em rule is in studio.py\'s WIDE_CSS, on studio.html only', '.prod.wide>p:not(.proof){max-width:34em}' in getattr(_st30, 'WIDE_CSS', '')
+          and S30.count('.prod.wide>p:not(.proof){max-width:34em}') == 1 and not any('max-width:34em}' in SRC30[n] and '.prod.wide>p' in SRC30[n] for n in ALL_HTML if n != 'studio.html'))
+    enh30 = open(os.path.join(here, 'enhance.py'), encoding='utf-8').read()
+    tc30 = enh30[enh30.index('def tool_cards():'):enh30.index('def add_free_tools():')]
+    check('T-30: enhance.py\'s tool_cards() still reads each name and link from work.html and prints no paragraph',
+          '(OUT / "work.html")' in tc30 and '<p ' not in tc30.split('cards.append', 1)[1] and 'h, go = m[0].groups()' in tc30)
+    check('T-30: neither studio.py nor enhance.py holds any of the six paragraphs\' words', not any(x[:40] in spy30 or x[:40] in enh30 for x in SIX30))
+
+    # The browser: T-29's own pages are served from git at BASE + '__t29/', next to this build.
+    T29URL = BASE + '__t29/'
+
+    def serve_t29(route):
+        path = route.request.url.split('/__t29/', 1)[1].split('?')[0].split('#')[0]
+        body = t29_file(path)
+        if body is None:
+            return route.fulfill(status=404, body=b'')
+        ct = ('text/html; charset=utf-8' if path.endswith('.html') else 'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg')
+              else 'image/png' if path.endswith('.png') else 'application/octet-stream')
+        route.fulfill(status=200, body=body, content_type=ct)
+
+    def page30(url, w):
+        q = newpage(w); q.route('**/__t29/**', serve_t29)
+        q.goto(url, wait_until='networkidle'); q.evaluate('document.fonts.ready.then(() => 1)'); q.wait_for_timeout(300)
+        return q
+    LINES30_JS = r'''() => document.querySelector('main').innerText.split('\n').map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean)'''
+    PS30_JS = r'''() => [...document.querySelectorAll('main p')].map(p => p.innerText.replace(/\s+/g, ' ').trim())'''
+    from collections import Counter as _C30
+    for n in ('studio.html', 'local.html'):
+        for w in (390, 1440):
+            q, o = page30(BASE + n, w), page30(T29URL + n, w)
+            L, L29 = q.evaluate(LINES30_JS), o.evaluate(LINES30_JS)
+            Pn, P29_ = q.evaluate(PS30_JS), o.evaluate(PS30_JS)
+            q.close(); o.close()
+            gone = _C30(x for x in SIX30 if x in P29_)
+            want_gone = _C30(WHAT30.values()) if n == 'studio.html' else _C30(DESC30.values())
+            check(f'T-30: at {w}, {n} as served from git at T-29 shows its paragraphs (the check reads what it should)', gone == want_gone, str(gone))
+            check(f'T-30: at {w}, {n}\'s visible text is T-29\'s minus exactly those paragraphs: nothing else gone, nothing new',
+                  _C30(L) == _C30(L29) - want_gone and (_C30(L29) - _C30(L)) == want_gone and not (_C30(L) - _C30(L29)),
+                  str([(_C30(L29) - _C30(L)) - want_gone, _C30(L) - _C30(L29)]))
+            check(f'T-30: at {w}, {n}\'s paragraphs are T-29\'s minus those, in the same order', Pn == [x for x in P29_ if x not in want_gone], str(len(Pn)))
+
+    # Layout at 320, 390 and 1440: no sideways scroll; the two cards read name, pill, (proof), link; Free tools' paragraph at
+    # most 34em; the tool cards are name then link, with 44 px links; at 1440 kids and COBOL side by side, links level.
+    GRID30_JS = r'''() => { const R = e => e.getBoundingClientRect();
+      const card = id => { const a = document.querySelector(`#products > article[data-id="${id}"]`), c = R(a);
+        return {box: [c.left, c.top, c.width, c.height], kids: [...a.children].map(e => e.tagName + (e.className ? '.' + e.className : '')),
+          link: (l => [R(l).left, R(l).top, R(l).bottom, R(l).height])(a.querySelector('a.go')),
+          ps: [...a.querySelectorAll(':scope > p')].map(p => { const g = document.createRange(); g.selectNodeContents(p); const t = g.getBoundingClientRect();
+            return [p.className, R(p).width / parseFloat(getComputedStyle(p).fontSize), Math.round(R(p).top - c.top), Math.round(R(p).height), Math.round(t.width), Math.round(t.left - c.left)]; }),
+          shelf: [...a.querySelectorAll('.shelf li, .shelf img, a.go')].map(e => [e.tagName, Math.round(R(e).left - c.left), Math.round(R(e).top - c.top), Math.round(R(e).width), Math.round(R(e).height)])}; };
+      return {kids: card('kids'), cobol: card('cobol'), tools: card('tools'), chucklefits: card('chucklefits'),
+        sw: [document.documentElement.scrollWidth, innerWidth]}; }'''
+    TOOLSEC30_JS = r'''() => { const R = e => e.getBoundingClientRect(), s = document.getElementById('tools');
+      return {cards: [...s.querySelectorAll('article')].map(a => ({kids: [...a.children].map(e => e.tagName), name: a.querySelector('h3').textContent,
+        link: (l => [l.getAttribute('href'), l.textContent, R(l).height, R(l).top, R(l).bottom])(a.querySelector('a')), h3: (h => [R(h).top, R(h).bottom])(a.querySelector('h3')),
+        box: [R(a).left, R(a).top, R(a).right, R(a).bottom]})), sw: [document.documentElement.scrollWidth, innerWidth]}; }'''
+    for w in (320, 390, 1440):
+        q, o = page30(BASE + 'studio.html', w), page30(T29URL + 'studio.html', w)
+        G, G29 = q.evaluate(GRID30_JS), o.evaluate(GRID30_JS)
+        q.locator('#products').screenshot(path=f'{SHOTS}/t30-studio-products-{w}.png')
+        o.close()
+        check(f'T-30: at {w}, studio.html has no sideways scroll', G['sw'][0] <= G['sw'][1], str(G['sw']))
+        check(f'T-30: at {w}, the kids\' card reads name, pill, proof line, link', G['kids']['kids'] == ['H2', 'DIV.meta', 'P.proof', 'DIV.acts'], str(G['kids']['kids']))
+        check(f'T-30: at {w}, the COBOL card reads name, pill, link', G['cobol']['kids'] == ['H2', 'DIV.meta', 'DIV.acts'], str(G['cobol']['kids']))
+        for pid in ('kids', 'cobol'):
+            check(f'T-30: at {w}, the {pid} card\'s link keeps its 44 px tap height', G[pid]['link'][3] >= 44, str(G[pid]['link']))
+            check(f'T-30: at {w}, the {pid} card is as wide as at T-29', abs(G[pid]['box'][2] - G29[pid]['box'][2]) < 0.5, str([G[pid]['box'], G29[pid]['box']]))
+        tp = G['tools']['ps']
+        check(f'T-30: at {w}, Free tools\' paragraph is at most 34em wide', len(tp) == 1 and tp[0][1] <= 34.01, str(tp))
+        check(f'T-30: at {w}, Free tools spans the same width as at T-29', abs(G['tools']['box'][2] - G29['tools']['box'][2]) < 0.5, str([G['tools']['box'], G29['tools']['box']]))
+        cf, cf29 = G['chucklefits'], G29['chucklefits']
+        check(f'T-30: at {w}, the ChuckleFits card, its line (where its words sit) and its shelf lay out as at T-29',
+              cf['box'][2:] == cf29['box'][2:] and [x[2:] for x in cf['ps']] == [x[2:] for x in cf29['ps']] and cf['shelf'] == cf29['shelf'] and len(cf['shelf']) >= 13,
+              str([cf['box'], cf29['box'], cf['ps'], cf29['ps']]))
+        for pid in ('kids', 'cobol'):
+            check(f'T-30: at {w}, the {pid} card holds no paragraph but its proof line', [x[0] for x in G[pid]['ps']] == (['proof'] if pid == 'kids' else []), str(G[pid]['ps']))
+        if w == 1440:
+            check('T-30: at 1440, Free tools\' paragraph is narrower than at T-29 (it was one long line) and wraps at its 34em measure',
+                  G29['tools']['ps'][0][1] > 34.01 and abs(tp[0][1] - 34) < 0.5, str([tp, G29['tools']['ps']]))
+            k, c = G['kids'], G['cobol']
+            check('T-30: at 1440, the kids\' and COBOL cards sit side by side, same top, same height', abs(k['box'][1] - c['box'][1]) < 0.5 and c['box'][0] > k['box'][0] + k['box'][2] - 1
+                  and abs(k['box'][3] - c['box'][3]) < 0.5, str([k['box'], c['box']]))
+            check('T-30: at 1440, their links line up at the bottom', abs(k['link'][2] - c['link'][2]) < 0.5, str([k['link'], c['link']]))
+        q.close()
+        q = page30(BASE + 'local.html', w)
+        T = q.evaluate(TOOLSEC30_JS)
+        q.locator('#tools').screenshot(path=f'{SHOTS}/t30-local-tools-{w}.png')
+        q.close()
+        check(f'T-30: at {w}, local.html has no sideways scroll', T['sw'][0] <= T['sw'][1], str(T['sw']))
+        check(f'T-30: at {w}, each tool card is its name, then its link', len(T['cards']) == 4 and all(x['kids'] == ['H3', 'A'] and x['link'][3] >= x['h3'][1] for x in T['cards']), str([x['kids'] for x in T['cards']]))
+        check(f'T-30: at {w}, each tool card\'s link keeps its 44 px tap height and sits inside its card', all(x['link'][2] >= 44 and x['link'][4] <= x['box'][3] + 0.5 for x in T['cards']),
+              str([x['link'] for x in T['cards']]))
+        check(f'T-30: at {w}, the tool cards\' names and links read as at T-29', [(x['name'], x['link'][0], x['link'][1]) for x in T['cards']]
+              == [(h, a_, g) for h, _p, a_, g in t29_], str([(x['name'], x['link'][0]) for x in T['cards']]))
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

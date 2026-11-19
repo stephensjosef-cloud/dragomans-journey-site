@@ -1,5 +1,5 @@
 {
-  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero shows only intro. The meta description uses lede_album_gated while the album card is hidden, so it names the album only when the album shows. kind and kicker are kept but not printed (T-16); the page title is the kicker's first part. The gallery's words live in \"gallery\" too: its heading, each app's name, each group's label and caption, and each image's caption and alt text. Its images are in assets/gallery, and studio.py numbers the captions of a group marked numbered. A gallery app with a \"product\" (that product's id) shows that product's card words inside its gallery block instead of as a card: its status, what, proof, page link and join box. The ChuckleFits shelf lives in the chucklefits product's \"shelf\" (each product's handle, name, kind, price, tags, image and alt), with \"link_tag\" on every shop link; it is refreshed from a new shop snapshot, and its photos are in assets/shelf. studio.py stops the build if a shelf product carries a tag containing unhinged.",
+  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero shows only intro. The meta description uses lede_album_gated while the album card is hidden, so it names the album only when the album shows. kind and kicker are kept but not printed (T-16); the page title is the kicker's first part. The gallery's words live in \"gallery\" too: its heading, each app's name, each group's label and caption, and each image's caption and alt text. Its images are in assets/gallery, and studio.py numbers the captions of a group marked numbered. A gallery app with a \"product\" (that product's id) shows that product's card words inside its gallery block instead of as a card: its status, what, proof, page link and join box. The ChuckleFits shelf lives in the chucklefits product's \"shelf\" (each product's handle, name, kind, price, tags, image and alt), with \"link_tag\" on every shop link; it is refreshed from a new shop snapshot, and its photos are in assets/shelf. studio.py stops the build if a shelf product carries a tag containing unhinged. A product whose \"what\" is null shows no description line, because its description lives on the Work page.",
   "hero": {
     "kicker": "The studio · updated as things ship",
     "h1": "Follow along<br>while I piece it together",
@@ -20,12 +20,12 @@
      "list": {"id": "deepcuts", "button": "Join the beta", "line": "One email when a tester spot opens. No newsletter.", "count": 0},
      "link": null, "gate": null},
     {"id": "kids", "name": "A kids' cooking app", "status": "Built for a client", "kind": "Client app",
-     "what": "The program's own recipes, in an app teachers cook from in class, with a grocery list that scales to the class and pages that print like their own cards. iPhone, iPad, Android and the web.",
+     "what": null,
      "proof": "535 tests, and every change checked on a real phone before it ships.",
      "image": null, "image_alt": null, "list": null,
      "link": {"href": "work.html", "label": "See the work"}, "gate": null},
     {"id": "cobol", "name": "COBOL, checked in public", "status": "Public", "kind": "Proof",
-     "what": "Two different AIs translated the same COBOL interest program. The code, the prompts and every miss are published for anyone to rerun.",
+     "what": null,
      "proof": null, "image": null, "image_alt": null, "list": null,
      "link": {"href": "https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence", "label": "Open the repo"}, "gate": null},
     {"id": "tools", "name": "Free tools", "status": "Live", "kind": "Free",

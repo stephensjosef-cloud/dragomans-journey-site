@@ -10,6 +10,8 @@ files; this script adds only numbers, dates and arrows.
 
 Rules:
 - A product with a non-null "gate" does not render, and neither do its log lines.
+- A product whose "what" is null prints no description line on its card (T-30): its
+  description lives on work.html, and the card keeps its name, pill, proof and links.
 - Log lines older than 120 days (America/Los_Angeles) drop off at build time.
   The count over the log ("<n> things finished since <date>") counts the lines
   that are left, so it always agrees with the list under it.
@@ -180,8 +182,10 @@ def join_button(p):
 def product_card(p, wide=False):
     feature = bool(p.get("image"))
     parts = [f'<h2>{t(p["name"])}</h2>',
-             f'<div class="meta"><span class="pill">{t(p["status"])}</span></div>',
-             f'<p>{t(p["what"])}</p>']
+             f'<div class="meta"><span class="pill">{t(p["status"])}</span></div>']
+    # T-30: a product whose "what" is null prints no line here; its description lives on work.html.
+    if p.get("what"):
+        parts.append(f'<p>{t(p["what"])}</p>')
     if p.get("proof"):
         parts.append(f'<p class="proof"><strong>{t(p["proof"])}</strong></p>')
     if p.get("shelf"):
@@ -486,6 +490,15 @@ APP_CSS = r"""
 .gjoin{flex:1 1 0;min-width:0}}
 """
 
+# T-30 (Nov 18, 2026): a card that spans its whole row (.prod.wide; today Free tools and
+# ChuckleFits from 800 px) keeps its description line at most 34em wide, the measure of the
+# app blocks above it (.gtext), so it doesn't run as one long line across the page.
+# studio.html only (the product pages use CSS, not this); half-width cards, the proof line
+# and the ChuckleFits shelf are untouched.
+WIDE_CSS = r"""
+.prod.wide>p:not(.proof){max-width:34em}
+"""
+
 
 # T-27 (Nov 18, 2026): the ChuckleFits shelf, inside that product's card, between its "what"
 # line and its link row. Every word is in studio.json's "shelf" (name, kind, alt); this adds
@@ -623,7 +636,7 @@ def main(out_dir):
           title=title,
           description=lede.replace('"', "&quot;"),
           kicker="", h1=hero["h1"], lede=t(hero["intro"]),
-          css=CSS + LOG_PHONE_CSS + GALLERY_CSS + APP_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
+          css=CSS + LOG_PHONE_CSS + GALLERY_CSS + APP_CSS + WIDE_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
     rows = visible(studio, shipped, today)
