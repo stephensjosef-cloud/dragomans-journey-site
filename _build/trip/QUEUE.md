@@ -1396,6 +1396,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-31 · Tests in minutes, with the same checks · READY
+
+**Why:** Nov 19, 2026: a full `test_new.py` run takes about 40 minutes, prints nothing until the end, and can only run whole. Finishing T-30 took six runs; two died waiting 30 seconds on Google Fonts, one when its server stopped, and the failure list crashed on Windows text encoding. Josef: "i dont think we need to do another whole ass 40 minute test to try 4 things".
+
+**Done when:** one command runs every check of `test_new.py` in parallel and prints each section as it finishes; the parallel run gives exactly the same check names and results as a serial run of today's file; any one section can run alone; no network fonts and no Windows copy needed; total time reported; no page changes.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
