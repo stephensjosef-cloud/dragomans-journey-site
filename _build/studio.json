@@ -1,5 +1,5 @@
 {
-  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero shows only intro. The meta description uses lede_album_gated while the album card is hidden, so it names the album only when the album shows. kind and kicker are kept but not printed (T-16); the page title is the kicker's first part. The gallery's words live in \"gallery\" too: its heading, each app's name, each group's label and caption, and each image's caption and alt text. Its images are in assets/gallery, and studio.py numbers the captions of a group marked numbered. The ChuckleFits shelf lives in the chucklefits product's \"shelf\" (each product's handle, name, kind, price, tags, image and alt), with \"link_tag\" on every shop link; it is refreshed from a new shop snapshot, and its photos are in assets/shelf. studio.py stops the build if a shelf product carries a tag containing unhinged.",
+  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero shows only intro. The meta description uses lede_album_gated while the album card is hidden, so it names the album only when the album shows. kind and kicker are kept but not printed (T-16); the page title is the kicker's first part. The gallery's words live in \"gallery\" too: its heading, each app's name, each group's label and caption, and each image's caption and alt text. Its images are in assets/gallery, and studio.py numbers the captions of a group marked numbered. A gallery app with a \"product\" (that product's id) shows that product's card words inside its gallery block instead of as a card: its status, what, proof, page link and join box. The ChuckleFits shelf lives in the chucklefits product's \"shelf\" (each product's handle, name, kind, price, tags, image and alt), with \"link_tag\" on every shop link; it is refreshed from a new shop snapshot, and its photos are in assets/shelf. studio.py stops the build if a shelf product carries a tag containing unhinged.",
   "hero": {
     "kicker": "The studio · updated as things ship",
     "h1": "Follow along<br>while I piece it together",
@@ -72,7 +72,7 @@
   "gallery": {
     "heading": "Inside the apps",
     "apps": [
-      {"name": "Deepcuts", "groups": [
+      {"name": "Deepcuts", "product": "deepcuts", "groups": [
         {"label": "Then", "items": [
           {"file": "deepcuts-then-spreadsheet.jpg", "caption": "A spreadsheet", "alt": "Deepcuts as a spreadsheet: indie games ranked by match score, each with its developer."}
         ]},
@@ -83,7 +83,7 @@
           {"file": "deepcuts-now-taste.jpg", "alt": "A taste profile, The Grand Strategist, with sliders from Depth to Breadth and Solo to Social."}
         ]}
       ]},
-      {"name": "Bird League", "groups": [
+      {"name": "Bird League", "product": "birdleague", "groups": [
         {"label": "Then", "items": [
           {"file": "birdleague-then-sketch.jpg", "caption": "A Figma sketch", "alt": "A photo of the first Bird League sketch in Figma: a green header, a gray map box and four tabs."},
           {"file": "birdleague-then-firstbuild.jpg", "caption": "The first build", "alt": "An early Bird League screen that names birds by sound and still says mock data."}

@@ -219,6 +219,7 @@ def un27(s, name=None):
         return s
     if '\r\n' in s:
         return un27(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    s = un29(s, name)   # T-29: the cards back first, so every older check that reads through un27() or un26() sees T-27's page
     s = _r.sub(r'\.shelf\{margin:[^\n]*\n(?:[^\n]*\n)*?@media \(min-width:1200px\)\{\.shelf ul\{[^\n]*\n\n', '', s)
     s = _r.sub(r'\n        <div class="shelf" role="region".*?\n        </div>', '', s, flags=_r.S)
     s = s.replace(f'<p>{T27_WHAT[1]}</p>', f'<p>{T27_WHAT[0]}</p>')
@@ -228,6 +229,51 @@ def un27(s, name=None):
 def back27(t):
     """A page's text with T-27's cut line read back as T-26's (Josef cut "I write every line on every shirt.", Nov 18)."""
     return t.replace(T27_WHAT[1] + ' Visit the shop', T27_WHAT[0] + ' Visit the shop')
+
+
+# T-29 (Nov 18, 2026): one block per app on studio.html. Bird League's and Deepcuts' cards are gone from the products
+# grid; their words (pill, what, proof, "More on" link, join form, same markup) open their "Inside the apps" block
+# instead; the section moved to right after "Shipped lately"; the Bird League card's then/now image is off the page;
+# Free tools now spans its row (T-21 G4: it's alone on it), and the new placement's CSS is added. un29(s, name) puts
+# T-27's page back byte for byte (the stamp line aside), rebuilding each card from its block's own markup, for the
+# older checks that read studio.html as it was at T-27 (un27() calls it first); the T-29 block checks the new page.
+T29_IDS = ('birdleague', 'deepcuts')   # studio.json's product order, the cards' order at T-27
+T29_FEATURE_IMG = {'birdleague': '<img src="bird-league-then-now.jpg" width="1200" height="1331" loading="lazy" '
+                                 'alt="Then: an early Bird League screen that still says mock data. Now: build 49\'s life list wall.">'}
+T29_GPROD = (r'\n      <div class="gprod">\n        <div class="gtext">\n          (<div class="meta">.*?</div>)\n          (<p>.*?</p>)'
+             r'(?:\n          (<p class="proof">.*?</p>))?\n          (<a class="go" data-page href="studio-([a-z0-9-]+)\.html">.*?</a>)'
+             r'\n        </div>(?:\n        <div class="gjoin">(.*?)</div>)?\n      </div>(?=\n      <div class="ggroup">)')
+
+
+def un29(s, name=None):
+    import re as _r
+    if name not in (None, 'studio.html') or '<div class="gprod">' not in s:
+        return s
+    if '\r\n' in s:
+        return un29(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    s = _r.sub(r'\.gprod\{[^\n]*\n(?:[^\n]*\n)*?\.gjoin\{flex:1 1 0;min-width:0\}\}\n\n', '', s, count=1)
+    cards = {}
+    def take(m):
+        meta, what, proof, link, pid, join = m.groups()
+        h3 = _r.findall(r'<h3>(.*?)</h3>', s[:m.start()])[-1]
+        body = [f'<h2>{h3}</h2>', meta, what] + ([proof] if proof else []) + [f'<div class="acts">{link}{join or ""}</div>']
+        if pid in T29_FEATURE_IMG:
+            cards[pid] = (f'\n    <article class="prod feature" data-id="{pid}">\n      <div class="fb">\n        ' + '\n        '.join(body)
+                          + f'\n      </div>\n      {T29_FEATURE_IMG[pid]}\n    </article>')
+        else:
+            cards[pid] = f'\n    <article class="prod" data-id="{pid}">\n        ' + '\n        '.join(body) + '\n    </article>'
+        return ''
+    s = _r.sub(T29_GPROD, take, s, flags=_r.S)
+    gal = _r.search(r'\n  <section class="sec gal" aria-labelledby="gallery-h">.*?\n  </section>', s, _r.S)
+    if gal:
+        s = s[:gal.start()] + s[gal.end():]
+    s = s.replace('<article class="prod wide" data-id="tools">', '<article class="prod" data-id="tools">')
+    head = '\n  <div class="sec prods" id="products">'
+    s = s.replace(head, head + ''.join(cards[i] for i in T29_IDS if i in cards), 1)
+    if gal:
+        m = _r.search(r'\n  <div class="sec prods" id="products">.*?\n  </div>', s, _r.S)
+        s = s[:m.end()] + gal.group(0) + s[m.end():]
+    return s
 
 
 # The snapshot's six, in its order (T-27, chucklefits-shelf-2026-11-18.json): (handle, name, kind, price as shown).
@@ -293,9 +339,22 @@ with sync_playwright() as p:
     b = p.chromium.launch(executable_path=exe)
     errors = []
 
+    # T-29: BASE + '__un29/<file>' serves this build with un29() applied, so studio.html there is T-27's page byte for
+    # byte (the stamp line aside); the older checks that read studio.html's layout as it was at T-27 open UN29.
+    UN29 = BASE + '__un29/'
+
+    def serve29(route):
+        path = route.request.url.split('/__un29/', 1)[1].split('?')[0].split('#')[0]
+        body = urlopen(BASE + path).read()
+        if path.endswith('.html'):
+            body = un29(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
+        route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
+                      'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+
     def newpage(w, h=900):
         pg = b.new_page(viewport={'width': w, 'height': h})
         route_fonts(pg)
+        pg.route('**/__un29/**', serve29)
         pg.on('pageerror', lambda e: errors.append(str(e)))
         return pg
 
@@ -826,8 +885,8 @@ with sync_playwright() as p:
     N = len(rows)
     oldest = min(_dt.date.fromisoformat(e['date']) for e in rows)
 
-    q = newpage(1440); q.goto(BASE + 'studio.html'); q.wait_for_timeout(400)
-    stats = [s.strip() for s in q.locator('#stats p').all_inner_texts()]
+    q = newpage(1440); q.goto(UN29 + 'studio.html'); q.wait_for_timeout(400)   # T-29: the cards, as at T-27 (un29); the T-29 block checks the blocks
+    stats =[s.strip() for s in q.locator('#stats p').all_inner_texts()]
     stats = [_re.sub(r'\s+', ' ', s) for s in stats]
     # T-16 N4: one count, still from the log; "in the last 30 days" and "projects" are gone.
     # T-19 W28: "shipped" became "finished".
@@ -931,8 +990,8 @@ with sync_playwright() as p:
     check('a list of 41 says "41 people on the list"', '>41 people on the list<' in _studio.product_card(p41))
     check('a list of 9 shows no count', 'on the list' not in _studio.product_card(p9))
     for w in (390, 1440):
-        q = newpage(w); q.goto(BASE + 'studio.html'); q.wait_for_timeout(400)
-        check(f'studio no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+        q = newpage(w); q.goto(UN29 + 'studio.html'); q.wait_for_timeout(400)   # T-29: the grid as at T-27 (un29); the T-29 block checks the new one
+        check(f'studio no overflow at {w}',q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
         boxes = q.locator('#products article').evaluate_all('e => e.map(a => [a.dataset.id, Math.round(a.getBoundingClientRect().left), Math.round(a.getBoundingClientRect().width)])')
         grid_w = round(q.locator('#products').bounding_box()['width'])
         full = [b_[0] for b_ in boxes if abs(b_[2] - grid_w) <= 2]
@@ -997,9 +1056,9 @@ with sync_playwright() as p:
         except Exception:
             served = False
         check(f'no page for {x["id"]} ({"gated" if x.get("gate") else "no join list"})', not served and slug not in sitemap)
-    q = newpage(1440); q.goto(BASE + 'studio.html'); q.wait_for_timeout(300)
+    q = newpage(1440); q.goto(UN29 + 'studio.html'); q.wait_for_timeout(300)   # T-29: the cards' links, as at T-27 (un29); the T-29 block checks the blocks'
     for x in open_p:
-        mv = q.locator(f'#products article[data-id="{x["id"]}"] a[data-page]')
+        mv =q.locator(f'#products article[data-id="{x["id"]}"] a[data-page]')
         if x in page_p:
             check(f'studio card {x["id"]} links "More on {x["name"]} →" to its page (T-16)',
                   mv.count() == 1 and mv.inner_text().strip() == f'More on {x["name"]} →' and mv.get_attribute('href') == f'studio-{x["id"]}.html')
@@ -1085,7 +1144,7 @@ with sync_playwright() as p:
         shoot = slug != 'studio.html' or x['id'] == 'deepcuts'
         # Success: the right fields go to the Worker, and the box says so.
         q = newpage(1440); q.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok); q.add_init_script(CATCH_MAILTO)
-        q.goto(BASE + slug); q.wait_for_timeout(300)
+        q.goto((UN29 if slug == 'studio.html' else BASE) + slug); q.wait_for_timeout(300)   # T-29: studio's boxes in their cards, as at T-27 (un29); the T-29 block runs the same in the blocks
         f = q.locator(box)
         check(f'{tag}: email field is required, type email, labeled "Email"',
               f.locator('input[name="email"][type="email"][required]').count() == 1 and f.locator('label.jf-e span').inner_text().strip().lower() == 'email')
@@ -1112,7 +1171,7 @@ with sync_playwright() as p:
         # Failure (the Worker says no, or can't be reached): the mailto opens, the box stays as it was.
         for how, mock in (('an error answer', mock_fail), ('no connection', mock_abort)):
             q = newpage(390); q.route('**/dj-intake.stephens-josef.workers.dev/**', mock); q.add_init_script(CATCH_MAILTO)
-            q.goto(BASE + slug); q.wait_for_timeout(300)
+            q.goto((UN29 if slug == 'studio.html' else BASE) + slug); q.wait_for_timeout(300)   # T-29: as above
             f = q.locator(box)
             f.locator('input[name="email"]').fill('fan@example.com'); q.wait_for_timeout(2700)
             f.locator('button').click(); q.wait_for_timeout(600)
@@ -3312,7 +3371,7 @@ with sync_playwright() as p:
     TXT23 = {}
     BOX23 = None
     for n in ALL_HTML:
-        q = newpage(1440); q.goto(BASE + n); settle(q)
+        q = newpage(1440); q.goto((UN29 if n == 'studio.html' else BASE) + n); settle(q)   # T-29: studio's text as at T-27 (un29): TEXT_JS leaves the gallery out, which now holds the two cards' words
         TXT23[n] = q.evaluate(TEXT_JS)
         if n == 'studio.html':
             BOX23 = q.evaluate("(() => { const s = document.querySelector('section[aria-labelledby=\"next-h\"]'); return s ? s.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() : '' })()")
@@ -3778,7 +3837,7 @@ with sync_playwright() as p:
     day25 = lambda s: _re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', s)
     for w in (1440, 390):
         for n in ALL_HTML:
-            q = newpage(w); q.goto(BASE + n); settle(q); a = q.evaluate(TEXT_JS); q.close()
+            q = newpage(w); q.goto((UN29 if n == 'studio.html' else BASE) + n); settle(q); a = q.evaluate(TEXT_JS); q.close()   # T-29: as above (un29)
             o = t24_page(w); o.goto(OLD25B + n); settle(o); b_ = o.evaluate(TEXT_JS); o.close()
             if n.startswith('studio'):   # the log's day count moves with the day the page is built
                 a, b_ = day25(back27(a)), day25(b_)   # T-27: the ChuckleFits line read back as T-26's (its block checks it)
@@ -4112,7 +4171,8 @@ with sync_playwright() as p:
     sj26 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
     want26 = {'heading': T26_HEADING, 'apps': [{'name': a, 'groups': [dict({'label': l}, **({'caption': c} if c else {}), **({'numbered': True} if num else {}),
               items=[dict({'file': f}, **({'caption': fc} if fc else {}), alt=alt) for f, fc, alt in its]) for l, c, num, its in gs]} for a, gs in T26_APPS]}
-    check('T-26: studio.json\'s "gallery" holds the item\'s words character for character, in order', sj26.get('gallery') == want26)
+    gal26 = dict(sj26.get('gallery') or {}, apps=[{k: v for k, v in x.items() if k != 'product'} for x in (sj26.get('gallery') or {}).get('apps', [])])   # T-29 adds "product" (an id, not a word); its block checks it
+    check('T-26: studio.json\'s "gallery" holds the item\'s words character for character, in order', gal26 == want26)
     check('T-26: studio.json\'s _about says the gallery\'s words live in "gallery" too', 'The gallery\'s words live in "gallery" too' in sj26['_about'])
     gw26 = _json26.dumps(sj26['gallery'], ensure_ascii=False)
     check('T-26: the gallery\'s words have no em dash and only straight apostrophes', '—' not in gw26 and '’' not in gw26 and '‘' not in gw26 and "'" in gw26)
@@ -4143,7 +4203,7 @@ with sync_playwright() as p:
                 src: f.querySelector('img').getAttribute('src'), alt: f.querySelector('img').getAttribute('alt'),
                 w: f.querySelector('img').getAttribute('width'), h: f.querySelector('img').getAttribute('height'),
                 loading: f.querySelector('img').getAttribute('loading'), decoding: f.querySelector('img').getAttribute('decoding')}))}; })}))}; }'''
-    q = newpage(1440); q.goto(BASE + 'studio.html'); settle(q); G = q.evaluate(GAL26_JS)
+    q = newpage(1440); q.goto(UN29 + 'studio.html'); settle(q); G = q.evaluate(GAL26_JS)   # T-29: the section's place and words as at T-27 (un29); the T-29 block checks the new ones
     nat = q.evaluate('''async (srcs) => Promise.all(srcs.map(s => new Promise(r => { const i = new Image(); i.onload = () => r([i.naturalWidth, i.naturalHeight]); i.onerror = () => r(null); i.src = s; })))''',
                      ['gallery/' + g for g in GAL26])
     q.close()
@@ -4200,7 +4260,7 @@ with sync_playwright() as p:
               return {f: i.getAttribute('src'), nw: i.naturalWidth, nh: i.naturalHeight, l: b.left, r: b.right, t: b.top, b: b.bottom, w: b.width, h: b.height,
                       cap: cb && [cb.left, cb.right, cb.top, cb.bottom, c.scrollWidth <= c.clientWidth + 1], snap: cs(f).scrollSnapAlign}; })}; })}; }'''
     for w in (320, 390, 1024, 1440):
-        q = newpage(w); q.goto(BASE + 'studio.html'); settle(q)
+        q = newpage(w); q.goto(UN29 + 'studio.html'); settle(q)   # T-29: measured against the Bird League card image, which T-29 takes off the page (un29)
         q.locator('#gallery-h').scroll_into_view_if_needed(); nl = q.evaluate(LOAD26_JS); q.wait_for_timeout(150)
         L = q.evaluate(LOOK26_JS)
         phone = w < 800
@@ -4447,7 +4507,7 @@ with sync_playwright() as p:
         refBorder: [st(ref).borderTopWidth, st(ref).borderTopStyle, st(ref).borderTopColor, st(ref).borderTopLeftRadius].join(' ')}; }'''
     for w in (320, 390, 800, 1024, 1199, 1200, 1440):
         q = newpage(w)
-        q.goto(BASE + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready')
+        q.goto(UN29 + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready')   # T-29: measured against the Bird League card image, now off the page (un29); the T-29 block checks the shelf lays out the same
         q.locator('[data-id="chucklefits"]').scroll_into_view_if_needed()
         M0 = q.evaluate(SHELF27_JS)   # the markup as served, before LOAD27_JS makes the photos eager to measure them
         nl = q.evaluate(LOAD27_JS)
@@ -4535,6 +4595,237 @@ with sync_playwright() as p:
             x2 = q.evaluate("[document.querySelector('.shelf').scrollLeft, scrollX, (() => { const r = document.activeElement.getBoundingClientRect(), c = document.querySelector('[data-id=chucklefits]').getBoundingClientRect(); return r.right <= c.right && r.left >= c.left; })()]")
             check(f'T-27: at {w}, tabbing to the last product scrolls the row to show it inside the card, and the page doesn\'t move sideways', x2[0] > 0 and x2[1] == 0 and x2[2], str(x2))
         q.close()
+
+    # ---------------- T-29 (Nov 18, 2026): one block per app on the Studio page ----------------
+    # Bird League and Deepcuts each show once: their "Inside the apps" block opens with the card's words (pill, what,
+    # proof, "More on" link, join form) and the cards are gone; the section sits right after "Shipped lately".
+    # Comparisons are against T-27's own build (origin/main at 4a76a78, the base this item was cut from), read from git.
+    T27C = '4a76a78'
+    T27_FILES = {}
+
+    def t27_file(path):
+        if path not in T27_FILES:
+            r = _sp18.run(['git', 'show', f'{T27C}:{path}'], cwd=here, capture_output=True)
+            T27_FILES[path] = r.stdout if r.returncode == 0 else None
+        return T27_FILES[path]
+    check('T-29: the T-27 files can be read from git for comparison', t27_file('studio.html') is not None and t27_file('images/shelf/love-your-mother-5-panel-cap.jpg') is not None)
+    SRC29 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    OLD29 = {n: t27_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    ROOT29 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
+    S29 = SRC29['studio.html']
+    sj29 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+    P29 = {x['id']: x for x in sj29['products']}
+    APPS29 = {'birdleague': 'Bird League', 'deepcuts': 'Deepcuts'}
+
+    # The whole build: studio.html is T-27's page once un29() puts the cards back (stamp line aside); every other page byte for byte.
+    check('T-29: un29() changes studio.html (the blocks are there)', un29(S29, 'studio.html') != S29)
+    for n in ALL_HTML:
+        if n == 'studio.html':
+            a, b_ = stamp27(un29(S29, n)), stamp27(OLD29[n])
+            check('T-29: studio.html is T-27\'s page with only the cards moved into their blocks, the section moved up, Free tools spanning its row and the new CSS, the stamp line aside', a == b_,
+                  next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
+        elif n.startswith('studio-'):
+            dl = [(x, y) for x, y in zip(SRC29[n].split('\n'), OLD29[n].split('\n')) if x != y]
+            check(f'T-29: {n} is T-27\'s page apart from studio.py\'s stamp line (build day and studio.json\'s hash)', SRC29[n].count('\n') == OLD29[n].count('\n')
+                  and all(_re.fullmatch(STAMP26, x) and _re.fullmatch(STAMP26, y) for x, y in dl), str(dl[:2]))
+            check(f'T-29: {n} still shows the product image as at T-27', SRC29[n].count('<img src="') == OLD29[n].count('<img src="'))
+        else:
+            check(f'T-29: {n} is byte for byte as at T-27', SRC29[n] == OLD29[n])
+    check('T-29: every root page is the built page', all(ROOT29[n] == SRC29[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT29[n] != SRC29[n]]))
+    t27tree = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T27C], cwd=here, capture_output=True, text=True).stdout.split('\n') if f]
+    pub27 = [f for f in t27tree if not f.startswith('_build/') and not f.endswith('.html')]
+    check('T-29: every other public file at the root (sitemap, robots, images, gallery, shelf, share cards) is byte for byte as at T-27',
+          len(pub27) >= 52 and all(rb26(f) == t27_file(f).replace(b'\r\n', b'\n') for f in pub27), str([f for f in pub27 if rb26(f) != t27_file(f).replace(b'\r\n', b'\n')][:5]))
+    outf29 = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
+    check('T-29: the build adds no file (everything in out/ was at the root at T-27)', [f for f in outf29 if f not in set(t27tree)] == [], str([f for f in outf29 if f not in set(t27tree)][:5]))
+    check('T-29: the then/now image is off studio.html, and still on work.html and studio-birdleague.html',
+          'bird-league-then-now.jpg' not in S29 and 'bird-league-then-now.jpg' in SRC29['work.html'] and 'bird-league-then-now.jpg' in SRC29['studio-birdleague.html'])
+    for n in ALL_HTML:
+        for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
+                         ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
+                         ('structured data', r'<script type="application/ld\+json">.*?</script>'), ('scripts', r'<script>.*?</script>'),
+                         ('aria-labels', r'\baria-label="[^"]*"'), ('placeholders', r'\bplaceholder="[^"]*"'), ('labels', r'<label\b[^>]*>.*?</label>')):
+            check(f'T-29: {n} keeps its {what}', sorted(_re.findall(rx, SRC29[n], _re.S)) == sorted(_re.findall(rx, OLD29[n], _re.S)))
+    alts29, alts27 = _re.findall(r'\balt="([^"]*)"', S29), _re.findall(r'\balt="([^"]*)"', OLD29['studio.html'])
+    check('T-29: studio.html\'s alt texts are T-27\'s minus the then/now image\'s, and nothing new',
+          sorted(alts27) == sorted(alts29 + [P29['birdleague']['image_alt']]), str(sorted(set(alts27) ^ set(alts29))[:3]))
+
+    # The source: one h3 each, no h2, no card; each block's top in order; the join forms as at T-27.
+    for pid, nm in APPS29.items():
+        check(f'T-29: studio.html has exactly one h3 "{nm}" and no h2 "{nm}"', S29.count(f'<h3>{nm}</h3>') == 1 and f'<h2>{nm}</h2>' not in S29)
+        check(f'T-29: no article with data-id "{pid}" on studio.html', f'data-id="{pid}"' not in S29)
+    forms = lambda s: _re.findall(r'<form class="jf".*?</form>', s, _re.S)
+    check('T-29: studio.html has the same join forms as at T-27, character for character (data-list, mailto action, honeypot, email label, button words), now Deepcuts\' first',
+          sorted(forms(S29)) == sorted(forms(OLD29['studio.html'])) and len(forms(S29)) == 2
+          and [_re.search(r'data-list="(\w+)"', x).group(1) for x in forms(S29)] == ['deepcuts', 'birdleague'], str(len(forms(S29))))
+    for pid in APPS29:
+        f = next((x for x in forms(S29) if f'data-list="{pid}"' in x), '')
+        lst = P29[pid]['list']
+        check(f'T-29: the {pid} join form posts to its list, opens its mailto with scripts off, keeps the honeypot, the email label and "{lst["button"]}"',
+              f'data-list="{lst["id"]}"' in f and f'action="mailto:hello@dragomansjourney.com?subject=List%3A%20{P29[pid]["name"].replace(" ", "%20")}"' in f
+              and '<input name="website" tabindex="-1" autocomplete="off">' in f and '<span>Email</span><input name="email" type="email" autocomplete="email" required>' in f
+              and f'>{lst["button"]}</button>' in f)
+    check('T-29: the join script posts to the intake Worker as at T-27', 'https://dj-intake.stephens-josef.workers.dev/' in S29
+          and _re.findall(r'<script>.*?</script>', S29, _re.S) == _re.findall(r'<script>.*?</script>', OLD29['studio.html'], _re.S))
+    check('T-29: no em dash on studio.html, and no new en dash', '—' not in S29 and S29.count('–') == OLD29['studio.html'].count('–'))
+    check('T-29: the new CSS is on studio.html only', '.gprod{' in S29 and not any('.gprod{' in SRC29[n] or '.gtext' in SRC29[n] for n in ALL_HTML if n != 'studio.html'))
+
+    # studio.json and studio.py: the two apps name their product, Birdsighted none; _about says so; the words come from studio.json.
+    gapps29 = {x['name']: x for x in sj29['gallery']['apps']}
+    check('T-29: studio.json\'s gallery apps Deepcuts and Bird League name their products, Birdsighted none',
+          gapps29['Deepcuts'].get('product') == 'deepcuts' and gapps29['Bird League'].get('product') == 'birdleague' and 'product' not in gapps29['Birdsighted'],
+          str({k: v.get('product') for k, v in gapps29.items()}))
+    check('T-29: studio.json\'s _about says an app with a product shows its card\'s words inside its gallery block instead of as a card',
+          'A gallery app with a "product"' in sj29['_about'] and 'inside its gallery block instead of as a card' in sj29['_about'])
+    spy29 = open(os.path.join(here, 'tools', 'studio.py'), encoding='utf-8').read()
+    check('T-29: studio.py holds none of the two products\' words (it prints them from studio.json)',
+          not any(P29[pid][k] in spy29 for pid in APPS29 for k in ('what', 'proof', 'status') if P29[pid][k]) and 'Get the launch email' not in spy29 and 'Join the beta' not in spy29)
+    check('T-29: studio.json\'s two products keep every word they had at T-27',
+          all(P29[pid] == next(x for x in _json26.loads(t27_file('_build/studio.json').decode('utf-8'))['products'] if x['id'] == pid) for pid in APPS29))
+
+    # The browser: the page, then T-27's page served through un29() (UN29), for the comparisons.
+    MAIN29_JS = r'''() => [...document.querySelector('main').children].map(e => e.tagName === 'SECTION' && e.getAttribute('aria-labelledby') === 'log-h' ? 'log'
+      : e.getAttribute('aria-labelledby') === 'gallery-h' ? 'gallery' : e.id === 'products' ? 'products:' + [...e.querySelectorAll(':scope > article')].map(a => a.dataset.id).join(',')
+      : e.getAttribute('aria-labelledby') === 'next-h' ? 'box' : e.tagName + '.' + e.className)'''
+    LINES29_JS = r'''() => document.querySelector('main').innerText.split('\n').map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean)'''
+    BLOCK29_JS = r'''() => [...document.querySelectorAll('.gapp')].map(g => ({h3: g.querySelector('h3').textContent, h3n: g.querySelectorAll('h3').length,
+      kids: [...g.children].map(e => e.tagName + '.' + e.className),
+      top: g.querySelector('.gprod') ? [...g.querySelector('.gprod').querySelectorAll('.pill, .gtext > p, .gtext > a, form')].map(e =>
+        [e.matches('.pill') ? 'pill' : e.matches('p.proof') ? 'proof' : e.tagName === 'P' ? 'what' : e.tagName === 'A' ? 'link' : 'form',
+         e.tagName === 'A' ? e.getAttribute('href') : e.tagName === 'FORM' ? e.dataset.list : e.textContent]) : null,
+      groups: [...g.querySelectorAll('.ggroup')].map(x => x.outerHTML), text: g.innerText.split('\n').map(x => x.trim()).filter(Boolean)}))'''
+    for w in (320, 390, 1440):
+        q = newpage(w); q.goto(BASE + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready'); q.wait_for_timeout(300)
+        o = newpage(w); o.goto(UN29 + 'studio.html', wait_until='networkidle'); o.evaluate('document.fonts.ready'); o.wait_for_timeout(300)
+        main29, main27 = q.evaluate(MAIN29_JS), o.evaluate(MAIN29_JS)
+        check(f'T-29: at {w}, main reads: the log, "Inside the apps", the products grid (kids, cobol, tools, chucklefits), the closing box',
+              main29 == ['log', 'gallery', 'products:kids,cobol,tools,chucklefits', 'box'], str(main29))
+        check(f'T-29: at {w}, the page served through un29() is T-27\'s order (the check reads what it should)',
+              main27 == ['log', 'products:birdleague,deepcuts,kids,cobol,tools,chucklefits', 'gallery', 'box'], str(main27))
+        B, B27 = q.evaluate(BLOCK29_JS), o.evaluate(BLOCK29_JS)
+        check(f'T-29: at {w}, the gallery\'s three apps are Deepcuts, Bird League and Birdsighted, one h3 each', [x['h3'] for x in B] == ['Deepcuts', 'Bird League', 'Birdsighted'] and all(x['h3n'] == 1 for x in B))
+        for x, x27 in zip(B, B27):
+            pid = next((k for k, v in APPS29.items() if v == x['h3']), None)
+            if pid:
+                p = P29[pid]
+                want = [['pill', p['status']], ['what', p['what']]] + ([['proof', p['proof']]] if p.get('proof') else []) + [['link', f'studio-{pid}.html'], ['form', pid]]
+                check(f'T-29: at {w}, {x["h3"]}\'s block opens with its name, then the pill, the what line,{" the proof line," if p.get("proof") else ""} the "More on" link and the join form, in order',
+                      x['kids'][:2] == ['H3.', 'DIV.gprod'] and x['top'] == want, str([x['kids'][:3], x['top']]))
+                check(f'T-29: at {w}, {x["h3"]}\'s link reads "More on {x["h3"]} →"', f'More on {x["h3"]} →' in x['text'])
+            else:
+                check(f'T-29: at {w}, {x["h3"]}\'s block is as at T-27 (no product, no top)', x['top'] is None and x['kids'] == x27['kids'] and x['text'] == x27['text'])
+            check(f'T-29: at {w}, {x["h3"]}\'s groups are exactly as at T-27', x['groups'] == x27['groups'] and x['kids'][-len(x27['kids']) + 1:] == x27['kids'][1:])
+        L29, L27 = q.evaluate(LINES29_JS), o.evaluate(LINES29_JS)
+        from collections import Counter as _C29
+        c29, c27 = _C29(L29), _C29(L27)
+        dup = _C29({nm.upper(): 1 for nm in APPS29.values()})   # the card h2s; their h3 twins stay
+        check(f'T-29: at {w}, every visible line of T-27\'s page is still there, and nothing new: T-27\'s lines minus the two cards\' second name heading',
+              c29 == c27 - dup and (c27 - c29) == dup and not (c29 - c27), str([(c27 - c29) - dup, c29 - c27]))
+        for pid, nm in APPS29.items():
+            blk = next(x for x in B if x['h3'] == nm)
+            cl =o.evaluate(f'''() => document.querySelector('[data-id="{pid}"]').innerText.split('\\n').map(x => x.replace(/\\s+/g, ' ').trim()).filter(Boolean)''')
+            check(f'T-29: at {w}, every line of T-27\'s {nm} card is in its block exactly once, and on the page as often as the other app\'s copies allow',
+                  len(cl) >= 5 and all(blk['text'].count(l) == 1 for l in cl) and all(c29[l] == c27[l] - (1 if l == nm.upper() else 0) for l in cl), str([cl, blk['text'][:8]]))
+        q.close(); o.close()
+
+    # Layout: from 900 px the text left (at most 34em) and the join form right, top-aligned; under 900 stacked, text first.
+    TOP29_JS = r'''() => [...document.querySelectorAll('.gprod')].map(p => { const R = e => e.getBoundingClientRect(), t = p.querySelector('.gtext'), f = p.querySelector('form.jf');
+      const fs = parseFloat(getComputedStyle(t).fontSize), sec = R(p.closest('.gapp'));
+      const parts = [...t.querySelectorAll('.pill, :scope > p, :scope > a')].map(e => [R(e).top, R(e).bottom, R(e).left]);
+      const lab = f.querySelector('.jf-e span'), inp = f.querySelector('input[name=email]'), btn = f.querySelector('button');
+      return {name: p.closest('.gapp').querySelector('h3').textContent, text: [R(t).left, R(t).top, R(t).right, R(t).bottom, R(t).width / fs], form: [R(f).left, R(f).top, R(f).right, R(f).bottom],
+        sec: [sec.left, sec.right], parts, labColor: getComputedStyle(lab).color, inp: [R(inp).width, R(inp).height], btn: [R(btn).left, R(btn).top, R(btn).width, R(btn).height],
+        rows: [...p.closest('.gapp').querySelectorAll('.grow')].map(r => [r.getAttribute('aria-label'), getComputedStyle(r).overflowX, r.scrollWidth - r.clientWidth])}; })'''
+    for w in (320, 390, 899, 900, 1024, 1440):
+        q = newpage(w); q.goto(BASE + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready'); q.wait_for_timeout(300)
+        T = q.evaluate(TOP29_JS)
+        sw = q.evaluate('[document.documentElement.scrollWidth, innerWidth]')
+        check(f'T-29: at {w}, studio.html has no sideways scroll', sw[0] <= sw[1], str(sw))
+        for x in T:
+            check(f'T-29: at {w}, {x["name"]}: pill, lines and link read top to bottom, each starting on the text\'s left edge',
+                  all(a_[1] <= b2[0] + 0.5 for a_, b2 in zip(x['parts'], x['parts'][1:])) and all(abs(pp[2] - x['text'][0]) < 1 for pp in x['parts']), str(x['parts']))
+            check(f'T-29: at {w}, {x["name"]}: the text column is at most 34em wide and inside the block', x['text'][4] <= 34.01 and x['text'][0] >= x['sec'][0] - 0.5 and x['text'][2] <= x['sec'][1] + 0.5, str(x['text']))
+            check(f'T-29: at {w}, {x["name"]}: the join form sits inside the block', x['form'][0] >= x['sec'][0] - 0.5 and x['form'][2] <= x['sec'][1] + 0.5, str([x['form'], x['sec']]))
+            if w >= 900:
+                check(f'T-29: at {w}, {x["name"]}: the join form is beside the text, on the right, top-aligned', x['form'][0] >= x['text'][2] + 24 and abs(x['form'][1] - x['text'][1]) <= 1, str([x['text'], x['form']]))
+            else:
+                check(f'T-29: at {w}, {x["name"]}: the join form is under the text, on its left edge', x['form'][1] >= x['text'][3] + 8 and abs(x['form'][0] - x['text'][0]) < 1, str([x['text'], x['form']]))
+            check(f'T-29: at {w}, {x["name"]}: the email field and button are full size (48 px field, 44 px or taller button)', x['inp'][1] >= 47.5 and x['btn'][3] >= 44 and x['inp'][0] >= 200, str([x['inp'], x['btn']]))
+            check(f'T-29: at {w}, {x["name"]}: the email label is the darker grey for cream (#676D66)', x['labColor'] == 'rgb(103, 109, 102)', x['labColor'])
+            for nm_, ox, extra in x['rows']:
+                if w < 800:
+                    check(f'T-29: at {w}, the row "{nm_}" still scrolls inside itself (overflow-x auto)', ox == 'auto' and (extra > 0 or nm_ == 'Deepcuts, then'), str([ox, extra]))
+                else:
+                    check(f'T-29: at {w}, the row "{nm_}" wraps, nothing to scroll', extra <= 0, str([ox, extra]))
+        if w in (320, 390, 1440):
+            # Keyboard: from "See all", Tab goes through Deepcuts' link, email, button and rows, then Bird League's, then Birdsighted's row, then the first card.
+            q.focus('#log-all')
+            seen = []
+            for _k in range(12):
+                q.keyboard.press('Tab')
+                seen.append(q.evaluate("(() => { const e = document.activeElement; return e.getAttribute('aria-label') || e.getAttribute('href') || e.getAttribute('name') || e.textContent.trim(); })()"))
+            want29 = ['studio-deepcuts.html', 'email', 'Join the beta', 'Deepcuts, then', 'Deepcuts, now', 'studio-birdleague.html', 'email', 'Get the launch email',
+                      'Bird League, then', 'Bird League, now', 'Birdsighted, one case, start to finish', 'work.html']
+            check(f'T-29: at {w}, Tab from "See all" goes through each block\'s link, email, button and rows in order, then the first card', seen == want29, str(seen))
+        q.close()
+
+    # The remaining cards: same width and inner layout as at T-27, apart from Free tools, which now spans its row (T-21 G4:
+    # it's alone on it); the ChuckleFits card and its shelf sit exactly as at T-27, measured relative to the card.
+    CARDS29_JS = r'''() => { const R = e => e.getBoundingClientRect();
+      return [...document.querySelectorAll('#products > article')].map(a => { const c = R(a);
+        return [a.dataset.id, Math.round(c.width), Math.round(c.height), [...a.querySelectorAll('h2, .pill, p, .shelf li, .shelf img, a.go')].map(e => { const r = R(e);
+          return [e.tagName, Math.round(r.left - c.left), Math.round(r.top - c.top), Math.round(r.width), Math.round(r.height)]; })]; }); }'''
+    for w in (320, 390, 800, 1024, 1200, 1440):
+        q = newpage(w); q.goto(BASE + 'studio.html', wait_until='networkidle'); q.evaluate('document.fonts.ready'); q.wait_for_timeout(300)
+        o = newpage(w); o.goto(UN29 + 'studio.html', wait_until='networkidle'); o.evaluate('document.fonts.ready'); o.wait_for_timeout(300)
+        C29, C27 = {x[0]: x for x in q.evaluate(CARDS29_JS)}, {x[0]: x for x in o.evaluate(CARDS29_JS)}
+        q.close(); o.close()
+        check(f'T-29: at {w}, the ChuckleFits card and its shelf lay out exactly as at T-27', C29.get('chucklefits') == C27.get('chucklefits'), str([C29.get('chucklefits', [])[:3], C27.get('chucklefits', [])[:3]]))
+        for pid in ('kids', 'cobol'):
+            check(f'T-29: at {w}, the {pid} card is as wide as at T-27', C29[pid][1] == C27[pid][1], str([C29[pid][1], C27[pid][1]]))
+        if w >= 800:
+            check(f'T-29: at {w}, Free tools spans the row like ChuckleFits (alone on its row, T-21 G4)', C29['tools'][1] == C29['chucklefits'][1] > C29['kids'][1], str([C29['tools'][1], C29['chucklefits'][1]]))
+        else:
+            check(f'T-29: at {w}, Free tools is as at T-27 (one column)', C29['tools'] == C27['tools'], str([C29['tools'][:3], C27['tools'][:3]]))
+
+    # The join boxes in their new place work as T-10's checks run them in the cards: success posts the right fields and
+    # says so; an error answer or no connection falls back to the box's mailto and leaves the box ready.
+    for pid in APPS29:
+        x = P29[pid]
+        box29 = f'.gapp .gprod .gjoin form.jf[data-list="{pid}"]'
+        for w in (390, 1440):
+            q = newpage(w); q.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok); q.add_init_script(CATCH_MAILTO)
+            q.goto(BASE + 'studio.html'); q.wait_for_timeout(300)
+            f = q.locator(box29)
+            check(f'T-29: at {w}, {pid}: one join box in its block, email field required, type email, labeled "Email", honeypot off screen',
+                  f.count() == 1 and f.locator('input[name="email"][type="email"][required]').count() == 1 and f.locator('label.jf-e span').inner_text().strip().lower() == 'email'
+                  and f.locator('.hp input[name="website"]').count() == 1 and f.locator('.hp').bounding_box()['x'] < -1000)
+            n0 = len(posts)
+            f.locator('button').click(); q.wait_for_timeout(300)
+            check(f'T-29: at {w}, {pid}: an empty email sends nothing', len(posts) == n0 and q.evaluate('window.__mailto.length') == 0)
+            f.locator('input[name="email"]').fill('  fan@example.com '); q.wait_for_timeout(2700)
+            f.locator('button').click(); q.wait_for_timeout(600)
+            sent = posts[-1] if len(posts) == n0 + 1 else {}
+            check(f'T-29: at {w}, {pid}: posts form=list with the email and list {x["list"]["id"]}, honeypot and time',
+                  sent.get('form') == 'list' and sent.get('fields') == {'email': 'fan@example.com', 'list': x['list']['id']}
+                  and sent.get('website') == '' and sent.get('ms', 0) >= 2500, str(sent))
+            check(f'T-29: at {w}, {pid}: success says "You\'re on the list", hides the field and the button, opens no mailto',
+                  f.locator('.jf-ok').inner_text().strip() == "You're on the list" and not f.locator('input[name="email"]').is_visible()
+                  and not f.locator('button').is_visible() and q.evaluate('window.__mailto.length') == 0)
+            check(f'T-29: at {w}, {pid}: no sideways scroll after success', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
+            q.close()
+        for how, mock in (('an error answer', mock_fail), ('no connection', mock_abort)):
+            q = newpage(390); q.route('**/dj-intake.stephens-josef.workers.dev/**', mock); q.add_init_script(CATCH_MAILTO)
+            q.goto(BASE + 'studio.html'); q.wait_for_timeout(300)
+            f = q.locator(box29)
+            f.locator('input[name="email"]').fill('fan@example.com'); q.wait_for_timeout(2700)
+            f.locator('button').click(); q.wait_for_timeout(600)
+            got = q.evaluate('window.__mailto')
+            check(f'T-29: {pid}: on {how}, falls back to the mailto "List: {x["name"]}" and the box stays ready to try again',
+                  len(got) == 1 and got[0] == f.get_attribute('action') and _unquote(got[0].split('subject=', 1)[1]) == 'List: ' + x['name']
+                  and f.locator('input[name="email"]').is_visible() and f.locator('button').is_enabled() and f.locator('button').inner_text() == x['list']['button']
+                  and f.locator('.jf-ok').inner_text().strip() == '', str(got))
+            q.close()
 
     check('no page errors', not errors, '; '.join(errors[:3]))
     b.close()

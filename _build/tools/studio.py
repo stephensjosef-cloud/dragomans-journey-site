@@ -33,8 +33,11 @@ that show, and one join box with the line from its list ("line"). Its card
 links there ("More on <name>", T-16) and the page links back ("← The Studio"). A page whose product is gated or loses its list is deleted here. og.py, build.py (sitemap)
 and enhance.py all take the page list from product_pages().
 
-Gallery (T-26): one section on studio.html, after the product cards, from
-studio.json's "gallery" and the images in _build/assets/gallery/ (see gallery()).
+Gallery (T-26): one section on studio.html, from studio.json's "gallery" and the
+images in _build/assets/gallery/ (see gallery()). T-29: it comes right after the
+build log, before the product cards. A gallery app with a "product" carries that
+product's card words at the top of its block (app_intro()), and the product gets no
+card on studio.html; its own page (studio-<id>.html) is unchanged.
 
 Shelf (T-27): the ChuckleFits card's products, from that product's "shelf" in
 studio.json and the photos in _build/assets/shelf/ (see shelf()).
@@ -321,20 +324,26 @@ def build(studio, shipped, today):
            '\n    </div>'
            f'\n    <ol class="log" id="log">{items}\n    </ol>{toggle}'
            '\n  </section>')
-    shown = [p for p in studio["products"] if p.get("gate") is None]
+    # T-29: a product named by a gallery app shows inside that app's gallery block, not as a card.
+    inside = set(gallery_products(studio))
+    shown = [p for p in studio["products"] if p.get("gate") is None and p["id"] not in inside]
     # Two columns from 800 px (T-21 G4): a card alone on its row spans the whole row, so
-    # the grid never ends a row with an empty cell. A feature card always spans the row.
+    # the grid never ends a row with an empty cell. A feature card always spans the row, and
+    # so does a card with a shelf (T-29: it spanned it at T-27, its shelf laid out for that).
     wide, run = set(), []
     for p in shown + [None]:
-        if p is None or p.get("image"):
+        if p is None or p.get("image") or p.get("shelf"):
             if len(run) % 2:
                 wide.add(run[-1]["id"])
             run = []
+            if p is not None and p.get("shelf"):
+                wide.add(p["id"])
         else:
             run.append(p)
     cards = "".join(product_card(p, p["id"] in wide) for p in shown)
     prods = f'\n  <div class="sec prods" id="products">{cards}\n  </div>'
-    return log + prods + gallery(studio) + "\n"
+    # T-29: the gallery right after the build log, then the remaining cards.
+    return log + gallery(studio) + prods + "\n"
 
 
 # T-26 (Nov 18, 2026): the gallery section, after the product cards and before the closing
@@ -367,14 +376,48 @@ def jpeg_size(path):
     raise AssertionError(f"{path.name}: no JPEG frame header")
 
 
+def gallery_products(studio):
+    """T-29: {product id: product} for each open product a gallery app names with "product"."""
+    by_id = {p["id"]: p for p in studio["products"]}
+    out = {}
+    for app in (studio.get("gallery") or {}).get("apps", []):
+        pid = app.get("product")
+        if pid is None:
+            continue
+        assert pid in by_id, f'studio.json gallery: {app["name"]} names product "{pid}", which isn\'t in "products"'
+        if by_id[pid].get("gate") is None:              # a gated product's words stay off the page
+            out[pid] = by_id[pid]
+    return out
+
+
+def app_intro(p):
+    """T-29: the card's words, inside the app's gallery block, after its h3: the status pill,
+    the "what" line, the "proof" line (if any), the "More on <name>" link, then the join box,
+    each exactly as the card wrote it (same markup, same join form)."""
+    text = [f'<div class="meta"><span class="pill">{t(p["status"])}</span></div>',
+            f'<p>{t(p["what"])}</p>']
+    if p.get("proof"):
+        text.append(f'<p class="proof"><strong>{t(p["proof"])}</strong></p>')
+    if page_slug(p):
+        text.append(f'<a class="go" data-page href="{page_slug(p)}">{t(MORE.format(name=p["name"]))} →</a>')
+    out = ('\n      <div class="gprod">\n        <div class="gtext">\n          '
+           + "\n          ".join(text) + '\n        </div>')
+    if p.get("list"):
+        out += '\n        <div class="gjoin">' + "".join(join_button(p)) + '</div>'
+    return out + '\n      </div>'
+
+
 def gallery(studio):
     g = studio.get("gallery")
     if not g:
         return ""
+    inside = gallery_products(studio)
     out = ['\n  <section class="sec gal" aria-labelledby="gallery-h">',
            f'\n    <h2 id="gallery-h" class="big">{t(g["heading"])}</h2>']
     for app in g["apps"]:
         out.append(f'\n    <div class="gapp">\n      <h3>{t(app["name"])}</h3>')
+        if app.get("product") in inside:
+            out.append(app_intro(inside[app["product"]]))
         for grp in app["groups"]:
             cap = f'<p class="gcap">{t(grp["caption"])}</p>' if grp.get("caption") else ""
             name = f'{app["name"]}, {grp["label"].lower()}'
@@ -421,6 +464,26 @@ GALLERY_CSS = r"""
 .dj .grow:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
 @media (max-width:799px){.grow{margin-right:calc(-1 * clamp(16px,4vw,48px));padding-right:clamp(16px,4vw,48px)}}
 @media (min-width:800px){.grow{--h:calc(217px * 1349 / 660 + 3px);flex-wrap:wrap;overflow:visible;gap:18px 10px;padding-bottom:0}}
+"""
+
+# T-29 (Nov 18, 2026): the top of an app block that carries its product's card words
+# (app_intro()). The pill, the join box (.jf, .jf-e, .btn.hot) and the link (.go) keep the
+# card's classes; these rules give the lines, the proof and the link outside a card what
+# .prod gave them inside one. Under 900 px the text, then the join box under it; from
+# 900 px the text on the left (at most 34em) and the join box on the right, top-aligned.
+# The block sits on the page's cream, not the card's paper, so the email label takes the
+# darker grey the gallery's labels use there (#676D66, T-20 F9: #6B716A fails on cream).
+APP_CSS = r"""
+.gprod{display:flex;flex-direction:column;gap:20px;margin-bottom:8px}
+.gtext{display:flex;flex-direction:column;gap:12px;max-width:34em}
+.gtext p{margin:0;font-size:16px;color:#3B4540}
+.gtext .proof strong{color:#16201C}
+.gtext a.go{align-self:flex-start;display:inline-flex;align-items:center;min-height:44px;font-weight:700;text-decoration:none;color:#16201C}
+.gtext a.go:hover{color:#A93F17}
+.gjoin .jf-e span{color:#676D66}
+@media (min-width:900px){.gprod{flex-direction:row;align-items:flex-start;gap:48px}
+.gtext{flex:0 1 34em}
+.gjoin{flex:1 1 0;min-width:0}}
 """
 
 
@@ -560,7 +623,7 @@ def main(out_dir):
           title=title,
           description=lede.replace('"', "&quot;"),
           kicker="", h1=hero["h1"], lede=t(hero["intro"]),
-          css=CSS + LOG_PHONE_CSS + GALLERY_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
+          css=CSS + LOG_PHONE_CSS + GALLERY_CSS + APP_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
     rows = visible(studio, shipped, today)

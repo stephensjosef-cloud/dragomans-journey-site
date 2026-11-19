@@ -115,6 +115,17 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 @media (max-width:799px){.grow{margin-right:calc(-1 * clamp(16px,4vw,48px));padding-right:clamp(16px,4vw,48px)}}
 @media (min-width:800px){.grow{--h:calc(217px * 1349 / 660 + 3px);flex-wrap:wrap;overflow:visible;gap:18px 10px;padding-bottom:0}}
 
+.gprod{display:flex;flex-direction:column;gap:20px;margin-bottom:8px}
+.gtext{display:flex;flex-direction:column;gap:12px;max-width:34em}
+.gtext p{margin:0;font-size:16px;color:#3B4540}
+.gtext .proof strong{color:#16201C}
+.gtext a.go{align-self:flex-start;display:inline-flex;align-items:center;min-height:44px;font-weight:700;text-decoration:none;color:#16201C}
+.gtext a.go:hover{color:#A93F17}
+.gjoin .jf-e span{color:#676D66}
+@media (min-width:900px){.gprod{flex-direction:row;align-items:flex-start;gap:48px}
+.gtext{flex:0 1 34em}
+.gjoin{flex:1 1 0;min-width:0}}
+
 .shelf{margin:-6px calc(-1 * clamp(22px,2.6vw,30px)) 0 -6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-left:6px;scrollbar-width:thin}
 .shelf ul{list-style:none;margin:0;display:flex;gap:12px;width:max-content;padding:6px clamp(22px,2.6vw,30px) 10px 6px}
 .shelf li{flex:none;width:calc((100vw - 2 * clamp(16px,4vw,48px) - 37px) / 1.6);margin:0;scroll-snap-align:start}
@@ -158,7 +169,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-18 20b4fc27227a6b95 -->
+<!-- studio.py 2026-11-18 a399c9a94d322576 -->
   <section class="sec logsec" aria-labelledby="log-h">
     <div class="loghead">
       <div class="stats" id="stats" data-built="2026-11-18">
@@ -181,63 +192,18 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
     </ol>
     <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false">See all 11</button>
   </section>
-  <div class="sec prods" id="products">
-    <article class="prod feature" data-id="birdleague">
-      <div class="fb">
-        <h2>Bird League</h2>
-        <div class="meta"><span class="pill">In testing on iPhone</span></div>
-        <p>Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.</p>
-        <p class="proof"><strong>Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.</strong></p>
-        <div class="acts"><a class="go" data-page href="studio-birdleague.html">More on Bird League →</a><form class="jf" data-list="birdleague" action="mailto:hello@dragomansjourney.com?subject=List%3A%20Bird%20League" method="post" enctype="text/plain"><div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div><label class="jf-e"><span>Email</span><input name="email" type="email" autocomplete="email" required></label><button type="submit" class="btn hot">Get the launch email</button><div class="jf-ok" role="status"></div></form></div>
-      </div>
-      <img src="bird-league-then-now.jpg" width="1200" height="1331" loading="lazy" alt="Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.">
-    </article>
-    <article class="prod" data-id="deepcuts">
-        <h2>Deepcuts</h2>
-        <div class="meta"><span class="pill">In testing on iPhone</span></div>
-        <p>Indie games matched by how they actually play, not by what's trending.</p>
-        <div class="acts"><a class="go" data-page href="studio-deepcuts.html">More on Deepcuts →</a><form class="jf" data-list="deepcuts" action="mailto:hello@dragomansjourney.com?subject=List%3A%20Deepcuts" method="post" enctype="text/plain"><div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div><label class="jf-e"><span>Email</span><input name="email" type="email" autocomplete="email" required></label><button type="submit" class="btn hot">Join the beta</button><div class="jf-ok" role="status"></div></form></div>
-    </article>
-    <article class="prod" data-id="kids">
-        <h2>A kids' cooking app</h2>
-        <div class="meta"><span class="pill">Built for a client</span></div>
-        <p>The program's own recipes, in an app teachers cook from in class, with a grocery list that scales to the class and pages that print like their own cards. iPhone, iPad, Android and the web.</p>
-        <p class="proof"><strong>535 tests, and every change checked on a real phone before it ships.</strong></p>
-        <div class="acts"><a class="go" href="work.html">See the work →</a></div>
-    </article>
-    <article class="prod" data-id="cobol">
-        <h2>COBOL, checked in public</h2>
-        <div class="meta"><span class="pill">Public</span></div>
-        <p>Two different AIs translated the same COBOL interest program. The code, the prompts and every miss are published for anyone to rerun.</p>
-        <div class="acts"><a class="go" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Open the repo ↗</a></div>
-    </article>
-    <article class="prod" data-id="tools">
-        <h2>Free tools</h2>
-        <div class="meta"><span class="pill">Live</span></div>
-        <p>A reel shot list, a caption fitter, a busywork receipt, a recipe scaler and a COBOL field decoder. They run in your browser, and nothing you type leaves the page.</p>
-        <div class="acts"><a class="go" href="work.html#free">Use them →</a></div>
-    </article>
-    <article class="prod wide" data-id="chucklefits">
-        <h2>ChuckleFits</h2>
-        <div class="meta"><span class="pill">Live</span></div>
-        <p>My humor shirt shop.</p>
-        <div class="shelf" role="region" aria-label="ChuckleFits shirts" tabindex="0">
-          <ul>
-            <li><a href="https://chucklefits.com/products/thats-coo-womens-baby-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/thats-coo-womens-baby-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="That's Coo baby tee: a white baby tee with black sleeves, printed with a painting of a pigeon on a city street and the words that's coo under it."><span class="sn">That's Coo</span><span class="sk">Baby tee</span><span class="sp">From $28</span></a></li>
-            <li><a href="https://chucklefits.com/products/i-hold-a-grudge-womens-t-shirt?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/i-hold-a-grudge-womens-t-shirt.jpg" width="480" height="480" loading="lazy" decoding="async" alt="I Hold A Grudge women's tee: a white tee printed with a painting of a crow on a branch at sunset and the words I hold a grudge under it."><span class="sn">I Hold A Grudge</span><span class="sk">Women's tee</span><span class="sp">From $28</span></a></li>
-            <li><a href="https://chucklefits.com/products/bird-watchin-buddies-unisex-classic-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/bird-watchin-buddies-unisex-classic-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Bird Watchin Buddies tee: a white tee printed with two small birds in a pink circle and the words Bird Watchin Buddies around them."><span class="sn">Bird Watchin Buddies</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
-            <li><a href="https://chucklefits.com/products/easy-tiger-unisex-classic-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/easy-tiger-unisex-classic-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Easy Tiger tee: a white tee printed with a black drawing of a tiger lying down and the word Easy above its back."><span class="sn">Easy Tiger</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
-            <li><a href="https://chucklefits.com/products/as-far-as-i-know-im-delightful?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/as-far-as-i-know-im-delightful.jpg" width="480" height="480" loading="lazy" decoding="async" alt="As Far As I Know, I'm Delightful tee: a white tee printed with the words As far as I know over a snarling wolf's head, and the words I'm delightful under it."><span class="sn">As Far As I Know, I'm Delightful</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
-            <li><a href="https://chucklefits.com/products/love-your-mother-5-panel-cap?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/love-your-mother-5-panel-cap.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Love Your Mother cap: a cream cap with a royal blue brim, embroidered with an outline of the Earth and the words Love your mother."><span class="sn">Love Your Mother</span><span class="sk">Cap</span><span class="sp">From $26</span></a></li>
-          </ul>
-        </div>
-        <div class="acts"><a class="go" href="https://chucklefits.com/?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf">Visit the shop ↗</a></div>
-    </article>
-  </div>
   <section class="sec gal" aria-labelledby="gallery-h">
     <h2 id="gallery-h" class="big">Inside the apps</h2>
     <div class="gapp">
       <h3>Deepcuts</h3>
+      <div class="gprod">
+        <div class="gtext">
+          <div class="meta"><span class="pill">In testing on iPhone</span></div>
+          <p>Indie games matched by how they actually play, not by what's trending.</p>
+          <a class="go" data-page href="studio-deepcuts.html">More on Deepcuts →</a>
+        </div>
+        <div class="gjoin"><form class="jf" data-list="deepcuts" action="mailto:hello@dragomansjourney.com?subject=List%3A%20Deepcuts" method="post" enctype="text/plain"><div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div><label class="jf-e"><span>Email</span><input name="email" type="email" autocomplete="email" required></label><button type="submit" class="btn hot">Join the beta</button><div class="jf-ok" role="status"></div></form></div>
+      </div>
       <div class="ggroup">
         <div class="ghead"><p class="label">Then</p></div>
         <div class="grow" role="region" tabindex="0" aria-label="Deepcuts, then">
@@ -256,6 +222,15 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
     </div>
     <div class="gapp">
       <h3>Bird League</h3>
+      <div class="gprod">
+        <div class="gtext">
+          <div class="meta"><span class="pill">In testing on iPhone</span></div>
+          <p>Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.</p>
+          <p class="proof"><strong>Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.</strong></p>
+          <a class="go" data-page href="studio-birdleague.html">More on Bird League →</a>
+        </div>
+        <div class="gjoin"><form class="jf" data-list="birdleague" action="mailto:hello@dragomansjourney.com?subject=List%3A%20Bird%20League" method="post" enctype="text/plain"><div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div><label class="jf-e"><span>Email</span><input name="email" type="email" autocomplete="email" required></label><button type="submit" class="btn hot">Get the launch email</button><div class="jf-ok" role="status"></div></form></div>
+      </div>
       <div class="ggroup">
         <div class="ghead"><p class="label">Then</p></div>
         <div class="grow" role="region" tabindex="0" aria-label="Bird League, then">
@@ -291,6 +266,43 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
       </div>
     </div>
   </section>
+  <div class="sec prods" id="products">
+    <article class="prod" data-id="kids">
+        <h2>A kids' cooking app</h2>
+        <div class="meta"><span class="pill">Built for a client</span></div>
+        <p>The program's own recipes, in an app teachers cook from in class, with a grocery list that scales to the class and pages that print like their own cards. iPhone, iPad, Android and the web.</p>
+        <p class="proof"><strong>535 tests, and every change checked on a real phone before it ships.</strong></p>
+        <div class="acts"><a class="go" href="work.html">See the work →</a></div>
+    </article>
+    <article class="prod" data-id="cobol">
+        <h2>COBOL, checked in public</h2>
+        <div class="meta"><span class="pill">Public</span></div>
+        <p>Two different AIs translated the same COBOL interest program. The code, the prompts and every miss are published for anyone to rerun.</p>
+        <div class="acts"><a class="go" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Open the repo ↗</a></div>
+    </article>
+    <article class="prod wide" data-id="tools">
+        <h2>Free tools</h2>
+        <div class="meta"><span class="pill">Live</span></div>
+        <p>A reel shot list, a caption fitter, a busywork receipt, a recipe scaler and a COBOL field decoder. They run in your browser, and nothing you type leaves the page.</p>
+        <div class="acts"><a class="go" href="work.html#free">Use them →</a></div>
+    </article>
+    <article class="prod wide" data-id="chucklefits">
+        <h2>ChuckleFits</h2>
+        <div class="meta"><span class="pill">Live</span></div>
+        <p>My humor shirt shop.</p>
+        <div class="shelf" role="region" aria-label="ChuckleFits shirts" tabindex="0">
+          <ul>
+            <li><a href="https://chucklefits.com/products/thats-coo-womens-baby-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/thats-coo-womens-baby-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="That's Coo baby tee: a white baby tee with black sleeves, printed with a painting of a pigeon on a city street and the words that's coo under it."><span class="sn">That's Coo</span><span class="sk">Baby tee</span><span class="sp">From $28</span></a></li>
+            <li><a href="https://chucklefits.com/products/i-hold-a-grudge-womens-t-shirt?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/i-hold-a-grudge-womens-t-shirt.jpg" width="480" height="480" loading="lazy" decoding="async" alt="I Hold A Grudge women's tee: a white tee printed with a painting of a crow on a branch at sunset and the words I hold a grudge under it."><span class="sn">I Hold A Grudge</span><span class="sk">Women's tee</span><span class="sp">From $28</span></a></li>
+            <li><a href="https://chucklefits.com/products/bird-watchin-buddies-unisex-classic-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/bird-watchin-buddies-unisex-classic-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Bird Watchin Buddies tee: a white tee printed with two small birds in a pink circle and the words Bird Watchin Buddies around them."><span class="sn">Bird Watchin Buddies</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
+            <li><a href="https://chucklefits.com/products/easy-tiger-unisex-classic-tee?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/easy-tiger-unisex-classic-tee.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Easy Tiger tee: a white tee printed with a black drawing of a tiger lying down and the word Easy above its back."><span class="sn">Easy Tiger</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
+            <li><a href="https://chucklefits.com/products/as-far-as-i-know-im-delightful?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/as-far-as-i-know-im-delightful.jpg" width="480" height="480" loading="lazy" decoding="async" alt="As Far As I Know, I'm Delightful tee: a white tee printed with the words As far as I know over a snarling wolf's head, and the words I'm delightful under it."><span class="sn">As Far As I Know, I'm Delightful</span><span class="sk">Tee</span><span class="sp">From $26</span></a></li>
+            <li><a href="https://chucklefits.com/products/love-your-mother-5-panel-cap?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf"><img src="images/shelf/love-your-mother-5-panel-cap.jpg" width="480" height="480" loading="lazy" decoding="async" alt="Love Your Mother cap: a cream cap with a royal blue brim, embroidered with an outline of the Earth and the words Love your mother."><span class="sn">Love Your Mother</span><span class="sk">Cap</span><span class="sp">From $26</span></a></li>
+          </ul>
+        </div>
+        <div class="acts"><a class="go" href="https://chucklefits.com/?utm_source=dragomansjourney&amp;utm_medium=studio&amp;utm_campaign=shelf">Visit the shop ↗</a></div>
+    </article>
+  </div>
 
 </main>
 
