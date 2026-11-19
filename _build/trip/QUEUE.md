@@ -1311,6 +1311,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-29 · One block per app on the Studio page · READY
+
+**Why:** Nov 18, 2026: Bird League and Deepcuts each show twice on the Studio page, as a card and as a row in "Inside the apps". Josef keeps the row and wants the card's strengths moved into it.
+
+**Done when:** Bird League and Deepcuts each appear once on `studio.html`, as their "Inside the apps" block carrying the card's status, description, build line, page link and join box; the section sits right after "Shipped lately"; no word added or lost; seen at 320, 390 and 1440; axe 0; all tests pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
