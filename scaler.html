@@ -18,34 +18,34 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800;900&amp;family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <style>
-body{margin:0;background:#F2EDE1}
+body{margin:0;background:#E4ECD8}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-a{color:#A93F17}a:hover{color:#16201C}
-::selection{background:#E8592B;color:#0E1A17}
-.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#A93F17}a:hover{color:#17212B}
+::selection{background:#E8592B;color:#17212B}
+.dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
-.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
-.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#F07A4E;text-transform:uppercase}
-.panel{background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
-.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A;margin:0 0 10px}
+.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#A93F17;text-transform:none}
+.panel{background:#F7F9F3;border:1.5px solid #9BAA90;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:none;color:#4F5A63;margin:0 0 10px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
-.chip:hover{border-color:#16201C}
-.chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
-.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
-.btn:hover{background:#0E1B17;color:#F2EDE1}
-.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1A17}
-.btn.ghost{background:transparent;color:#16201C}
-.btn.ghost:hover{background:#EAE3D3;color:#16201C}
-input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #9BAA90;background:transparent;color:#17212B;font-size:15px;font-weight:600}
+.chip:hover{border-color:#17212B}
+.chip[aria-pressed="true"]{background:#17212B;border-color:#17212B;color:#F7F9F3}
+.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #17212B;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}
+.btn:hover{background:#17212B;color:#F7F9F3}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#17212B}
+.btn.ghost{background:transparent;color:#17212B}
+.btn.ghost:hover{background:#EDF2E6;color:#17212B}
+input,textarea,select{font:inherit;color:#17212B;background:#fff;border:1.5px solid #9BAA90;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
 textarea{min-height:140px;resize:vertical;line-height:1.5}
-.private{font-size:14px;color:#5A635D;margin:0}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.private{font-size:14px;color:#4F5A63;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17212B;color:#F7F9F3;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
@@ -55,18 +55,18 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 @media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr)}}
 .who{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px;align-items:end}
 .who label{display:flex;flex-direction:column;gap:6px}
-.who span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6B716A}
+.who span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:none;color:#4F5A63}
 .factor{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px}
-.factor .n{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(48px,6vw,72px);line-height:.9;color:#C2461B}
+.factor .n{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;font-size:clamp(48px,6vw,72px);line-height:.9;color:#A93F17}
 .warn{background:#F9EEDA;border-left:4px solid #D9A520;padding:12px 14px;font-size:16px;margin:14px 0 0}
 table{width:100%;border-collapse:collapse;font-size:16px}
-th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6B716A;font-weight:500;padding:0 8px 8px 0;border-bottom:1.5px solid #16201C}
-td{padding:10px 8px 10px 0;border-bottom:1px solid #DDD5C3;vertical-align:top}
+th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:none;color:#4F5A63;font-weight:500;padding:0 8px 8px 0;border-bottom:1.5px solid #17212B}
+td{padding:10px 8px 10px 0;border-bottom:1px solid #9BAA90;vertical-align:top}
 td.amt{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
-td.note{font-size:14px;color:#5A635D}
+td.note{font-size:14px;color:#4F5A63}
 td.note b{color:#A93F17;font-weight:600}
-.was{display:block;font-size:12.5px;color:#6F736D;font-weight:400}
-@media (max-width:560px){td.note{display:block;padding-top:0;border-bottom:0}tr{display:block;border-bottom:1px solid #DDD5C3;padding:6px 0}td{display:inline-block;border:0;padding:4px 8px 4px 0}td.amt{min-width:7.5em}thead tr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}tbody tr{display:flex;flex-wrap:wrap;align-items:baseline}td.amt{flex:none}td.amt+td{flex:1 1 0;min-width:0}td.note{flex:1 0 100%}}
+.was{display:block;font-size:12.5px;color:#4F5A63;font-weight:400}
+@media (max-width:560px){td.note{display:block;padding-top:0;border-bottom:0}tr{display:block;border-bottom:1px solid #9BAA90;padding:6px 0}td{display:inline-block;border:0;padding:4px 8px 4px 0}td.amt{min-width:7.5em}thead tr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}tbody tr{display:flex;flex-wrap:wrap;align-items:baseline}td.amt{flex:none}td.amt+td{flex:1 1 0;min-width:0}td.note{flex:1 0 100%}}
 @media print{.noprint{display:none!important}body{background:#fff}.lay{display:block}.panel{border:0;padding:0}}
 
 </style>
@@ -85,26 +85,26 @@ td.note b{color:#A93F17;font-weight:600}
 <body>
 <div class="dj">
 
-<header style="background:#0E1B17;color:#E9EEE9" class="noprint">
+<header style="background:#E4ECD8;color:#17212B" class="noprint">
   <div class="wrap">
     <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
-      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
-        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#17212B;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#17212B" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
       <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
-        <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
-        <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
-        <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
-        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
-        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
+        <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
+        <a href="local.html" style="color:#4F5A63;text-decoration:none">Local Route</a>
+        <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <span class="kick">Free tool</span>
       <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Any recipe.<br>Any crowd.</h1>
-      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Paste a recipe and say who's eating. You get amounts you can actually measure.</p>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#4F5A63">Paste a recipe and say who's eating. You get amounts you can actually measure.</p>
     </div>
   </div>
 </header>
@@ -146,21 +146,21 @@ pinch of salt</textarea>
     </section>
   </div>
 
-  <p class="noprint" style="margin:4px 0 -4px -6px;padding:4px 0 4px 6px;overflow:hidden;font-size:15px;line-height:2;color:#5A635D"><span style="display:block;margin-left:-20px;text-indent:20px"><span style="white-space: nowrap">More free tools: <a href="shotlist.html"><span style="white-space: nowrap">Reel shot list</span></a></span><wbr><span style="white-space: nowrap"><span style="display:inline-block;width:20px;text-align:center;text-indent:0">&nbsp;·&nbsp;</span><a href="captions.html"><span style="white-space: nowrap">Caption fitter</span></a></span><wbr><span style="white-space: nowrap"><span style="display:inline-block;width:20px;text-align:center;text-indent:0">&nbsp;·&nbsp;</span><a href="receipt.html"><span style="white-space: nowrap">Busywork receipt</span></a></span></span></p>
-  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+  <p class="noprint" style="margin:4px 0 -4px -6px;padding:4px 0 4px 6px;overflow:hidden;font-size:15px;line-height:2;color:#4F5A63"><span style="display:block;margin-left:-20px;text-indent:20px"><span style="white-space: nowrap">More free tools: <a href="shotlist.html"><span style="white-space: nowrap">Reel shot list</span></a></span><wbr><span style="white-space: nowrap"><span style="display:inline-block;width:20px;text-align:center;text-indent:0">&nbsp;·&nbsp;</span><a href="captions.html"><span style="white-space: nowrap">Caption fitter</span></a></span><wbr><span style="white-space: nowrap"><span style="display:inline-block;width:20px;text-align:center;text-indent:0">&nbsp;·&nbsp;</span><a href="receipt.html"><span style="white-space: nowrap">Busywork receipt</span></a></span></span></p>
+  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#E4ECD8;color:#17212B;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Built from a real kitchen</h2>
-      <p style="margin:0;font-size:18px;color:#C9D2CB">This is one trick from a cooking app I'm building for a Sonoma County children's nonprofit. If your program has a binder of recipes or lessons, start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
+      <p style="margin:0;font-size:18px;color:#4F5A63">This is one trick from a cooking app I'm building for a Sonoma County children's nonprofit. If your program has a binder of recipes or lessons, start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
-      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1A17;text-decoration:none;font-weight:700;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#17212B;text-decoration:none;font-weight:700;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
 </main>
 
-<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">
   <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
-  <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#2E3A47">hello@dragomansjourney.com</a>
 </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

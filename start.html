@@ -18,39 +18,39 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800;900&amp;family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <style>
-body{margin:0;background:#F2EDE1}
+body{margin:0;background:#E4ECD8}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-a{color:#A93F17}a:hover{color:#16201C}
-::selection{background:#E8592B;color:#0E1A17}
-.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#A93F17}a:hover{color:#17212B}
+::selection{background:#E8592B;color:#17212B}
+.dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
-.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
 /* T-21 G2: on small phones the Blueprint line steps down a touch, so it holds on one line (its dots never end or start a line). */
 @media (max-width:359px){.t21-eb{font-size:12px!important;letter-spacing:.08em!important}}
-.step{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 20px;padding:32px 0;border-top:1.5px solid #16201C}
+.step{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 20px;padding:32px 0;border-top:1.5px solid #17212B}
 .step-n{font-family:'JetBrains Mono',monospace;font-size:14px;color:#A93F17;padding-top:6px}
-.step h2{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(26px,2.8vw,36px);line-height:1;margin:0 0 6px}
-.hint{margin:0 0 14px;font-size:15px;color:#5A635D}
+.step h2{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;font-size:clamp(26px,2.8vw,36px);line-height:1;margin:0 0 6px}
+.hint{margin:0 0 14px;font-size:15px;color:#4F5A63}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:inherit;cursor:pointer;min-height:52px;padding:10px 18px;border-radius:2px;border:1.5px solid #B9B09C;background:#FBF8F1;color:#16201C;font-size:16px;font-weight:600;text-align:left;transition:border-color 140ms ease,background 140ms ease}
-.chip:hover{border-color:#16201C}
+.chip{font:inherit;cursor:pointer;min-height:52px;padding:10px 18px;border-radius:2px;border:1.5px solid #9BAA90;background:#F7F9F3;color:#17212B;font-size:16px;font-weight:600;text-align:left;transition:border-color 140ms ease,background 140ms ease}
+.chip:hover{border-color:#17212B}
 .chip-row{flex-basis:100%;height:0}
-.chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
+.chip[aria-pressed="true"]{background:#17212B;border-color:#17212B;color:#F7F9F3}
 .field{display:flex;flex-direction:column;gap:6px}
-.field span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#5A635D}
-.field input,.field textarea{width:100%;min-height:52px;padding:12px 14px;border:1.5px solid #B9B09C;border-radius:2px;background:#FBF8F1;color:#16201C;font:500 17px/1.45 'Instrument Sans',sans-serif}
+.field span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:none;color:#4F5A63}
+.field input,.field textarea{width:100%;min-height:52px;padding:12px 14px;border:1.5px solid #9BAA90;border-radius:2px;background:#F7F9F3;color:#17212B;font:500 17px/1.45 'Barlow',sans-serif}
 .field textarea{min-height:120px;resize:vertical}
-.field input:focus,.field textarea:focus{border-color:#16201C}
+.field input:focus,.field textarea:focus{border-color:#17212B}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}
-.send{font:inherit;cursor:pointer;min-height:60px;padding:0 30px;border:0;border-radius:2px;background:#E8592B;color:#0E1A17;font-weight:700;font-size:18px;transition:transform 160ms ease,filter 160ms ease}
+.send{font:inherit;cursor:pointer;min-height:60px;padding:0 30px;border:0;border-radius:2px;background:#E8592B;color:#17212B;font-weight:700;font-size:18px;transition:transform 160ms ease,filter 160ms ease}
 .send:hover{transform:translateY(-2px);filter:brightness(1.06)}
 .send[disabled]{opacity:.6;cursor:progress;transform:none}
-.err{margin:0;padding:12px 16px;border-left:3px solid #E8592B;background:#FBF8F1;font-size:16px}
+.err{margin:0;padding:12px 16px;border-left:3px solid #E8592B;background:#F7F9F3;font-size:16px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 @media (max-width:640px){.step{grid-template-columns:1fr}.step-n{padding-top:0}}
 </style>
@@ -66,33 +66,34 @@ a{color:#A93F17}a:hover{color:#16201C}
 }
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
+<style data-t32>.t32-rt{position:relative}.t32-rt::before{content:"";position:absolute;left:58px;top:0;bottom:-12px;width:3px;background:repeating-linear-gradient(to bottom,#E8592B 0 10px,transparent 10px 18px);pointer-events:none}.t32-rt-end::before{bottom:0}.t32-rl{position:relative}.t32-rl::before{content:"";position:absolute;left:-12px;top:.35em;bottom:.35em;width:3px;background:repeating-linear-gradient(to bottom,#E8592B 0 10px,transparent 10px 18px);pointer-events:none}</style>
 </head>
 <body>
 <div class="dj">
 
-<header style="background:#0E1B17;color:#E9EEE9;position:relative;overflow:hidden">
-  <svg aria-hidden="true" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;opacity:.35"><path d="M-40 60 C 200 30, 400 90, 640 54 S 1040 20, 1240 66 S 1480 90, 1520 60" fill="none" stroke="rgba(147,163,154,.45)"/><path d="M-40 140 C 200 100, 400 180, 640 132 S 1040 90, 1240 146 S 1480 180, 1520 140" fill="none" stroke="rgba(147,163,154,.45)"/><path d="M-40 220 C 200 170, 400 270, 640 210 S 1040 160, 1240 226 S 1480 270, 1520 220" fill="none" stroke="rgba(240,122,78,.6)"/><path d="M-40 300 C 200 260, 400 340, 640 290 S 1040 250, 1240 306 S 1480 340, 1520 300" fill="none" stroke="rgba(147,163,154,.45)"/></svg>
+<header style="background:#E4ECD8;color:#17212B;position:relative;overflow:hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;opacity:.35"><path d="M-40 60 C 200 30, 400 90, 640 54 S 1040 20, 1240 66 S 1480 90, 1520 60" fill="none" stroke="rgba(168,139,92,0.38)"/><path d="M-40 140 C 200 100, 400 180, 640 132 S 1040 90, 1240 146 S 1480 180, 1520 140" fill="none" stroke="rgba(168,139,92,0.38)"/><path d="M-40 220 C 200 170, 400 270, 640 210 S 1040 160, 1240 226 S 1480 270, 1520 220" fill="none" stroke="rgba(168,139,92,0.6)"/><path d="M-40 300 C 200 260, 400 340, 640 290 S 1040 250, 1240 306 S 1480 340, 1520 300" fill="none" stroke="rgba(168,139,92,0.38)"/></svg>
   <div class="wrap" style="position:relative">
     <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
-      <a href="local.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
-        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+      <a href="local.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#17212B;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#17212B" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
-      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px"><a href="studio.html" style="display:inline-flex;align-items:center;min-height:44px;color:#C9D2CB;text-decoration:none;font-size:15px">Studio</a><a href="work.html#free" style="display:inline-flex;align-items:center;min-height:44px;color:#C9D2CB;text-decoration:none;font-size:15px">Free tools</a><a href="local.html" style="display:inline-flex;align-items:center;min-height:44px;color:#C9D2CB;text-decoration:none;font-size:15px">← Back to the Local Route</a></div>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px"><a href="studio.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Studio</a><a href="work.html#free" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Free tools</a><a href="local.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">← Back to the Local Route</a></div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:clamp(28px,5vw,72px);align-items:end;padding:clamp(28px,5vw,64px) 0 clamp(48px,6vw,88px)">
       <div style="display:flex;flex-direction:column;gap:18px">
-        <span class="mono t21-eb" style="font-size:13px;letter-spacing:.1em;color:#F07A4E">THE BLUEPRINT&nbsp;·&nbsp;$1,500&nbsp;·&nbsp;TWO WEEKS</span>
+        <span class="mono t21-eb" style="font-size:13px;letter-spacing:.1em;color:#A93F17">THE BLUEPRINT&nbsp;·&nbsp;$1,500&nbsp;·&nbsp;TWO WEEKS</span>
         <h1 class="big" style="font-size:clamp(56px,8vw,112px)">Let's get<br>started</h1>
-        <p style="margin:0;max-width:52ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">A few quick questions, and I'll take it from here. I read every answer myself, then send you a <span style="white-space: nowrap">one-page</span> agreement and a date for my first visit.</p>
+        <p style="margin:0;max-width:52ch;font-size:clamp(18px,1.6vw,21px);color:#4F5A63">A few quick questions, and I'll take it from here. I read every answer myself, then send you a <span style="white-space: nowrap">one-page</span> agreement and a date for my first visit.</p>
       </div>
-      <div style="border:1px solid #2B3D35;background:#15261F;padding:clamp(20px,2.6vw,30px);display:flex;flex-direction:column;gap:12px">
-        <span class="mono" style="font-size:12px;letter-spacing:.1em;color:#93A39A">HOW IT WORKS</span>
-        <div style="display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;font-size:16px;color:#E9EEE9"><strong class="mono" style="color:#F07A4E;font-size:13px;padding-top:3px">DAY 1</strong><span>I come to you and watch the real work happen.</span></div>
-        <div style="display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;font-size:16px;color:#E9EEE9"><strong class="mono" style="color:#F07A4E;font-size:13px;padding-top:3px">DAY 7</strong><span>A working sample made from your own material.</span></div>
-        <div style="display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;font-size:16px;color:#E9EEE9"><strong class="mono" style="color:#F07A4E;font-size:13px;padding-top:3px">DAY 14</strong><span>A written plan, a fixed price and a launch date. Or a straight answer that you don't need me.</span></div>
-        <p style="margin:6px 0 0;padding-top:12px;border-top:1px dashed #4C5F56;font-size:15px;color:#C9D2CB">$1,500, fixed. It comes off the build price if you go ahead, and the plan is yours to keep if you don't.</p>
+      <div style="border:1px solid #9BAA90;background:#E4ECD8;padding:clamp(20px,2.6vw,30px);display:flex;flex-direction:column;gap:12px">
+        <span class="mono" style="font-size:12px;letter-spacing:.1em;color:#4F5A63">HOW IT WORKS</span>
+        <div class="t32-rt" style="display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;font-size:16px;color:#17212B"><strong class="mono" style="color:#A93F17;font-size:13px;padding-top:3px">DAY 1</strong><span>I come to you and watch the real work happen.</span></div>
+        <div class="t32-rt" style="display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;font-size:16px;color:#17212B"><strong class="mono" style="color:#A93F17;font-size:13px;padding-top:3px">DAY 7</strong><span>A working sample made from your own material.</span></div>
+        <div class="t32-rt t32-rt-end" style="display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;font-size:16px;color:#17212B"><strong class="mono" style="color:#A93F17;font-size:13px;padding-top:3px">DAY 14</strong><span>A written plan, a fixed price and a launch date. Or a straight answer that you don't need me.</span></div>
+        <p style="margin:6px 0 0;padding-top:12px;border-top:1px dashed #9BAA90;font-size:15px;color:#4F5A63">$1,500, fixed. It comes off the build price if you go ahead, and the plan is yours to keep if you don't.</p>
       </div>
     </div>
   </div>
@@ -188,31 +189,31 @@ a{color:#A93F17}a:hover{color:#16201C}
       </div>
     </section>
 
-    <div style="border-top:1.5px solid #16201C;padding-top:28px;display:flex;flex-direction:column;gap:16px">
+    <div style="border-top:1.5px solid #17212B;padding-top:28px;display:flex;flex-direction:column;gap:16px">
       <p id="bp-err" class="err" role="alert" hidden></p>
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px">
         <button type="submit" class="send" id="bp-send">Send my answers →</button>
-        <span style="font-size:15px;color:#5A635D">Nothing is charged today. Next comes my reply, the agreement and the invoice.</span>
+        <span style="font-size:15px;color:#4F5A63">Nothing is charged today. Next comes my reply, the agreement and the invoice.</span>
       </div>
     </div>
   </form>
 
-  <section id="bp-done" hidden tabindex="-1" aria-labelledby="done-h" style="max-width:880px;margin:0 auto;border:2px solid #16201C;background:#FBF8F1;padding:clamp(24px,4vw,48px);display:flex;flex-direction:column;gap:18px">
+  <section id="bp-done" hidden tabindex="-1" aria-labelledby="done-h" style="max-width:880px;margin:0 auto;border:2px solid #17212B;background:#F7F9F3;padding:clamp(24px,4vw,48px);display:flex;flex-direction:column;gap:18px">
     <span class="mono" style="font-size:13px;letter-spacing:.1em;color:#A93F17">RECEIVED</span>
     <h2 id="done-h" class="big" style="font-size:clamp(44px,6vw,80px)">Got it, thank you</h2>
-    <p style="margin:0;font-size:19px;color:#3B4540;max-width:56ch">I've got your answers. Here's what happens next:</p>
-    <ol style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:18px;color:#16201C">
+    <p style="margin:0;font-size:19px;color:#2E3A47;max-width:56ch">I've got your answers. Here's what happens next:</p>
+    <ol class="t32-rl" style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:18px;color:#17212B">
       <li>I read your answers myself and write back with any questions.</li>
       <li>You get a <span style="white-space: nowrap">one-page</span> agreement and an invoice for $1,500.</li>
       <li>Once it's signed, we lock in Day 1 and I come see the real work.</li>
     </ol>
-    <a href="local.html#proof" style="align-self:flex-start;display:inline-flex;align-items:center;min-height:52px;padding:0 22px;margin-top:6px;background:#16201C;color:#F2EDE1;text-decoration:none;font-weight:700;border-radius:2px">While you wait, see the work →</a>
+    <a href="local.html#proof" style="align-self:flex-start;display:inline-flex;align-items:center;min-height:52px;padding:0 22px;margin-top:6px;background:#17212B;color:#F7F9F3;text-decoration:none;font-weight:700;border-radius:2px">While you wait, see the work →</a>
   </section>
 </main>
 
-<footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+<footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">
   <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
-  <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#2E3A47">hello@dragomansjourney.com</a>
 </footer>
 </div>
 

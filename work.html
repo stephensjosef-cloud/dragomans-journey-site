@@ -18,34 +18,34 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800;900&amp;family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <style>
-body{margin:0;background:#F2EDE1}
+body{margin:0;background:#E4ECD8}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-a{color:#A93F17}a:hover{color:#16201C}
-::selection{background:#E8592B;color:#0E1A17}
-.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#A93F17}a:hover{color:#17212B}
+::selection{background:#E8592B;color:#17212B}
+.dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .dj a:focus-visible,.dj button:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
-.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
-.filt{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
-.filt:hover{border-color:#16201C}
-.filt[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
+.filt{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #9BAA90;background:transparent;color:#17212B;font-size:15px;font-weight:600}
+.filt:hover{border-color:#17212B}
+.filt[aria-pressed="true"]{background:#17212B;border-color:#17212B;color:#F7F9F3}
 .grid{display:flex;flex-wrap:wrap;gap:18px}
 /* T-21 G4: cards wrap like the old 360 px columns, and the cards on the last row stretch to fill it, so no row ends in an empty cell for any filter, four tools or five. */
 .grid>.card{flex:1 1 min(360px,100%);min-width:0}
-.card{display:flex;flex-direction:column;gap:12px;padding:clamp(22px,2.6vw,30px);background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;transition:transform 200ms ease,border-color 200ms ease}
-.card:hover{transform:translateY(-3px);border-color:#16201C}
+.card{display:flex;flex-direction:column;gap:12px;padding:clamp(22px,2.6vw,30px);background:#F7F9F3;border:1.5px solid #9BAA90;border-radius:2px;transition:transform 200ms ease,border-color 200ms ease}
+.card:hover{transform:translateY(-3px);border-color:#17212B}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
-.tag{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:4px 10px;background:#EAE3D3;color:#3B4540;border-radius:2px}
-.card .num{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;font-size:clamp(44px,5vw,60px);line-height:.95;color:#C2461B;margin:4px 0 0}
+.tag{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:4px 10px;background:#EDF2E6;color:#2E3A47;border-radius:2px}
+.card .num{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;font-size:clamp(44px,5vw,60px);line-height:.95;color:#A93F17;margin:4px 0 0}
 /* T-25, Josef's ruling (Nov 17, 2026): the banking card's figure gets the balanced wrap the site's headings use. Same size, same words. */
 .card[data-k="banking"] .num{text-wrap:balance}
 .card h2{margin:0;font-size:22px;line-height:1.25;font-weight:700}
-.card p{margin:0;font-size:16px;color:#3B4540}
-.card a.go{margin-top:auto;padding-top:8px;font-weight:700;text-decoration:none;color:#16201C}
+.card p{margin:0;font-size:16px;color:#2E3A47}
+.card a.go{margin-top:auto;padding-top:8px;font-weight:700;text-decoration:none;color:#17212B}
 .card a.go:hover{color:#A93F17}
 .card.feature{grid-column:1/-1;flex-basis:100%;display:grid;grid-template-columns:minmax(0,1fr);gap:20px 36px;align-items:center}
 .card.feature .fb{display:flex;flex-direction:column;gap:12px}
@@ -69,20 +69,20 @@ a{color:#A93F17}a:hover{color:#16201C}
 <body>
 <div class="dj">
 
-<header style="background:#0E1B17;color:#E9EEE9">
+<header style="background:#E4ECD8;color:#17212B">
   <div class="wrap">
     <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
-      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
-        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#17212B;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#17212B" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
       <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
-        <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
-        <a href="mainframe.html" style="color:#C9D2CB;text-decoration:none">Mainframe Route</a>
-        <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
-        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
-        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
+        <a href="local.html" style="color:#4F5A63;text-decoration:none">Local Route</a>
+        <a href="mainframe.html" style="color:#4F5A63;text-decoration:none">Mainframe Route</a>
+        <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
     <div style="padding:clamp(28px,5vw,64px) 0 clamp(44px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:24px 64px;align-items:end">
@@ -130,7 +130,7 @@ a{color:#A93F17}a:hover{color:#16201C}
     </article>
 
     <article class="card feature" data-k="own">
-      <img src="bird-league-then-now.jpg" width="1200" height="1331" loading="lazy" alt="Two phone screens side by side. Then: an early Bird League screen that still says mock data, real API coming next. Now: build 49's life list wall, 139 of 1,123 birds." style="width:100%;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6">
+      <img src="bird-league-then-now.jpg" width="1200" height="1331" loading="lazy" alt="Two phone screens side by side. Then: an early Bird League screen that still says mock data, real API coming next. Now: build 49's life list wall, 139 of 1,123 birds." style="width:100%;height:auto;display:block;border:1.5px solid #9BAA90;border-radius:2px;background:#EDF2E6">
       <div class="fb">
       <div class="tags"><span class="tag">My own build</span><span class="tag">App</span></div>
       <h2>Bird League</h2>
@@ -176,21 +176,21 @@ a{color:#A93F17}a:hover{color:#16201C}
 
   </div>
 
-  <section aria-labelledby="next-h" style="margin-top:20px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+  <section aria-labelledby="next-h" style="margin-top:20px;background:#17212B;color:#F7F9F3;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:12px">
       <h2 id="next-h" class="big" style="font-size:clamp(36px,4.6vw,60px)">Your pile could be next</h2>
-      <p style="margin:0;font-size:18px;color:#C9D2CB">Two weeks, $1,500, and it comes off the build price. Or start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
+      <p style="margin:0;font-size:18px;color:#B9C3CC">Two weeks, $1,500, and it comes off the build price. Or start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:12px">
-      <a href="start.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1A17;text-decoration:none;font-weight:700;border-radius:2px">Start a Blueprint →</a>
-      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
+      <a href="start.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#17212B;text-decoration:none;font-weight:700;border-radius:2px">Start a Blueprint →</a>
+      <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #3A4654;color:#F7F9F3;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
 </main>
 
-<footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+<footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">
   <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
-  <a href="mailto:hello@dragomansjourney.com" style="color:#3B4540">hello@dragomansjourney.com</a>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#2E3A47">hello@dragomansjourney.com</a>
 </footer>
 </div>
 <script>

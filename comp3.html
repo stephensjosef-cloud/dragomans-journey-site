@@ -18,38 +18,38 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&amp;family=Barlow+Semi+Condensed:wght@600;700;800;900&amp;family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <style>
-body{margin:0;background:#F4F1EA}
+body{margin:0;background:#E4ECD8}
 *{box-sizing:border-box}
-a{color:#A93F17}a:hover{color:#12161F}
-::selection{background:#E8592B;color:#12161F}
-.mf{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#12161F;background:#F4F1EA;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
-.mf a:focus-visible,.mf button:focus-visible,.mf input:focus-visible{outline:2px solid #A93F17;outline-offset:3px}
+a{color:#1C5FA8}a:hover{color:#17212B}
+::selection{background:#1C5FA8;color:#F7F9F3}
+.mf{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;background:#E4ECD8;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.mf a:focus-visible,.mf button:focus-visible,.mf input:focus-visible{outline:2px solid #1C5FA8;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
 .serif{font-family:'Newsreader',Georgia,serif}
-.label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5D6576}
-input.field{width:100%;min-height:52px;padding:10px 14px;border:1px solid #12161F;background:#FBF9F4;color:#12161F;font:500 18px/1.3 'JetBrains Mono',monospace;border-radius:0}
-.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 14px;border:1px solid #12161F;background:transparent;color:#12161F;font-size:14px}
-.chip:hover{background:#12161F;color:#F4F1EA}
-.seg{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border:1px solid #12161F;background:transparent;color:#12161F;font-size:15px;font-weight:600}
-.seg[aria-pressed="true"]{background:#12161F;color:#F4F1EA}
+.label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:none;color:#4F5A63}
+input.field{width:100%;min-height:52px;padding:10px 14px;border:1px solid #17212B;background:#F7F9F3;color:#17212B;font:500 18px/1.3 'JetBrains Mono',monospace;border-radius:0}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 14px;border:1px solid #17212B;background:transparent;color:#17212B;font-size:14px}
+.chip:hover{background:#17212B;color:#F7F9F3}
+.seg{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border:1px solid #17212B;background:transparent;color:#17212B;font-size:15px;font-weight:600}
+.seg[aria-pressed="true"]{background:#17212B;color:#F7F9F3}
 .nib{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:44px}
-.nib b{display:flex;align-items:center;justify-content:center;width:44px;height:52px;border:1px solid #12161F;font:700 22px 'JetBrains Mono',monospace;background:#FBF9F4}
-.nib.sign b{background:#12161F;color:#F4F1EA}
-.nib.pad b{color:#9AA0AC;border-style:dashed}
-.nib.bad b{background:#E8592B;color:#12161F}
-.nib span{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.08em;color:#5D6576;text-transform:uppercase}
-.byte{display:flex;gap:4px;padding:8px;border:1px dashed #CFC8B8}
+.nib b{display:flex;align-items:center;justify-content:center;width:44px;height:52px;border:1px solid #17212B;font:700 22px 'JetBrains Mono',monospace;background:#F7F9F3}
+.nib.sign b{background:#17212B;color:#F7F9F3}
+.nib.pad b{color:#4F5A63;border-style:dashed}
+.nib.bad b{background:#1C5FA8;color:#F7F9F3}
+.nib span{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.08em;color:#4F5A63;text-transform:none}
+.byte{display:flex;gap:4px;padding:8px;border:1px dashed #9BAA90}
 .bytes{display:grid;grid-template-columns:repeat(2,max-content);gap:8px}
-dl.facts{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));border-top:1px solid #12161F}
-dl.facts div{padding:14px 16px 14px 0;border-bottom:1px solid #CFC8B8}
+dl.facts{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));border-top:1px solid #17212B}
+dl.facts div{padding:14px 16px 14px 0;border-bottom:1px solid #9BAA90}
 dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-break:break-all}
-.warn{margin:0;padding:12px 16px;border-left:3px solid #E8592B;background:#FBF9F4;font-size:16px}
-.ok{margin:0;padding:12px 16px;border-left:3px solid #5D6576;background:#FBF9F4;font-size:16px}
+.warn{margin:0;padding:12px 16px;border-left:3px solid #1C5FA8;background:#F7F9F3;font-size:16px}
+.ok{margin:0;padding:12px 16px;border-left:3px solid #4F5A63;background:#F7F9F3;font-size:16px}
 .quiet{transition:background 160ms ease,color 160ms ease}
-.quiet:hover{background:#12161F;color:#F4F1EA}
+.quiet:hover{background:#17212B;color:#F7F9F3}
 @media (max-width:640px){.nib{min-width:36px}.nib b{width:36px;height:46px;font-size:19px}}
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
@@ -57,19 +57,19 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
 <body>
 <div class="mf">
 
-<header class="wrap" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-top:22px;padding-bottom:22px;border-bottom:1px solid #CFC8B8">
-  <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#12161F;text-decoration:none">
-    <svg width="26" height="26" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#12161F" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+<header class="wrap" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-top:22px;padding-bottom:22px;border-bottom:1px solid #9BAA90">
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#17212B;text-decoration:none">
+    <svg width="26" height="26" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#17212B" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#1C5FA8"/></svg>
     <span class="serif" style="font-size:20px">Dragoman's Journey</span>
   </a>
-  <a href="mainframe.html" style="display:inline-flex;align-items:center;min-height:44px;color:#3A4252;text-decoration:none;font-size:15px">The Mainframe Route →</a>
+  <a href="mainframe.html" style="display:inline-flex;align-items:center;min-height:44px;color:#2E3A47;text-decoration:none;font-size:15px">The Mainframe Route →</a>
 </header>
 
 <main>
 <section class="wrap" style="padding-top:clamp(48px,7vw,96px);padding-bottom:24px;display:flex;flex-direction:column;gap:18px;max-width:1240px">
-  <span class="label" style="color:#A93F17">Free tool</span>
-  <h1 class="serif" style="margin:0;font-weight:300;font-size:clamp(44px,6vw,84px);line-height:1;letter-spacing:-0.025em"><span style="white-space: nowrap">Packed-decimal</span> <em style="color:#A93F17">decoder</em></h1>
-  <p style="margin:0;max-width:60ch;font-size:clamp(18px,1.5vw,20px);color:#3A4252">One stored number. Two ways to read it. On a $1,000 balance, one reading charges $2.92 of interest a month and the other charges $291.67. The code can't tell you which is right. Paste your own below. Nothing you paste leaves this page.</p>
+  <span class="label" style="color:#1C5FA8">Free tool</span>
+  <h1 class="serif" style="margin:0;font-weight:300;font-size:clamp(44px,6vw,84px);line-height:1;letter-spacing:-0.025em"><span style="white-space: nowrap">Packed-decimal</span> <em style="color:#1C5FA8">decoder</em></h1>
+  <p style="margin:0;max-width:60ch;font-size:clamp(18px,1.5vw,20px);color:#2E3A47">One stored number. Two ways to read it. On a $1,000 balance, one reading charges $2.92 of interest a month and the other charges $291.67. The code can't tell you which is right. Paste your own below. Nothing you paste leaves this page.</p>
 </section>
 
 <section class="wrap" aria-label="Decoder" style="padding-top:24px;padding-bottom:clamp(48px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:clamp(28px,4vw,56px);align-items:start">
@@ -85,7 +85,7 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
     <label style="display:flex;flex-direction:column;gap:8px">
       <span class="label">Picture clause</span>
       <input class="field" id="pic" autocomplete="off" spellcheck="false" value="S9(2)V9(5)">
-      <span style="font-size:14px;color:#5D6576">The line in the program that says how the number is stored. Paste it however it appears: <span class="mono">PIC S9(7)V99 <span style="white-space: nowrap">COMP-3</span>.</span> works.</span>
+      <span style="font-size:14px;color:#4F5A63">The line in the program that says how the number is stored. Paste it however it appears: <span class="mono">PIC S9(7)V99 <span style="white-space: nowrap">COMP-3</span>.</span> works.</span>
     </label>
     <div style="display:flex;flex-direction:column;gap:10px">
       <span class="label">Try one</span>
@@ -102,23 +102,23 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
   <div id="out" aria-live="polite" style="display:flex;flex-direction:column;gap:22px;min-width:0"></div>
 </section>
 
-<section style="background:#12161F;color:#E6E2D8">
+<section style="background:#E4ECD8;color:#17212B">
   <div class="wrap" style="padding-top:clamp(56px,7vw,96px);padding-bottom:clamp(56px,7vw,96px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:clamp(28px,4vw,56px);align-items:end">
     <div style="display:flex;flex-direction:column;gap:16px">
-      <h2 class="serif" style="margin:0;font-weight:300;font-size:clamp(34px,4.2vw,56px);line-height:1.05;letter-spacing:-0.02em">The picture clause tells you where the point goes. <em style="color:#F07A4E">It never tells you what the number means.</em></h2>
-      <p style="margin:0;max-width:58ch;font-size:18px;color:#B7BDC9">In Exhibit A, two AIs translated a banking program that divides a rate by twelve and never by one hundred. Both readings run and both pass a test written from the code. Only the data the business actually stored can settle it, so that is where every Survey starts.</p>
+      <h2 class="serif" style="margin:0;font-weight:300;font-size:clamp(34px,4.2vw,56px);line-height:1.05;letter-spacing:-0.02em">The picture clause tells you where the point goes. <em style="color:#1C5FA8">It never tells you what the number means.</em></h2>
+      <p style="margin:0;max-width:58ch;font-size:18px;color:#4F5A63">In Exhibit A, two AIs translated a banking program that divides a rate by twelve and never by one hundred. Both readings run and both pass a test written from the code. Only the data the business actually stored can settle it, so that is where every Survey starts.</p>
     </div>
-    <div style="display:flex;flex-direction:column;border-top:1px solid #3A4252">
-      <a href="mainframe.html#correspondence" class="quiet" style="display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:72px;padding:0 4px;border-bottom:1px solid #3A4252;color:#E6E2D8;text-decoration:none"><span class="serif" style="font-size:24px;text-wrap:balance">Found a field with two readings?</span><span class="mono" aria-hidden="true">→</span></a>
-      <a href="mainframe.html#s2" class="quiet" style="display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:72px;padding:0 4px;border-bottom:1px solid #3A4252;color:#E6E2D8;text-decoration:none"><span class="serif" style="font-size:24px">See the exhibits</span><span class="mono" aria-hidden="true">→</span></a>
+    <div style="display:flex;flex-direction:column;border-top:1px solid #9BAA90">
+      <a href="mainframe.html#correspondence" class="quiet" style="display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:72px;padding:0 4px;border-bottom:1px solid #9BAA90;color:#17212B;text-decoration:none"><span class="serif" style="font-size:24px;text-wrap:balance">Found a field with two readings?</span><span class="mono" aria-hidden="true">→</span></a>
+      <a href="mainframe.html#s2" class="quiet" style="display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:72px;padding:0 4px;border-bottom:1px solid #9BAA90;color:#17212B;text-decoration:none"><span class="serif" style="font-size:24px">See the exhibits</span><span class="mono" aria-hidden="true">→</span></a>
     </div>
   </div>
 </section>
 </main>
 
-<footer class="wrap" style="padding-top:32px;padding-bottom:40px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5D6576">
+<footer class="wrap" style="padding-top:32px;padding-bottom:40px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">
   <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
-  <a href="mailto:hello@dragomansjourney.com" style="color:#3A4252">hello@dragomansjourney.com</a>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#2E3A47">hello@dragomansjourney.com</a>
 </footer>
 </div>
 
@@ -192,9 +192,9 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
     return '<div style="display:flex;flex-direction:column;gap:12px">' +
       '<span class="label">If this field is an annual rate</span>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:12px">' +
-      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">What the code charges</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asFraction) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
-      '<div style="padding:16px;border:1px solid #12161F;background:#FBF9F4"><div class="label">If it means a percent</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asPercent) + '</div><div style="font-size:14px;color:#5D6576">one month on $1,000.00</div></div>' +
-      '</div><p style="margin:0;font-size:15px;color:#3A4252">Same bytes, same picture clause. The code alone can\'t say which column is right.</p></div>';
+      '<div style="padding:16px;border:1px solid #17212B;background:#F7F9F3"><div class="label">What the code charges</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asFraction) + '</div><div style="font-size:14px;color:#4F5A63">one month on $1,000.00</div></div>' +
+      '<div style="padding:16px;border:1px solid #17212B;background:#F7F9F3"><div class="label">If it means a percent</div><div class="mono" style="font-size:24px;font-weight:700;margin-top:6px">' + esc(asPercent) + '</div><div style="font-size:14px;color:#4F5A63">one month on $1,000.00</div></div>' +
+      '</div><p style="margin:0;font-size:15px;color:#2E3A47">Same bytes, same picture clause. The code alone can\'t say which column is right.</p></div>';
   }
 
   function nibbleRow(nibs, pic) {
@@ -246,7 +246,7 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
       var val = placePoint(digits.slice(-pic.digits) || '0', pic.frac);
       var shown = (neg && /[1-9]/.test(val) ? '-' : '') + val;
       var facts = '<dl class="facts">' +
-        '<div><dt class="label">Value</dt><dd style="font-size:28px;color:#A93F17">' + esc(shown) + '</dd></div>' +
+        '<div><dt class="label">Value</dt><dd style="font-size:28px;color:#1C5FA8">' + esc(shown) + '</dd></div>' +
         '<div><dt class="label">Digits</dt><dd>' + pic.int + ' before the point, ' + pic.frac + ' after</dd></div>' +
         '<div><dt class="label">Sign</dt><dd>' + (neg ? 'Minus' : (sign === 'F' ? 'None (F)' : 'Plus')) + ' · ' + sign + '</dd></div>' +
         '<div><dt class="label">Field length</dt><dd>' + pic.bytes + ' bytes</dd></div></dl>';
@@ -282,7 +282,7 @@ dl.facts dd{margin:4px 0 0;font:500 20px/1.3 'JetBrains Mono',monospace;word-bre
     var bytes = [];
     for (var i = 0; i < nibs.length; i += 2) bytes.push(nibs[i] + nibs[i + 1]);
     var html = problems.map(function (p) { return '<p class="warn">' + nw(esc(p)) + '</p>'; }).join('');
-    html += '<dl class="facts"><div><dt class="label">Bytes on disk</dt><dd style="font-size:28px;color:#A93F17">' + bytes.join(' ') + '</dd></div>' +
+    html += '<dl class="facts"><div><dt class="label">Bytes on disk</dt><dd style="font-size:28px;color:#1C5FA8">' + bytes.join(' ') + '</dd></div>' +
       '<div><dt class="label">Field length</dt><dd>' + pic.bytes + ' bytes</dd></div></dl>';
     html += '<div style="display:flex;flex-direction:column;gap:10px"><span class="label">Every <span style="white-space: nowrap">half-byte</span></span>' + nibbleRow(nibs, pic) + '</div>';
     $('out').innerHTML = html;

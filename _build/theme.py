@@ -43,7 +43,7 @@ BRIGHT = {'#E9EEE9', '#F2EDE1', '#F4F1EA', '#E6E2D8', '#FFFFFF', 'WHITE'}
 BRIGHT_MUTED = {'#C9D2CB', '#93A39A', '#B5C2BA', '#C9CED8', '#9AA3B5', '#B7BDC9'}
 ACCENT_TEXT = {'#A93F17', '#C2461B', '#F07A4E'}
 LIGHT_LINES = {'#CFC8B8', '#CFC6B2', '#B9B2A2', '#C9C1AE', '#B9B09C', '#A6AAA2', '#9AA097', '#DDD5C3', '#999999'}
-BAND_LINES = {'#3A4D44', '#4C5F56', '#2B3D35', '#33463D', '#2A3140'}
+BAND_LINES = {'#3A4D44', '#4C5F56', '#2B3D35', '#33463D', '#2A3140', '#3A4252'}   # #3A4252: Mainframe's band lines (role pick)
 # Colors kept as they are, by role (listed in T-32's Receipt): status signals and the shot list's role tags.
 KEPT = {'#2E7D4F', '#D9A520', '#7BD389', '#F9EEDA', '#F8E3DA', '#8A6A12',
         '#F6C9B5', '#D9E4D2', '#F2DEA8', '#E6DCF0', '#CFE0EE', '#000000', 'BLACK'}
@@ -138,7 +138,7 @@ def map_color(role, tok, zone, mf, tag=''):
             if c in INK_TEXT or c in BRIGHT:
                 return on_accent(mf)
         if c in INK_TEXT:
-            return ON_INK if (zone == 'dark' and role == 'svgfill') else INK
+            return ON_INK if zone == 'dark' else INK      # dark text on a light pill that is now ink: light
         if c in INK2_TEXT:
             return ON_INK_MUTED if zone == 'dark' else INK2
         if c in MUTED_TEXT:
@@ -330,10 +330,11 @@ def fonts(html):
 # 1440 x 900 view). Measured on the themed pages; the T-32 test checks each one against that rule.
 # page -> the exact start tag of the ringed element (it must occur exactly once).
 RINGS = {
-    'local.html': '<a href="start.html" class="btn-blaze" style="',
-    'checkup.html': None,   # filled in below
+    'local.html': '<a href="start.html" class="btn-blaze" style="display: inline-flex; align-items: center; min-height: 44px;',   # the header's
+    # In the first screen at 390 (its bottom at 802 of 844); below the fold at 1440. The page's only accent button.
+    'checkup.html': '<a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;',
 }
-RING_PATH = 'M14 31 C5 19 29 5 61 4 C92 3 116 11 115 24 C114 38 86 45 56 44 C26 43 3 36 7 22 C9 13 22 8 35 6'
+RING_PATH = 'M20 5 C45 2 90 2 108 6 C117 8 118 18 117 26 C116 38 110 44 92 45 C65 46.5 35 46 16 43 C5 41 2 33 3 23 C4 12 9 6 26 4.5 C40 3.5 52 3.8 62 4.4'
 
 
 def ring_svg(mf):
@@ -342,7 +343,7 @@ def ring_svg(mf):
             'vector-effect="non-scaling-stroke"/></svg>')
 
 
-RING_CSS = ('.t32-ring{position:absolute;left:-9px;top:-7px;width:calc(100% + 18px);height:calc(100% + 14px);'
+RING_CSS = ('.t32-ring{position:absolute;left:-15px;top:-12px;width:calc(100% + 30px);height:calc(100% + 24px);'
             'overflow:visible;pointer-events:none;transform:rotate(-1.5deg)}')
 
 
@@ -351,8 +352,8 @@ def add_ring(html, page, mf):
     if not start:
         return html
     n = html.count(start)
-    if n < 1:
-        raise SystemExit(f'theme.py: {page}: the ringed element ({start[:60]}...) is not on the page')
+    if n != 1:
+        raise SystemExit(f'theme.py: {page}: the ringed element ({start[:60]}...) is on the page {n} times, not once')
     i = html.index(start)
     j = html.index('>', i)
     tag = html[i:j]

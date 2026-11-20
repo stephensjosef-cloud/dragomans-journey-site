@@ -703,6 +703,19 @@ def free_port():
 
 TEMP_PORT = free_port()   # T-31: T-21's temp server (once always on 8767) gets a free port in each process, so workers don't collide
 
+# T-32 (Nov 20, 2026): theme.py (step 6c) writes the themed copy of out/ to out-themed/, and the root is copied from
+# there. The older checks that compared the root with out/ compare it with out-themed/ through t32_root_off().
+T32_DIR = os.path.join(here, 'out-themed')
+
+
+def t32_read(d, n):
+    return open(os.path.join(d, n), encoding='utf-8', newline='').read().replace('\r\n', '\n')
+
+
+def t32_root_off(names):
+    """The pages whose root copy is not the themed build's."""
+    return [n for n in names if t32_read(os.path.join(here, '..'), n) != t32_read(T32_DIR, n)]
+
 
 
 # ---------------- decoder
@@ -3914,7 +3927,7 @@ def s_t_24():
               next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
     got24 = sorted(n for n in ALL_HTML if stamp24(un25(SRC24[n], n)) != stamp24(OLD24[n]))   # T-25's seven pages read with its swaps out
     check('T-24: the pages that changed are comp3.html and mainframe.html and no others', got24 == ['comp3.html', 'mainframe.html'], str(got24))
-    check('T-24: the root mainframe.html and comp3.html are the built pages', all(ROOT24[n] == SRC24[n] for n in ROOT24))
+    check('T-24: the root mainframe.html and comp3.html are the built pages', not t32_root_off(ROOT24))   # T-32: the themed build
     for n in ALL_HTML:
         for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
                          ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
@@ -4089,8 +4102,8 @@ def s_t_25():
               next((f'...{a[max(0, i - 60):i + 60]}... | ...{b_[max(0, i - 60):i + 60]}...' for i in range(min(len(a), len(b_))) if a[i] != b_[i]), f'{len(a)} vs {len(b_)}'))
     got25 = sorted(n for n in ALL_HTML if stamp25(SRC25[n]) != stamp25(OLD25[n]))
     check('T-25: the pages that changed are these seven and no others', got25 == CHANGED25, str(got25))
-    check('T-25: every root page is the built page', all(ROOT25[n] == SRC25[n] for n in ALL_HTML),
-          str([n for n in ALL_HTML if ROOT25[n] != SRC25[n]]))
+    check('T-25: every root page is the built page', not t32_root_off(ALL_HTML),   # T-32: the themed build
+          str(t32_root_off(ALL_HTML)))
     for n in ALL_HTML:
         for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
                          ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
@@ -4432,7 +4445,7 @@ def s_t_26():
                   and all(_re.fullmatch(STAMP26, x) and _re.fullmatch(STAMP26, y) for x, y in dl), str(dl[:2]))
         else:
             check(f'T-26: {n} is byte for byte as at T-25', SRC26[n] == OLD26[n])
-    check('T-26: every root page is the built page', all(ROOT26[n] == SRC26[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT26[n] != SRC26[n]]))
+    check('T-26: every root page is the built page', not t32_root_off(ALL_HTML), str(t32_root_off(ALL_HTML)))   # T-32: the themed build
     pub25 = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n')
              if f and not f.startswith('_build/') and not f.endswith('.html')]
     check('T-26: every other public file at the root (sitemap, robots, images, share cards...) is byte for byte as at T-25',
@@ -4666,7 +4679,7 @@ def s_t_27():
                   and all(_re.fullmatch(STAMP26, x) and _re.fullmatch(STAMP26, y) for x, y in dl), str(dl[:2]))
         else:
             check(f'T-27: {n} is byte for byte as at T-26', SRC27[n] == OLD27[n])
-    check('T-27: every root page is the built page', all(ROOT27[n] == SRC27[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT27[n] != SRC27[n]]))
+    check('T-27: every root page is the built page', not t32_root_off(ALL_HTML), str(t32_root_off(ALL_HTML)))   # T-32: the themed build
     t26tree = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T26C], cwd=here, capture_output=True, text=True).stdout.split('\n') if f]
     pub26 = [f for f in t26tree if not f.startswith('_build/') and not f.endswith('.html')]
     check('T-27: every other public file at the root (sitemap, robots, images, gallery, share cards...) is byte for byte as at T-26',
@@ -4935,7 +4948,7 @@ def s_t_29():
             check(f'T-29: {n} still shows the product image as at T-27', SRC29[n].count('<img src="') == OLD29[n].count('<img src="'))
         else:
             check(f'T-29: {n} is byte for byte as at T-27', SRC29[n] == OLD29[n])
-    check('T-29: every root page is the built page', all(ROOT29[n] == SRC29[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT29[n] != SRC29[n]]))
+    check('T-29: every root page is the built page', not t32_root_off(ALL_HTML), str(t32_root_off(ALL_HTML)))   # T-32: the themed build
     t27tree = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T27C], cwd=here, capture_output=True, text=True).stdout.split('\n') if f]
     pub27 = [f for f in t27tree if not f.startswith('_build/') and not f.endswith('.html')]
     check('T-29: every other public file at the root (sitemap, robots, images, gallery, shelf, share cards) is byte for byte as at T-27',
@@ -5187,7 +5200,7 @@ def s_t_30():
             check(f'T-30: {n} is byte for byte as at T-29', SRC30[n] == OLD30[n])
     check('T-30: the pages that changed are studio.html and local.html (and the product pages\' stamp line)',
           sorted(n for n in ALL_HTML if SRC30[n] != OLD30[n] and not n.startswith('studio-')) == ['local.html', 'studio.html'])
-    check('T-30: every root page is the built page', all(ROOT30[n] == SRC30[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT30[n] != SRC30[n]]))
+    check('T-30: every root page is the built page', not t32_root_off(ALL_HTML), str(t32_root_off(ALL_HTML)))   # T-32: the themed build
     t29tree = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T29C], cwd=here, capture_output=True, text=True).stdout.split('\n') if f]
     pub29 = [f for f in t29tree if not f.startswith('_build/') and not f.endswith('.html')]
     check('T-30: every other public file at the root (sitemap, robots, images, gallery, shelf, share cards) is byte for byte as at T-29',
@@ -5349,6 +5362,261 @@ def s_t_30():
               str([x['link'] for x in T['cards']]))
         check(f'T-30: at {w}, the tool cards\' names and links read as at T-29', [(x['name'], x['link'][0], x['link'][1]) for x in T['cards']]
               == [(h, a_, g) for h, _p, a_, g in t29_], str([(x['name'], x['link'][0]) for x in T['cards']]))
+
+
+# ---------------- T-32 (Nov 20, 2026): the chart style, a themed copy of every page in out-themed/ ----------------
+# theme.py (step 6c) writes _build/out-themed/ from out/; the root is copied from there. Every older section keeps
+# testing out/. This one serves out-themed/ on its own free port and checks that only styles differ, that every color
+# is the new palette's, the type, the ring, the route, the dark footer and call box, no sideways scroll, and axe.
+T32_INK = 'rgb(23, 33, 43)'
+T32_ACCENT = ('rgb(232, 89, 43)', 'rgb(28, 95, 168)')   # the orange (kept, Josef Nov 19) and the Mainframe pages' blue
+T32_MF = ('mainframe.html', 'comp3.html', 'briefing.html')
+# The ring: page -> the words of the one element it sits around (T-32's Receipt lists the same).
+T32_RINGS = {'local.html': 'Start a Blueprint', 'checkup.html': 'Free 15-minute call'}
+# The route: page -> the element each dashed line is drawn on.
+T32_ROUTES = {'local.html': ['#route ol', '.t32-rt'], 'mainframe.html': ['.t20-steps'], 'start.html': ['.t32-rt', '.t32-rl']}
+T32_AXE_VER = '4.10.3'
+T32_AXE_URL = f'https://cdnjs.cloudflare.com/ajax/libs/axe-core/{T32_AXE_VER}/axe.min.js'
+# Every color a themed page may hold: the table's new values (the orange accent kept), DESIGN.md's, white and black,
+# the role picks and kept status colors listed in T-32's Receipt, and the contour browns.
+T32_HEX = {'#17212B', '#2E3A47', '#4F5A63', '#E4ECD8', '#F7F9F3', '#EDF2E6', '#B9C3CC', '#9BAA90', '#3A4654',
+           '#A21C8A', '#E58FD3', '#1C5FA8', '#8FB8E8', '#E8592B', '#A93F17', '#F07A4E', '#FFFFFF', '#000000',
+           # kept as they are, by role (the Receipt): status signals and the shot list's role tags
+           '#2E7D4F', '#D9A520', '#7BD389', '#F9EEDA', '#F8E3DA', '#8A6A12', '#F6C9B5', '#D9E4D2', '#F2DEA8', '#E6DCF0', '#CFE0EE'}
+T32_RGBA = {(168, 139, 92, .30), (168, 139, 92, .55), (168, 139, 92, .38), (168, 139, 92, .6), (23, 33, 43, .08), (23, 33, 43, .18),
+            (23, 33, 43, .35), (232, 89, 43, .45), (0, 0, 0, .45), (0, 0, 0, .2)}
+T32_COLOR = _re.compile(r'(?<![&\w#])#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})(?![0-9A-Fa-f\w])|rgba?\([^)]*\)|(?<![\w-])(?:white|black)(?![\w-])', _re.I)
+
+
+def t32_norm(c):
+    c = c.strip()
+    if c.lower().startswith('rgb'):
+        v = [float(x) for x in _re.findall(r'[\d.]+', c)]
+        return tuple(v[:3] + [v[3] if len(v) > 3 else 1.0])
+    if c.startswith('#'):
+        h = c[1:].upper()
+        return '#' + (''.join(ch * 2 for ch in h) if len(h) == 3 else h)
+    return {'WHITE': '#FFFFFF', 'BLACK': '#000000'}[c.upper()]
+
+
+def t32_colors(src):
+    """Every color in a style attribute, a <style> element or an SVG paint attribute, as (where, token)."""
+    out = []
+    bodies = [('style attribute', m.group(1)) for m in _re.finditer(r'\sstyle="([^"]*)"', src)]
+    bodies += [('<style>', m.group(1)) for m in _re.finditer(r'<style\b[^>]*>(.*?)</style>', src, _re.S)]
+    for where, body in bodies:
+        for d in _re.finditer(r'([A-Za-z-]+)\s*:\s*([^;{}]*)', _re.sub(r'url\([^)]*\)', '', body)):
+            out += [(f'{where} {d.group(1)}', c.group(0)) for c in T32_COLOR.finditer(d.group(2))]
+    for m in _re.finditer(r'\s(fill|stroke|stop-color)="([^"]*)"', src):
+        out += [(f'svg {m.group(1)}', c.group(0)) for c in T32_COLOR.finditer(m.group(2))]
+    return out
+
+
+def t32_allowed(c):
+    v = t32_norm(c)
+    if isinstance(v, tuple):
+        return v[3] == 1.0 and '#%02X%02X%02X' % tuple(int(x) for x in v[:3]) in T32_ALLOWED_HEX() or \
+            any(all(abs(a - b) < 1e-6 for a, b in zip(v, r)) for r in T32_RGBA)
+    return v in T32_ALLOWED_HEX()
+
+
+_T32_HEX_ALL = []
+
+
+def T32_ALLOWED_HEX():
+    if not _T32_HEX_ALL:
+        design = open(os.path.join(here, 'DESIGN.md'), encoding='utf-8').read()
+        _T32_HEX_ALL.append(T32_HEX | {h.upper() for h in _re.findall(r'#[0-9A-Fa-f]{6}\b', design)})
+    return _T32_HEX_ALL[0]
+
+
+def t32_axe():
+    """axe-core, pinned, fetched once from cdnjs into the system temp folder (outside the repo) and read from there."""
+    path = os.path.join(tempfile.gettempdir(), 'dj-test-axe', f'axe-{T32_AXE_VER}.min.js')
+    if not os.path.exists(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        body = urlopen(T32_AXE_URL, timeout=60).read()
+        with open(path + '.tmp', 'wb') as f:
+            f.write(body)
+        os.replace(path + '.tmp', path)
+    return open(path, encoding='utf-8').read()
+
+
+T32_DOM_JS = r'''() => {
+  const sp = s => (s || '').replace(/\s+/g, ' ').trim();
+  const words = [];
+  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {acceptNode: n =>
+    n.parentElement.closest('script,style,noscript') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  while (tw.nextNode()) { const t = sp(tw.currentNode.nodeValue); if (t) words.push(t); }
+  return {text: words.join(' '),
+          links: [...document.querySelectorAll('a')].map(a => [a.getAttribute('href'), sp(a.textContent)]),
+          imgs: [...document.querySelectorAll('img')].map(i => [i.getAttribute('src'), i.getAttribute('alt')]),
+          title: document.title,
+          desc: (document.querySelector('meta[name="description"]') || {}).content || null,
+          ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map(s => s.textContent)};
+}'''
+
+T32_LOOK_JS = r'''([acc]) => {
+  const W = innerWidth, H = innerHeight, sp = s => (s || '').replace(/\s+/g, ' ').trim();
+  const box = e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+  const vis = e => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); return r.width > 0 && r.height > 0 && c.visibility != 'hidden'; };
+  const TAP = 'a[href],button,input:not([type=hidden]),select,textarea,summary,[role=button],[tabindex]:not([tabindex="-1"])';
+  let first = null;
+  for (const e of document.querySelectorAll('a,button,input[type=submit]')) {
+    if (!vis(e) || !acc.includes(getComputedStyle(e).backgroundColor)) continue;
+    const [l, t, r, b] = box(e);
+    if (l >= 0 && t >= 0 && r <= W && b <= H) { first = sp(e.textContent); break; }
+  }
+  const rings = [...document.querySelectorAll('.t32-ring')].map(g => {
+    const host = g.parentElement, [l, t, r, b] = box(g), ov = [];
+    for (const e of document.querySelectorAll(TAP)) {
+      if (e === host || host.contains(e) || e.contains(host) || !vis(e)) continue;
+      const [l2, t2, r2, b2] = box(e);
+      if (Math.min(r, r2) - Math.max(l, l2) > 0.5 && Math.min(b, b2) - Math.max(t, t2) > 0.5) ov.push(sp(e.textContent).slice(0, 40) || e.tagName);
+    }
+    return {host: sp(host.textContent), hidden: g.getAttribute('aria-hidden'), pe: getComputedStyle(g).pointerEvents,
+            box: [l + scrollX, t + scrollY, r + scrollX, b + scrollY], over: ov, stroke: getComputedStyle(g.querySelector('path')).stroke,
+            sw: g.querySelector('path').getAttribute('stroke-width')};
+  });
+  const bg = e => getComputedStyle(e).backgroundColor;
+  const routes = {};
+  for (const sel of %ROUTES%) {
+    routes[sel] = [...document.querySelectorAll(sel)].map(e => {
+      const b4 = getComputedStyle(e, '::before');
+      return {img: b4.backgroundImage, disp: b4.display, w: b4.width, h: b4.height, bt: getComputedStyle(e).borderTopColor};
+    });
+  }
+  return {sw: [document.documentElement.scrollWidth, W], first, rings, routes,
+          footers: [...document.querySelectorAll('footer')].map(bg),
+          calls: [...document.querySelectorAll('section[aria-labelledby="next-h"],section[aria-labelledby="c7"]')].map(bg),
+          pills: [...document.querySelectorAll('.pill,.hero-pill')].map(bg)};
+}'''
+
+
+def t32_dark(c):
+    v = [float(x) for x in _re.findall(r'[\d.]+', c)]
+    if len(v) < 3 or (len(v) > 3 and v[3] == 0):
+        return False
+    return (0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]) < 80
+
+
+@section('T-32')
+def s_t_32():
+    port = free_port()
+    srv = _sp.Popen([sys.executable, '-m', 'http.server', str(port), '--bind', '127.0.0.1', '--directory', T32_DIR], cwd=here,
+                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+    TB = f'http://127.0.0.1:{port}/'
+    try:
+        for _i in range(100):
+            try:
+                urlopen(TB + 'index.html', timeout=2).read()
+                break
+            except OSError:
+                time.sleep(0.1)
+        _t32_checks(TB)
+    finally:
+        srv.kill()
+        srv.wait()
+
+
+def _t32_checks(TB):
+    names = sorted(ALL_HTML)
+    check('T-32: out-themed/ holds every page out/ holds', all(os.path.exists(os.path.join(T32_DIR, n)) for n in names))
+    OUT = {n: t32_read(outd, n) for n in names}
+    TH = {n: t32_read(T32_DIR, n) for n in names}
+
+    # The files themselves: every color is the new palette's, the type is Barlow, nothing is uppercased.
+    for n in names:
+        bad_ = [f'{w}: {c}' for w, c in t32_colors(TH[n]) if not t32_allowed(c)]
+        check(f'T-32: {n}: every color in its styles and SVG paint is in the palette', not bad_, str(sorted(set(bad_))[:8]))
+        check(f'T-32: {n}: no Big Shoulders Display or Instrument Sans is left', 'Big Shoulders' not in TH[n] and 'Instrument Sans' not in TH[n]
+              and 'Big+Shoulders' not in TH[n] and 'Instrument+Sans' not in TH[n])
+        links = _re.findall(r'href="(https://fonts\.googleapis\.com/css2\?[^"]*)"', TH[n])
+        check(f'T-32: {n}: its font link asks for Barlow and Barlow Semi Condensed', links and all(
+            'family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400' in u and 'family=Barlow+Semi+Condensed:wght@600;700;800;900' in u for u in links), str(links))
+        check(f'T-32: {n}: no text-transform: uppercase is left', not _re.search(r'text-transform\s*:\s*uppercase', TH[n]))
+        check(f'T-32: {n}: at most one ring, aria-hidden, with no pointer events', TH[n].count('class="t32-ring"') <= 1
+              and TH[n].count('class="t32-ring"') == TH[n].count('class="t32-ring" aria-hidden="true"'))
+        check(f'T-32: {n}: has the ring exactly when the Receipt lists one', (TH[n].count('class="t32-ring"') == 1) == (n in T32_RINGS))
+    favicon = open(os.path.join(T32_DIR, 'favicon.svg'), 'rb').read()
+    check('T-32: favicon.svg keeps the orange (the accent stays orange)', favicon == open(os.path.join(outd, 'favicon.svg'), 'rb').read() and b'E8592B' in favicon.upper())
+    others = sorted(os.path.relpath(os.path.join(d, f), T32_DIR).replace(os.sep, '/') for d, _x, fs in os.walk(T32_DIR) for f in fs if not f.endswith('.html'))
+    check('T-32: every other file in out-themed/ is out/\'s, byte for byte', len(others) >= 40 and all(
+        open(os.path.join(T32_DIR, f), 'rb').read() == open(os.path.join(outd, f), 'rb').read() for f in others))
+    outf32 = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
+    themf32 = sorted(os.path.relpath(os.path.join(d, f), T32_DIR).replace(os.sep, '/') for d, _x, fs in os.walk(T32_DIR) for f in fs)
+    check('T-32: out-themed/ holds exactly out/\'s files', outf32 == themf32)
+
+    # The root is the themed build.
+    check('T-32: every root page is the themed page', not t32_root_off(names), str(t32_root_off(names)))
+    check('T-32: every other file in out-themed/ is at the root, byte for byte', all(rb26(f) == open(os.path.join(T32_DIR, f), 'rb').read().replace(b'\r\n', b'\n') for f in others),
+          str([f for f in others if rb26(f) != open(os.path.join(T32_DIR, f), 'rb').read().replace(b'\r\n', b'\n')][:5]))
+    check('T-32: _build/DESIGN.md is the vault\'s DESIGN.md (its colors are read here)', '#A21C8A' in open(os.path.join(here, 'DESIGN.md'), encoding='utf-8').read())
+
+    # Only styles differ: the words, links, images, title, description and structured data, as the browser sees them.
+    for n in names:
+        q = newpage(1440)
+        q.goto(BASE + n, wait_until='load')
+        a = q.evaluate(T32_DOM_JS)
+        q.goto(TB + n, wait_until='load')
+        t = q.evaluate(T32_DOM_JS)
+        q.close()
+        for k, what in (('text', 'visible text'), ('links', 'links (href and words)'), ('imgs', 'images and alts'), ('title', 'title'),
+                        ('desc', 'meta description'), ('ld', 'structured data')):
+            check(f'T-32: {n}: its {what} is out/\'s', a[k] == t[k],
+                  next((f'...{a[k][max(0, i - 50):i + 50]}... | ...{t[k][max(0, i - 50):i + 50]}...' for i in range(min(len(a[k]), len(t[k]))) if a[k][i] != t[k][i]), f'{len(a[k])} vs {len(t[k])}')
+                  if isinstance(a[k], str) else str([x for x in zip(a[k] or [], t[k] or []) if x[0] != x[1]][:3]))
+
+    # Looked at in the browser: ring, route, the dark footer and call box, pills, no sideways scroll; axe at 390 and 1440.
+    axe = t32_axe()
+    darks32 = [0]
+    js = T32_LOOK_JS.replace('%ROUTES%', _json.dumps(sorted({s for v in T32_ROUTES.values() for s in v})))
+    for n in names:
+        q = newpage(1440)
+        q.goto(BASE + n, wait_until='load')
+        old = q.evaluate(js, [list(T32_ACCENT)])
+        q.close()
+        darks32[0] += sum(t32_dark(x) for x in old['footers'] + old['calls'])
+        for w, h in ((320, 700), (390, 844), (1440, 900)):
+            q = newpage(w, h)
+            q.goto(TB + n, wait_until='load')
+            q.evaluate('document.fonts.ready.then(() => 1)')
+            q.wait_for_timeout(300)
+            L = q.evaluate(js, [list(T32_ACCENT)])
+            check(f'T-32: at {w}, {n} has no sideways scroll', L['sw'][0] <= L['sw'][1], str(L['sw']))
+            want = T32_RINGS.get(n)
+            if want:
+                r = L['rings'][0] if len(L['rings']) == 1 else None
+                check(f'T-32: at {w}, {n}: one ring, around "{want}"', r and r['host'] == want, str(L['rings']))
+                if r:
+                    check(f'T-32: at {w}, {n}: the ring is aria-hidden, takes no taps, 3px, in the accent',
+                          r['hidden'] == 'true' and r['pe'] == 'none' and r['sw'] == '3' and r['stroke'] == (T32_ACCENT[1] if n in T32_MF else T32_ACCENT[0]), str(r))
+                    check(f'T-32: at {w}, {n}: the ring covers no other tap target', not r['over'], str(r['over']))
+                    check(f'T-32: at {w}, {n}: the ring stays inside the page', r['box'][0] >= 0 and r['box'][2] <= w, str(r['box']))
+            else:
+                check(f'T-32: at {w}, {n}: no ring', not L['rings'], str(L['rings']))
+            if h == 844:   # the rule, on a phone's first screen: the first accent-filled button fully in view gets the ring
+                check(f'T-32: {n}: the ringed element is its first accent-filled button in its first screen at 390 (none: no ring)', L['first'] == want, str([L['first'], want]))
+            check(f'T-32: at {w}, {n}: every footer and closing call box that was dark is ink, and status pills are ink',
+                  all(nw == T32_INK for ow, nw in zip(old['footers'] + old['calls'], L['footers'] + L['calls']) if t32_dark(ow))
+                  and all(p == T32_INK for p in L['pills']) and len(L['footers']) == len(old['footers']) and len(L['calls']) == len(old['calls']),
+                  str([old['footers'], L['footers'], old['calls'], L['calls'], L['pills']]))
+            for sel in T32_ROUTES.get(n, []):
+                rs = L['routes'][sel]
+                dashed = [x for x in rs if x['disp'] != 'none' and 'repeating-linear-gradient' in x['img']]
+                check(f'T-32: at {w}, {n}: {sel} carries the dashed route line', rs and (dashed or (n == 'local.html' and sel == '#route ol' and w < 700)), str(rs)[:300])
+            if n in T32_ROUTES and '#route ol' in T32_ROUTES[n] or n == 'mainframe.html':
+                sel = '#route ol' if n == 'local.html' else '.t20-steps'
+                check(f'T-32: at {w}, {n}: the route replaces {sel}\'s solid top border', all(x['bt'] == 'rgba(0, 0, 0, 0)' for x in L['routes'][sel]), str(L['routes'][sel])[:200])
+            if w in (390, 1440):
+                q.add_script_tag(content=axe)
+                # A 1:1 pair (text the color of its background) is "incomplete" (equalRatio) in axe, not a violation: count it too.
+                res = q.evaluate('() => axe.run(document, {resultTypes: ["violations", "incomplete"]}).then(r => r.violations.map(v => [v.id, v.nodes.length, v.nodes.slice(0, 3).map(x => x.target.join(" "))])'
+                                 '.concat(r.incomplete.filter(v => v.id == "color-contrast").map(v => [v.id + " 1:1", v.nodes.filter(x => (x.any || []).some(c => c.data && c.data.messageKey == "equalRatio")).map(x => x.target.join(" "))]).filter(v => v[1].length)))')
+                check(f'T-32: at {w}, {n}: axe-core {T32_AXE_VER}, color contrast included: 0 violations', not res, str(res)[:600])
+            q.screenshot(path=f'{SHOTS}/t32-{n[:-5]}-{w}.png', full_page=True)
+            q.close()
+    check('T-32: the old build had dark footers and call boxes to keep (the check above has something to check)', darks32[0] > 0, str(darks32))
 
 
 # ================================================================ running the sections (T-31)
