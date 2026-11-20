@@ -1426,13 +1426,14 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-32 · The chart style · READY
+## T-32 · The chart style · IN PROGRESS
 
-**Why:** Nov 18 to 19, 2026: Josef chose the Bush Pilot Chart style and, after seeing a side-by-side preview of the live pages, said "i like it". Pages go light, chart-paper green with ink text and a magenta accent, in Barlow; the feeling is being in calm, competent hands.
+**Why:** Nov 18 to 19, 2026: Josef chose the Bush Pilot Chart style and, after seeing a side-by-side preview of the live pages, said "i like it". Pages go light, chart-paper green with ink text and a magenta accent, in Barlow; the feeling is being in calm, competent hands. Later on Nov 19, mid-build, Stephanie found the magenta "too Barney"; Josef chose to keep today's orange as the accent (fills #E8592B with ink text, accent text #A93F17 on light, #F07A4E inside dark). The ring and the route line are orange; the Mainframe pages keep blue. DESIGN.md still says magenta.
 
 **Done when:** every public page shows the chart palette and Barlow type, the footer and closing call box stay dark, each page's one next step has the ring, step lists carry the route line, contour lines are brown; no word changes; axe 0; no sideways scroll; the T-32 checks and the full run pass.
 
 **Receipt:**
+- **In progress (usage limit, Nov 19):** `_build/theme.py` (step 6c) is written: colors by role and zone, fonts, uppercase off, script style strings, ring and route CSS. Its last trial run stops on one unknown color: `#3A4252` used as a `border-top` on `comp3.html` and `mainframe.html` (a muted line; map it to a line role). Still to do: finish the color map, measure and confirm the ring list (local's header "Start a Blueprint"; checkup's "Free 15-minute call" to be measured), the T-32 test section, README step 6c, the root copy, the look pass at 320/390/1440, the full run and the other gates, this Receipt. Nothing is copied to the root yet; no page in the repo has changed.
 
 ---
 
