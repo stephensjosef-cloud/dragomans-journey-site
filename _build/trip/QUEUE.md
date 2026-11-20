@@ -1426,6 +1426,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-32 · The chart style · READY
+
+**Why:** Nov 18 to 19, 2026: Josef chose the Bush Pilot Chart style and, after seeing a side-by-side preview of the live pages, said "i like it". Pages go light, chart-paper green with ink text and a magenta accent, in Barlow; the feeling is being in calm, competent hands.
+
+**Done when:** every public page shows the chart palette and Barlow type, the footer and closing call box stay dark, each page's one next step has the ring, step lists carry the route line, contour lines are brown; no word changes; axe 0; no sideways scroll; the T-32 checks and the full run pass.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
