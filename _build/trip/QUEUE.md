@@ -1464,6 +1464,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-33 · The site says what I do · READY
+
+**Why:** Nov 20, 2026: Josef read the live site and said it reads as if you need kids, reels or cooking material to hire him: "I can create ANYTHING out of AI, thats just the things i have created so far." He approved R2 to R24 of the wider-range draft, "yes all, dont change bird league line". The kids' work stays as one strong example, not the menu.
+
+**Done when:** every line in this item reads as listed on every page it lives on; nothing else changes on any page; the T-33 checks and the full run pass; axe 0; no sideways scroll.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
