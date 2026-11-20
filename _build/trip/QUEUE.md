@@ -1396,13 +1396,33 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-31 · Tests in minutes, with the same checks · READY
+## T-31 · Tests in minutes, with the same checks · DONE
 
 **Why:** Nov 19, 2026: a full `test_new.py` run takes about 40 minutes, prints nothing until the end, and can only run whole. Finishing T-30 took six runs; two died waiting 30 seconds on Google Fonts, one when its server stopped, and the failure list crashed on Windows text encoding. Josef: "i dont think we need to do another whole ass 40 minute test to try 4 things".
 
 **Done when:** one command runs every check of `test_new.py` in parallel and prints each section as it finishes; the parallel run gives exactly the same check names and results as a serial run of today's file; any one section can run alone; no network fonts and no Windows copy needed; total time reported; no page changes.
 
 **Receipt:**
+- **Branch:** `trip/T-31`, cut from `origin/main` at `5894a2c` (T-30's receipt). Commits: `44b741f` (this item in the queue, READY) and this commit (the work and this receipt). Nothing pushed to `main`; `main` not moved. Test code only: `_build/test_new.py`, the new `_build/run_tests.py` and the "Tests" part of `_build/README.md`. No page, build step or file outside `_build/` changed.
+- **Status:** done. Nothing is blocked.
+- **Baseline:** a copy of the T-30 `test_new.py` in the system temp folder, changed only to print UTF-8, write every check to `baseline.json`, and run on Windows (Playwright's own Chromium, live Google Fonts), serially against `_build/out/` on 8765: **4775/4775 in 32 min 40 s** (13:45:31 to 14:18:11, Nov 19).
+- **Parallel run of the new file:** `python _build/run_tests.py` with the default workers: **4775/4775 in 6 min 22 s on 6 workers.** Compared with the baseline: **the same multiset of check names, with the same result for each** (every check passed in both).
+- **The sections, with their times in that run (seconds):** `decoder` 3.4, `local-page` 6.9, `start-briefing-dropin` 9.1, `work-case-study` 9.8, `mainframe` 1.8, `free-tools` 10.6, `share-cards` 0.1, `free-tools-findable` 21.6, `machine-facts` 2.2, `visit-counter` 1.3, `studio-log` 4.5, `studio-pages` 2.6, `join-lists` 49.5, `checkup` 8.0, `intent-pass-2` 27.4, `T-17` 2.8, `T-18` 184.4, `T-19` 85.0, `T-20` 133.8, `T-21` 380.6, `T-22` 61.0, `T-23` 160.8, `T-24` 16.3, `T-25` 280.6, `T-26` 14.2, `T-27` 16.7, `T-29` 59.0, `T-30` 20.6.
+- **The five slowest:** `T-21` 380.6 s (533 checks), `T-25` 280.6 s (445), `T-18` 184.4 s (385), `T-23` 160.8 s (368), `T-20` 133.8 s (257). `T-21` alone sets the floor: no parallel run can finish faster than it does.
+- **The T-18 hang and its fix:** the first `--only T-18,T-19` run served `_build/out/` from a server inside `run_tests.py`'s own process. It threw two MemoryErrors while sending pages, and T-18's worker stopped making progress (T-19 passed, 249/249). It was stopped after four hours. T-18 run alone, serially, against a separate `python -m http.server` passed **385/385 in 168 s**. The fix: `run_tests.py` now serves `_build/out/` from its own `python -m http.server` process on a free port, as the serial runs do, and stops it at the end. The full parallel run above used the fix. In it, T-18 passed 385/385 in 184 s.
+- **Skipped on purpose (Josef, Nov 19):** the serial run of the new `test_new.py` (stopped part-way), `test_site.py`, and the `--only T-30` and `--only T-18` runs. No page changed, the parallel run matched the baseline check for check, and T-18 had already run alone.
+- **Other gates:** `node _build/worker/test_intake.mjs` **34/34**, `node _build/worker/test_checkup.mjs` **147/147**, each run on its own.
+- **What changed in the tests:**
+  - Every `# ----------------` section of `test_new.py` is now a function, in place, with a short id. The ids, in order: `decoder`, `local-page`, `start-briefing-dropin`, `work-case-study`, `mainframe`, `free-tools`, `share-cards`, `free-tools-findable`, `machine-facts`, `visit-counter`, `studio-log`, `studio-pages`, `join-lists`, `checkup`, `intent-pass-2`, `T-17` to `T-27`, `T-29`, `T-30`. They are listed in the README.
+  - What sections share moved above them with bodies unchanged. Three values one section built and a later one read are now built on first use: `studio_log()`, `sample()` and `thin18()`.
+  - T-21's temp server takes a free port instead of 8767, so workers don't collide.
+  - Every check keeps its name, its condition and its detail text. One check was added: `<id>: the section runs to the end`, which fails only if a section stops on an error.
+  - `test_new.py BASE SHOTS` still runs everything serially, with one line per section; `--only` and `--results` are new.
+  - Output is UTF-8. Each failing check prints the moment it fails.
+- **Browser and fonts:** the Linux Chromium in `/opt/pw-browsers` where it exists, otherwise Playwright's own, so one file runs on both and no Windows copy is needed. With `FONT_DIR` present, fonts come from it as before. Without it, Google Fonts are recorded once into `dj-test-fonts` in the system temp folder and replayed from there. The cache holds **11 files**. The first line says `fonts: cache (n files)` or `fonts: recording`. One gap: T-25's T1 check runs `test_site.py` as a subprocess, and `test_site.py` (outside this item) still loads live Google Fonts.
+- **Josef, by hand:**
+  1. The Windows copies are no longer needed. Delete the untracked `_build/test_t30win.py`, and if you like the other untracked copies beside it: `_build/test_new_win.py`, `_build/test_site_t24win.py`, `_build/test_t22win.py` to `_build/test_t27win.py`, and `_build/test_t29win.py`. Claude didn't delete them.
+  2. Optional: delete `_build/__pycache__/`, which is untracked and was left by a syntax check of `run_tests.py`.
 
 ---
 

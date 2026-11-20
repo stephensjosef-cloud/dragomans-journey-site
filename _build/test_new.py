@@ -1,11 +1,20 @@
-"""Checks for the Oct 18 additions: decoder, sources, timeline, intake, drop-in."""
-import glob, os, sys
+"""Checks for the Oct 18 additions: decoder, sources, timeline, intake, drop-in.
+
+T-31 (Nov 19, 2026): every "# ----------------" section is a function with a short id (its T-number, or a slug of its
+header). python _build/test_new.py BASE SHOTS runs them all, serially, as before; add --only T-30,T-29 to run just those,
+and --results FILE to write every check to a JSON file. _build/run_tests.py runs them in parallel (see _build/README.md).
+"""
+import glob, hashlib, json, os, socket, sys, tempfile, time, traceback
 from playwright.sync_api import sync_playwright
 
+# T-31: UTF-8 out on every platform (a Windows console's code page crashed the failure list at T-30), a line at a time.
+sys.stdout.reconfigure(encoding='utf-8', errors='backslashreplace', line_buffering=True)
+sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace', line_buffering=True)
 BASE = sys.argv[1]
 SHOTS = sys.argv[2]
 os.makedirs(SHOTS, exist_ok=True)
-exe = glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome')[0]
+# T-31: the Linux Chromium where it is, otherwise Playwright's own installed Chromium (so no Windows copy is needed).
+exe = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
 FONT_CSS = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts-test.css')).read()
 FONT_DIR = '/tmp/claude-0/-home-claude/16ca1681-18c1-58d3-954a-5698233dc3a8/scratchpad/fonts'
 FONT_FILES = {os.path.basename(f): f for f in glob.glob(FONT_DIR + '/*/package/files/*.woff2')}
@@ -14,6 +23,18 @@ ok, bad = [], []
 
 def check(name, cond, detail=''):
     (ok if cond else bad).append(name + ('' if cond else f'  {detail}'))
+    _report(name, cond, detail)   # T-31: printed (or sent to run_tests.py) the moment it is made
+
+
+# T-31: each section registers itself here, in the file's order, under its short id.
+SECTIONS = []
+
+
+def section(sid):
+    def reg(fn):
+        SECTIONS.append((sid, fn))
+        return fn
+    return reg
 
 
 # T-21 (Nov 16, 2026) changes line breaking only: a hyphen pair sits in a no-wrap span, a " · "
@@ -390,7 +411,51 @@ T26_APPS = [
 ]
 
 
+# T-31: with no FONT_DIR (Windows, or any machine without it), the Google Fonts are recorded once and replayed. The first
+# request for each address is fetched live and saved, keyed by its full URL, in dj-test-fonts in the system temp folder
+# (outside the repository); every later request, in this run and every later one, is served from there with the same
+# body, content type and CORS headers. With FONT_DIR present (Linux), fonts come from it, as before.
+FONT_CACHE = os.path.join(tempfile.gettempdir(), 'dj-test-fonts')
+FONT_KEEP = ('content-type', 'access-control-allow-origin', 'timing-allow-origin', 'cross-origin-resource-policy', 'cache-control')
+
+
+def font_status():
+    if FONT_FILES:
+        return f'fonts: FONT_DIR ({len(FONT_FILES)} files)'
+    n = len(glob.glob(os.path.join(FONT_CACHE, '*.json')))
+    return f'fonts: cache ({n} files)' if n else 'fonts: recording'
+
+
+def cached_font(route):
+    u = route.request.url
+    key = os.path.join(FONT_CACHE, hashlib.sha256(u.encode('utf-8')).hexdigest())
+    try:
+        meta = json.load(open(key + '.json', encoding='utf-8'))
+        body = open(key + '.bin', 'rb').read()
+    except (OSError, ValueError):
+        try:
+            r = route.fetch(timeout=60000)
+            body = r.body()
+        except Exception as e:
+            print(f'fonts: could not record {u}: {e}', file=sys.stderr)
+            return route.abort()
+        meta = {'url': u, 'status': r.status, 'headers': {k: v for k, v in r.headers.items() if k.lower() in FONT_KEEP}}
+        if r.status == 200:   # saved whole or not at all: the body first, then the record that points to it
+            os.makedirs(FONT_CACHE, exist_ok=True)
+            for ext, data, mode in (('.bin', body, 'wb'), ('.json', json.dumps(meta, indent=1), 'w')):
+                tmp = f'{key}{ext}.{os.getpid()}.tmp'
+                with open(tmp, mode, **({} if mode == 'wb' else {'encoding': 'utf-8'})) as f:
+                    f.write(data)
+                os.replace(tmp, key + ext)
+    return route.fulfill(status=meta['status'], headers=meta['headers'], body=body)
+
+
 def route_fonts(page):
+    if not FONT_FILES:   # T-31: no FONT_DIR here, so record and replay
+        page.route('**/fonts.googleapis.com/**', cached_font)
+        page.route('**/fonts.gstatic.com/**', cached_font)
+        return
+
     def gf(route):
         u = route.request.url
         if 'fonts.googleapis.com' in u:
@@ -404,43 +469,245 @@ def route_fonts(page):
     page.route('**/__fonts/**', gf)
 
 
-with sync_playwright() as p:
-    b = p.chromium.launch(executable_path=exe)
-    errors = []
+# ================================================================ helpers the sections share
+# T-31 (Nov 19, 2026): each "# ----------------" section below is a function, so it can run on its own or in a
+# worker of its own (_build/run_tests.py). What a later section reads from an earlier one lives here, above them all,
+# moved from where it was with its body unchanged. Values a section built while it ran and a later one read are
+# built here on first use and kept (studio_log(), sample(), thin18()), so a section run alone builds them itself.
 
-    # T-29: BASE + '__un29/<file>' serves this build with un29() applied, so studio.html there is T-27's page byte for
-    # byte (the stamp line aside); the older checks that read studio.html's layout as it was at T-27 open UN29.
-    UN29 = BASE + '__un29/'
+b = None        # the browser, launched by the runner at the bottom of this file
+errors = []     # page errors, from every page newpage() opens
 
-    def serve29(route):
-        path = route.request.url.split('/__un29/', 1)[1].split('?')[0].split('#')[0]
-        body = urlopen(BASE + path).read()
-        if path.endswith('.html'):
-            body = un29(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
-        route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
-                      'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+# T-29: BASE + '__un29/<file>' serves this build with un29() applied, so studio.html there is T-27's page byte for
+# byte (the stamp line aside); the older checks that read studio.html's layout as it was at T-27 open UN29.
+UN29 = BASE + '__un29/'
 
-    # T-30: BASE + '__un30/<file>' serves this build with un30() applied, so studio.html and local.html there are T-29's
-    # pages (the stamp line aside); the older checks that read those pages' text or layout as at T-29 open UN30.
-    UN30 = BASE + '__un30/'
+def serve29(route):
+    path = route.request.url.split('/__un29/', 1)[1].split('?')[0].split('#')[0]
+    body = urlopen(BASE + path).read()
+    if path.endswith('.html'):
+        body = un29(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
+    route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
+                  'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
 
-    def serve30(route):
-        path = route.request.url.split('/__un30/', 1)[1].split('?')[0].split('#')[0]
-        body = urlopen(BASE + path).read()
-        if path.endswith('.html'):
-            body = un30(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
-        route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
-                      'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+# T-30: BASE + '__un30/<file>' serves this build with un30() applied, so studio.html and local.html there are T-29's
+# pages (the stamp line aside); the older checks that read those pages' text or layout as at T-29 open UN30.
+UN30 = BASE + '__un30/'
 
-    def newpage(w, h=900):
-        pg = b.new_page(viewport={'width': w, 'height': h})
-        route_fonts(pg)
-        pg.route('**/__un29/**', serve29)
-        pg.route('**/__un30/**', serve30)
-        pg.on('pageerror', lambda e: errors.append(str(e)))
-        return pg
+def serve30(route):
+    path = route.request.url.split('/__un30/', 1)[1].split('?')[0].split('#')[0]
+    body = urlopen(BASE + path).read()
+    if path.endswith('.html'):
+        body = un30(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
+    route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
+                  'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
 
-    # ---------------- decoder
+def newpage(w, h=900):
+    pg = b.new_page(viewport={'width': w, 'height': h})
+    route_fonts(pg)
+    pg.route('**/__un29/**', serve29)
+    pg.route('**/__un30/**', serve30)
+    pg.on('pageerror', lambda e: errors.append(str(e)))
+    return pg
+
+# The imports the sections share (each was at the top of the section that first needed it).
+import json as _json
+import re as _re, struct as _struct
+from urllib.request import urlopen
+import json as _json, html as _html
+import shutil as _shutil, subprocess as _sp, tempfile as _tmp
+import datetime as _dt
+from urllib.parse import unquote as _unquote
+import subprocess as _sp18
+import json as _json26
+
+# start, briefing, drop-in: the intake Worker, mocked (T-10 and T-29 post to it too).
+posts = []
+def mock_ok(route):
+    if route.request.method == 'POST':
+        posts.append(_json.loads(route.request.post_data or '{}'))
+    return route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
+def mock_fail(route):
+    return route.fulfill(status=502, content_type='application/json', body='{"ok":false}', headers={'Access-Control-Allow-Origin': '*'})
+
+# T-20 F2: the checkup card and links show only once CHECKUP_URL is set in tools/checkup.py.
+CK_LIVE = "\nvar CHECKUP_URL = '';" not in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tools', 'checkup.py'), encoding='utf-8').read()
+
+SHARED = ('index', 'local', 'mainframe', 'work', 'comp3', 'shotlist', 'captions', 'receipt',
+          'scaler', 'start', 'call', 'case-reels', 'briefing', 'studio', 'checkup')
+# Plus a page per open Studio product with a join list (T-09).
+SHARED += tuple('studio-' + x['id'] for x in _json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'studio.json'), encoding='utf-8'))['products']
+                if x.get('gate') is None and x.get('list'))
+# T-16: every header except the three Mainframe pages, which carry neither Studio nor Free tools.
+MAINFRAME_PAGES = ('mainframe', 'briefing', 'comp3')
+
+def ld_blocks(src):
+    return _re.findall(r'<script type="application/ld\+json">(.*?)</script>', src, _re.S)
+
+def page_text(src):
+    # The page's words with the tags stripped: scripts and styles out first, so the block can't vouch for itself.
+    src = _re.sub(r'<(script|style)\b.*?</\1>', ' ', src, flags=_re.S)
+    return _re.sub(r'\s+', ' ', _html.unescape(_re.sub(r'<[^>]+>', ' ', src)))
+
+ALL_HTML = [n + '.html' for n in SHARED] + ['404.html']
+here = os.path.dirname(os.path.abspath(__file__))
+
+STUDIO_J = _json.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+SHIPPED_J = _json.load(open(os.path.join(here, 'shipped.json'), encoding='utf-8'))
+open_p = [x for x in STUDIO_J['products'] if x.get('gate') is None]
+
+def short(d, today):
+    s = d.strftime('%b') + ' ' + str(d.day)
+    return s if d.year == today.year else f'{s}, {d.year}'
+
+_LOG08 = []
+
+
+def studio_log():
+    """T-08: the day studio.html was built, the gated products' ids and the log lines that should show. T-08's
+    section and T-09's read them; built once, on first use, from the page and shipped.json as T-08's section did."""
+    if not _LOG08:
+        gated_p = [x for x in STUDIO_J['products'] if x.get('gate') is not None]
+        src = urlopen(BASE + 'studio.html').read().decode('utf-8')
+        built = _re.search(r'id="stats" data-built="(\d{4}-\d\d-\d\d)"', src)
+        today = _dt.date.fromisoformat(built.group(1)) if built else _dt.date.today()
+        # The log lines that should show: not from a gated product, not older than 120 days, newest first.
+        hide = {x['id'] for x in gated_p}
+        rows = [e for e in SHIPPED_J['entries'] if e['project'] not in hide
+                and _dt.date.fromisoformat(e['date']) >= today - _dt.timedelta(days=120)]
+        rows.sort(key=lambda e: e['date'], reverse=True)
+        _LOG08.extend([today, hide, rows])
+    return _LOG08
+
+sys.path.insert(0, os.path.join(here, 'tools'))
+import studio as _studio
+
+page_p = [x for x in open_p if x.get('list')]
+wk = open(os.path.join(here, 'worker', 'intake.js'), encoding='utf-8').read()
+# Catch the fallback mailto instead of letting the browser open a mail app.
+CATCH_MAILTO = ("window.__mailto = []; document.addEventListener('click', function (e) {"
+                " var a = e.target.closest && e.target.closest('a[href^=\"mailto:\"]');"
+                " if (a && a.hidden) { window.__mailto.push(a.getAttribute('href')); e.preventDefault(); } }, true);")
+
+def mock_abort(route):
+    return route.abort()
+
+_SAMPLE = []
+
+
+def sample():
+    """The checkup Worker's sample answer (test_checkup.mjs --sample). The checkup section, T-18 and T-19 read it; built once."""
+    if not _SAMPLE:
+        SAMPLE = _json.loads(_sp.run(['node', 'test_checkup.mjs', '--sample'], cwd=os.path.join(here, 'worker'), capture_output=True, text=True).stdout)
+        _SAMPLE.append(SAMPLE)
+    return _SAMPLE[0]
+
+def settle(q):
+    q.wait_for_load_state('networkidle'); q.evaluate('document.fonts.ready.then(() => 1)'); q.wait_for_timeout(100)
+U = lambda s: _html.unescape(s)
+def click_chips(q, picks):
+    for k, v in picks:
+        q.evaluate(f"document.querySelector('.chip[data-k=\"{k}\"][data-v=\"{v}\"]').click()")
+def set_val(q, sel, v):
+    q.evaluate("([s, v]) => { const e = document.querySelector(s); e.value = v; e.dispatchEvent(new Event('input', {bubbles: true})); e.dispatchEvent(new Event('change', {bubbles: true})) }", [sel, v])
+def grab_copy(q, btn):
+    q.evaluate('window.djCopy = t => { window.__copied = t }')
+    q.evaluate(f"document.querySelector('{btn}').click()")
+    return q.evaluate('window.__copied')
+
+SHOT_JS = '''(() => ({
+  edit: [...document.querySelectorAll('#edit .clip')].map(c => [c.querySelector('.no').textContent, c.querySelector('.role').className, c.querySelector('.sec').textContent, c.querySelector('p').textContent, (c.querySelector('.cap') || {}).textContent || '']),
+  shoot: [...document.querySelectorAll('#shoot .spot')].map(s => [s.querySelector('h3').textContent, [...s.querySelectorAll('li')].map(l => l.textContent)]),
+  strip: [...document.querySelectorAll('#strip span')].map(s => [s.className, s.style.flex, s.textContent]), striplabel: document.getElementById('striplabel').textContent,
+  rules: [...document.querySelectorAll('#rules li')].map(l => l.textContent),
+  days: document.getElementById('days').textContent, dayslabel: document.getElementById('dayslabel').textContent, when: document.getElementById('when').hidden,
+  pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)}))()'''
+
+CAP_JS = '''(() => { const d = document.getElementById('cv').toDataURL(); let h = 0; for (let i = 0; i < d.length; i++) h = (h * 31 + d.charCodeAt(i)) | 0;
+  return {verdicts: [...document.querySelectorAll('#verdicts li')].map(l => [l.querySelector('.dot').className, l.textContent]),
+          cards: [...document.querySelectorAll('#cards .cardline')].map(c => c.textContent), canvas: h,
+          pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)} })()'''
+CAP_IN = ((None, [], '5'), ('New fall sweaters just landed.', [('size', 'l'), ('pos', 'top'), ('app', 'tiktok')], '2'),
+          ('Supercalifragilisticexpialidocious bakery opens at nine tomorrow morning on Fourth Street', [('size', 's'), ('box', 'none'), ('app', 'shorts'), ('pos', 'mid')], '20'))
+
+def rec_in(presets, rate, edit):
+    def rec(q):
+        for i in presets:
+            q.evaluate(f"document.querySelector('[data-p=\"{i}\"]').click()")
+        if rate:
+            set_val(q, '#rate', rate)
+        if edit:
+            set_val(q, '[data-f=min]', '60'); set_val(q, '[data-f=per]', 'week')
+            q.evaluate("document.getElementById('addown').click()"); q.wait_for_timeout(60)
+            set_val(q, 'input[data-f=name]', 'Renamed chore')
+            q.evaluate("document.querySelector('[data-del=\"1\"]').click()")
+        q.wait_for_timeout(100)
+        paper = q.evaluate("(() => { const c = document.getElementById('paper').cloneNode(true); c.querySelectorAll('.ed, .fold').forEach(e => e.remove()); return c.textContent.replace(/\\s+/g, ' ').trim() })()")
+        paper = paper.replace('You could get back', 'BACK').replace('COULD COME BACK', 'BACK')
+        return {'paper': paper, 'bring': q.get_attribute('#bring', 'href'),
+                'copy': grab_copy(q, '#copy').replace('You could get back:', 'BACK:').replace('Could come back:', 'BACK:'),
+                'chips': q.evaluate("[...document.querySelectorAll('#presets .chip')].map(c => [c.textContent, c.className, c.getAttribute('aria-disabled')])")}
+    return rec
+
+_THIN18 = []
+
+
+def thin18():
+    """T-18's thin page: the sample answer with 120 characters of text. T-18 and T-19 read it; built once."""
+    if not _THIN18:
+        SAMPLE = sample()
+        thin = _json.loads(_json.dumps(SAMPLE)); thin['facts']['textLength'] = 120
+        _THIN18.append(thin)
+    return _THIN18[0]
+
+def worker_(a_):
+    return lambda route: route.fulfill(status=200 if a_.get('ok') else 400, content_type='application/json',
+                                       body=_json.dumps(a_), headers={'Access-Control-Allow-Origin': '*'})
+
+def fill_start(q):
+    q.locator('.chips[data-key="pile"] .chip').nth(1).click()
+    q.locator('.chips[data-key="days"] .chip').first.click()
+    q.fill('#org', 'Test Bakery'); q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com')
+def fill_call(q):
+    q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com'); q.fill('#org', 'Test Bakery')
+def fill_brief(q):
+    q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com'); q.fill('#family', 'Month-end batch'); q.fill('#role', 'Lead')
+
+sys.path.insert(0, os.path.join(here, 'tools'))
+import chrome as _chrome20
+ck_src = open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read()
+
+def fill_start20(q):
+    fill_start(q)
+    for t in ('Mornings', 'Friday'):
+        q.locator('.chips[data-key="days"] .chip', has_text=t).click()
+
+# T-26: the page text readers leave the gallery section out (on older builds it isn't there); the T-26 block checks its words.
+# T-27: and the ChuckleFits shelf (.shelf), likewise; the T-27 block checks its words.
+TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"], .shelf').forEach(e => e.remove());
+  return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
+
+K5_ROWS = [('Editing each reel, before', 'An evening'), ('Engine time each reel', '~4 min'), ('Reels in the series', '40'),
+           ('Her notes it now checks on every reel', '3 of 3'), ('Posted without her yes', '0')]
+stamp25 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
+STAMP26 = r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->'
+rb26 = lambda f: open(os.path.join(here, '..', f), 'rb').read().replace(b'\r\n', b'\n')   # a Windows checkout may hold CRLF
+outd = os.path.join(here, 'out')
+stamp27 = lambda s: _re.sub(STAMP26, '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
+
+
+def free_port():
+    s = socket.socket(); s.bind(('127.0.0.1', 0)); n = s.getsockname()[1]; s.close()
+    return n
+
+
+TEMP_PORT = free_port()   # T-31: T-21's temp server (once always on 8767) gets a free port in each process, so workers don't collide
+
+
+
+# ---------------- decoder
+@section('decoder')
+def s_decoder():
     pg = newpage(1440)
     pg.goto(BASE + 'comp3.html'); pg.wait_for_timeout(300)
     out = lambda: pg.inner_text('#out')
@@ -477,7 +744,10 @@ with sync_playwright() as p:
         check(f'decoder no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
         q.screenshot(path=f'{SHOTS}/comp3-{w}.png', full_page=True)
 
-    # ---------------- local page
+
+# ---------------- local page
+@section('local-page')
+def s_local_page():
     pg = newpage(1440)
     pg.goto(BASE + 'local.html'); pg.wait_for_timeout(500)
     btns = pg.locator('#rc-rows .src-btn')
@@ -528,15 +798,10 @@ with sync_playwright() as p:
         q.locator('#dropin').screenshot(path=f'{SHOTS}/dropin-{w}.png')
         q.locator('#josef').screenshot(path=f'{SHOTS}/josef-{w}.png')
 
-    # ---------------- start, briefing, drop-in (endpoint mocked)
-    import json as _json
-    posts = []
-    def mock_ok(route):
-        if route.request.method == 'POST':
-            posts.append(_json.loads(route.request.post_data or '{}'))
-        return route.fulfill(status=200, content_type='application/json', body='{"ok":true}', headers={'Access-Control-Allow-Origin': '*'})
-    def mock_fail(route):
-        return route.fulfill(status=502, content_type='application/json', body='{"ok":false}', headers={'Access-Control-Allow-Origin': '*'})
+
+# ---------------- start, briefing, drop-in (endpoint mocked)
+@section('start-briefing-dropin')
+def s_start_briefing_dropin():
 
     pg = newpage(1440); pg.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok)
     pg.goto(BASE + 'local.html'); pg.wait_for_timeout(300)
@@ -584,9 +849,10 @@ with sync_playwright() as p:
         check(f'briefing no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
         q.screenshot(path=f'{SHOTS}/briefing-{w}.png', full_page=True)
 
-    # ---------------- work, case study, free call
-    # T-20 F2: the checkup card and links show only once CHECKUP_URL is set in tools/checkup.py.
-    CK_LIVE = "\nvar CHECKUP_URL = '';" not in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tools', 'checkup.py'), encoding='utf-8').read()
+
+# ---------------- work, case study, free call
+@section('work-case-study')
+def s_work_case_study():
     pg = newpage(1440)
     pg.goto(BASE + 'work.html'); pg.wait_for_timeout(300)
     check('work has 10 cards (T-04 adds the Website checkup; 9 while it isn\'t live, T-20 F2)', pg.locator('#cards .card').count() == (10 if CK_LIVE else 9))
@@ -638,7 +904,10 @@ with sync_playwright() as p:
     check('local links work + call', pg.locator('a[href="work.html"]').count() >= 2 and pg.locator('#contact a[href="call.html"]').count() == 1)
     check('local results link, no slogan (intent L17)', pg.locator('#proof a[href="work.html"]').count() == 1 and "If I can't show it" not in pg.inner_text('#proof'))
 
-    # ---------------- mainframe
+
+# ---------------- mainframe
+@section('mainframe')
+def s_mainframe():
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'mainframe.html'); q.wait_for_timeout(500)
         check(f'mainframe no overflow at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
@@ -646,7 +915,10 @@ with sync_playwright() as p:
         check(f'mainframe no placeholders at {w}', '[' not in q.inner_text('#s7'))
         q.locator('#s7').screenshot(path=f'{SHOTS}/mf-s7-{w}.png')
 
-    # ---------------- free tools (Nov 8, 2026)
+
+# ---------------- free tools (Nov 8, 2026)
+@section('free-tools')
+def s_free_tools():
     for w in (390, 1440):
         for t in ('shotlist', 'captions', 'receipt', 'scaler', 'checkup'):
             q = newpage(w); q.goto(BASE + t + '.html'); q.wait_for_timeout(500)
@@ -685,14 +957,10 @@ with sync_playwright() as p:
     q.fill('#kids', '40'); q.wait_for_timeout(100)
     check('scaler warns about batches past x3', 'batches' in q.inner_text('#warn'))
 
-    # ---------------- share cards (T-01, Nov 9, 2026)
-    import re as _re, struct as _struct
-    from urllib.request import urlopen
-    SHARED = ('index', 'local', 'mainframe', 'work', 'comp3', 'shotlist', 'captions', 'receipt',
-              'scaler', 'start', 'call', 'case-reels', 'briefing', 'studio', 'checkup')
-    # Plus a page per open Studio product with a join list (T-09).
-    SHARED += tuple('studio-' + x['id'] for x in _json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'studio.json'), encoding='utf-8'))['products']
-                    if x.get('gate') is None and x.get('list'))
+
+# ---------------- share cards (T-01, Nov 9, 2026)
+@section('share-cards')
+def s_share_cards():
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         imgs = _re.findall(r'<meta property="og:image" content="([^"]*)">', src)
@@ -711,12 +979,13 @@ with sync_playwright() as p:
         check(f'{name} card file exists in out/og at 1200x630', size == (1200, 630), str(size))
     check('404 page carries no share card', 'og:image' not in urlopen(BASE + '404.html').read().decode('utf-8'))
 
-    # ---------------- free tools, findable (T-02, Nov 10, 2026)
+
+# ---------------- free tools, findable (T-02, Nov 10, 2026)
+@section('free-tools-findable')
+def s_free_tools_findable():
     TOOLS = {'shotlist.html': 'Reel shot list', 'captions.html': 'Caption fitter',
              'receipt.html': 'Busywork receipt', 'scaler.html': 'Recipe scaler', 'checkup.html': 'Website checkup'}
     LINKED = {k: v for k, v in TOOLS.items() if k != 'checkup.html' or CK_LIVE}   # T-20 F2
-    # T-16: every header except the three Mainframe pages, which carry neither Studio nor Free tools.
-    MAINFRAME_PAGES = ('mainframe', 'briefing', 'comp3')
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         # The header nav: <nav> where the page has one, else its <header>, else the home page's letterhead bar.
@@ -774,16 +1043,11 @@ with sync_playwright() as p:
             q.set_viewport_size({'width': w, 'height': 900}); q.wait_for_timeout(150)
             q.screenshot(path=f'{SHOTS}/t02-{name}-{w}.png', full_page=True)
 
-    # ---------------- facts a machine can read (T-11, Nov 11, 2026)
-    import json as _json, html as _html
 
-    def ld_blocks(src):
-        return _re.findall(r'<script type="application/ld\+json">(.*?)</script>', src, _re.S)
+# ---------------- facts a machine can read (T-11, Nov 11, 2026)
+@section('machine-facts')
+def s_machine_facts():
 
-    def page_text(src):
-        # The page's words with the tags stripped: scripts and styles out first, so the block can't vouch for itself.
-        src = _re.sub(r'<(script|style)\b.*?</\1>', ' ', src, flags=_re.S)
-        return _re.sub(r'\s+', ' ', _html.unescape(_re.sub(r'<[^>]+>', ' ', src)))
 
     def walk(node):
         yield node
@@ -883,16 +1147,16 @@ with sync_playwright() as p:
             q = newpage(w); q.goto(BASE + name + '.html'); q.wait_for_timeout(300)
             q.screenshot(path=f'{SHOTS}/t11-{name}-{w}.png')
 
-    # ---------------- visit counter (T-12, Nov 11, 2026)
-    import shutil as _shutil, subprocess as _sp, tempfile as _tmp
+
+# ---------------- visit counter (T-12, Nov 11, 2026)
+@section('visit-counter')
+def s_visit_counter():
     COUNTER_LINE = 'This site counts page visits with Cloudflare Web Analytics, which uses no cookies.'
-    ALL_HTML = [n + '.html' for n in SHARED] + ['404.html']
     for name in ALL_HTML:
         src = urlopen(BASE + name).read().decode('utf-8')
         check(f'{name} has no beacon while the token is empty', 'cloudflareinsights' not in src)
         check(f'{name} has no counter sentence while the token is empty', COUNTER_LINE not in src)
     # A temp copy of the pipeline with a made-up token: build it all, then count.
-    here = os.path.dirname(os.path.abspath(__file__))
     tmp = _tmp.mkdtemp()
     try:
         bd = os.path.join(tmp, '_build')
@@ -940,30 +1204,20 @@ with sync_playwright() as p:
     finally:
         _shutil.rmtree(tmp, ignore_errors=True)
 
-    # ---------------- the Studio page and the public build log (T-08, Nov 11, 2026)
-    import datetime as _dt
-    from urllib.parse import unquote as _unquote
-    STUDIO_J = _json.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
-    SHIPPED_J = _json.load(open(os.path.join(here, 'shipped.json'), encoding='utf-8'))
-    open_p = [x for x in STUDIO_J['products'] if x.get('gate') is None]
+
+# ---------------- the Studio page and the public build log (T-08, Nov 11, 2026)
+@section('studio-log')
+def s_studio_log():
     gated_p = [x for x in STUDIO_J['products'] if x.get('gate') is not None]
     label_of = dict({x['id']: x['name'] for x in open_p}, site='dragomansjourney.com')
 
-    def short(d, today):
-        s = d.strftime('%b') + ' ' + str(d.day)
-        return s if d.year == today.year else f'{s}, {d.year}'
 
     src = urlopen(BASE + 'studio.html').read().decode('utf-8')
     check('sitemap lists studio.html', 'https://dragomansjourney.com/studio.html' in urlopen(BASE + 'sitemap.xml').read().decode('utf-8'))
     check('studio has no long dash', '—' not in src and '–' not in src)
     built = _re.search(r'id="stats" data-built="(\d{4}-\d\d-\d\d)"', src)
     check('studio numbers strip says its build date', bool(built))
-    today = _dt.date.fromisoformat(built.group(1)) if built else _dt.date.today()
-    # The log lines that should show: not from a gated product, not older than 120 days, newest first.
-    hide = {x['id'] for x in gated_p}
-    rows = [e for e in SHIPPED_J['entries'] if e['project'] not in hide
-            and _dt.date.fromisoformat(e['date']) >= today - _dt.timedelta(days=120)]
-    rows.sort(key=lambda e: e['date'], reverse=True)
+    today, hide, rows = studio_log()   # T-31: built once, by studio_log() above (T-09 reads them too)
     N = len(rows)
     oldest = min(_dt.date.fromisoformat(e['date']) for e in rows)
 
@@ -1065,8 +1319,6 @@ with sync_playwright() as p:
             check(f'studio card {x["id"]}: list count shows only at 10 or more',
                   ('people on the list' in txt) == (x['list'].get('count', 0) >= 10))
     # The count rule, on a made-up count either side of 10.
-    sys.path.insert(0, os.path.join(here, 'tools'))
-    import studio as _studio
     p41 = dict(open_p[0], list=dict(open_p[0].get('list') or {'id': 'x', 'button': 'b'}, count=41))
     p9 = dict(p41, list=dict(p41['list'], count=9))
     check('a list of 41 says "41 people on the list"', '>41 people on the list<' in _studio.product_card(p41))
@@ -1125,8 +1377,11 @@ with sync_playwright() as p:
     finally:
         _shutil.rmtree(tmp, ignore_errors=True)
 
-    # ---------------- a page per Studio product (T-09, Nov 11, 2026)
-    page_p = [x for x in open_p if x.get('list')]
+
+# ---------------- a page per Studio product (T-09, Nov 11, 2026)
+@section('studio-pages')
+def s_studio_pages():
+    today, _hide, rows = studio_log()   # T-31: as T-08 built them (built here when T-09 runs alone)
     check('one page per open product with a join list', [x['id'] for x in page_p] == ['birdleague', 'deepcuts'], str([x['id'] for x in page_p]))
     sitemap = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
     for x in STUDIO_J['products']:
@@ -1202,23 +1457,19 @@ with sync_playwright() as p:
         x['gate'] = None
     check('a product gets a page once its gate clears', [s for s, _ in _studio.product_pages(sj)] == ['studio-birdleague.html', 'studio-deepcuts.html', 'studio-album.html'])
 
-    # ---------------- real join lists (T-10, Nov 11, 2026)
+
+# ---------------- real join lists (T-10, Nov 11, 2026)
+@section('join-lists')
+def s_join_lists():
     # The Worker, with no network: intake.js and intake.deployed.js agree, the list form works, the old forms don't change.
     r = _sp.run(['node', 'test_intake.mjs'], cwd=os.path.join(here, 'worker'), capture_output=True, text=True)
     check('worker: node test_intake.mjs passes', r.returncode == 0 and ' passed' in r.stdout, (r.stdout + r.stderr)[-400:])
-    wk = open(os.path.join(here, 'worker', 'intake.js'), encoding='utf-8').read()
     check('worker: the four lists, as the item names them', 'const LISTS = ["birdleague", "deepcuts", "album", "spots-feb"];' in wk)
     check('worker: every Studio join list is one the Worker takes',
           all(x['list']['id'] in ('birdleague', 'deepcuts', 'album', 'spots-feb') for x in STUDIO_J['products'] if x.get('list')))
     start_ep = _re.search(r"var ENDPOINT = '([^']+)'", open(os.path.join(here, 'start.html'), encoding='utf-8').read()).group(1)
     check('join boxes post to the same Worker as start.html', _studio.ENDPOINT == start_ep, _studio.ENDPOINT)
-    # Catch the fallback mailto instead of letting the browser open a mail app.
-    CATCH_MAILTO = ("window.__mailto = []; document.addEventListener('click', function (e) {"
-                    " var a = e.target.closest && e.target.closest('a[href^=\"mailto:\"]');"
-                    " if (a && a.hidden) { window.__mailto.push(a.getAttribute('href')); e.preventDefault(); } }, true);")
 
-    def mock_abort(route):
-        return route.abort()
     join_pages = [('studio.html', x) for x in open_p if x.get('list')] + [(f'studio-{x["id"]}.html', x) for x in page_p]
     for slug, x in join_pages:
         box = (f'#products article[data-id="{x["id"]}"] ' if slug == 'studio.html' else '#join ') + 'form.jf'
@@ -1267,7 +1518,10 @@ with sync_playwright() as p:
                 f.scroll_into_view_if_needed(); q.screenshot(path=f'{SHOTS}/t10-{slug[:-5]}-fail-390.png')
     check('join boxes: no long dash in the join script', '—' not in _studio.JOIN_SCRIPT and '–' not in _studio.JOIN_SCRIPT)
 
-    # ---------------- website checkup (T-04, Nov 12, 2026)
+
+# ---------------- website checkup (T-04, Nov 12, 2026)
+@section('checkup')
+def s_checkup():
     # The Worker, with no network: safety rules, link classifier, 8a to 8e, and local.html through 8b (step 12).
     import tempfile as _tf
     lp = os.path.join(_tf.mkdtemp(), 'local.html')
@@ -1279,7 +1533,7 @@ with sync_playwright() as p:
     check('checkup worker: separate from intake (no email, no intake code)', 'cloudflare:email' not in ck and 'SEB' not in ck)
     check('checkup worker: CORS for the same origins as intake', _re.search(r'const ORIGINS = \[[^\]]*\];', ck).group(0) == _re.search(r'const ORIGINS = \[[^\]]*\];', wk).group(0))
     check('checkup worker: no long dash', '—' not in ck and '–' not in ck)
-    SAMPLE = _json.loads(_sp.run(['node', 'test_checkup.mjs', '--sample'], cwd=os.path.join(here, 'worker'), capture_output=True, text=True).stdout)
+    SAMPLE = sample()   # T-31: built once, by sample() above (T-18 and T-19 read it too)
 
     src = urlopen(BASE + 'checkup.html').read().decode('utf-8')
     check('checkup: sitemap lists it once it is live, and not before (T-20 F2)', ('https://dragomansjourney.com/checkup.html' in urlopen(BASE + 'sitemap.xml').read().decode('utf-8')) == CK_LIVE)
@@ -1387,7 +1641,10 @@ with sync_playwright() as p:
           and not q.locator('#rep1').is_visible() and q.inner_text('#go') == 'Check it')
     q.screenshot(path=f'{SHOTS}/t04-refused-390.png', full_page=True)
 
-    # ---------------- intent pass 2 (T-16, Nov 12, 2026)
+
+# ---------------- intent pass 2 (T-16, Nov 12, 2026)
+@section('intent-pass-2')
+def s_intent_pass_2():
     def text_of(src):
         return _html.unescape(_re.sub(r'<[^>]+>', ' ', _re.sub(r'<(script|style)\b.*?</\1>', ' ', src, flags=_re.S)))
     T16_PAGES = ('index', 'studio', 'studio-birdleague', 'studio-deepcuts', 'work', 'shotlist', 'captions', 'receipt',
@@ -1511,7 +1768,10 @@ with sync_playwright() as p:
                 check(f'T-16: {n} has no sideways scroll at {w}', sw <= w, str(sw))
             q.screenshot(path=f'{SHOTS}/t16-{n}-{w}.png', full_page=True)
 
-    # ---------------- T-17: voice pass, home (voice2.py V1 to V6)
+
+# ---------------- T-17: voice pass, home (voice2.py V1 to V6)
+@section('T-17')
+def s_t_17():
     src = _html.unescape(urlopen(BASE + 'index.html').read().decode('utf-8'))
     V_NEW = {
         'V1': "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here.",
@@ -1571,8 +1831,11 @@ with sync_playwright() as p:
         q.locator('section[aria-labelledby="rules-h"]').screenshot(path=f'{SHOTS}/t17-home-rules-{w}.png')
         q.locator('header:has(h1)').screenshot(path=f'{SHOTS}/t17-home-hero-{w}.png')
 
-    # ---------------- T-18: simple pass, the six tools and the phone header (Nov 13, 2026)
-    import subprocess as _sp18
+
+# ---------------- T-18: simple pass, the six tools and the phone header (Nov 13, 2026)
+@section('T-18')
+def s_t_18():
+    SAMPLE = sample()   # T-31: as the checkup section built it (built here when T-18 runs alone)
     T17 = 'd0a24616f56f85eb6a252d3a4f98ad2449d1ca04'   # trip/T-17: the pages as they were before this item
     T17_FILES = {}
 
@@ -1603,9 +1866,6 @@ with sync_playwright() as p:
     new_src = {n: urlopen(BASE + n + '.html').read().decode('utf-8').replace('\r', '') for n in TOOLS6 + MENU}
     old_src = {n: t17_file(n + '.html').decode('utf-8').replace('\r', '') for n in TOOLS6 + MENU}
 
-    def settle(q):
-        q.wait_for_load_state('networkidle'); q.evaluate('document.fonts.ready.then(() => 1)'); q.wait_for_timeout(100)
-    U = lambda s: _html.unescape(s)
 
     # Left as they are: title tags, meta descriptions, share cards, the dark panels and the "More free tools" lines.
     for n in TOOLS6 + ('index',):
@@ -1706,15 +1966,6 @@ with sync_playwright() as p:
               tops[0] < 2 * 844 and tops[0] <= tops[1], str(tops))
 
     # Same choices, same results: three inputs per tool, against the page as it was at T-17.
-    def click_chips(q, picks):
-        for k, v in picks:
-            q.evaluate(f"document.querySelector('.chip[data-k=\"{k}\"][data-v=\"{v}\"]').click()")
-    def set_val(q, sel, v):
-        q.evaluate("([s, v]) => { const e = document.querySelector(s); e.value = v; e.dispatchEvent(new Event('input', {bubbles: true})); e.dispatchEvent(new Event('change', {bubbles: true})) }", [sel, v])
-    def grab_copy(q, btn):
-        q.evaluate('window.djCopy = t => { window.__copied = t }')
-        q.evaluate(f"document.querySelector('{btn}').click()")
-        return q.evaluate('window.__copied')
     def both(name, fn, w=1440):
         out_ = []
         for base_, pgf in ((BASE, lambda: newpage(w)), (OLD, lambda: old_page(w))):
@@ -1722,13 +1973,6 @@ with sync_playwright() as p:
             out_.append(fn(q))
         return out_
 
-    SHOT_JS = '''(() => ({
-      edit: [...document.querySelectorAll('#edit .clip')].map(c => [c.querySelector('.no').textContent, c.querySelector('.role').className, c.querySelector('.sec').textContent, c.querySelector('p').textContent, (c.querySelector('.cap') || {}).textContent || '']),
-      shoot: [...document.querySelectorAll('#shoot .spot')].map(s => [s.querySelector('h3').textContent, [...s.querySelectorAll('li')].map(l => l.textContent)]),
-      strip: [...document.querySelectorAll('#strip span')].map(s => [s.className, s.style.flex, s.textContent]), striplabel: document.getElementById('striplabel').textContent,
-      rules: [...document.querySelectorAll('#rules li')].map(l => l.textContent),
-      days: document.getElementById('days').textContent, dayslabel: document.getElementById('dayslabel').textContent, when: document.getElementById('when').hidden,
-      pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)}))()'''
     for picks in ([], [('type', 'cafe'), ('goal', 'how'), ('len', '15'), ('light', 'pm')], [('type', 'nonprofit'), ('len', '45'), ('light', 'mid')]):
         def shot(q):
             click_chips(q, picks); q.wait_for_timeout(80)
@@ -1752,12 +1996,6 @@ with sync_playwright() as p:
           and q.locator('#shoot li').count() == 10 and not q.locator('#f-cut').is_visible())
     q.emulate_media(media='screen')
 
-    CAP_JS = '''(() => { const d = document.getElementById('cv').toDataURL(); let h = 0; for (let i = 0; i < d.length; i++) h = (h * 31 + d.charCodeAt(i)) | 0;
-      return {verdicts: [...document.querySelectorAll('#verdicts li')].map(l => [l.querySelector('.dot').className, l.textContent]),
-              cards: [...document.querySelectorAll('#cards .cardline')].map(c => c.textContent), canvas: h,
-              pressed: [...document.querySelectorAll('.chip[aria-pressed=true]')].map(c => c.dataset.k + '=' + c.dataset.v)} })()'''
-    CAP_IN = ((None, [], '5'), ('New fall sweaters just landed.', [('size', 'l'), ('pos', 'top'), ('app', 'tiktok')], '2'),
-              ('Supercalifragilisticexpialidocious bakery opens at nine tomorrow morning on Fourth Street', [('size', 's'), ('box', 'none'), ('app', 'shorts'), ('pos', 'mid')], '20'))
     for text, picks, secs in CAP_IN:
         def cap(q):
             if text is not None:
@@ -1802,24 +2040,6 @@ with sync_playwright() as p:
         q.click('#png')
     check('T-18 S18: "Save this caption as an image" still saves the PNG', dl.value.suggested_filename == 'caption-1.png', dl.value.suggested_filename)
 
-    def rec_in(presets, rate, edit):
-        def rec(q):
-            for i in presets:
-                q.evaluate(f"document.querySelector('[data-p=\"{i}\"]').click()")
-            if rate:
-                set_val(q, '#rate', rate)
-            if edit:
-                set_val(q, '[data-f=min]', '60'); set_val(q, '[data-f=per]', 'week')
-                q.evaluate("document.getElementById('addown').click()"); q.wait_for_timeout(60)
-                set_val(q, 'input[data-f=name]', 'Renamed chore')
-                q.evaluate("document.querySelector('[data-del=\"1\"]').click()")
-            q.wait_for_timeout(100)
-            paper = q.evaluate("(() => { const c = document.getElementById('paper').cloneNode(true); c.querySelectorAll('.ed, .fold').forEach(e => e.remove()); return c.textContent.replace(/\\s+/g, ' ').trim() })()")
-            paper = paper.replace('You could get back', 'BACK').replace('COULD COME BACK', 'BACK')
-            return {'paper': paper, 'bring': q.get_attribute('#bring', 'href'),
-                    'copy': grab_copy(q, '#copy').replace('You could get back:', 'BACK:').replace('Could come back:', 'BACK:'),
-                    'chips': q.evaluate("[...document.querySelectorAll('#presets .chip')].map(c => [c.textContent, c.className, c.getAttribute('aria-disabled')])")}
-        return rec
     for args in (([], None, False), ([4, 11], '45', False), ([1, 9], None, True)):
         a, b_ = both('receipt', rec_in(*args))
         check(f'T-18: receipt gives the same lines, totals, hand-off and copy as T-17 for {args}', a == b_, str([k for k in a if a[k] != b_.get(k)]) + ' ' + str(a)[:300])
@@ -1863,7 +2083,7 @@ with sync_playwright() as p:
         a, b_ = both('scaler', sc)
         check(f'T-18: scaler gives the same amounts as T-17 for {k or "the defaults"}', a == b_)
 
-    thin = _json.loads(_json.dumps(SAMPLE)); thin['facts']['textLength'] = 120
+    thin = thin18()   # T-31: built once, by thin18() above (T-19 reads it too)
     for ans in (SAMPLE, thin, {'ok': False, 'error': 'private-name'}):
         res = []
         for base_, pgf in ((BASE, lambda: newpage(1440)), (OLD, lambda: old_page(1440))):
@@ -1872,9 +2092,6 @@ with sync_playwright() as p:
                 body = route.fetch().text() if base_ == BASE else t17_file('checkup.html').decode('utf-8')
                 route.fulfill(status=200, content_type='text/html', body=body.replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1))
             q.route(base_ + 'checkup.html', page_route)
-            def worker_(a_):
-                return lambda route: route.fulfill(status=200 if a_.get('ok') else 400, content_type='application/json',
-                                                   body=_json.dumps(a_), headers={'Access-Control-Allow-Origin': '*'})
             q.route('https://dj-checkup.test/**', worker_(ans))
             q.goto(base_ + 'checkup.html'); q.wait_for_timeout(400)
             q.fill('#site', 'crumb.example'); q.click('#go'); q.wait_for_timeout(700)
@@ -1989,7 +2206,12 @@ with sync_playwright() as p:
             b2 = q.evaluate('document.documentElement.scrollWidth')
             check(f'T-18: {n} has no sideways scroll at {w}, folds closed and open', a <= w and b2 <= w, f'{a} {b2}')
 
-    # ---------------- T-19: harness lines 01, 33 word changes (W1 to W33), Nov 13, 2026
+
+# ---------------- T-19: harness lines 01, 33 word changes (W1 to W33), Nov 13, 2026
+@section('T-19')
+def s_t_19():
+    SAMPLE = sample()   # T-31: as the checkup section built it (built here when T-19 runs alone)
+    thin = thin18()   # T-31: as T-18 built it (built here when T-19 runs alone)
     # Every check here is against the pages as they were at T-18, read straight from git.
     T18 = '5ab14f363bc9ae99bf2a7e110871b097ac01d4e6'   # origin/main after T-18
     T18_FILES = {}
@@ -2165,14 +2387,6 @@ with sync_playwright() as p:
         for g in got:
             g.pop('ms', None)
         return got, q.locator(done).is_visible()
-    def fill_start(q):
-        q.locator('.chips[data-key="pile"] .chip').nth(1).click()
-        q.locator('.chips[data-key="days"] .chip').first.click()
-        q.fill('#org', 'Test Bakery'); q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com')
-    def fill_call(q):
-        q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com'); q.fill('#org', 'Test Bakery')
-    def fill_brief(q):
-        q.fill('#name', 'Test Person'); q.fill('#email', 'test@example.com'); q.fill('#family', 'Month-end batch'); q.fill('#role', 'Lead')
     for name, fill, btn, done in (('start', fill_start, '#bp-send', '#bp-done'), ('call', fill_call, '#cl-send', '#cl-done'), ('briefing', fill_brief, '#br-send', '#br-done')):
         a, b_ = sent18(BASE, name, fill, btn, done), sent18(OLD18, name, fill, btn, done)
         check(f'T-19: {name} still sends, and sends exactly what it sent at T-18', a == b_ and len(a[0]) == 1 and a[1], str(a)[:300] + ' | ' + str(b_)[:300])
@@ -2269,7 +2483,10 @@ with sync_playwright() as p:
                 sw = q.evaluate('document.documentElement.scrollWidth')
                 check(f'T-19: {n} has no sideways scroll at {w}', sw <= w, str(sw))
 
-    # ---------------- T-20: walk fixes 01 (F1 to F9), Nov 15, 2026
+
+# ---------------- T-20: walk fixes 01 (F1 to F9), Nov 15, 2026
+@section('T-20')
+def s_t_20():
     # Comparisons are against origin/main before this item (T-19's last commit), read straight from git.
     T19 = 'cbaa0d86e85b7033c9e9c76dc704ab77a415c556'
     T19_FILES = {}
@@ -2303,8 +2520,6 @@ with sync_playwright() as p:
         return out_
 
     SRC20 = {n: un26(urlopen(BASE + n).read().decode('utf-8'), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it; "November 2026" holds "November 20")
-    sys.path.insert(0, os.path.join(here, 'tools'))
-    import chrome as _chrome20
     WRAP20 = _chrome20.WRAP_CSS
 
     # F1: the free-reel offer is gone; the countdown stays. (The words are put together here, so a
@@ -2332,7 +2547,6 @@ with sync_playwright() as p:
     check('T-20 F1: nonprofits still count down to Giving Tuesday', q.inner_text('#days').strip() == '16 days' and 'Giving Tuesday' in q.inner_text('#dayslabel'), q.inner_text('#when'))
 
     # F2: no links to the checkup while CHECKUP_URL is empty; it all comes back once it is set.
-    ck_src = open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read()
     check('T-20 F2: CHECKUP_URL is still empty in checkup.py', "\nvar CHECKUP_URL = '';" in ck_src and _chrome20.checkup_url() == '')
     for n in ALL_HTML:
         if n != 'checkup.html':
@@ -2623,15 +2837,14 @@ with sync_playwright() as p:
         for g in got:
             g.pop('ms', None)
         return got, q.locator(done).is_visible()
-    def fill_start20(q):
-        fill_start(q)
-        for t in ('Mornings', 'Friday'):
-            q.locator('.chips[data-key="days"] .chip', has_text=t).click()
     for name, fill, btn, done in (('start', fill_start20, '#bp-send', '#bp-done'), ('call', fill_call, '#cl-send', '#cl-done'), ('briefing', fill_brief, '#br-send', '#br-done')):
         a, b_ = sent19(BASE, name, fill, btn, done), sent19(OLD19, name, fill, btn, done)
         check(f'T-20: {name} still sends, and sends exactly what it sent before', a == b_ and len(a[0]) == 1 and a[1], str(a)[:300] + ' | ' + str(b_)[:300])
 
-    # ---------------- T-21: walk fixes 02 (G1 to G6), Nov 16, 2026
+
+# ---------------- T-21: walk fixes 02 (G1 to G6), Nov 16, 2026
+@section('T-21')
+def s_t_21():
     # Layout and line breaking only. Comparisons are against origin/main before this item
     # (T-20's last commit), read straight from git.
     T20C = '172db8bfed500e4768671108aa28cf546b7df5f9'
@@ -2698,10 +2911,6 @@ with sync_playwright() as p:
 
     # Every word as it was: each page's text content (after its scripts run), with the new
     # spans out of the way and a no-break space read as a space, matches origin/main.
-    # T-26: the page text readers leave the gallery section out (on older builds it isn't there); the T-26 block checks its words.
-    # T-27: and the ChuckleFits shelf (.shelf), likewise; the T-27 block checks its words.
-    TEXT_JS = '''(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script, style, section[aria-labelledby="gallery-h"], .shelf').forEach(e => e.remove());
-      return c.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() })()'''
     for n in ALL_HTML:
         a, b_ = both20(n[:-5], lambda q: q.evaluate(TEXT_JS), words=True)   # T-22: its four pages as T-21 left them
         a = un24(a)   # T-24: A1 to A7 read back as T-23's (the T-24 block checks them)
@@ -2917,10 +3126,10 @@ with sync_playwright() as p:
                 break
         if built:
             check('T-21 G4: the temp build with a checkup address has the fifth tool card', open(os.path.join(bd, 'out', 'work.html'), encoding='utf-8').read().count('href="checkup.html"') >= 1)
-            srv = _sp18.Popen([sys.executable, '-m', 'http.server', '8767', '--bind', '127.0.0.1'], cwd=os.path.join(bd, 'out'), stdout=_sp18.DEVNULL, stderr=_sp18.DEVNULL)
+            srv = _sp18.Popen([sys.executable, '-m', 'http.server', str(TEMP_PORT), '--bind', '127.0.0.1'], cwd=os.path.join(bd, 'out'), stdout=_sp18.DEVNULL, stderr=_sp18.DEVNULL)
             import time as _time21
             _time21.sleep(1.5)
-            grids21('http://127.0.0.1:8767/', 'checkup live')
+            grids21(f'http://127.0.0.1:{TEMP_PORT}/', 'checkup live')
     finally:
         if srv:
             srv.terminate(); srv.wait()
@@ -3096,7 +3305,10 @@ with sync_playwright() as p:
     a, b_ = join20(BASE), join20(OLD20)
     check('T-21: the Bird League join list still sends exactly what it sent on origin/main', a == b_ and len(a) == 1, str(a) + ' | ' + str(b_))
 
-    # ---------------- T-22 (Nov 16, 2026): Kids Kitchen, process and scale ----------------
+
+# ---------------- T-22 (Nov 16, 2026): Kids Kitchen, process and scale ----------------
+@section('T-22')
+def s_t_22():
     # Josef's lines K1 to K9, word for word. Comparisons are against T-21's own pages
     # (trip/T-21's last commit, the base this item was cut from), read straight from git.
     T21C = 'a0c77c98a2213a618efd2e2831d03fae424963c4'
@@ -3123,8 +3335,6 @@ with sync_playwright() as p:
     K4_LINE = "A 40-reel series for a children's nonprofit, cut by one engine."
     K4_ROWS = [('Editing each reel, before', 'An evening'), ('Now', '~4 min'), ('Reels in the series', '40'), ('Posted without their yes', '0')]
     K5_TITLE = 'Forty reels, one engine.'
-    K5_ROWS = [('Editing each reel, before', 'An evening'), ('Engine time each reel', '~4 min'), ('Reels in the series', '40'),
-               ('Her notes it now checks on every reel', '3 of 3'), ('Posted without her yes', '0')]
     K5_NOTE = 'Every note she gives becomes a rule the engine checks on every reel after, so nobody catches the same thing twice.'
     K5_SRC_NEW = ['Before the engine, she cut each class by hand. That took an evening.',
                   "The engine's own log for the August 2026 shoot: about four minutes from clips in to finished reel.",
@@ -3393,7 +3603,10 @@ with sync_playwright() as p:
             check(f'T-22: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
             q.close()
 
-    # ---------------- T-23 (Nov 16, 2026): Kids Kitchen, the person back in, plus layout leftovers ----------------
+
+# ---------------- T-23 (Nov 16, 2026): Kids Kitchen, the person back in, plus layout leftovers ----------------
+@section('T-23')
+def s_t_23():
     # Josef's lines K3b, K5b, K7b and K8b, word for word, and L1 to L7 (layout only). Comparisons are
     # against T-22's own pages (origin/main at 98eef4f, the base this item was cut from), read from git.
     T22C = '98eef4f93f38a732b8ac1c9b458dd747e8803f4f'
@@ -3656,7 +3869,10 @@ with sync_playwright() as p:
             sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]'); q.close()
             check(f'T-23: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
 
-    # ---------------- T-24 (Nov 17, 2026): Exhibit A says what is stored ----------------
+
+# ---------------- T-24 (Nov 17, 2026): Exhibit A says what is stored ----------------
+@section('T-24')
+def s_t_24():
     # Josef's lines A1 to A7, word for word (mainframe A1 to A5, comp3 A6 and A7). Comparisons are
     # against T-23's own pages (origin/main at 78bf1e6, the base this item was cut from), read from git.
     T23C = '78bf1e632a752b8ea9ef89536e342bcf9ed90758'
@@ -3831,7 +4047,10 @@ with sync_playwright() as p:
         check(f'T-24: comp3 has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
         q.close(); o.close()
 
-    # ---------------- T-25 (Nov 17, 2026): layout leftovers, no words change ----------------
+
+# ---------------- T-25 (Nov 17, 2026): layout leftovers, no words change ----------------
+@section('T-25')
+def s_t_25():
     # F1 to F5 and T1: layout, wrapping and test code only, not one word. Comparisons are against
     # T-24's own pages (origin/main at fd4b14e, the base this item was cut from), read from git.
     T24C = 'fd4b14ec5669aa11d8695f8a2f6d077904a6b8ee'
@@ -3860,7 +4079,6 @@ with sync_playwright() as p:
     SRC25 = {n: un26(un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # T-26: the gallery out (its block checks it)   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD25 = {n: t24_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT25 = {n: un26(un30(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # T-26: as SRC25   # T-30: as SRC25
-    stamp25 = lambda s: _re.sub(r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->', '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
     CHANGED25 = ['captions.html', 'case-reels.html', 'local.html', 'mainframe.html', 'scaler.html', 'studio.html', 'work.html']
 
     # The whole build: T-24's pages with only T-25's changes. un25() swaps each back, and what is
@@ -4180,10 +4398,12 @@ with sync_playwright() as p:
             sw = q.evaluate('[document.documentElement.scrollWidth, window.innerWidth]'); q.close()
             check(f'T-25: {n} has no sideways scroll at {w}', sw[0] <= sw[1], str(sw))
 
-    # ---------------- T-26 (Nov 18, 2026): "Inside the apps", a gallery on the Studio page ----------------
+
+# ---------------- T-26 (Nov 18, 2026): "Inside the apps", a gallery on the Studio page ----------------
+@section('T-26')
+def s_t_26():
     # One section on studio.html, every word from studio.json's "gallery", 20 images from _build/assets/gallery/.
     # Comparisons are against T-25's own build (origin/main at 00948bb, the base this item was cut from), read from git.
-    import json as _json26
     T25C = '00948bba14a57eb3364caa74fe814a13237e460e'
     T25_FILES = {}
 
@@ -4196,7 +4416,6 @@ with sync_playwright() as p:
     SRC26 = {n: un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD26 = {n: t25_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT26 = {n: un30(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: as SRC26
-    STAMP26 = r'<!-- studio\.py \d{4}-\d\d-\d\d [0-9a-f]+ -->'
     GAL26 = [it[0] for _a, gs in T26_APPS for _g in gs for it in _g[3]]
 
     # The whole build: studio.html is T-25's page with only the gallery added; every other page is byte for byte
@@ -4214,13 +4433,11 @@ with sync_playwright() as p:
         else:
             check(f'T-26: {n} is byte for byte as at T-25', SRC26[n] == OLD26[n])
     check('T-26: every root page is the built page', all(ROOT26[n] == SRC26[n] for n in ALL_HTML), str([n for n in ALL_HTML if ROOT26[n] != SRC26[n]]))
-    rb26 = lambda f: open(os.path.join(here, '..', f), 'rb').read().replace(b'\r\n', b'\n')   # a Windows checkout may hold CRLF
     pub25 = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n')
              if f and not f.startswith('_build/') and not f.endswith('.html')]
     check('T-26: every other public file at the root (sitemap, robots, images, share cards...) is byte for byte as at T-25',
           len(pub25) > 20 and all(rb26(f) == t25_file(f).replace(b'\r\n', b'\n') for f in pub25),
           str([f for f in pub25 if rb26(f) != t25_file(f).replace(b'\r\n', b'\n')][:5]))
-    outd = os.path.join(here, 'out')
     outf = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
     t25tree = set(_sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n'))
     check('T-26: the build adds only gallery/ (every other file in out/ was at the root at T-25; T-27\'s images/shelf/ aside, its block checks it)',
@@ -4408,7 +4625,10 @@ with sync_playwright() as p:
             check(f'T-26: at {w}, a focused row scrolls sideways with the arrow keys, and the page doesn\'t', x0 == 0 and x1[0] > 0 and x1[1] == 0, f'{x0} {x1}')
         q.close()
 
-    # ---------------- T-27 (Nov 18, 2026): the ChuckleFits shelf on the Studio page ----------------
+
+# ---------------- T-27 (Nov 18, 2026): the ChuckleFits shelf on the Studio page ----------------
+@section('T-27')
+def s_t_27():
     # Six products from the Nov 18 shop snapshot inside the ChuckleFits card, each one link to its shop page with
     # the shelf tag; "Visit the shop" tagged too; nothing else changed. Comparisons are against T-26's own build
     # (origin/main at 58a8075, the base this item was cut from), read from git.
@@ -4425,7 +4645,6 @@ with sync_playwright() as p:
     SRC27 = {n: un30(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: studio's and local's paragraphs back (the T-30 block checks them)
     OLD27 = {n: t26_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT27 = {n: un30(open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-30: as SRC27
-    stamp27 = lambda s: _re.sub(STAMP26, '', _re.sub(r'data-built="\d{4}-\d\d-\d\d"', 'data-built=""', s))
     TAGQ = T27_TAG.replace('&', '&amp;')
     SHOP27 = 'https://chucklefits.com/?' + T27_TAG
     H27 = [h for h, *_r in T27_SHELF]
@@ -4678,7 +4897,10 @@ with sync_playwright() as p:
             check(f'T-27: at {w}, tabbing to the last product scrolls the row to show it inside the card, and the page doesn\'t move sideways', x2[0] > 0 and x2[1] == 0 and x2[2], str(x2))
         q.close()
 
-    # ---------------- T-29 (Nov 18, 2026): one block per app on the Studio page ----------------
+
+# ---------------- T-29 (Nov 18, 2026): one block per app on the Studio page ----------------
+@section('T-29')
+def s_t_29():
     # Bird League and Deepcuts each show once: their "Inside the apps" block opens with the card's words (pill, what,
     # proof, "More on" link, join form) and the cards are gone; the section sits right after "Shipped lately".
     # Comparisons are against T-27's own build (origin/main at 4a76a78, the base this item was cut from), read from git.
@@ -4909,7 +5131,10 @@ with sync_playwright() as p:
                   and f.locator('.jf-ok').inner_text().strip() == '', str(got))
             q.close()
 
-    # ---------------- T-30 (Nov 18, 2026): each paragraph lives on one page ----------------
+
+# ---------------- T-30 (Nov 18, 2026): each paragraph lives on one page ----------------
+@section('T-30')
+def s_t_30():
     # The kids' app and COBOL cards on studio.html print no "what" line, and the four tool cards on local.html print no
     # description; work.html keeps all six. A studio card that spans its row keeps its description at most 34em wide.
     # Comparisons are against T-29's own build (origin/main at d1117bd, the base this item was cut from), read from git.
@@ -5125,9 +5350,89 @@ with sync_playwright() as p:
         check(f'T-30: at {w}, the tool cards\' names and links read as at T-29', [(x['name'], x['link'][0], x['link'][1]) for x in T['cards']]
               == [(h, a_, g) for h, _p, a_, g in t29_], str([(x['name'], x['link'][0]) for x in T['cards']]))
 
-    check('no page errors', not errors, '; '.join(errors[:3]))
-    b.close()
 
-print(f'{len(ok)}/{len(ok) + len(bad)} passed')
-for x in bad:
-    print('FAIL', x)
+# ================================================================ running the sections (T-31)
+_ARGS = sys.argv[3:]
+_WORKER = '--worker' in _ARGS
+_RESULTS = []      # every check as {section, name, passed, detail}, in the order made
+_CUR = [None]      # the id of the section running
+
+
+def _send(t, **kw):
+    """The worker's side of run_tests.py: one marked JSON line per event on stdout."""
+    sys.stdout.write('\x1eDJ ' + json.dumps(dict(kw, t=t)) + '\n')
+    sys.stdout.flush()
+
+
+def _report(name, cond, detail):
+    rec = {'section': _CUR[0], 'name': name, 'passed': bool(cond), 'detail': '' if cond else str(detail)}
+    _RESULTS.append(rec)
+    if _WORKER:
+        _send('check', **rec)
+    elif not cond:
+        print(f'FAIL {name}  {detail}')
+
+
+def section_line(sid, n, failed, secs):
+    return f'{sid:<22} {n:>5} checks {failed:>4} failed {secs:>7.1f} s'
+
+
+def run_section(sid, fn):
+    """Runs one section; a section that stops on an error counts as one failed check that names it."""
+    _CUR[0] = sid
+    n0, t0 = len(_RESULTS), time.time()
+    try:
+        fn()
+    except Exception:
+        check(f'{sid}: the section runs to the end', False, traceback.format_exc()[-1500:])
+    _CUR[0] = None
+    mine = _RESULTS[n0:]
+    return len(mine), sum(not r['passed'] for r in mine), time.time() - t0
+
+
+def _arg(flag):
+    return _ARGS[_ARGS.index(flag) + 1] if flag in _ARGS and _ARGS.index(flag) + 1 < len(_ARGS) else None
+
+
+def _main():
+    global b
+    ids = [sid for sid, _f in SECTIONS]
+    fns = dict(SECTIONS)
+    only = _arg('--only')
+    if only:
+        want = [x.strip().lower() for x in only.split(',') if x.strip()]
+        unknown = [x for x in want if x not in [i.lower() for i in ids]]
+        if unknown:
+            sys.exit(f'unknown section id(s): {", ".join(unknown)}. The ids: {", ".join(ids)}')
+        ids = [i for i in ids if i.lower() in want]
+    t0 = time.time()
+    with sync_playwright() as p:
+        b = p.chromium.launch(executable_path=exe)
+        if _WORKER:
+            _send('hello', fonts=font_status(), pid=os.getpid())
+            while True:
+                sid = sys.stdin.readline().strip()
+                if not sid or sid == 'END':
+                    break
+                n, failed, secs = run_section(sid, fns[sid])
+                _send('done', section=sid, checks=n, failed=failed, seconds=round(secs, 2), line=section_line(sid, n, failed, secs))
+            _send('end', errors=errors)
+            b.close()
+            return
+        print(font_status())
+        for sid in ids:
+            n, failed, secs = run_section(sid, fns[sid])
+            print(section_line(sid, n, failed, secs))
+        check('no page errors', not errors, '; '.join(errors[:3]))
+        b.close()
+    secs = time.time() - t0
+    print(f'{len(ok)}/{len(ok) + len(bad)} passed in {int(secs // 60)} min {int(secs % 60)} s')
+    for x in bad:
+        print('FAIL', x)
+    if _arg('--results'):
+        json.dump({'base': BASE, 'workers': 1, 'seconds': round(secs, 1), 'passed': len(ok), 'total': len(ok) + len(bad),
+                   'checks': _RESULTS}, open(_arg('--results'), 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
+
+
+if __name__ == '__main__':
+    _main()
