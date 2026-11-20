@@ -251,16 +251,14 @@ text('index.html',
 # own dotted rows (HERO_ROW): on wide screens a label wraps beside its value, and at 420px
 # and under enhance.py's phone rule (T-20 F8) puts the label on its own line with the
 # leader and value under it, so no type shrinks and no word is cut. That rule finds the
-# rows as the card's second block now (enhance.py, T-33). These labels are longer than the
-# old ones, so on wide screens they wrap beside the value, and the dotted leader keeps at
-# least 24px instead of shrinking to nothing. The rows take the 14px the line under the
-# labels used to leave.
+# rows as the card's second block now (enhance.py, T-33), and above 420px keeps each dotted
+# leader at least 24px wide, as these longer labels wrap beside their values there. The rows
+# take the 14px the line under the labels used to leave.
 R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'),
            ('A teaching app, iPhone, iPad, Android and web', '535 tests'),
            ('A birding league with real players', 'zero lines of code to start'),
            ('A banking COBOL program, checked in public', '2 AIs compared')]
-assert HERO_ROW.count('<span style="flex: 1; border-bottom') == 1
-R4_ROW = HERO_ROW.replace('<span style="flex: 1; border-bottom', '<span style="flex: 1 0 24px; border-bottom')
+R4_ROW = HERO_ROW
 text('local.html',
      "\n          <p style=\"margin: 12px 0 14px; color: #3E4640\">A 40-reel series for a children's nonprofit, cut by one engine.</p>",
      '', ref='R4')

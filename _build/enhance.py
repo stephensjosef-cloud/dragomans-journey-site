@@ -672,7 +672,9 @@ def layout_mainframe():
 
 
 # T-33 R4 (Nov 20, 2026): the hero card lost the line above its rows (voice2.py), so its rows
-# are the card's second block: the two .tear rules below find them there.
+# are the card's second block: the two .tear rules below find them there. Its labels are longer
+# now and wrap beside the value on wider screens, so there the dotted leader keeps at least 24px
+# instead of shrinking to nothing (on phones the label takes its own line, as before).
 # Local Route and Home layout (T-20 F8, Nov 15, 2026). Layout only. On wide screens the
 # Results and FAQ headings sit above their content, so no tall empty column is left beside it.
 LOCAL_T20_CSS = """<style>
@@ -686,6 +688,7 @@ LOCAL_T20_CSS = """<style>
 #blueprint{padding-right:0!important}
 #blueprint h3{white-space:nowrap;font-size:min(38px,10.6vw)!important}
 }
+@media (min-width:421px){.tear>div:nth-child(2)>div>span:nth-child(2){min-width:24px}}
 @media (min-width:900px){
 #proof>div,#faq>div{grid-template-columns:minmax(0,1fr)!important;gap:clamp(28px,3vw,40px)!important}
 #proof>div>:last-child,#faq>div>:last-child{width:100%;max-width:860px}
