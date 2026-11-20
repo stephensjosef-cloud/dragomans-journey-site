@@ -91,10 +91,11 @@ a{color:#A93F17}a:hover{color:#16201C}
         <h2 id="s1">What do you have a pile of?</h2>
         <p class="hint">Pick the closest. We'll sort out the details on Day 1.</p>
         <div class="chips" role="group" aria-labelledby="s1" data-key="pile" data-single="1">
-          <button type="button" class="chip" aria-pressed="false">Phone videos nobody has time to edit</button>
-          <button type="button" class="chip" aria-pressed="false">Lessons, recipes or a curriculum</button>
-          <button type="button" class="chip" aria-pressed="false">A weekly task that eats hours</button>
-          <button type="button" class="chip" aria-pressed="false">Not sure yet. Point me somewhere.</button>
+          <button type="button" class="chip" aria-pressed="false" data-value="Phone videos nobody has time to edit">Videos or photos nobody has time to edit</button>
+          <button type="button" class="chip" aria-pressed="false" data-value="Lessons, recipes or a curriculum">Know-how stuck in binders, docs or one person's head</button>
+          <button type="button" class="chip" aria-pressed="false" data-value="A weekly task that eats hours">A weekly task that eats hours</button>
+          <button type="button" class="chip" aria-pressed="false" data-value="An app or tool you keep wishing existed">An app or tool you keep wishing existed</button>
+          <button type="button" class="chip" aria-pressed="false" data-value="Not sure yet. Point me somewhere.">Not sure yet. Point me somewhere.</button>
         </div>
       </div>
     </section>
@@ -118,7 +119,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       <span class="step-n">03</span>
       <div>
         <h2 id="s3">The part that never gets done</h2>
-        <p class="hint">A sentence or two is plenty. Something like "we film every class and post maybe one clip a month."</p>
+        <p class="hint">A sentence or two is plenty. Something like "every Friday someone spends three hours copying orders into a spreadsheet."</p>
         <label class="field"><span class="hp">The part that never gets done</span><textarea id="never" name="never" aria-labelledby="s3"></textarea></label>
       </div>
     </section>
@@ -218,14 +219,17 @@ a{color:#A93F17}a:hover{color:#16201C}
     if (single) group.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
     chip.setAttribute('aria-pressed', String(!on));
     var chosen = Array.prototype.filter.call(group.querySelectorAll('.chip'), function (c) { return c.getAttribute('aria-pressed') === 'true'; })
-      .map(function (c) { return c.textContent.trim(); });
+      .map(function (c) { return value(c); });
     picks[key] = chosen.join(', ');
   }
+  // T-33 R5 (Nov 20, 2026): a chip with a data-value sends that (the old pile choices keep the words they
+  // always sent); every other chip sends its words, as before.
+  function value(c) { return c.hasAttribute('data-value') ? c.getAttribute('data-value') : c.textContent.trim(); }
   function preselect(key, label) {
     var group = document.querySelector('.chips[data-key="' + key + '"]');
     if (!group || !label) return;
     group.querySelectorAll('.chip').forEach(function (c) {
-      if (c.textContent.trim() === label) toggle(group, key, group.hasAttribute('data-single'), c);
+      if (value(c) === label) toggle(group, key, group.hasAttribute('data-single'), c);
     });
   }
 

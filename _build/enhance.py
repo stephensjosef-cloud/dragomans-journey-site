@@ -214,8 +214,9 @@ LOCAL_JS = r"""
   var pile = '';
   document.querySelectorAll('button[data-pick]').forEach(function (b) {
     b.addEventListener('click', function () {
+      // T-33 R5: a choice sends its data-value (the old choices keep the words they always sent).
       var spans = b.querySelectorAll('span');
-      pile = spans.length ? spans[spans.length - 1].textContent : b.textContent;
+      pile = b.getAttribute('data-value') || (spans.length ? spans[spans.length - 1].textContent : b.textContent);
       intake.hidden = false;
     });
   });
@@ -452,25 +453,57 @@ def nav_pair(t, link_rx, ft):
     return rx.sub(lambda m: '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px">' + ft + m.group(0) + '</div>', t)
 
 
+def reel_group(label, line, cards):
+    """T-33 R20 (Nov 20, 2026): the reel engine's tools under the work page's label and line (read
+    from there by tool_cards()). It sits beside the receipt on wide screens and under it on phones."""
+    return f"""
+      <div role="group" aria-labelledby="tools-reel" style="flex: 2 1 416px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+        <p id="tools-reel" style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.04em; color: #3B4540">{label}</p>
+        <p style="margin: -6px 0 0; font-size: 16px; color: #3B4540">{line}</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 16px">{"".join(cards)}
+        </div>
+      </div>"""
+
+
 def tool_cards():
     """The tool cards: each tool's name and link, read from the work page so the words always
     match it. T-30 (Nov 18, 2026): the description stays on the work page only; each card
     here names the tool and links to it."""
     work = (OUT / "work.html").read_text(encoding="utf-8")
-    cards = []
     articles = re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', work, re.S)
+    # T-33 R20 (Nov 20, 2026): the work page groups the reel engine's two tools under a small
+    # label and a line; this section groups the same tools under the same words, read from there.
+    grp = re.findall(r'<div class="cardgroup" role="group" aria-labelledby="reel-tools">\s*'
+                     r'<p class="glabel" id="reel-tools">([^<]*)</p>\s*<p class="gline">([^<]*)</p>(.*?)\n    </div>\n', work, re.S)
+    assert len(grp) == 1, "work page: the reel engine group"
+    glabel, gline, ginner = grp[0]
+    in_group = set(re.findall(r'<a class="go" href="([^"]+)">', ginner))
+    cards, group = [], []
     for href in LINKED_TOOLS:
         m = [re.search(r'<h2>([^<]*)</h2>\s*<p>[^<]*</p>\s*<a class="go" href="' + re.escape(href) + r'">([^<]*)</a>', a)
              for a in articles]
         m = [x for x in m if x]
         assert len(m) == 1, "work page card for " + href
         h, go = m[0].groups()
-        cards.append(f"""
+        card = f"""
       <article style="display: flex; flex-direction: column; gap: 10px; padding: clamp(18px, 2vw, 24px); background: #FBF8F1; border: 1.5px solid #CFC6B2; border-radius: 2px">
         <h3 style="margin: 0; font-size: 20px; line-height: 1.25; font-weight: 700; color: #16201C">{h}</h3>
         <a href="{href}" style="margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: #16201C; text-decoration: none">{go}</a>
-      </article>""")
-    return "".join(cards)
+      </article>"""
+        if href in in_group:
+            if not group:
+                cards.append(None)   # the group stands where its first tool comes in the order
+            group.append(card.replace("\n      ", "\n          "))
+        else:
+            cards.append(card)
+    assert len(group) == len(in_group), "local tools: every tool in the work page's group is linked"
+    # The receipt on the left and the reel engine's pair, under its label, on the right; one under
+    # another on phones. A card outside the group stands at the bottom of a column as tall as the
+    # group, so its top lines up with the group's and the three cards sit level.
+    col = ('\n      <div style="flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end">'
+           '{}\n      </div>')
+    return "".join(reel_group(glabel, gline, group) if c is None else col.format(c.replace("\n      ", "\n        "))
+                   for c in cards)
 
 
 def add_free_tools():
@@ -502,7 +535,7 @@ def add_free_tools():
 <section id="tools" aria-labelledby="tools-h" style="background: #F2EDE1">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(56px, 7vw, 88px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: clamp(22px, 3vw, 32px)">
     <h2 id="tools-h" style="margin: 0; {BIG}; font-size: clamp(40px, 4.8vw, 64px); line-height: 0.9; text-wrap: balance; color: #16201C">Free tools for your pile</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 16px">{tool_cards()}
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">{tool_cards()}
     </div>
   </div>
 </section>
@@ -638,13 +671,15 @@ def layout_mainframe():
     p.write_text(t, encoding="utf-8")
 
 
+# T-33 R4 (Nov 20, 2026): the hero card lost the line above its rows (voice2.py), so its rows
+# are the card's second block: the two .tear rules below find them there.
 # Local Route and Home layout (T-20 F8, Nov 15, 2026). Layout only. On wide screens the
 # Results and FAQ headings sit above their content, so no tall empty column is left beside it.
 LOCAL_T20_CSS = """<style>
 @media (max-width:420px){
 .tear>div:first-child{flex-direction:column;align-items:flex-start!important;gap:2px!important}
-.tear>div:nth-child(3)>div{flex-wrap:wrap;row-gap:0!important}
-.tear>div:nth-child(3)>div>span:first-child{flex:1 0 100%}
+.tear>div:nth-child(2)>div{flex-wrap:wrap;row-gap:0!important}
+.tear>div:nth-child(2)>div>span:first-child{flex:1 0 100%}
 #rc-rows>div{grid-template-columns:minmax(0,1fr)!important;gap:4px!important}
 #rc-rows>div>strong{text-align:left!important}
 [aria-label="Receipts"]>button{flex:1 1 auto}
@@ -771,7 +806,8 @@ def layout_mainframe_t21():
 #    still gives tiles in one row the same height.
 #  - Up to 699 px the three step headings share the size that keeps "THE BLUEPRINT · $1,500"
 #    on one line beside the rule; the cards' price lines step down from 14 to 13 px
-#    (12.5 px under 360), so a line joined by " · " breaks in fewer, fuller lines.
+#    (12.5 px under 360), so a line joined by " · " breaks in fewer, fuller lines. (T-33 R9: every
+#    offer in #engines, so "Something else", which has no data-card, has the same price line.)
 #  - Under 360 px the drop-in line "ONCE A MONTH · SANTA ROSA · FREE" sets its letters a touch
 #    closer, so it holds on one line instead of splitting the place name.
 #  - The free tools cards (G4): the last row's cards stretch to fill it, four tools or five,
@@ -797,8 +833,8 @@ LOCAL_T21_CSS = """<style>
 #route ol>li h3{font-size:min(38px,calc(10.6vw - 3.4px))!important}
 }
 @media (max-width:529px){[data-pick]{min-height:0!important}}
-article[data-card]>p:last-child{font-size:13px!important}
-@media (max-width:359px){article[data-card]>p:last-child{font-size:12.5px!important}}
+#engines article>p:last-child{font-size:13px!important}
+@media (max-width:359px){#engines article>p:last-child{font-size:12.5px!important}}
 @media (max-width:359px){#dropin span[style*="letter-spacing: 0.1em"]{letter-spacing:.06em!important}}
 #tools>div>div{display:flex!important;flex-wrap:wrap}
 #tools>div>div>article{flex:1 1 min(200px,100%);min-width:0}

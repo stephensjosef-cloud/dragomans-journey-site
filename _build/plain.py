@@ -59,11 +59,12 @@ EDITS = [
     ('AI productions for small businesses and nonprofits', 'AI help for small businesses and nonprofits'),
     ('>and proves it every month<', '>and keeps working<'),
     ("I'm Josef, and this is the part where you hand it over. The phone videos nobody has time to edit, the lessons living in a binder: I'll take it from here. You get reels, apps and workflows that run without babysitting, each with a way to check it, and nothing reaches your customers until a person has signed off.",
-     "I'm Josef. Hand me the work you never get to, like the phone videos nobody has time to edit or the lessons sitting in a binder. I'll build the AI tool that handles it and walk you through it in plain English. Nothing reaches your customers until a person has checked it."),
+     # T-33 R3 (Nov 20, 2026), Josef's words:
+     "I'm Josef. Hand me the work you never get to. If someone on your team does it by hand every week, I can usually build an AI tool that does it instead, and I'll walk you through it in plain English. Nothing reaches your customers until a person has checked it."),
     ('See the receipts first', 'See real results first'),
     ('Two weeks · fixed price · credited in full toward your build', 'Two weeks · fixed price · the $1,500 comes off your build'),
-    ('>RUN RECEIPT<', '>REAL RESULT<'),
-    ('>REELS ENGINE<', '>KIDS\' COOKING REELS<'),
+    ('>RUN RECEIPT<', '>REAL RESULTS<'),     # T-33 R4
+    ('>REELS ENGINE<', '>BUILT WITH AI<'),   # T-33 R4
     ('One cooking-class shoot, one finished reel. A real run from August 2026.',
      'One cooking class, filmed on a phone, turned into a finished reel. August 2026.'),
     ('>Scan speed<', '>Sorts the footage at<'),
@@ -85,13 +86,14 @@ EDITS = [
     ('See Engine C', 'See automation'),
     ("Three taps and I'll write your first email", 'Three quick questions to get you started'),
     ('You can change anything before it sends.', 'You can change any answer on the next page.'),
-    ('Three engines, already road-tested', 'Three things I make'),
+    ('Three engines, already road-tested', 'Three ready to go'),   # T-33 R6
     ("Each one is built, tested and running on real work. You get finished pieces you can put in front of a customer, and you don't pay me to invent the machine first.",
-     "Each one is already built and working on real projects, so you get finished work quickly and you don't pay me to start from scratch."),
+     # T-33 R6
+     "These three already run on real projects, so they're quick, and you don't pay me to start from scratch. If yours is something else, that starts with a Blueprint too."),
     ('>ENGINE A<', '>NO. 1<'),
     ('>ENGINE B<', '>NO. 2<'),
     ('>ENGINE C<', '>NO. 3<'),
-    ('>The Reels Engine<', '>Reels from your phone videos<'),
+    ('>The Reels Engine<', '>Your videos, finished every month<'),   # T-33 R7
     ('Your phone footage in. A month of finished reels out.', 'Send your clips. Get a month of finished, captioned reels back.'),
     ('>YOU HAND OVER<', '>YOU SEND<'),
     ('8 or 12 captioned vertical reels a month in your approved style, delivered as one batch by the 5th.',
@@ -99,8 +101,8 @@ EDITS = [
     ('>PROOF BUILT IN<', '>HOW YOU KNOW IT WORKS<'),
     ('A person checks every reel against a style sheet you signed, and nothing posts without your yes. The monthly page counts inquiries and bookings. Views are at the bottom.',
      'I check every reel against the style you approved, and nothing posts without your yes. Your monthly report counts the calls and bookings the reels bring in, not just views.'),
-    ('>Program Apps<', '>Your own app<'),
-    ('Your curriculum or recipes, as an app your program owns instead of rents.', 'Your lessons or recipes, in an app with your name on it.'),
+    ('>Program Apps<', '>Your know-how, in an app<'),   # T-33 R8
+    ('Your curriculum or recipes, as an app your program owns instead of rents.', 'What you teach or sell, in an app with your name on it.'),   # T-33 R8
     ('An iPhone, iPad and Android app on a tested engine, published under your own store accounts.',
      'An app for iPhone, iPad and Android, published under your own name in the app stores.'),
     ('The database itself refuses bad entries, like a recipe with no photo. The current build runs 324 automated tests, and your staff use it before any family does.',
@@ -166,7 +168,9 @@ EDITS = [
     ('A proof page on the 1st of every month', 'A one-page report on the 1st of every month'),
     ('>This route is for you if<', ">We're a good fit if<"),
     ('>Pick another guide if<', ">I'm not the right fit if<"),
-    ('and the tools I built for them are the engines on this page.', 'and the tools I built for them are the ones on this page.'),
+    # T-33 R14 (Nov 20, 2026): from the comma on, Josef's new words.
+    ('became my first client, and the tools I built for them are the engines on this page.',
+     "became my first client. On my own time I've built a birding league, an indie game matchmaker and a detective game for birders."),
     ("All of it runs on a setup I built for myself: written rules the AI can't argue with, and tests that have to pass before anything ships. It's the least glamorous thing I've made, and it's why the reels come out right.",
      'Behind all of it is a simple system I built for myself: written rules the AI has to follow, and checks that have to pass before anything goes out. That system is why the work comes out right.'),
     ('Fair questions, straight answers', 'Questions people ask'),

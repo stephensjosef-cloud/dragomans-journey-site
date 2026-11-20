@@ -177,9 +177,12 @@ function djCopy(text,label){{
 
 # The tools, by the names the work page gives them (T-02). Each tool page links the others.
 # Website checkup added Nov 12, 2026 (T-04).
-TOOLS = (("shotlist.html", "Reel shot list"), ("captions.html", "Caption fitter"),
-         ("receipt.html", "Busywork receipt"), ("scaler.html", "Recipe scaler"),
-         ("checkup.html", "Website checkup"))
+# T-33 R20, R21 (Nov 20, 2026): the Busywork receipt first, then the reel engine's two tools;
+# the recipe scaler is off the lists (it lives in the kids' app story on the work page, and
+# scaler.html stays as it is). This order is the "More free tools" row on every tool page and
+# the order of the tools on local.html, which groups the reel engine's pair as work.html does.
+TOOLS = (("receipt.html", "Busywork receipt"), ("shotlist.html", "Reel shot list"),
+         ("captions.html", "Caption fitter"), ("checkup.html", "Website checkup"))
 
 
 # The website checkup is linked only once it is live (T-20 F2, Nov 15, 2026). The one

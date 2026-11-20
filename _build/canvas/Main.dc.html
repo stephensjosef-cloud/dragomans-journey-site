@@ -132,7 +132,7 @@ a{color:#A93F17}a:hover{color:#16201C}
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93A39A">Tap one and I'll show you the way in.</span>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px">
-      <sc-for list="{{options}}" as="o" hint-placeholder-count="4">
+      <sc-for list="{{options}}" as="o" hint-placeholder-count="5">
         <button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">
           <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; opacity: 0.8">{{o.num}}</span>
           <span style="font-size: 19px; font-weight: 600; line-height: 1.3">{{o.label}}</span>
@@ -181,7 +181,7 @@ a{color:#A93F17}a:hover{color:#16201C}
         <h3 style="margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 40px; line-height: 0.95">Program Apps</h3>
         <p style="margin: 0; font-size: 19px; font-weight: 600; line-height: 1.35">Your curriculum or recipes, as an app your program owns instead of rents.</p>
         <dl style="margin: 0; display: flex; flex-direction: column; gap: 14px; font-size: 16px">
-          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU HAND OVER</dt><dd style="margin: 2px 0 0">The content you already teach: lessons, recipes, activities, a resource library.</dd></div>
+          <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU HAND OVER</dt><dd style="margin: 2px 0 0">What you already teach or sell: lessons, recipes, guides, a product list, a resource library.</dd></div>
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">YOU GET</dt><dd style="margin: 2px 0 0">An iPhone, iPad and Android app on a tested engine, published under your own store accounts.</dd></div>
           <div><dt style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6B716A">PROOF BUILT IN</dt><dd style="margin: 2px 0 0">The database itself refuses bad entries, like a recipe with no photo. The current build runs 324 automated tests, and your staff use it before any family does.</dd></div>
         </dl>
@@ -317,7 +317,7 @@ a{color:#A93F17}a:hover{color:#16201C}
           <li>Small businesses and nonprofits in Sonoma County and the North Bay. Remote works too.</li>
           <li>You already have the raw material and no time to turn it into anything.</li>
           <li>One person on your side can say yes.</li>
-          <li>You care more about inquiries than about views.</li>
+          <li>You care more about what it brings in than how it looks in a demo.</li>
         </ul>
       </div>
       <div style="background: transparent; border: 2px dashed #6B716A; padding: 26px; display: flex; flex-direction: column; gap: 12px">
@@ -487,15 +487,17 @@ class Component extends DCLogic {
     ];
 
     const optDefs = [
-      { id: 'reels', num: '01', label: 'Phone videos nobody has time to edit' },
-      { id: 'app', num: '02', label: 'Lessons, recipes or a curriculum' },
-      { id: 'flow', num: '03', label: 'A weekly task that eats hours' },
-      { id: 'unsure', num: '04', label: "Not sure yet. Point me somewhere." }
+      // T-33 R5 (Nov 20, 2026): Josef's new words; each old choice keeps the value it sends (value).
+      { id: 'reels', num: '01', label: 'Videos or photos nobody has time to edit', value: 'Phone videos nobody has time to edit' },
+      { id: 'app', num: '02', label: "Know-how stuck in binders, docs or one person's head", value: 'Lessons, recipes or a curriculum' },
+      { id: 'flow', num: '03', label: 'A weekly task that eats hours', value: 'A weekly task that eats hours' },
+      { id: 'tool', num: '04', label: 'An app or tool you keep wishing existed', value: 'An app or tool you keep wishing existed' },
+      { id: 'unsure', num: '05', label: "Not sure yet. Point me somewhere.", value: "Not sure yet. Point me somewhere." }
     ];
     const options = optDefs.map((o) => {
       const on = s.pick === o.id;
       return {
-        num: o.num, label: o.label, on: on ? 'true' : 'false',
+        num: o.num, label: o.label, value: o.value, on: on ? 'true' : 'false',
         pick: () => this.setState({ pick: o.id }),
         style: 'display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 104px; padding: 18px 20px; text-align: left; border-radius: 2px; transition: background 160ms ease, transform 160ms ease; ' +
           (on ? 'background: ' + accent + '; color: #0E1B17; border: 1.5px solid ' + accent + '; transform: translateY(-3px);'

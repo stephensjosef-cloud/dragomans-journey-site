@@ -236,6 +236,62 @@ text('mainframe.html',
      ">Reads 0.035: a fraction. The only one that can't be wrong about what your business actually stored.</p>",
      ref='A5')
 
+# ---------------- T-33 (Nov 20, 2026): the site says what I do ----------------
+# Josef's lines, word for word ("yes all, dont change bird league line"). Only the lines
+# this pass already writes change here (R2 after W2, R4's rows and line after K4), plus
+# R9's new block; the others change where they are written (plain.py, the canvas, the
+# templates, tools/chrome.py, studio.json). Each still has to hit exactly once.
+# R2: the Local Route card on the home page, the whole paragraph (V2, then W2).
+text('index.html',
+     "For shops and nonprofits around Sonoma County. Maybe it's a phone full of videos you'll never edit. Maybe it's a binder of lessons, or the one chore that eats every Thursday. Hand it over. You get back finished reels, an app with your name on it, or a chore that does itself, and you watch it work before you decide to go ahead.",
+     "For shops and nonprofits around Sonoma County. Whatever keeps sliding to the bottom of the list, hand it over. Videos nobody edits, follow-ups nobody sends, the spreadsheet everyone avoids, the app you keep meaning to make. I build the AI tool that does it, and you watch it work before you decide to go ahead.",
+     ref='R2')
+# R4: the proof card beside the Local headline. Its labels are plain.py's (REAL RESULTS,
+# BUILT WITH AI). No line under them, four rows, no client line. The rows are the card's
+# own dotted rows (HERO_ROW): on wide screens a label wraps beside its value, and at 420px
+# and under enhance.py's phone rule (T-20 F8) puts the label on its own line with the
+# leader and value under it, so no type shrinks and no word is cut. That rule finds the
+# rows as the card's second block now (enhance.py, T-33). These labels are longer than the
+# old ones, so on wide screens they wrap beside the value, and the dotted leader keeps at
+# least 24px instead of shrinking to nothing. The rows take the 14px the line under the
+# labels used to leave.
+R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'),
+           ('A teaching app, iPhone, iPad, Android and web', '535 tests'),
+           ('A birding league with real players', 'zero lines of code to start'),
+           ('A banking COBOL program, checked in public', '2 AIs compared')]
+assert HERO_ROW.count('<span style="flex: 1; border-bottom') == 1
+R4_ROW = HERO_ROW.replace('<span style="flex: 1; border-bottom', '<span style="flex: 1 0 24px; border-bottom')
+text('local.html',
+     "\n          <p style=\"margin: 12px 0 14px; color: #3E4640\">A 40-reel series for a children's nonprofit, cut by one engine.</p>",
+     '', ref='R4')
+text('local.html',
+     '<div style="display: flex; flex-direction: column; gap: 7px">\n            ' + ''.join(HERO_ROW % r for r in K4_NEW),
+     '<div style="display: flex; flex-direction: column; gap: 7px; margin-top: 14px">\n            ' + ''.join(R4_ROW % r for r in R4_ROWS),
+     ref='R4')
+text('local.html',
+     '\n          <div style="margin-top: 16px; padding-top: 12px; border-top: 1.5px dashed #9AA097; display: flex; justify-content: space-between; gap: 12px; color: #5C625C; font-size: 12px">'
+     "\n            <span>Client: a Sonoma County children's nonprofit</span>\n          </div>",
+     '', ref='R4')
+# R9: a fourth block after "Busywork, automated", the same card, no rows and no data-card
+# (it isn't a pick's match, and final.py lists only the three priced offers). The empty
+# first row stands where the other three keep their hidden "YOUR MATCH", so the four
+# headings sit level. The grid holds two columns at most, so four sit two by two from
+# 700px and one under another below that.
+text('local.html',
+     '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 20px; align-items: stretch">\n\n      <article class="card-lift" data-card="reels"',
+     '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, max(340px, calc(50% - 11px))), 1fr)); gap: 20px; align-items: stretch">\n\n      <article class="card-lift" data-card="reels"',
+     ref='R9')
+text('local.html',
+     '<strong>Build from $3,000</strong> · support from $750/month</p>\n      </article>\n',
+     '<strong>Build from $3,000</strong> · support from $750/month</p>\n      </article>\n'
+     '\n      <article class="card-lift" style="display: flex; flex-direction: column; gap: 18px; padding: 30px 28px; background: #FBF8F1; border-radius: 2px; border: 2px solid #16201C; box-shadow: 6px 6px 0 #16201C;">'
+     '\n        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px"></div>'
+     "\n        <h3 style=\"margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 40px; line-height: 0.95\">Something else</h3>"
+     '\n        <p style="margin: 0; font-size: 19px; font-weight: 600; line-height: 1.35">Not on this list? Tell me anyway. The Blueprint works the same for any job: I watch how it gets done, build a sample from your material, and give you a fixed price before any building starts.</p>'
+     "\n        <p style=\"margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px\"><strong>Priced in the Blueprint</strong></p>"
+     '\n      </article>\n',
+     ref='R9')
+
 # ---------------- write ----------------
 if problems:
     print('VOICE: %d edit(s) missed, nothing written:' % len(problems))

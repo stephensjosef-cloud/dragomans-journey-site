@@ -419,7 +419,8 @@ def gallery(studio):
     out = ['\n  <section class="sec gal" aria-labelledby="gallery-h">',
            f'\n    <h2 id="gallery-h" class="big">{t(g["heading"])}</h2>']
     for app in g["apps"]:
-        out.append(f'\n    <div class="gapp">\n      <h3>{t(app["name"])}</h3>')
+        gid = f' id="{a(app["id"])}"' if app.get("id") else ""   # T-33 R13: a block another page links to
+        out.append(f'\n    <div class="gapp"{gid}>\n      <h3>{t(app["name"])}</h3>')
         if app.get("product") in inside:
             out.append(app_intro(inside[app["product"]]))
         for grp in app["groups"]:

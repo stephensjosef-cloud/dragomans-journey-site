@@ -22,7 +22,7 @@ function run(file, states) {
 const res = {
   fork: run('Fork.dc.html', { none: { route: null }, local: { route: 'local' }, main: { route: 'main' } }),
   main: run('Main.dc.html', {
-    none: {}, reels: { pick: 'reels' }, app: { pick: 'app' }, flow: { pick: 'flow' }, unsure: { pick: 'unsure' },
+    none: {}, reels: { pick: 'reels' }, app: { pick: 'app' }, flow: { pick: 'flow' }, tool: { pick: 'tool' }, unsure: { pick: 'unsure' },
     tab_app: { tab: 'app' }, tab_method: { tab: 'method' }, closed: { open: -1 }
   }),
   mainframe: run('Mainframe.dc.html', {

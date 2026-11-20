@@ -52,7 +52,8 @@ sub('local.html', r'\s*<span[^>]*>Vertical, ready to post</span>', '', ref='L11'
 sub('local.html', r'\s*<div[^>]*>APPROVED BY A PERSON</div>', '', ref='L11')
 sub('local.html', r'\s*<div[^>]*>\s*<div[^>]*>\s*<span[^>]*>32%</span>.*?</div>\s*</div>\s*<p[^>]*>Source: <a[^>]*>Bluehost survey[^<]*</a></p>', '', ref='L13')
 sub('local.html', r'\s*<span[^>]*>Tap one and I\'ll show you where to start\.</span>', '', ref='L14')
-sub('local.html', r'(<button type="button" aria-pressed="false" data-pick="[a-z]+"[^>]*>)<span[^>]*>0[1-4]</span>', r'\1', n=4, ref='L14')
+# T-33 R5 (Nov 20, 2026): five choices now, so five numbers come off.
+sub('local.html', r'(<button type="button" aria-pressed="false" data-pick="[a-z]+"[^>]*>)<span[^>]*>0[1-5]</span>', r'\1', n=5, ref='L14')
 sub('local.html', r'<span[^>]*>NO\. [123]</span>\s*', '', n=3, ref='L16')
 text('local.html', '>Real results, not promises<', '>Results<', ref='L17')
 text('local.html', "Every number here comes from real work I can show you. If I can't show it, it isn't here. <a", '<a', ref='L17')

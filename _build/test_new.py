@@ -339,9 +339,33 @@ def t30_text(h):
     return _r.sub(r'<[^>]+>', '', h)
 
 
+# T-33 (Nov 20, 2026): Josef's lines R2 to R23 change index, local, work, start, studio and the five tool pages.
+# un33(s, name) takes them back out of a page from out/, for the older checks that compare a page with an earlier
+# build: t33_undo.json holds each of T-33's changes in out/ (one unchanged line around it) beside origin/main's lines
+# (the studio pages' build-day stamp aside), and under "_live" the same for a build with CHECKUP_URL set (T-20's temp
+# build), tried first. The T-33 block proves the first: each page through un33(), themed by theme.py, is origin/main's
+# root page byte for byte. T-20's address-set checks prove the second: its temp build, through un33(), gives back
+# exactly what origin/main gave. un30() calls it first, as un29() calls un30(). Idempotent: on origin/main's own pages
+# nothing matches.
+T33_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 't33_undo.json'), encoding='utf-8'))
+
+
+def un33(s, name=None):
+    if name not in T33_UNDO:
+        return s
+    if '\r\n' in s:
+        return un33(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    for new, old in T33_UNDO['_live'].get(name, []) + T33_UNDO[name]:
+        if s.count(new) == 1:
+            s = s.replace(new, old)
+    return s
+
+
 def un30(s, name=None):
-    """studio.html or local.html as T-29 built it: the six paragraphs back, T-30's CSS rule out. Idempotent."""
+    """studio.html or local.html as T-29 built it: the six paragraphs back, T-30's CSS rule out. Idempotent.
+    T-33: any page goes through un33() first."""
     import re as _r
+    s = un33(s, name)
     if name not in (None, 'studio.html', 'local.html'):
         return s
     if '\r\n' in s:
@@ -502,11 +526,24 @@ def serve30(route):
     route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
                   'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
 
+# T-33: BASE + '__un33/<file>' serves this build with un33() alone applied (T-33's lines out, T-30's change kept), for the
+# T-30 checks that compare the T-30 page with T-29's in the browser.
+UN33 = BASE + '__un33/'
+
+def serve33(route):
+    path = route.request.url.split('/__un33/', 1)[1].split('?')[0].split('#')[0]
+    body = urlopen(BASE + path).read()
+    if path.endswith('.html'):
+        body = un33(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
+    route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
+                  'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
+
 def newpage(w, h=900):
     pg = b.new_page(viewport={'width': w, 'height': h})
     route_fonts(pg)
     pg.route('**/__un29/**', serve29)
     pg.route('**/__un30/**', serve30)
+    pg.route('**/__un33/**', serve33)
     pg.on('pageerror', lambda e: errors.append(str(e)))
     return pg
 
@@ -796,7 +833,7 @@ def s_local_page():
     pg2.click('#iq-send'); pg2.wait_for_timeout(600)
     # T-12: start.html reads its # and then clears it, so the typed business name isn't left in the address.
     check('quiz hands off to start page, # cleared after load', pg2.url.endswith('/start.html'), pg2.url)
-    check('start page preselects pile', pg2.locator('.chips[data-key="pile"] .chip[aria-pressed="true"]').inner_text() == 'Lessons, recipes or a curriculum')
+    check('start page preselects pile', pg2.locator('.chips[data-key="pile"] .chip[aria-pressed="true"]').inner_text() == "Know-how stuck in binders, docs or one person's head")   # T-33 R5: the same choice's new words
     check('start page preselects run/yes/when', pg2.locator('.chip[aria-pressed="true"]').count() == 4, str(pg2.locator('.chip[aria-pressed="true"]').count()))
     check('start page carries org name', pg2.input_value('#org') == 'Test Kitchen')
 
@@ -869,14 +906,16 @@ def s_work_case_study():
     pg = newpage(1440)
     pg.goto(BASE + 'work.html'); pg.wait_for_timeout(300)
     check('work has 10 cards (T-04 adds the Website checkup; 9 while it isn\'t live, T-20 F2)', pg.locator('#cards .card').count() == (10 if CK_LIVE else 9))
-    pg.click('.filt[data-f="banking"]'); pg.wait_for_timeout(100)
-    check('banking filter shows 2', pg.locator('#cards .card:visible').count() == 2, str(pg.locator('#cards .card:visible').count()))
-    pg.click('.filt[data-f="nonprofit"]'); pg.wait_for_timeout(100)
-    check('nonprofit filter shows 3 (two jobs + the recipe scaler)', pg.locator('#cards .card:visible').count() == 3)
+    # T-33 R11: the Banking tab is now Mainframe (the same two cards); the Nonprofits tab is now Apps (the kids' app,
+    # Bird League and Birdsighted); R21: the recipe scaler card is off the free tools.
+    pg.click('.filt[data-f="mainframe"]'); pg.wait_for_timeout(100)
+    check('mainframe filter shows 2 (T-33 R11, was banking)', pg.locator('#cards .card:visible').count() == 2, str(pg.locator('#cards .card:visible').count()))
+    pg.click('.filt[data-f="apps"]'); pg.wait_for_timeout(100)
+    check('apps filter shows 3 (T-33 R11, was nonprofit: two jobs + the recipe scaler)', pg.locator('#cards .card:visible').count() == 3)
     pg.click('.filt[data-f="free"]'); pg.wait_for_timeout(100)
-    check('free tools filter shows 6 (5 while the checkup isn\'t live, T-20 F2)', pg.locator('#cards .card:visible').count() == (6 if CK_LIVE else 5))
+    check('free tools filter shows 5 (4 while the checkup isn\'t live, T-20 F2; T-33 R21: no recipe scaler)', pg.locator('#cards .card:visible').count() == (5 if CK_LIVE else 4))
     q = newpage(1440); q.goto(BASE + 'work.html#free'); q.wait_for_timeout(300)
-    check('work.html#free opens on free tools', q.locator('#cards .card:visible').count() == (6 if CK_LIVE else 5))
+    check('work.html#free opens on free tools', q.locator('#cards .card:visible').count() == (5 if CK_LIVE else 4))
     check('no CLIENT_ token left on work', 'CLIENT_' not in pg.content())
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'work.html'); q.wait_for_timeout(400)
@@ -999,6 +1038,7 @@ def s_free_tools_findable():
     TOOLS = {'shotlist.html': 'Reel shot list', 'captions.html': 'Caption fitter',
              'receipt.html': 'Busywork receipt', 'scaler.html': 'Recipe scaler', 'checkup.html': 'Website checkup'}
     LINKED = {k: v for k, v in TOOLS.items() if k != 'checkup.html' or CK_LIVE}   # T-20 F2
+    LINKED33 = {k: v for k, v in LINKED.items() if k != 'scaler.html'}   # T-33 R21: the recipe scaler is off the lists (local.html is read below as at T-29)
     for name in SHARED:
         src = urlopen(BASE + name + '.html').read().decode('utf-8')
         # The header nav: <nav> where the page has one, else its <header>, else the home page's letterhead bar.
@@ -1023,19 +1063,19 @@ def s_free_tools_findable():
     check(f'local free tools section links the {len(LINKED)} tools (the checkup only once it is live, T-20 F2)', sorted(_re.findall(r'href="([a-z]+\.html)"', sec)) == sorted(LINKED), sec[:200])
     work = un21(urlopen(BASE + 'work.html').read().decode('utf-8'))   # T-21: compared without its line-breaking spans
     sec = un21(sec)
-    for href, title in LINKED.items():
+    for href, title in LINKED33.items():   # T-33 R21: the work page has no recipe scaler card
         para = _re.search(r'<h2>' + title + r'</h2>\s*<p>([^<]*)</p>\s*<a class="go" href="' + href, work)
         check(f'local card for {href} matches the work page', bool(para) and f'>{title}</h3>' in sec and f'>{para.group(1)}</p>' in sec)
     for w in (390, 1440):
         q = newpage(w); q.goto(BASE + 'local.html'); q.wait_for_timeout(300)
         xs = q.eval_on_selector_all('#tools article', 'e => e.map(a => Math.round(a.getBoundingClientRect().left))')
-        check(f'local free tools: {"one column" if w == 390 else "one row of all " + str(len(LINKED))} at {w}',
-              len(xs) == len(LINKED) and (len(set(xs)) == 1 if w == 390 else len(set(xs)) == len(LINKED)), str(xs))
+        check(f'local free tools: {"one column" if w == 390 else "one row of all " + str(len(LINKED33))} at {w}',   # T-33 R21
+              len(xs) == len(LINKED33) and (len(set(xs)) == 1 if w == 390 else len(set(xs)) == len(LINKED33)), str(xs))
     for href in TOOLS:
         q = newpage(1440); q.goto(BASE + href); q.wait_for_timeout(300)
         line = q.locator('main > p', has_text='More free tools:')
         got = line.locator('a').evaluate_all('e => e.map(a => [a.getAttribute("href"), a.textContent])') if line.count() == 1 else []
-        check(f'{href} links the other tools by name (the checkup only once it is live, T-20 F2)', sorted(got) == sorted([k, v] for k, v in LINKED.items() if k != href), str(got))
+        check(f'{href} links the other tools by name (the checkup only once it is live, T-20 F2)', sorted(got) == sorted([k, v] for k, v in LINKED33.items() if k != href), str(got))   # T-33 R21
         if line.count() == 1:
             check(f'{href} more-tools line sits above the dark panel',
                   line.bounding_box()['y'] < q.locator('#more-h').bounding_box()['y'])
@@ -1102,7 +1142,7 @@ def s_machine_facts():
                 check(f'{name} amount {amt} in the block is in the page text', amt in text)
         for n in nodes:
             if isinstance(n, dict) and n.get('@type') == 'Offer':
-                check(f'{name} offer "{n["name"]}" is named on the page', n['name'] in text)
+                check(f'{name} offer "{n["name"]}" is named on the page', n['name'] in page_text(un21(src)))   # T-33 R8: "know-how" sits in a no-wrap span; read without them (un21)
                 if 'description' in n:
                     check(f'{name} offer "{n["name"]}" description is word for word', n['description'] in text, n['description'])
                 cur = [n.get('priceCurrency')] + [n['priceSpecification'].get('priceCurrency')] if 'priceSpecification' in n else [n.get('priceCurrency')]
@@ -1695,7 +1735,8 @@ def s_intent_pass_2():
         # Cards in one row share their top and height, and their links sit on one line.
         cards = pg.locator('#cards .card:visible:not(.feature)').evaluate_all(
             'e => e.map(c => { const r = c.getBoundingClientRect(), g = c.querySelector("a.go").getBoundingClientRect();'
-            ' return [Math.round(r.top), Math.round(r.height), Math.round(g.bottom - r.top), !!c.querySelector(".num")]; })')
+            ' return [Math.round(r.top), Math.round(r.height), Math.round(g.bottom - r.top), !!c.querySelector(".num")]; })'
+            .replace('c.querySelector("a.go")', '[...c.querySelectorAll("a.go")].pop()'))   # T-33 R21: the kids' app card's last link lines up
         rows_ = {}
         for c in cards:
             rows_.setdefault(c[0], []).append(c)
@@ -1704,7 +1745,7 @@ def s_intent_pass_2():
         check(f'N10: cards line up, with and without a figure ({label})', ok_ and len(cards) > 0, str(rows_))
         return mixed
     lined_up(q, 'all cards at 1440')
-    for f_ in ('nonprofit', 'banking'):
+    for f_ in ('apps', 'mainframe'):   # T-33 R11: the tabs that were nonprofit and banking
         q.click(f'.filt[data-f="{f_}"]'); q.wait_for_timeout(150)
         mixed = lined_up(q, f'{f_} filter at 1440')
         check(f'N10: the {f_} filter puts cards with and without a figure in one row', len(mixed) == 1, str(mixed))
@@ -1788,7 +1829,7 @@ def s_t_17():
     src = _html.unescape(urlopen(BASE + 'index.html').read().decode('utf-8'))
     V_NEW = {
         'V1': "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here.",
-        'V2': "For shops and nonprofits around Sonoma County. Maybe it's a phone full of videos you'll never edit. Maybe it's a binder of lessons, or the one chore that eats every Thursday. Hand it over. You get back finished reels, an app with your name on it, or a chore that does itself, and you watch it work before you decide to go ahead.",   # T-19 W2
+        'V2': T33_R2,   # T-19 W2; T-33 R2
         'V3 bold': "Nothing goes out until a person has looked at it.",
         'V3 line': "First me, then you.",
         'V4 bold': "You never have to take my word for it.",
@@ -1809,7 +1850,7 @@ def s_t_17():
         'V6 line': "Your data stays in your own accounts, and the contract says so.",
     }
     for k, v in V_NEW.items():
-        check(f'T-17 {k}: new line on the home page exactly once', src.count(v) == 1, str(src.count(v)))
+        check(f'T-17 {k}: new line on the home page exactly once', un21(src).count(v) == 1, str(un21(src).count(v)))   # T-33 R2: "follow-ups" sits in a no-wrap span
     for k, v in V_OLD.items():
         check(f'T-17 {k}: old line gone from the home page', v not in src)
     check('T-17: no em dash on the home page', '—' not in src)
@@ -1886,7 +1927,7 @@ def s_t_18():
             check(f'T-18: {n} keeps its {rx[1:12]}... as at T-17', _re.findall(rx, new_src[n], _re.S) == _re.findall(rx, old_src[n], _re.S))
     for n in TOOLS6[:5]:
         for rx in (r'<p class="noprint"[^>]*>More free tools:.*?</p>', r'<section aria-labelledby="more-h".*?</section>'):
-            a, b_ = _re.findall(rx, un23(new_src[n], n + '.html'), _re.S), _re.findall(rx, old_src[n], _re.S)   # T-23 L4: the line's new markup out
+            a, b_ = _re.findall(rx, un23(un33(new_src[n], n + '.html'), n + '.html'), _re.S), _re.findall(rx, old_src[n], _re.S)   # T-23 L4: the line's new markup out; T-33: R20's order out
             if n == 'receipt' and 'more-h' in rx:   # T-19 W21 changed the panel's line; the rest stays as at T-17
                 b_ = [x.replace('Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.',
                                 'The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.') for x in b_]
@@ -2205,7 +2246,7 @@ def s_t_18():
             q.locator('section[aria-labelledby="rules-h"]').screenshot(path=f'{SHOTS}/t18-home-rules-{w}.png')
     for w in (700, 1024, 1440):
         got = []
-        for base_, pgf in ((BASE, lambda: newpage(w)), (OLD, lambda: old_page(w))):
+        for base_, pgf in ((UN30, lambda: newpage(w)), (OLD, lambda: old_page(w))):   # T-33: R2's card line out (it moves the section)
             q = pgf(); q.goto(base_ + 'index.html'); settle(q)
             got.append(q.locator('#rules-h + ol > li').evaluate_all(LI))
         check(f'T-18 S31: at {w}, "How I work" is as it was at T-17', got[0] == got[1], str(got))
@@ -2567,8 +2608,9 @@ def s_t_20():
     sm = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
     check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
     old_ck = t19_file('checkup.html').decode('utf-8').replace('\r\n', '\n')
-    new_ck = un21(un23(SRC20['checkup.html'], 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out
-    check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck)
+    new_ck = un21(un23(un33(SRC20['checkup.html'], 'checkup.html'), 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out; T-33: R20's row order out
+    check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck,
+          next((f'...{old_ck[max(0, i - 80):i + 80]}... | ...{new_ck[max(0, i - 80):i + 80]}...' for i in range(min(len(old_ck), len(new_ck))) if old_ck[i] != new_ck[i]), f'{len(old_ck)} vs {len(new_ck)}'))   # T-33: the first difference, when there is one
     check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
     WORK_CARD = r'\n    <article class="card" data-k="free">(?:(?!</article>).)*?href="checkup\.html".*?</article>'
     TOOLS_SEC = r'<section id="tools".*?</section>'
@@ -2759,8 +2801,8 @@ def s_t_20():
                 tabs: [...document.querySelectorAll('[aria-label="Receipts"] > button')].map(t => [Math.round(t.getBoundingClientRect().top), Math.round(t.getBoundingClientRect().width)]),
                 tw: Math.round(document.querySelector('[aria-label="Receipts"]').getBoundingClientRect().width)} }''')
     check('T-20 F8: local at 320, the receipt card\'s labels sit above each other, each on one line', r['stack'] and max(r['one']) < 26, str(r['one']))
-    # T-22 K4: the hero card has four rows.
-    below = q.evaluate("[...document.querySelectorAll('.tear > div:nth-child(3) > div')].map(d => Math.round(d.lastElementChild.getBoundingClientRect().top - d.firstElementChild.getBoundingClientRect().bottom))")
+    # T-22 K4: the hero card has four rows. T-33 R4: still four; they are the card's second block now (no line above them).
+    below = q.evaluate("[...document.querySelectorAll('.tear > div:nth-child(2) > div')].map(d => Math.round(d.lastElementChild.getBoundingClientRect().top - d.firstElementChild.getBoundingClientRect().bottom))")
     check('T-20 F8: local at 320, each receipt card label sits above its number', len(below) == 4 and all(x >= -2 for x in below), str(below))
     check('T-20 F8: local at 320, no Results row is taller than three lines', all(h <= 3 * max(r['lh'], 27) + 6 for h in r['rows']), str(r['rows']))
     rows_ = {}
@@ -2913,13 +2955,13 @@ def s_t_21():
 
     def both20(name, fn, w=1440, words=False):
         out_ = []
-        cur = (NEW21, lambda: t21g_page(w)) if words and name + '.html' in T22P else (BASE, lambda: newpage(w))
+        cur = (NEW21, lambda: t21g_page(w)) if words and name + '.html' in T22P else (UN30, lambda: newpage(w))   # T-33: its lines out (un30() calls un33())
         for base_, pgf in (cur, (OLD20, lambda: t20_page(w))):
             q = pgf(); q.goto(base_ + name + '.html'); settle(q); q.wait_for_timeout(300)
             out_.append(fn(q))
         return out_
 
-    SRC21 = {n: un26(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # git holds LF; T-26: the gallery out (its block checks it)
+    SRC21 = {n: un26(un33(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # git holds LF; T-26: the gallery out (its block checks it); T-33: its lines out
     NW = '<span style="white-space: nowrap">'
 
     # Every word as it was: each page's text content (after its scripts run), with the new
@@ -3109,7 +3151,7 @@ def s_t_21():
     def grids21(base_, label):
         for w in (320, 390, 768, 1024, 1440):
             q = newpage(w); q.goto(base_ + 'work.html'); settle(q)
-            for f in ('all', 'nonprofit', 'banking', 'own', 'free'):
+            for f in ('all', 'apps', 'video', 'mainframe', 'free'):   # T-33 R11: the tabs (were nonprofit, banking, own)
                 q.click(f'.filt[data-f="{f}"]'); q.wait_for_timeout(120)
                 gap = q.evaluate(LAST_JS, '#cards')
                 check(f'T-21 G4 ({label}): at {w}, the work grid ("{f}") ends with no empty slot', gap <= 2, str(gap))
@@ -3361,7 +3403,7 @@ def s_t_22():
     K9_KEPT = "The kids' cooking app runs on Android as well as iPhone and iPad."
 
     def text22(name, w=1440, before=None):
-        q = newpage(w); q.goto((UN29 if name == 'studio.html' else BASE) + name); settle(q)   # T-30: studio's kids' line back (un29() calls un30())
+        q = newpage(w); q.goto((UN29 if name == 'studio.html' else UN30) + name); settle(q)   # T-30: studio's kids' line back (un29() calls un30()); T-33: every page through un30(), which takes T-33's lines out
         if before:
             before(q)
         t = q.evaluate(TEXT_JS); q.close()
@@ -3431,14 +3473,15 @@ def s_t_22():
 
     # K4: the hero "Real result" card.
     q = newpage(1440); q.goto(BASE + 'local.html'); settle(q)
+    # T-33 R4 replaces this card's title, line, rows and client line: the expected values are R4's (no line, no client line).
     hero = q.evaluate("""(() => { const f = document.querySelector('figure.rise3 .tear'); const head = f.querySelector('div');
-      return {head: [...head.children].map(e => e.textContent.trim()), line: f.querySelector('p').textContent.replace(/\\s+/g, ' ').trim(),
+      return {head: [...head.children].map(e => e.textContent.trim()), line: (f.querySelector('p') || {textContent: ''}).textContent.replace(/\\s+/g, ' ').trim(),
         rows: [...f.querySelectorAll(':scope > div:nth-of-type(2) > div')].map(r => [r.querySelector('span').textContent, r.querySelector('strong').textContent]),
-        foot: [...f.querySelector(':scope > div:nth-of-type(3)').children].map(e => e.textContent.trim())} })()""")
-    check('T-22 K4: the hero card\'s title stays "KIDS\' COOKING REELS"', hero['head'] == ['REAL RESULT', "KIDS' COOKING REELS"], str(hero['head']))
-    check('T-22 K4: the hero card\'s line is the new one', hero['line'] == K4_LINE, hero['line'])
-    check('T-22 K4: the hero card has these four rows, in this order, label then value', [tuple(r) for r in hero['rows']] == K4_ROWS, str(hero['rows']))
-    check('T-22 K4: the hero card\'s client line stays', hero['foot'] == ["Client: a Sonoma County children's nonprofit"], str(hero['foot']))
+        foot: [...(f.querySelector(':scope > div:nth-of-type(3)') || {children: []}).children].map(e => e.textContent.trim())} })()""")
+    check('T-22 K4: the hero card\'s title stays "KIDS\' COOKING REELS"', hero['head'] == ['REAL RESULTS', 'BUILT WITH AI'], str(hero['head']))   # T-33 R4: REAL RESULTS, BUILT WITH AI
+    check('T-22 K4: the hero card\'s line is the new one', hero['line'] == '', hero['line'])   # T-33 R4: no line under the labels
+    check('T-22 K4: the hero card has these four rows, in this order, label then value', [tuple(r) for r in hero['rows']] == T33_R4_ROWS, str(hero['rows']))   # T-33 R4's rows
+    check('T-22 K4: the hero card\'s client line stays', hero['foot'] == [], str(hero['foot']))   # T-33 R4: no client line
 
     # K5: Results, Reels tab, as first drawn and after the tabs redraw it.
     def rc22(q):
@@ -3679,7 +3722,7 @@ def s_t_23():
     TXT23 = {}
     BOX23 = None
     for n in ALL_HTML:
-        q = newpage(1440); q.goto((UN29 if n == 'studio.html' else UN30 if n == 'local.html' else BASE) + n); settle(q)   # T-30: local's descriptions back (un30)   # T-29: studio's text as at T-27 (un29): TEXT_JS leaves the gallery out, which now holds the two cards' words
+        q = newpage(1440); q.goto((UN29 if n == 'studio.html' else UN30) + n); settle(q)   # T-30: local's descriptions back (un30)   # T-29: studio's text as at T-27 (un29): TEXT_JS leaves the gallery out, which now holds the two cards' words
         TXT23[n] = q.evaluate(TEXT_JS)
         if n == 'studio.html':
             BOX23 = q.evaluate("(() => { const s = document.querySelector('section[aria-labelledby=\"next-h\"]'); return s ? s.textContent.replace(/[\\s\\u00a0]+/g, ' ').trim() : '' })()")
@@ -3788,7 +3831,7 @@ def s_t_23():
             q = newpage(w); q.goto(BASE + t); settle(q); q.wait_for_timeout(200)
             r = q.evaluate(MT_JS); q.close()
             L = r['links']
-            check(f'T-23 L4: at {w}, no tool name in {t}\'s "More free tools" line wraps', len(L) >= 3 and all(x[1] == 1 for x in L), str(L))
+            check(f'T-23 L4: at {w}, no tool name in {t}\'s "More free tools" line wraps', len(L) >= 2 and all(x[1] == 1 for x in L), str(L))   # T-33 R21: two names on three of the pages
             # dot k sits between name k and name k+1
             okd = len(r['dots']) == len(L) - 1
             for k, (top, vis, hid) in enumerate(r['dots'] if okd else []):
@@ -4150,7 +4193,7 @@ def s_t_25():
     day25 = lambda s: _re.sub(r'\b(?:Nov|Oct|Sep|Aug|Jul) \d{1,2}\b|\b\d+ (?:days?|lines?|things?)\b', '#', s)
     for w in (1440, 390):
         for n in ALL_HTML:
-            q = newpage(w); q.goto((UN29 if n == 'studio.html' else UN30 if n == 'local.html' else BASE) + n); settle(q); a = q.evaluate(TEXT_JS); q.close()   # T-29: as above (un29); T-30: local's descriptions back (un30)
+            q = newpage(w); q.goto((UN29 if n == 'studio.html' else UN30) + n); settle(q); a = q.evaluate(TEXT_JS); q.close()   # T-29: as above (un29); T-30: local's descriptions back (un30)
             o = t24_page(w); o.goto(OLD25B + n); settle(o); b_ = o.evaluate(TEXT_JS); o.close()
             if n.startswith('studio'):   # the log's day count moves with the day the page is built
                 a, b_ = day25(back27(a)), day25(b_)   # T-27: the ChuckleFits line read back as T-26's (its block checks it)
@@ -4177,12 +4220,20 @@ def s_t_25():
     # local or case-reels leaves a word alone that T-24 didn't. Three card headlines can't be held by a span without running
     # past their card (measured in the Receipt); Josef ruled on them (Nov 17, 2026): the balanced wrap, checked after this loop.
     REELS25 = 'An evening of editing, now about 4 minutes.'
-    RULED25 = ('2 AI translations of one bank program', 'Reels from your phone videos', 'Busywork, automated')
+    RULED25 = ('2 AI translations of one bank program', 'Your videos, finished every month', 'Busywork, automated', 'Your know-how, in an app',
+               'Something else')
+    # T-33: R7 renames "Reels from your phone videos"; R8 renames "Your own app", which now leaves a word alone at 320 and
+    # so comes under the same ruling (balanced wrap, no smaller type, no span of F1's; "know-how" keeps T-21 G1's pair span);
+    # R9's "Something else" leaves each word alone at 320 and comes under it too. Its type size is compared with the
+    # heading beside it ("Busywork, automated"), as T-24 had no fourth offer.
+    WAS25 = {'Your videos, finished every month': 'Reels from your phone videos', 'Your know-how, in an app': 'Your own app',
+             'Something else': 'Busywork, automated'}
+    SPANS25 = {'Your know-how, in an app': 1}
     for w in (320, 390, 1440):
         q = newpage(w); q.goto(BASE + 'work.html'); settle(q)
         ln = q.evaluate(LINES25_JS, '.card .num')
         check(f'T-25 F1: at {w} the reels headline ends "now about / 4 minutes.", "4 minutes." on one line',
-              ln is not None and ln[-2:] == ['now about', '4 minutes.'], str(ln))
+              ln is not None and (ln[-2:] == ['now about', '4 minutes.'] if w < 1440 else ln == [REELS25]), str(ln))   # T-33 R12: at 1440 the card is alone on its row, one line
         check(f'T-25 F1: at {w} the reels headline leaves no word alone on a line', ln is not None and all(len(l.split(' ')) > 1 for l in ln), str(ln))
         nw = q.evaluate('''() => { const n = document.querySelector('.card .num'), ss = [...n.querySelectorAll('span')];
           return [ss.map(s => [s.textContent, getComputedStyle(s).whiteSpace]), Math.max(...ss.map(s => Math.round(s.getBoundingClientRect().right))), Math.round(n.getBoundingClientRect().right)] }''')
@@ -4206,18 +4257,22 @@ def s_t_25():
       while ((n = w.nextNode())) { const r = document.createRange(); r.selectNodeContents(n); rs.push(...[...r.getClientRects()].filter(x => x.width > 0)); }
       return {wrap: cs.textWrapStyle || cs.textWrap, size: cs.fontSize, spans: e.querySelectorAll('span').length,
               inside: rs.every(r => r.right <= b.right + 0.5 && r.left >= b.left - 0.5), lines: (new Function('return ' + LINES))()(e)}; }'''
+    # T-33: R7 and R8's names as measured (Nov 20, 2026); "Busywork, automated" on one line at 1440 (R9's two columns).
     WANT25 = {320: {'2 AI translations of one bank program': ['2 AI', 'translations', 'of one', 'bank program'],
-                    'Reels from your phone videos': ['Reels', 'from your', 'phone videos'], 'Busywork, automated': ['Busywork,', 'automated']},
+                    'Your videos, finished every month': ['Your videos,', 'finished', 'every month'], 'Busywork, automated': ['Busywork,', 'automated'],
+                    'Your know-how, in an app': ['Your', 'know-how ,', 'in an app'], 'Something else': ['Something', 'else']},
               390: {'2 AI translations of one bank program': ['2 AI translations of', 'one bank program'],
-                    'Reels from your phone videos': ['Reels from your', 'phone videos'], 'Busywork, automated': ['Busywork,', 'automated']},
+                    'Your videos, finished every month': ['Your videos,', 'finished', 'every month'], 'Busywork, automated': ['Busywork,', 'automated'],
+                    'Your know-how, in an app': ['Your know-how ,', 'in an app'], 'Something else': ['Something else']},
               1440: {'2 AI translations of one bank program': ['2 AI', 'translations', 'of one bank', 'program'],
-                     'Reels from your phone videos': ['Reels from your', 'phone videos'], 'Busywork, automated': ['Busywork,', 'automated']}}
+                     'Your videos, finished every month': ['Your videos, finished', 'every month'], 'Busywork, automated': ['Busywork, automated'],
+                     'Your know-how, in an app': ['Your know-how , in an app'], 'Something else': ['Something else']}}
     for w in (320, 390, 1440):
-        for n, text in (('work.html', RULED25[0]), ('local.html', RULED25[1]), ('local.html', RULED25[2])):
+        for n, text in (('work.html', RULED25[0]), ('local.html', RULED25[1]), ('local.html', RULED25[2]), ('local.html', RULED25[3]), ('local.html', RULED25[4])):
             q = newpage(w); q.goto(BASE + n); settle(q); now = q.evaluate(HEAD25_JS, [text, LINES25_JS]); q.close()
-            o = t24_page(w); o.goto(OLD25B + n); settle(o); was = o.evaluate(HEAD25_JS, [text, LINES25_JS]); o.close()
+            o = t24_page(w); o.goto(OLD25B + n); settle(o); was = o.evaluate(HEAD25_JS, [WAS25.get(text, text), LINES25_JS]); o.close()   # T-33: T-24's headline in that spot
             check(f'T-25 ruling: at {w} "{text}" on {n} has the balanced wrap, at T-24\'s type size, with no span added',
-                  now is not None and was is not None and now['wrap'] == 'balance' and now['size'] == was['size'] and now['spans'] == was['spans'] == 0, f'{now} | T-24 {was}')
+                  now is not None and was is not None and now['wrap'] == 'balance' and now['size'] == was['size'] and now['spans'] == SPANS25.get(text, 0) and was['spans'] == 0, f'{now} | T-24 {was}')
             check(f'T-25 ruling: at {w} "{text}" on {n} stays inside its card', now is not None and now['inside'], str(now))
             check(f'T-25 ruling: at {w} "{text}" on {n} reads {" / ".join(WANT25[w][text])}', now is not None and now['lines'] == WANT25[w][text], str(now and now['lines']))
     check('T-25 ruling: work.html carries the balance rule for the banking card\'s figure only, and local\'s two headlines already had the headings\' rule',
@@ -4483,7 +4538,7 @@ def s_t_26():
     sj26 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
     want26 = {'heading': T26_HEADING, 'apps': [{'name': a, 'groups': [dict({'label': l}, **({'caption': c} if c else {}), **({'numbered': True} if num else {}),
               items=[dict({'file': f}, **({'caption': fc} if fc else {}), alt=alt) for f, fc, alt in its]) for l, c, num, its in gs]} for a, gs in T26_APPS]}
-    gal26 = dict(sj26.get('gallery') or {}, apps=[{k: v for k, v in x.items() if k != 'product'} for x in (sj26.get('gallery') or {}).get('apps', [])])   # T-29 adds "product" (an id, not a word); its block checks it
+    gal26 = dict(sj26.get('gallery') or {}, apps=[{k: v for k, v in x.items() if k not in ('product', 'id')} for x in (sj26.get('gallery') or {}).get('apps', [])])   # T-29 adds "product" (an id, not a word); its block checks it. T-33 R13 adds "id" (Birdsighted's anchor); the T-33 block checks it
     check('T-26: studio.json\'s "gallery" holds the item\'s words character for character, in order', gal26 == want26)
     check('T-26: studio.json\'s _about says the gallery\'s words live in "gallery" too', 'The gallery\'s words live in "gallery" too' in sj26['_about'])
     gw26 = _json26.dumps(sj26['gallery'], ensure_ascii=False)
@@ -5160,11 +5215,14 @@ def s_t_30():
             T29_FILES[path] = r.stdout if r.returncode == 0 else None
         return T29_FILES[path]
     check('T-30: the T-29 files can be read from git for comparison', t29_file('studio.html') is not None and t29_file('local.html') is not None)
-    SRC30 = {n: urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
+    SRC30 = {n: un33(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-33: its lines out (its block checks them)
     OLD30 = {n: t29_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT30 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
     S30, L30, W30 = SRC30['studio.html'], SRC30['local.html'], SRC30['work.html']
     sj30 = _json26.load(open(os.path.join(here, 'studio.json'), encoding='utf-8'))
+    # T-33 R13: Birdsighted's gallery block carries an "id" and _about one more sentence; read without them here (the T-33 block checks them).
+    sj30['gallery'] = dict(sj30['gallery'], apps=[{k: v for k, v in x.items() if k != 'id'} for x in sj30['gallery']['apps']])
+    sj30['_about'] = sj30['_about'].replace(' A gallery app with an "id" carries it on its block, so another page can link to it (T-33: Work\'s Birdsighted card links studio.html#birdsighted).', '', 1)
     sj29 = _json26.loads(t29_file('_build/studio.json').decode('utf-8'))
     P30 = {x['id']: x for x in sj30['products']}
     WHAT30 = {pid: t30_text(para) for pid, para in T30_STUDIO}                        # the two paragraphs' words
@@ -5297,7 +5355,7 @@ def s_t_30():
     from collections import Counter as _C30
     for n in ('studio.html', 'local.html'):
         for w in (390, 1440):
-            q, o = page30(BASE + n, w), page30(T29URL + n, w)
+            q, o = page30(UN33 + n, w), page30(T29URL + n, w)   # T-33: its lines out (__un33/)
             L, L29 = q.evaluate(LINES30_JS), o.evaluate(LINES30_JS)
             Pn, P29_ = q.evaluate(PS30_JS), o.evaluate(PS30_JS)
             q.close(); o.close()
@@ -5352,7 +5410,7 @@ def s_t_30():
                   and abs(k['box'][3] - c['box'][3]) < 0.5, str([k['box'], c['box']]))
             check('T-30: at 1440, their links line up at the bottom', abs(k['link'][2] - c['link'][2]) < 0.5, str([k['link'], c['link']]))
         q.close()
-        q = page30(BASE + 'local.html', w)
+        q = page30(UN33 + 'local.html', w)   # T-33: its lines out (__un33/): R20 and R21 change these cards; the T-33 block checks them
         T = q.evaluate(TOOLSEC30_JS)
         q.locator('#tools').screenshot(path=f'{SHOTS}/t30-local-tools-{w}.png')
         q.close()
@@ -5617,6 +5675,516 @@ def _t32_checks(TB):
             q.screenshot(path=f'{SHOTS}/t32-{n[:-5]}-{w}.png', full_page=True)
             q.close()
     check('T-32: the old build had dark footers and call boxes to keep (the check above has something to check)', darks32[0] > 0, str(darks32))
+
+
+# ---------------- T-33 (Nov 20, 2026): the site says what I do (R2 to R23) ----------------
+# Josef's lines, word for word. Served from out-themed/ (the root's build) on its own free port, with origin/main's root
+# pages (git, T33_MAIN) served beside it under __m33/, so "nothing else changed" is checked against the live build.
+T33_MAIN = '95230a7'   # origin/main when T-33 was cut (T-32 DONE)
+T33_PAGES = ('index.html', 'local.html', 'work.html', 'start.html', 'shotlist.html', 'captions.html', 'receipt.html',
+             'scaler.html', 'checkup.html', 'studio.html')
+T33_TOOL_PAGES = ('shotlist.html', 'captions.html', 'receipt.html', 'scaler.html', 'checkup.html')
+T33_R2_OLD = ("For shops and nonprofits around Sonoma County. Maybe it's a phone full of videos you'll never edit. Maybe it's a binder of "
+              "lessons, or the one chore that eats every Thursday. Hand it over. You get back finished reels, an app with your name on it, "
+              "or a chore that does itself, and you watch it work before you decide to go ahead.")
+T33_R2 = ("For shops and nonprofits around Sonoma County. Whatever keeps sliding to the bottom of the list, hand it over. Videos nobody "
+          "edits, follow-ups nobody sends, the spreadsheet everyone avoids, the app you keep meaning to make. I build the AI tool that "
+          "does it, and you watch it work before you decide to go ahead.")
+T33_R3_OLD = ("I'm Josef. Hand me the work you never get to, like the phone videos nobody has time to edit or the lessons sitting in a "
+              "binder. I'll build the AI tool that handles it and walk you through it in plain English. Nothing reaches your customers "
+              "until a person has checked it.")
+T33_R3 = ("I'm Josef. Hand me the work you never get to. If someone on your team does it by hand every week, I can usually build an "
+          "AI tool that does it instead, and I'll walk you through it in plain English. Nothing reaches your customers until a person "
+          "has checked it.")
+T33_R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'), ('A teaching app, iPhone, iPad, Android and web', '535 tests'),
+               ('A birding league with real players', 'zero lines of code to start'),
+               ('A banking COBOL program, checked in public', '2 AIs compared')]
+T33_R4_OLD = ("REAL RESULT KIDS' COOKING REELS A 40-reel series for a children's nonprofit, cut by one engine. Editing each reel, before "
+              "An evening Now ~4 min Reels in the series 40 Posted without their yes 0 Client: a Sonoma County children's nonprofit")
+T33_R4 = 'REAL RESULTS BUILT WITH AI ' + ' '.join(k + ' ' + v for k, v in T33_R4_ROWS)
+T33_R5_OLD = ['Phone videos nobody has time to edit', 'Lessons, recipes or a curriculum', 'A weekly task that eats hours',
+              'Not sure yet. Point me somewhere.']
+T33_R5 = ['Videos or photos nobody has time to edit', "Know-how stuck in binders, docs or one person's head", 'A weekly task that eats hours',
+          'An app or tool you keep wishing existed', 'Not sure yet. Point me somewhere.']
+T33_R5_NEWVAL = 'An app or tool you keep wishing existed'   # what the new fourth choice sends
+T33_R6 = ('Three ready to go', "These three already run on real projects, so they're quick, and you don't pay me to start from scratch. "
+          "If yours is something else, that starts with a Blueprint too.")
+T33_R6_OLD = ('Three things I make', "Each one is already built and working on real projects, so you get finished work quickly and you "
+              "don't pay me to start from scratch.")
+T33_R7, T33_R7_OLD = 'Your videos, finished every month', 'Reels from your phone videos'
+T33_R8 = ('Your know-how, in an app', 'What you teach or sell, in an app with your name on it.',
+          'What you already teach or sell: lessons, recipes, guides, a product list, a resource library.')
+T33_R8_OLD = ('Your own app', 'Your lessons or recipes, in an app with your name on it.',
+              'The content you already teach: lessons, recipes, activities, a resource library.')
+T33_R9 = ('Something else', 'Not on this list? Tell me anyway. The Blueprint works the same for any job: I watch how it gets done, build '
+          'a sample from your material, and give you a fixed price before any building starts.', 'Priced in the Blueprint')
+T33_R10, T33_R10_OLD = 'You care more about what it brings in than how it looks in a demo.', 'You care more about inquiries than about views.'
+T33_R11_TABS = ['All', 'Apps', 'Video', 'Mainframe', 'Free tools']
+T33_R11_OLD_TABS = ['All', 'Nonprofits', 'Banking', 'My own builds', 'Free tools']
+# Work's cards by their headings, in R12's order, with their tags.
+T33_CARDS = [('A 40-reel series on one engine.', ['Client', 'Reels']),
+             ('Bird League', ['My own build', 'App']),
+             ('A seasonal cooking app for teachers', ['Client', 'App', 'In progress']),
+             ('Birdsighted', ['My own build', 'Game']),
+             ('A banking program, checked in public', ['My own build', 'COBOL', 'Public']),
+             ('Busywork receipt', ['Free tool', 'Busywork']),
+             ('COBOL field decoder', ['Free tool', 'COBOL']),
+             ('Reel shot list', ['Free tool', 'Reels']),
+             ('Caption fitter', ['Free tool', 'Reels'])]
+T33_TABS_SHOW = {'All': [c for c, _t in T33_CARDS],
+                 'Apps': ['Bird League', 'A seasonal cooking app for teachers', 'Birdsighted'],
+                 'Video': ['A 40-reel series on one engine.'],
+                 'Mainframe': ['A banking program, checked in public', 'COBOL field decoder'],
+                 'Free tools': ['Busywork receipt', 'COBOL field decoder', 'Reel shot list', 'Caption fitter']}
+T33_R13 = ('Birdsighted', 'A detective game for birders. Twelve cases, each one a bird you work out from the clues.', 'See it on Studio →',
+           'studio.html#birdsighted')
+T33_R14_KEEP = ("I taught myself to build software with AI. Bird League, a competitive birding app, went from zero lines of code to real "
+                "users and an App Store submission.")
+T33_R14 = "This year a Sonoma County children's nonprofit became my first client. On my own time I've built a birding league, an indie game matchmaker and a detective game for birders."
+T33_R14_OLD = "This year a Sonoma County children's nonprofit became my first client, and the tools I built for them are the ones on this page."
+T33_GROUP = ('From my reel engine', 'The same rules my reel engine runs on.')
+T33_LOCAL_TOOLS = ['Busywork receipt', 'Reel shot list', 'Caption fitter']               # R20, local.html
+T33_WORK_TOOLS = ['Busywork receipt', 'COBOL field decoder', 'Reel shot list', 'Caption fitter']   # R20, work.html
+T33_ROW_ORDER = ['Busywork receipt', 'Reel shot list', 'Caption fitter']   # R20, each tool page's "More free tools:" row
+T33_ROW_OLD = ['Reel shot list', 'Caption fitter', 'Busywork receipt', 'Recipe scaler']
+T33_TOOL_NAME = {'shotlist.html': 'Reel shot list', 'captions.html': 'Caption fitter', 'receipt.html': 'Busywork receipt',
+                 'scaler.html': 'Recipe scaler', 'checkup.html': 'Website checkup'}
+T33_R21 = ('Try its recipe scaler →', 'scaler.html')
+T33_R23 = 'A sentence or two is plenty. Something like "every Friday someone spends three hours copying orders into a spreadsheet."'
+T33_R23_OLD = 'A sentence or two is plenty. Something like "we film every class and post maybe one clip a month."'
+# Old words that must be gone from every page's visible text (whitespace aside). A regex where a new line holds the old one.
+T33_GONE = [T33_R2_OLD, T33_R3_OLD, "KIDS' COOKING REELS", 'Client: a Sonoma County', "A 40-reel series for a children's nonprofit, cut by one engine.",
+            'Posted without their yes', T33_R5_OLD[0], T33_R5_OLD[1], *T33_R6_OLD, T33_R7_OLD, *T33_R8_OLD, T33_R10_OLD, 'My own builds',
+            T33_R14_OLD, 'the tools I built for them', T33_R23_OLD, 'we film every class', 'Scale a recipe →']
+T33_GONE_RX = [r'REALRESULT(?!S)']
+T33_NORM = r'''(e) => (e.textContent || '').replace(/[\s ]+/g, ' ').trim()'''
+T33_LOOK_JS = r'''() => {
+  const n = e => (e.textContent || '').replace(/[\s ]+/g, ' ').trim(), box = e => e.getBoundingClientRect();
+  const vis = e => { const r = box(e); return r.width > 0 && r.height > 0; };
+  const out = {sw: [document.documentElement.scrollWidth, innerWidth]};
+  const tear = document.querySelector('.tear');
+  if (tear) {
+    const kids = [...tear.children], rows = kids[1] ? [...kids[1].children] : [], tb = box(tear);
+    out.card = {kids: kids.length, head: kids[0] ? [...kids[0].children].map(e => [n(e), Math.round(box(e).left), Math.round(box(e).top)]) : [],
+      rows: rows.filter(r => r.querySelector('span') && r.querySelector('strong')).map(r => { const s = r.querySelector('span'), g = r.querySelector('strong'), gb = box(g);
+        return [n(s), n(g), getComputedStyle(s).fontSize, getComputedStyle(g).fontSize, gb.right <= tb.right - 20 + 0.5 && gb.left >= tb.left + 20 - 0.5,
+                g.scrollWidth <= g.clientWidth + 1, getComputedStyle(g).whiteSpace]; }),
+      size: [Math.round(tb.width)], p: tear.querySelectorAll('p').length};
+    const offers = [...document.querySelectorAll('#engines article')];
+    out.offers = offers.map(a => ({h: n(a.querySelector('h3')), card: a.getAttribute('data-card'), cls: a.className, style: a.getAttribute('style'),
+      ps: [...a.querySelectorAll(':scope > p')].map(n), dl: a.querySelectorAll('dl').length,
+      x: Math.round(box(a).left), y: Math.round(box(a).top), w: Math.round(box(a).width), h3y: Math.round(box(a.querySelector('h3')).top - box(a).top),
+      price: (() => { const p = [...a.querySelectorAll(':scope > p')].pop(); const c = getComputedStyle(p);
+        return [c.fontFamily, c.fontSize, c.borderTopStyle, c.borderTopWidth, c.paddingTop, getComputedStyle(p.querySelector('strong') || p).fontWeight]; })()}));
+    const t = document.getElementById('tools');
+    out.tools = t ? {h3: [...t.querySelectorAll('article h3')].map(n), links: [...t.querySelectorAll('article a')].map(a => [a.getAttribute('href'), n(a)]),
+      group: [...t.querySelectorAll('[role=group]')].map(g => ({label: n(document.getElementById(g.getAttribute('aria-labelledby'))),
+        ps: [...g.querySelectorAll(':scope > p')].map(n), h3: [...g.querySelectorAll('article h3')].map(n)})),
+      boxes: [...t.querySelectorAll('article')].map(a => [Math.round(box(a).left), Math.round(box(a).bottom), Math.round(box(a).right)])} : null;
+  }
+  const more = [...document.querySelectorAll('p.noprint')].find(p => n(p).startsWith('More free tools:'));
+  if (more) out.more = {text: n(more), links: [...more.querySelectorAll('a')].map(a => [a.getAttribute('href'), n(a)])};
+  return out;
+}'''
+T33_WORK_JS = r'''() => {
+  const n = e => (e.textContent || '').replace(/[\s ]+/g, ' ').trim();
+  const card = c => ({h: n(c.querySelector('h2')), tags: [...c.querySelectorAll('.tag')].map(n), hidden: c.hidden || !!c.closest('[hidden]'),
+    links: [...c.querySelectorAll('a')].map(a => [a.getAttribute('href'), n(a)]), text: n(c)});
+  const cl = document.body.cloneNode(true); cl.querySelectorAll('script, style, #cards').forEach(e => e.remove());
+  return {tabs: [...document.querySelectorAll('.filt')].map(b => [n(b), b.getAttribute('data-f')]),
+    cards: [...document.querySelectorAll('#cards .card')].map(card),
+    groups: [...document.querySelectorAll('#cards .cardgroup')].map(g => ({hidden: g.hidden, label: n(g.querySelector('.glabel')), line: n(g.querySelector('.gline')),
+      cards: [...g.querySelectorAll('.card h2')].map(n), labelled: g.getAttribute('aria-labelledby')})),
+    outside: n(cl), sw: [document.documentElement.scrollWidth, innerWidth]};
+}'''
+
+
+from urllib.parse import quote as _quote33
+
+
+def t33_ws(s):
+    return _re.sub(r'\s+', '', s)
+
+
+def t33_main(name):
+    """A root file as origin/main has it (T33_MAIN), read from git."""
+    return _sp.run(['git', 'show', f'{T33_MAIN}:{name}'], cwd=os.path.join(here, '..'), capture_output=True, check=True).stdout
+
+
+def t33_more(page, order):
+    names = [x for x in order if x != T33_TOOL_NAME[page]]
+    return 'More free tools: ' + ' · '.join(names)
+
+
+@section('T-33')
+def s_t_33():
+    port = free_port()
+    srv = _sp.Popen([sys.executable, '-m', 'http.server', str(port), '--bind', '127.0.0.1', '--directory', T32_DIR], cwd=here,
+                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+    TB = f'http://127.0.0.1:{port}/'
+    try:
+        for _i in range(100):
+            try:
+                urlopen(TB + 'index.html', timeout=2).read()
+                break
+            except OSError:
+                time.sleep(0.1)
+        _t33_checks(TB)
+    finally:
+        srv.kill()
+        srv.wait()
+
+
+def _t33_checks(TB):
+    MB = TB + '__m33/'
+    mains = {}
+
+    def serve_main(route):
+        path = route.request.url.split('/__m33/', 1)[1].split('?')[0].split('#')[0]
+        if path.endswith('.html'):
+            if path not in mains:
+                mains[path] = t33_main(path)
+            return route.fulfill(status=200, body=mains[path], content_type='text/html; charset=utf-8')
+        return route.continue_(url=TB + path)
+
+    def page33(w, h=900):
+        q = newpage(w, h)
+        q.route('**/__m33/**', serve_main)
+        q.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok)
+        return q
+
+    def load(q, url):
+        q.goto(url, wait_until='load')
+        q.evaluate('document.fonts.ready.then(() => 1)')
+        q.wait_for_timeout(150)
+
+    # ---- The files: the root is this build.
+    names = sorted(ALL_HTML)
+    check('T-33: every root page is the themed page (this build)', not t32_root_off(names), str(t32_root_off(names)))
+    # un33() (the older checks read pages through it): each page of out/ through un33(), themed by theme.py, is
+    # origin/main's root page byte for byte (the studio pages' build day and studio.json's hash aside, as stamp27()).
+    import theme as _theme33
+    for n in names:
+        new = t32_read(outd, n)
+        u = un33(new, n)
+        check(f'T-33: un33() takes T-33 out of {n}: through theme.py it is origin/main\'s root page byte for byte',
+              stamp27(_theme33.theme_page(u, n)) == stamp27(t33_main(n).decode('utf-8').replace('\r\n', '\n')))
+        check(f'T-33: un33() changes {n} exactly when T-33 changed it, and a second pass changes nothing',
+              (u != new) == (n in T33_UNDO) and un33(u, n) == u)
+    TH = {n: t32_read(T32_DIR, n) for n in names}
+    for n in names:
+        old = t33_main(n).decode('utf-8')
+        check(f'T-33: {n}: no em dash added', TH[n].count('—') <= old.count('—'), f'{old.count(chr(0x2014))} -> {TH[n].count(chr(0x2014))}')
+    for line in [T33_R2, T33_R3, T33_R4, *T33_R5, *T33_R6, T33_R7, *T33_R8, *T33_R9, T33_R10, *T33_R11_TABS, *T33_R13, T33_R14,
+                 *T33_GROUP, T33_R21[0], T33_R23]:
+        check(f'T-33: no em dash in the line "{line[:40]}"', '—' not in line)
+    check('T-33 R21: scaler.html is still in the sitemap', '<loc>https://dragomansjourney.com/scaler.html</loc>' in t32_read(T32_DIR, 'sitemap.xml'))
+    check('T-33 R5: the intake Worker takes the pile as free text, with no list of values (unchanged)',
+          '["pile", "Their pile"]' in wk and t33_main('_build/worker/intake.js').decode('utf-8').replace('\r\n', '\n') == wk.replace('\r\n', '\n'))
+
+    # ---- Every page's visible text, title, description and structured data: origin/main's with only the listed lines changed.
+    D = {}
+    for n in names:
+        q = page33(1440)
+        load(q, MB + n)
+        a = q.evaluate(T32_DOM_JS)
+        load(q, TB + n)
+        t = q.evaluate(T32_DOM_JS)
+        q.close()
+        D[n] = (a, t)
+    swaps = {'index.html': [(T33_R2_OLD, T33_R2)],
+             'local.html': [(T33_R3_OLD, T33_R3), (T33_R4_OLD, T33_R4), (' '.join(T33_R5_OLD), ' '.join(T33_R5)),
+                            (T33_R6_OLD[0], T33_R6[0]), (T33_R6_OLD[1], T33_R6[1]), (T33_R7_OLD, T33_R7),
+                            *zip(T33_R8_OLD, T33_R8),
+                            ('Build from $3,000 · support from $750/month', 'Build from $3,000 · support from $750/month ' + ' '.join(T33_R9)),
+                            (T33_R10_OLD, T33_R10), (T33_R14_OLD, T33_R14),
+                            ('Free tools for your pile Reel shot list Plan your reel → Caption fitter Fit a caption → Busywork receipt Ring it up → '
+                             'Recipe scaler Scale a recipe →',
+                             'Free tools for your pile Busywork receipt Ring it up → ' + ' '.join(T33_GROUP) + ' Reel shot list Plan your reel → '
+                             'Caption fitter Fit a caption →')],
+             'start.html': [(' '.join(T33_R5_OLD), ' '.join(T33_R5)), (T33_R23_OLD, T33_R23)]}
+    for p in T33_TOOL_PAGES:
+        swaps[p] = [(t33_more(p, T33_ROW_OLD), t33_more(p, T33_ROW_ORDER))]
+    for n in names:
+        if n == 'work.html':
+            continue
+        a, t = D[n]
+        want = t33_ws(a['text'])
+        for o, nw in swaps.get(n, []):
+            k = want.count(t33_ws(o))
+            check(f'T-33: {n}: origin/main reads "{o[:50]}" exactly once (the line this item changes)', k == 1, str(k))
+            want = want.replace(t33_ws(o), t33_ws(nw))
+        got = t33_ws(t['text'])
+        check(f'T-33: {n}: its visible text is origin/main\'s with only the listed lines changed', got == want,
+              next((f'...{want[max(0, i - 60):i + 60]}... | ...{got[max(0, i - 60):i + 60]}...' for i in range(min(len(want), len(got))) if want[i] != got[i]), f'{len(want)} vs {len(got)}'))
+        check(f'T-33: {n}: title and meta description are origin/main\'s', (a['title'], a['desc']) == (t['title'], t['desc']))
+        ld = [x.replace(f'"{T33_R7_OLD}"', f'"{T33_R7}"').replace(f'"{T33_R8_OLD[0]}"', f'"{T33_R8[0]}"') for x in a['ld']]
+        check(f'T-33: {n}: structured data is origin/main\'s (on local.html, with the two offer names R7 and R8 changed)', ld == t['ld'],
+              str([x for x in zip(ld, t['ld']) if x[0] != x[1]])[:300])
+    # The offer names in local.html's structured data are the new ones (final.py reads them from the page).
+    ldl = ' '.join(D['local.html'][1]['ld'])
+    check('T-33 R7, R8: local.html\'s structured data names the offers by their new names', f'"{T33_R7}"' in ldl and f'"{T33_R8[0]}"' in ldl
+          and T33_R7_OLD not in ldl and T33_R8_OLD[0] not in ldl)
+    check('T-33 R9: "Something else" is not a priced offer in the structured data', 'Something else' not in ldl)
+
+    # ---- Old words: gone from every page's visible text. R14's Bird League sentence stays, word for word.
+    for n in names:
+        txt = t33_ws(D[n][1]['text'])
+        left = [o for o in T33_GONE if t33_ws(o) in txt] + [r for r in T33_GONE_RX if _re.search(r, txt)]
+        check(f'T-33: {n}: none of the old lines is on it', not left, str(left))
+    check('T-33 R7, R8: the old offer names are nowhere in local.html, structured data included',
+          T33_R7_OLD not in TH['local.html'] and f'>{T33_R8_OLD[0]}<' not in TH['local.html'] and f'"{T33_R8_OLD[0]}"' not in TH['local.html'])
+    check('T-33 R14: the Bird League sentence reads exactly as before, on local.html',
+          t33_ws(T33_R14_KEEP + ' ' + T33_R14) in t33_ws(D['local.html'][1]['text']) and t33_ws(T33_R14_KEEP) in t33_ws(D['local.html'][0]['text']))
+
+    # ---- Each new line where it belongs (the element's whole text).
+    places = [('index.html', 'span', T33_R2, 'R2'), ('local.html', 'p', T33_R3, 'R3'),
+              ('local.html', '#engines-h', T33_R6[0], 'R6'), ('local.html', '#engines-h + p', T33_R6[1], 'R6'),
+              ('local.html', '[data-card="reels"] h3', T33_R7, 'R7'), ('local.html', '[data-card="app"] h3', T33_R8[0], 'R8'),
+              ('local.html', '[data-card="app"] > p', T33_R8[1], 'R8'), ('local.html', '[data-card="app"] dd', T33_R8[2], 'R8'),
+              ('local.html', 'li', T33_R10, 'R10'), ('local.html', 'p', T33_R14_KEEP + ' ' + T33_R14, 'R14'),
+              ('start.html', 'p.hint', T33_R23, 'R23')]
+    for n, sel, want, rid in places:
+        q = page33(1440)
+        load(q, TB + n)
+        k = q.evaluate(f'''([s, w]) => [...document.querySelectorAll(s)].filter(e => ({T33_NORM})(e) === w).length''', [sel, want])
+        q.close()
+        check(f'T-33 {rid}: {n}: "{want[:50]}" is the whole text of one {sel}', k == 1, str(k))
+    # R7 and R8 keep everything under their names.
+    q = page33(1440)
+    load(q, MB + 'local.html')
+    ob = q.evaluate('() => [...document.querySelectorAll("#engines article")].map(a => [...a.querySelectorAll("dl, :scope > p:last-of-type")].map(e => e.textContent.replace(/[\\s\\u00a0]+/g, " ").trim()))')
+    load(q, TB + 'local.html')
+    nb = q.evaluate('() => [...document.querySelectorAll("#engines article")].map(a => [...a.querySelectorAll("dl, :scope > p:last-of-type")].map(e => e.textContent.replace(/[\\s\\u00a0]+/g, " ").trim()))')
+    q.close()
+    check('T-33 R7, R8: the three offers keep every row and price line (the app offer\'s YOU SEND aside)',
+          len(ob) == 3 and nb[:3] == [ob[0], [ob[1][0].replace(T33_R8_OLD[2], T33_R8[2]), ob[1][1]], ob[2]], str(nb[:3])[:300])
+    check('T-33 R8: "It won\'t take a broken entry, like a recipe with no photo," is still in the app offer',
+          "It won't take a broken entry, like a recipe with no photo," in nb[1][0])
+    check('T-33: "Forty reels, one engine." is still on local.html', 'Forty reels, one engine.' in D['local.html'][1]['text'])
+
+    # ---- R4 (the proof card), R9 (four offers), R20 (local's tools), at 320, 390, 1024 and 1440.
+    for w in (320, 390, 1024, 1440):
+        q = page33(w, 844)
+        load(q, MB + 'local.html')
+        ML = q.evaluate(T33_LOOK_JS)
+        load(q, TB + 'local.html')
+        L = q.evaluate(T33_LOOK_JS)
+        q.close()
+        c = L['card']
+        check(f'T-33 R4: at {w}, the card holds its labels and its rows only (no line under the labels, no client line)',
+              c['kids'] == 2 and c['p'] == 0, str(c)[:200])
+        check(f'T-33 R4: at {w}, the labels are REAL RESULTS and BUILT WITH AI', [h[0] for h in c['head']] == ['REAL RESULTS', 'BUILT WITH AI'], str(c['head']))
+        if w == 1440:
+            check('T-33 R4: at 1440, REAL RESULTS on the left and BUILT WITH AI on the right, on one line',
+                  c['head'][0][1] < c['head'][1][1] and abs(c['head'][0][2] - c['head'][1][2]) <= 3, str(c['head']))
+        check(f'T-33 R4: at {w}, four rows with the listed labels and values', [r[:2] for r in c['rows']] == [list(r) for r in T33_R4_ROWS], str(c['rows']))
+        check(f'T-33 R4: at {w}, every row keeps 13px type and whole values inside the card', all(r[2] == '13px' and r[3] == '13px' and r[4] and r[5]
+              and r[6] == 'nowrap' for r in c['rows']), str(c['rows']))
+        check(f'T-33 R4: at {w}, the card keeps its width', c['size'] == ML['card']['size'], str([ML['card']['size'], c['size']]))
+        o = L['offers']
+        check(f'T-33 R9: at {w}, four offer blocks', len(o) == 4 and [x['h'] for x in o] == [T33_R7, T33_R8[0], 'Busywork, automated', T33_R9[0]], str([x['h'] for x in o]))
+        if len(o) == 4:
+            s = o[3]
+            check(f'T-33 R9: at {w}, the fourth block: its name, its line, its price line, and no rows',
+                  s['ps'] == [T33_R9[1], T33_R9[2]] and s['dl'] == 0 and s['card'] is None, str(s)[:300])
+            check(f'T-33 R9: at {w}, the fourth block is the same card as the other three', s['cls'] == o[2]['cls']
+                  and _re.sub(r'(border|box-shadow)[^;]*;', '', s['style']) == _re.sub(r'(border|box-shadow)[^;]*;', '', o[2]['style'])
+                  and 'border: 2px solid' in s['style'] and s['price'] == o[2]['price'] and s['h3y'] == o[2]['h3y'], str([s['price'], o[2]['price'], s['h3y'], o[2]['h3y'], s['cls'], o[2]['cls'], s['style'] == o[2]['style']]))
+            xs, ys, ws = sorted({x['x'] for x in o}), sorted({x['y'] for x in o}), {x['w'] for x in o}
+            cols = 1 if w < 700 else 2
+            check(f'T-33 R9: at {w}, the four sit evenly, {cols} across', len(xs) == cols and len(ys) == 4 // cols and len(ws) == 1, str([xs, ys, ws]))
+        tl = L['tools']
+        check(f'T-33 R20: at {w}, local.html\'s tools in order: Busywork receipt, then the reel engine pair', tl['h3'] == T33_LOCAL_TOOLS, str(tl['h3']))
+        check(f'T-33 R20: at {w}, the reel engine pair sits under its label and line',
+              len(tl['group']) == 1 and tl['group'][0] == {'label': T33_GROUP[0], 'ps': list(T33_GROUP), 'h3': T33_LOCAL_TOOLS[1:]}, str(tl['group']))
+        check(f'T-33 R21: at {w}, no recipe scaler in local.html\'s tools', all('scaler' not in h for h, _x in tl['links']) and 'Recipe scaler' not in tl['h3'])
+        check(f'T-33 R20: at {w}, each tool keeps its own name and link', tl['links'] == [['receipt.html', 'Ring it up →'], ['shotlist.html', 'Plan your reel →'],
+              ['captions.html', 'Fit a caption →']], str(tl['links']))
+        bx = tl['boxes']
+        if w >= 1024:
+            check(f'T-33 R20: at {w}, the three tool cards sit level in one row', len({b_[1] for b_ in bx}) == 1 and bx[0][2] < bx[1][0] < bx[2][0], str(bx))
+        else:
+            check(f'T-33 R20: at {w}, the tool cards stack, one under another', len({b_[0] for b_ in bx}) == 1 and bx[0][1] < bx[1][1] < bx[2][1], str(bx))
+        check(f'T-33: at {w}, local.html has no sideways scroll', L['sw'][0] <= L['sw'][1], str(L['sw']))
+
+    # ---- R5: five choices in order on local.html and start.html; the old four send what they sent on origin/main.
+    q = page33(1440)
+    load(q, TB + 'local.html')
+    picks = q.evaluate(f'() => [...document.querySelectorAll("button[data-pick]")].map(b => [b.getAttribute("data-pick"), ({T33_NORM})(b), b.getAttribute("data-value")])')
+    q.close()
+    check('T-33 R5: local.html, five choices in the listed order', [p_[1] for p_ in picks] == T33_R5, str(picks))
+    q = page33(1440)
+    load(q, MB + 'local.html')
+    mpicks = q.evaluate(f'() => [...document.querySelectorAll("button[data-pick]")].map(b => [b.getAttribute("data-pick"), ({T33_NORM})(b)])')
+    q.close()
+    check('T-33 R5: origin/main\'s local.html had the four old choices', [p_[1] for p_ in mpicks] == T33_R5_OLD, str(mpicks))
+
+    def sent_local(base, pid):
+        """Pick a choice on local.html, answer the three questions, press send: the pile in the address it opens."""
+        q = page33(1440)
+        q.route('**/start.html*', lambda route: route.fulfill(status=200, body='<!doctype html><title>s</title>', content_type='text/html'))
+        load(q, base + 'local.html')
+        q.click(f'button[data-pick="{pid}"]')
+        st = q.evaluate('() => [document.getElementById("intake").hidden, document.getElementById("pick-msg").hidden, '
+                        '[...document.querySelectorAll("[data-match]")].filter(e => !e.hidden).length]')
+        for g in ('q1', 'q2', 'q3'):
+            q.click(f'button.iq[data-q="{g}"] >> nth=0')
+        with q.expect_navigation():
+            q.click('#iq-send')
+        u = q.url
+        q.close()
+        frag = u.split('#', 1)[1]
+        kv = dict(x.split('=', 1) for x in frag.split('&') if '=' in x)
+        return _unquote(kv.get('pile', '')), st
+
+    for (pid, _m_label), old_label in zip(mpicks, T33_R5_OLD):
+        was, _st = sent_local(MB, pid)
+        now, st = sent_local(TB, pid)
+        check(f'T-33 R5: local.html, choice "{pid}" sends what it sent on origin/main ("{was}")', now == was and was == old_label, str([was, now]))
+        check(f'T-33 R5: local.html, choice "{pid}" still opens the three questions', st[0] is False, str(st))
+    now, st = sent_local(TB, 'tool')
+    check('T-33 R5: local.html, the new fourth choice sends its own value', now == T33_R5_NEWVAL, now)
+    check('T-33 R5: local.html, the new fourth choice opens the three questions, shows no message box and marks no offer',
+          st == [False, True, 0], str(st))
+    q = page33(1440)
+    load(q, TB + 'local.html')
+    q.click('button[data-pick="tool"]')
+    pressed = q.evaluate('() => [...document.querySelectorAll("button[data-pick]")].map(b => b.getAttribute("aria-pressed"))')
+    q.close()
+    check('T-33 R5: local.html, the new fourth choice shows as the pressed one', pressed == ['false', 'false', 'false', 'true', 'false'], str(pressed))
+
+    q = page33(1440)
+    load(q, TB + 'start.html')
+    chips = q.evaluate(f'() => [...document.querySelectorAll(".chips[data-key=pile] .chip")].map(c => ({T33_NORM})(c))')
+    q.close()
+    check('T-33 R5: start.html step 01, five choices in the listed order', chips == T33_R5, str(chips))
+
+    def sent_start(base, i):
+        q = page33(1440)
+        load(q, base + 'start.html')
+        q.click(f'.chips[data-key="pile"] .chip >> nth={i}')
+        q.fill('#name', 'Pat Test'); q.fill('#email', 'pat@example.com')
+        n0 = len(posts)
+        q.click('#bp-send'); q.wait_for_timeout(500)
+        q.close()
+        return posts[-1]['fields'].get('pile') if len(posts) == n0 + 1 else None
+
+    def preselected(base, value):
+        q = page33(1440)
+        load(q, base + 'start.html#pile=' + _quote33(value, safe=''))
+        on = q.evaluate(f'() => [...document.querySelectorAll(".chips[data-key=pile] .chip[aria-pressed=true]")].map(c => ({T33_NORM})(c))')
+        q.close()
+        return on
+
+    new_index = {0: 0, 1: 1, 2: 2, 3: 4}   # the old four's places among the five
+    for i, old_label in enumerate(T33_R5_OLD):
+        was, now = sent_start(MB, i), sent_start(TB, new_index[i])
+        check(f'T-33 R5: start.html, "{T33_R5[new_index[i]]}" sends what "{old_label}" sent on origin/main', was == old_label and now == was, str([was, now]))
+        check(f'T-33 R5: start.html, arriving with #pile={old_label} selects "{T33_R5[new_index[i]]}"', preselected(TB, old_label) == [T33_R5[new_index[i]]])
+    check('T-33 R5: start.html, the new fourth choice sends its own value', sent_start(TB, 3) == T33_R5_NEWVAL)
+    check('T-33 R5: start.html, arriving with the new value selects the new fourth choice', preselected(TB, T33_R5_NEWVAL) == [T33_R5[3]])
+    check('T-33 R5: the receipt tool\'s "#pile=A weekly task that eats hours" link still selects that choice',
+          "start.html#pile='+encodeURIComponent('A weekly task that eats hours')" in TH['receipt.html'] and preselected(TB, T33_R5[2]) == [T33_R5[2]])
+
+    # ---- R11, R12, R13, R21 and R20 on work.html.
+    q = page33(1440)
+    load(q, MB + 'work.html')
+    MW = q.evaluate(T33_WORK_JS)
+    load(q, TB + 'work.html')
+    W = q.evaluate(T33_WORK_JS)
+    check('T-33 R11: work.html, the five tabs in order', [t_[0] for t_ in W['tabs']] == T33_R11_TABS, str(W['tabs']))
+    check('T-33 R11: origin/main had the old tabs', [t_[0] for t_ in MW['tabs']] == T33_R11_OLD_TABS, str(MW['tabs']))
+    check('T-33 R11: "Free tools" keeps its key, so work.html#free still opens it', W['tabs'][-1] == ['Free tools', 'free'])
+    check('T-33 R12: work.html, the cards in the listed order', [c_['h'] for c_ in W['cards']] == [h for h, _t in T33_CARDS], str([c_['h'] for c_ in W['cards']]))
+    check('T-33 R11: work.html, every card\'s tags', [c_['tags'] for c_ in W['cards']] == [t_ for _h, t_ in T33_CARDS], str([c_['tags'] for c_ in W['cards']]))
+    old_cards = {c_['h']: c_ for c_ in MW['cards']}
+    for c_ in W['cards']:
+        o = old_cards.get(c_['h'])
+        if c_['h'] == 'Birdsighted':
+            check('T-33 R13: the Birdsighted card is new', o is None)
+            continue
+        if o is None:
+            check(f'T-33: work.html card "{c_["h"]}" was on origin/main', False)
+            continue
+        swap = {'Nonprofit': 'Client', 'Banking': 'My own build'}
+        check(f'T-33 R11: work.html "{c_["h"]}" keeps every other tag', c_['tags'] == [swap.get(x, x) for x in o['tags']], str([o['tags'], c_['tags']]))
+        want = t33_ws(o['text'])
+        got = t33_ws(c_['text'])
+        exp = t33_ws(' '.join(swap.get(x, x) for x in o['tags'])) + want[len(t33_ws(' '.join(o['tags']))):]
+        if c_['h'] == 'A seasonal cooking app for teachers':
+            exp += t33_ws(T33_R21[0])
+        check(f'T-33: work.html "{c_["h"]}" reads as on origin/main, its tags aside (and R21\'s link on the kids\' app card)', got == exp, str([exp, got])[:400])
+    check('T-33 R21: work.html, the recipe scaler card is gone', 'Recipe scaler' in old_cards and 'Recipe scaler' not in [c_['h'] for c_ in W['cards']]
+          and 'Kitchens' not in sum((c_['tags'] for c_ in W['cards']), []))
+    kid = next((c_ for c_ in W['cards'] if c_['h'] == 'A seasonal cooking app for teachers'), {'links': []})
+    check('T-33 R21: the kids\' app card links its recipe scaler, under "About custom apps →"',
+          kid['links'] == [['local.html#engines', 'About custom apps →'], [T33_R21[1], T33_R21[0]]], str(kid['links']))
+    bs = next((c_ for c_ in W['cards'] if c_['h'] == 'Birdsighted'), None)
+    check('T-33 R13: the Birdsighted card: tags, heading, line and link, no number and no picture',
+          bs and bs['tags'] == ['My own build', 'Game'] and bs['links'] == [[T33_R13[3], T33_R13[2]]]
+          and t33_ws(bs['text']) == t33_ws('My own build Game ' + ' '.join(T33_R13[:3])), str(bs))
+    n_img = q.evaluate('() => { const c = [...document.querySelectorAll("#cards .card")].find(c => c.querySelector("h2").textContent.trim() == "Birdsighted"); '
+                       'return [c.querySelectorAll("img").length, c.querySelectorAll(".num").length, c.className] }')
+    check('T-33 R13: the Birdsighted card has no picture and no number, and is a card like Bird League\'s', n_img[:2] == [0, 0] and 'card' in n_img[2].split(), str(n_img))
+    check('T-33 R20: work.html, the reel engine pair sits under its label and line',
+          W['groups'] == [{'hidden': False, 'label': T33_GROUP[0], 'line': T33_GROUP[1], 'cards': ['Reel shot list', 'Caption fitter'], 'labelled': 'reel-tools'}], str(W['groups']))
+    check('T-33 R11: work.html reads as on origin/main outside the cards, the tabs aside',
+          t33_ws(W['outside']) == t33_ws(MW['outside']).replace(t33_ws(' '.join(T33_R11_OLD_TABS)), t33_ws(' '.join(T33_R11_TABS))), str([MW['outside'][:300], W['outside'][:300]]))
+    for tab in T33_R11_TABS:
+        q.click(f'.filt:text-is("{tab}")')
+        q.wait_for_timeout(60)
+        S = q.evaluate(T33_WORK_JS)
+        shown = [c_['h'] for c_ in S['cards'] if not c_['hidden']]
+        check(f'T-33 R11: work.html, "{tab}" shows exactly its cards', shown == T33_TABS_SHOW[tab], str(shown))
+        grp_on = not S['groups'][0]['hidden']
+        check(f'T-33 R20: work.html, under "{tab}" the reel engine label shows only with its cards',
+              grp_on == ('Reel shot list' in shown), str([tab, grp_on]))
+        if tab == 'Free tools':
+            check('T-33 R20: work.html\'s free tools in order: Busywork receipt, COBOL field decoder, then the reel engine pair', shown == T33_WORK_TOOLS, str(shown))
+    q.close()
+    q = page33(1440)
+    load(q, TB + 'work.html#free')
+    q.wait_for_timeout(200)
+    S = q.evaluate(T33_WORK_JS)
+    q.close()
+    check('T-33 R11: work.html#free still opens on the free tools', [c_['h'] for c_ in S['cards'] if not c_['hidden']] == T33_WORK_TOOLS)
+    q = page33(1440)
+    load(q, TB + 'studio.html')
+    sid = q.evaluate('() => { const e = document.getElementById("birdsighted"); return e ? [e.className, e.querySelector("h3").textContent.trim()] : null }')
+    q.close()
+    check('T-33 R13: studio.html#birdsighted is the Birdsighted block', sid == ['gapp', 'Birdsighted'], str(sid))
+    check('T-33 R13: the id is the only change to studio.html\'s Birdsighted block',
+          TH['studio.html'].count('<div class="gapp" id="birdsighted">') == 1 and stamp27(TH['studio.html']).replace(' id="birdsighted"', '', 1)
+          == stamp27(t33_main('studio.html').decode('utf-8').replace('\r\n', '\n')))
+
+    # ---- R20, R21: each tool page's "More free tools:" row.
+    for p in T33_TOOL_PAGES:
+        q = page33(1440)
+        load(q, TB + p)
+        L = q.evaluate(T33_LOOK_JS)
+        q.close()
+        want = [x for x in T33_ROW_ORDER if x != T33_TOOL_NAME[p]]
+        hrefs = {v: k for k, v in T33_TOOL_NAME.items()}
+        check(f'T-33 R20: {p}: "More free tools:" lists the others in order, with no group label',
+              L.get('more') and L['more']['links'] == [[hrefs[x], x] for x in want] and L['more']['text'] == t33_more(p, T33_ROW_ORDER), str(L.get('more')))
+        check(f'T-33 R21: {p}: no recipe scaler in its row', L.get('more') and 'scaler.html' not in str(L['more']['links']))
+
+    # ---- At 320, 390 and 1440: no sideways scroll; axe at 390 and 1440 (color contrast in, a 1:1 pair counted).
+    axe = t32_axe()
+    for n in T33_PAGES:
+        for w, h in ((320, 700), (390, 844), (1440, 900)):
+            q = page33(w, h)
+            load(q, TB + n)
+            sw = q.evaluate('[document.documentElement.scrollWidth, innerWidth]')
+            check(f'T-33: at {w}, {n} has no sideways scroll', sw[0] <= sw[1], str(sw))
+            if w in (390, 1440):
+                q.add_script_tag(content=axe)
+                res = q.evaluate('() => axe.run(document, {resultTypes: ["violations", "incomplete"]}).then(r => r.violations.map(v => [v.id, v.nodes.length, v.nodes.slice(0, 3).map(x => x.target.join(" "))])'
+                                 '.concat(r.incomplete.filter(v => v.id == "color-contrast").map(v => [v.id + " 1:1", v.nodes.filter(x => (x.any || []).some(c => c.data && c.data.messageKey == "equalRatio")).map(x => x.target.join(" "))]).filter(v => v[1].length)))')
+                check(f'T-33: at {w}, {n}: axe-core {T32_AXE_VER}, color contrast included: 0 violations', not res, str(res)[:600])
+            q.screenshot(path=f'{SHOTS}/t33-{n[:-5]}-{w}.png', full_page=True)
+            q.close()
 
 
 # ================================================================ running the sections (T-31)

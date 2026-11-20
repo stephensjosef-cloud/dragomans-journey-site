@@ -213,9 +213,10 @@ def build_local():
     )
     body = rep_re(body, r'<sc-for list="\{\{heroRows\}\}".*?</sc-for>', hero)
 
-    pick_ids = ["reels", "app", "flow", "unsure"]
+    # T-33 R5 (Nov 20, 2026): five choices; data-value is what a choice sends (each old one keeps its old words).
+    pick_ids = ["reels", "app", "flow", "tool", "unsure"]
     opts = "".join(
-        f'<button type="button" aria-pressed="{o["on"]}" data-pick="{pick_ids[i]}" style="{o["style"]}">'
+        f'<button type="button" aria-pressed="{o["on"]}" data-pick="{pick_ids[i]}" data-value="{esc(o["value"])}" style="{o["style"]}">'
         f'<span style="font-family: \'JetBrains Mono\', monospace; font-size: 12px; letter-spacing: 0.1em; opacity: 0.8">{esc(o["num"])}</span>'
         f'<span style="font-size: 19px; font-weight: 600; line-height: 1.3">{esc(o["label"])}</span></button>'
         for i, o in enumerate(v0["options"])
@@ -297,7 +298,8 @@ def build_local():
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function $(id) { return document.getElementById(id); }
 
-  // Picker: four options, message, link, matching engine card.
+  // Picker: five options, message, link, matching engine card. A choice with no message (T-33's "An app or
+  // tool you keep wishing existed") shows no message box and marks no card.
   var opts = document.querySelectorAll('button[data-pick]');
   var cards = [document.querySelector('[data-card="reels"]'), document.querySelector('[data-card="app"]'), document.querySelector('[data-card="flow"]')];
   var matches = [document.querySelector('[data-match="reels"]'), document.querySelector('[data-match="app"]'), document.querySelector('[data-match="flow"]')];
@@ -310,7 +312,7 @@ def build_local():
     $('pick-text').textContent = v.msg;
     $('pick-link').setAttribute('href', v.href);
     $('pick-link').textContent = v.cta + ' →';
-    $('pick-msg').hidden = false;
+    $('pick-msg').hidden = !v.msg;
     cards.forEach(function (c, i) { c.setAttribute('style', v.cards[i]); matches[i].hidden = !v.match[i]; });
   }
   opts.forEach(function (btn) { btn.addEventListener('click', function () { pick(btn.getAttribute('data-pick')); }); });
