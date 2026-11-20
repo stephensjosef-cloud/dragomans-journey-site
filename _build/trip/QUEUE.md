@@ -1464,13 +1464,22 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-33 · The site says what I do · READY
+## T-33 · The site says what I do · DONE
 
 **Why:** Nov 20, 2026: Josef read the live site and said it reads as if you need kids, reels or cooking material to hire him: "I can create ANYTHING out of AI, thats just the things i have created so far." He approved R2 to R24 of the wider-range draft, "yes all, dont change bird league line". The kids' work stays as one strong example, not the menu.
 
 **Done when:** every line in this item reads as listed on every page it lives on; nothing else changes on any page; the T-33 checks and the full run pass; axe 0; no sideways scroll.
 
 **Receipt:**
+- **Branch:** `trip/T-33`, cut from `origin/main` `95230a7` (T-32 live). Commits: `41cbc56` queue item, `a525e5e` the work, the T-33 test block and `un33()`, `4841b5a` the R4 card's dotted leaders keep 24px above 420px. This receipt is the commit after them.
+- **Where each line changed:** R2, R4's rows and R9 in `voice2.py`; R3, R4's two labels, R6, R7, R8's name and line, and R14 in `plain.py`; R5 in `canvas/Main.dc.html`, `dump.js`, `build.py`, `intent.py` (L14), `enhance.py` and `start.html`; R8's "you send" and R10 in `canvas/Main.dc.html`; R11, R12, R13 and R21's link in `work.html`; R13's anchor in `studio.json` and `studio.py`; R20 and R21 in `tools/chrome.py` and `enhance.py`; R23 in `start.html`. R15 not changed (Josef: "dont change bird league line").
+- **R5 values:** the four old choices send exactly what they sent before, on local.html and start.html. The new choice sends "An app or tool you keep wishing existed". The intake Worker takes `pile` as free text; no Worker change. Picking it opens the three questions with no message and no offer marked (no approved words for one).
+- **Layout:** four offers sit two by two at 1440 and in one column on phones. The price-line rule covers every offer in `#engines`. R9's block has no `data-card`, so `final.py` still counts three priced offers. The R4 rows use the T-20 F8 phone rule (its selector now finds the rows one block earlier), and above 420px each dotted leader keeps at least 24px.
+- **Older checks:** about 200 compare with earlier builds and now read pages through `un33()` (`t33_undo.json`), as T-30 did with `un30()`. The T-33 block proves it: every page through `un33()`, themed, equals origin/main's root byte for byte. Expectations changed to the approved lines: T-21 G4 tab list; T-22 K4 hero card values; T-23 L4 names per row, 3 to 2 (R21); T-25 F1's Nov 17 lone-word ruling now covers the R7, R8 and R9 headings; T-20 F8 selector; T-26 and T-30 skip studio.json's new `id` field.
+- **Tests:** at `a525e5e`, the full parallel run 5656/5656, T-33 385/385, axe 0, no sideways scroll at 320, 390 or 1440; `test_site.py` 124/124 (was 125: it checks each link on local.html, and the scaler link left it); Workers 34/34 and 147/147. At `4841b5a` (local.html only): Claude chat rebuilt the branch in the cloud, all 18 pages byte for byte the committed root, and ran T-33 385/385 (axe included), T-22 113/113, T-20 256/257 (the one miss: index.html's header at 320, a page `4841b5a` didn't touch, which passed at `a525e5e`; the cloud's fonts are npm copies). No full rerun, by Josef's ruling (Nov 20: sized to the change).
+- **Looked at:** Claude Code: local, the offers, Work and Start step 1 at 1440, the R4 card at every width. Claude chat: the R4 card at 320, the offers at 1440, the free tools list at 390, Work's tabs at 390; no sideways scroll on local, start, work, receipt or shotlist at their widths.
+- **Lone words at 320:** "Your videos, / finished / every month", "Your / know-how, / in an app" and "Something / else" keep their wrap under Josef's Nov 17 ruling (balanced wrap, no smaller type).
+- **Josef, by hand:** nothing.
 
 ---
 
