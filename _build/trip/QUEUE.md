@@ -1581,6 +1581,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-36 · The website checkup goes live, and the Studio tools line · READY
+
+**Why:** Nov 21, 2026: the dj-checkup Worker is deployed at https://dj-checkup.stephens-josef.workers.dev. R16 makes the checkup the first free tool; R24, approved Nov 20, lands once R16 and R17 are live (R17 is the voice checker, T-35).
+
+**Done when:** `CHECKUP_URL` is set in `tools/checkup.py`; `checkup.html` holds the address once and no longer says "Coming this week"; the checkup shows first in every More free tools row, on `local.html` and `work.html`, and in `sitemap.xml`; Studio's free tools line reads the R24 words; the by-script checks (a to f) pass; `checkup.html` looks right at 390 and 320 with the real web fonts, tap targets are 48px or more, and axe at 390 reports 0; pushed to `trip/T-36`, not `main`.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
