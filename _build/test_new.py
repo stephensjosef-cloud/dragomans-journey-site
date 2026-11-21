@@ -6276,6 +6276,22 @@ T34_PEN_JS = r"""() => { const ctx = document.createElement('canvas').getContext
         if (Math.abs((g.top + g.bot) / 2 - (f.top + f.bottom) / 2) < fs * 0.5) continue;   // a glyph on the pen's own line
         if (g.bot > b0 && g.top < b1) hits.push(`"${g.ch}" ink ${Math.round(g.top)}-${Math.round(g.bot)} vs line ${Math.round(b0)}-${Math.round(b1)}`); } }
     return [el.textContent, frags.length, hits.slice(0, 4)]; }); }"""
+# Josef's answer 1 (Nov 20, 2026): the 404 h1 at line-height 1.15, so the pen under its first line clears the line below.
+# For each line of a pen but its last: the h1's line-height, and the least gap (px) between the pen's stroke band and the
+# ink of any glyph below it that it spans (null when no glyph sits below it).
+T34_GAP_JS = r"""() => { const ctx = document.createElement('canvas').getContext('2d'), h = document.querySelector('main h1'), el = h.querySelector('.pen');
+  const fs = parseFloat(getComputedStyle(el).fontSize), gl = [], tw = document.createTreeWalker(h, NodeFilter.SHOW_TEXT);
+  for (let t = tw.nextNode(); t; t = tw.nextNode()) { const cs = getComputedStyle(t.parentElement);
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    for (let i = 0; i < t.length; i++) { if (/\s/.test(t.data[i])) continue;
+      const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const rc = r.getBoundingClientRect(); if (!rc.width) continue;
+      const m = ctx.measureText(t.data[i]), base = rc.top + m.fontBoundingBoxAscent + (rc.height - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+      gl.push({l: rc.left, r: rc.right, top: base - m.actualBoundingBoxAscent, mid: (rc.top + rc.bottom) / 2}); } }
+  const frags = [...el.getClientRects()];
+  return {lh: parseFloat(getComputedStyle(h).lineHeight), fs: parseFloat(getComputedStyle(h).fontSize), frags: frags.length,
+          gaps: frags.slice(0, -1).map(f => { const below = gl.filter(g => g.r > f.left && g.l < f.right && g.mid > f.bottom);
+            return below.length ? Math.min(...below.map(g => g.top - f.bottom)) : null; })}; }"""
+T34_CASE = 'One case, start to finish'
 T34_GAL_JS = r"""() => [...document.querySelectorAll('.ghead')].map(g => { const l = g.querySelector('.label'), c = g.querySelector('.gcap'), cs = getComputedStyle(l);
   let b = l, bg = 'rgba(0, 0, 0, 0)'; while (b && (bg = getComputedStyle(b).backgroundColor) === 'rgba(0, 0, 0, 0)') b = b.parentElement;
   const cc = c && getComputedStyle(c);
@@ -6482,6 +6498,15 @@ def _t34_checks(TB):
             for txt, frags, hits in P:
                 check(f'T-34 item 3: at {w}, {n}: the pen under "{txt}" ({frags} line{"s" if frags > 1 else ""}) overlaps no line above or below it',
                       not hits, '; '.join(hits))
+    # Josef's answer 1: the 404 h1 at line-height 1.15; under each wrapped line the pen leaves a clear gap above the next line's ink.
+    for w in (320, 390, 1440):
+        q = page34(w)
+        load(q, TB + '404.html')
+        P = q.evaluate(T34_GAP_JS)
+        q.close()
+        check(f'T-34 answer 1: at {w}, the 404 h1\'s line-height is 1.15', abs(P['lh'] - 1.15 * P['fs']) < 0.1, str([P['lh'], P['fs']]))
+        check(f'T-34 answer 1: at {w}, the 404 pen wraps, and under each line but the last it leaves a clear gap above the ink below',
+              P['frags'] > 1 and P['gaps'] and all(g is not None and g > 0 for g in P['gaps']), str(P))
 
     # ---- Item 4: Then and Now.
     q = page34(1440)
@@ -6509,6 +6534,23 @@ def _t34_checks(TB):
             if now:
                 check(f'T-34 item 4: at {w}, "November 2026" beside Now is JetBrains Mono 13px, #4F5A63',
                       g['cap'] and g['cap'][0] == 'November 2026' and g['cap'][1].startswith('"JetBrains Mono"') and g['cap'][2] == '13px' and g['cap'][3] == 'rgb(79, 90, 99)', str(g['cap']))
+        # Josef's answer 2: Birdsighted's label keeps Barlow Semi Condensed 900 in ink, class case, clamp(24px, 2.4vw, 30px),
+        # always smaller than the app's h3 above it.
+        cs_ = [g for g in G if g['t'] == T34_CASE]
+        case_size = min(30, max(24, w * 0.024))
+        check(f'T-34 answer 2: at {w}, one "{T34_CASE}" label, with the class case', len(cs_) == 1 and 'case' in cs_[0]['cls'].split() and 'now' not in cs_[0]['cls'].split(), str(cs_))
+        if len(cs_) == 1:
+            c_ = cs_[0]
+            check(f'T-34 answer 2: at {w}, "{T34_CASE}" is Barlow Semi Condensed 900, ink, at {case_size:g}px (clamp(24px, 2.4vw, 30px))',
+                  c_['fam'].startswith('"Barlow Semi Condensed", Impact') and c_['wt'] == '900' and c_['color'] == T32_INK and abs(c_['size'] - case_size) < 0.05, str(c_))
+            r = t34_ratio(c_['color'], c_['bg'])
+            check(f'T-34 answer 2: at {w}, "{T34_CASE}" has contrast 4.5:1 or more on its background ({r:.2f}:1)', r >= 4.5, f'{r:.2f}')
+            q = page34(w)
+            load(q, TB + 'studio.html')
+            h3 = q.evaluate("(() => { const a = document.getElementById('birdsighted'), h = a && a.querySelector('h3'); return h && [h.textContent, parseFloat(getComputedStyle(h).fontSize)]; })()")
+            q.close()
+            check(f'T-34 answer 2: at {w}, "{T34_CASE}" computes to a smaller font-size than the Birdsighted h3 above it',
+                  h3 and h3[0] == 'Birdsighted' and c_['size'] < h3[1], str([c_['size'], h3]))
 
     # ---- At 320, 390 and 1440: no sideways scroll on any page; axe on the six pages at 390 and 1440 (a 1:1 pair counted).
     axe = t32_axe()
@@ -6519,6 +6561,8 @@ def _t34_checks(TB):
             sw = q.evaluate('[document.documentElement.scrollWidth, innerWidth]')
             check(f'T-34: at {w}, {n} has no sideways scroll', sw[0] <= sw[1], str(sw))
             if w in (390, 1440) and n in T34_PAGES:
+                q.evaluate("Promise.all(document.getAnimations().map(a => a.finished.catch(() => null)))")   # T-34: axe waits for every animation (mainframe fades in ~900 ms)
+                q.wait_for_timeout(100)
                 q.add_script_tag(content=axe)
                 res = q.evaluate('() => axe.run(document, {resultTypes: ["violations", "incomplete"]}).then(r => r.violations.map(v => [v.id, v.nodes.length, v.nodes.slice(0, 3).map(x => x.target.join(" "))])'
                                  '.concat(r.incomplete.filter(v => v.id == "color-contrast").map(v => [v.id + " 1:1", v.nodes.filter(x => (x.any || []).some(c => c.data && c.data.messageKey == "equalRatio")).map(x => x.target.join(" "))]).filter(v => v[1].length)))')

@@ -545,6 +545,8 @@ def build_extras(fork_helmet):
         '<circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>\n', encoding="utf-8")
 
     # 404 uses root-relative URLs because GitHub Pages serves it at any path.
+    # T-34 (Josef, Nov 20, 2026): the h1's line-height is 1.15, not 0.98, so the pen underline under its first line
+    # clears the line below ("anywhere"'s "h").
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -566,7 +568,7 @@ def build_extras(fork_helmet):
   </div>
   <main style="flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: clamp(56px, 8vw, 104px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 22px; align-items: center; text-align: center">
     <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #A93F17">404 · Off the map</p>
-    <h1 style="margin: 0; max-width: 18ch; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(48px, 7vw, 104px); line-height: 0.98; letter-spacing: -0.03em; text-wrap: balance">This trail <span class="pen" style="color: #A93F17">doesn't go anywhere</span></h1>
+    <h1 style="margin: 0; max-width: 18ch; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(48px, 7vw, 104px); line-height: 1.15; letter-spacing: -0.03em; text-wrap: balance">This trail <span class="pen" style="color: #A93F17">doesn't go anywhere</span></h1>
     <p style="margin: 0; max-width: 46ch; font-size: clamp(18px, 1.6vw, 21px); color: #3A4252">The page you asked for isn't here. Head back to the front door and pick a route.</p>
     <a href="/" class="route" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; background: #12161F; color: #F4F1EA; text-decoration: none; font-weight: 600">Back to the front door →</a>
   </main>

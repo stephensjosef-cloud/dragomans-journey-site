@@ -425,7 +425,8 @@ def gallery(studio):
             out.append(app_intro(inside[app["product"]]))
         for grp in app["groups"]:
             cap = f'<p class="gcap">{t(grp["caption"])}</p>' if grp.get("caption") else ""
-            lab = "label now" if grp["label"] == "Now" else "label"   # T-34: Now in the accent
+            # T-34: Now in the accent; any other label but Then ("One case, start to finish") is "case", smaller than its h3
+            lab = "label now" if grp["label"] == "Now" else "label" if grp["label"] == "Then" else "label case"
             name = f'{app["name"]}, {grp["label"].lower()}'
             out.append(f'\n      <div class="ggroup">'
                        f'\n        <div class="ghead"><p class="{lab}">{t(grp["label"])}</p>{cap}</div>'
@@ -463,6 +464,7 @@ GALLERY_CSS = r"""
 .ghead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:6px 0 10px}
 .ghead .label{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:900;font-size:clamp(34px,3.6vw,48px);line-height:1;letter-spacing:-0.01em;color:#16201C;margin:0}
 .ghead .label.now{color:#A93F17}
+.ghead .label.case{font-size:clamp(24px,2.4vw,30px)}
 .ghead .gcap{margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.06em;color:#5A635D}
 .grow{--h:calc(197px * 1349 / 660 + 3px);display:flex;align-items:flex-start;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
 .grow figure{flex:none;margin:0;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start}
