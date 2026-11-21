@@ -1483,6 +1483,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-34 · The home opening, no italic switches, bigger Then and Now · READY
+
+**Why:** Nov 20, 2026: Josef asked to reword the opening statement and said the italic halfway through a headline "feels tacky", needing a different way to differentiate; and that Then and Now on Studio must be "WAY MORE NOTICEABLE". Claude mocked up three directions on the real page; Josef picked A, "A, yes".
+
+**Done when:** the home opening reads as listed; no headline on any page switches to italic; marked words stay upright in their color, and short ones carry the hand-drawn underline; Then and Now read as section-size labels; the T-34 checks and the full run pass; axe 0; no sideways scroll.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
