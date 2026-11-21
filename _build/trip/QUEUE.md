@@ -1483,13 +1483,52 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-34 · The home opening, no italic switches, bigger Then and Now · READY
+## T-34 · The home opening, no italic switches, bigger Then and Now · BLOCKED (question)
 
 **Why:** Nov 20, 2026: Josef asked to reword the opening statement and said the italic halfway through a headline "feels tacky", needing a different way to differentiate; and that Then and Now on Studio must be "WAY MORE NOTICEABLE". Claude mocked up three directions on the real page; Josef picked A, "A, yes".
 
 **Done when:** the home opening reads as listed; no headline on any page switches to italic; marked words stay upright in their color, and short ones carry the hand-drawn underline; Then and Now read as section-size labels; the T-34 checks and the full run pass; axe 0; no sideways scroll.
 
 **Receipt:**
+- **Status: BLOCKED, one question for Josef (below).** Everything else is built, tested and looked at. Nothing pushed to `main`.
+- **Branch:** `trip/T-34`, cut from `origin/main` `61adbc7` (T-33 DONE). Commits: `aaf23ff` queue item, `1690ba7` the work, the T-34 test block and `un34()`. This receipt is the commit after them.
+- **The question (404.html only).** Item 2 gives "doesn't go anywhere" (3 words) the pen underline, and the 404 h1 keeps its line-height 0.98. The phrase wraps onto two lines at every width, and at 0.98 the underline under the first line runs through the top of the "h" in "anywhere" on the line below (measured at 320, 390 and 1440; at 1440 the stroke crosses the "h" by about 16px). The two rules can't both hold. Pick one:
+  1. Give the 404 h1 line-height 1.15 (measured: 1.14 is the least that clears at all three widths). Recommended: the underline stays, as the 3-word rule says.
+  2. Color only on "doesn't go anywhere" (no underline), an exception to the 3-word rule for this one page.
+  Until then the page carries the underline at 0.98, and the T-34 check "the pen ... overlaps no line above or below it" fails for 404.html at 320, 390 and 1440 (3 checks).
+- **Where each change is:**
+  - Item 1, the home h1's style: `canvas/Fork.dc.html` (Big Shoulders Display 900 in the source, which `theme.py` writes as Barlow Semi Condensed; source ink `#12161F`, written as `#17212B`). Its words and the pen span around "easy." (nowrap): `plain.py` (the edit that already wrote "AI, made easy"). The line under it: `voice2.py` V1.
+  - Item 2: `canvas/Fork.dc.html` (the Mainframe card, "(n.)"), `build.py` (404), `briefing.html`, `comp3.html`, `canvas/Mainframe.dc.html` (four lines). Every `<em>` became a `<span>` with the same color. The passes that matched the `<em>` now match the `<span>`: `plain.py` (two edits), `voice2.py` W30 and W31.
+  - Item 3, the pen underline: `theme.py` (`pen_css()`, step 6c, beside the ring and the route). The item's definition character for character; orange `%23E8592B`, blue `%231C5FA8` on the Mainframe pages, and on something that stays dark `pen-ink` (`%23F07A4E` / `%238FB8E8`), chosen from the element's zone. Added to `DESIGN.md`'s Shapes, next to the ring and the route.
+  - Item 4: `tools/studio.py` (the `now` class, and the item's four `.ghead` rules in source colors, written by `theme.py` as `#17212B`, `#A93F17`, `#4F5A63`); `studio.html` regenerated.
+- **Every italic switch, and what it is now** (swept: every `<em>`/`<i>`/italic inside h1 to h3, and every line set at 28px or more, on all 18 pages):
+  1. index.html h1 "easy" → "easy." in the h1's ink, pen orange (item 1).
+  2. index.html Mainframe card "does what the old one did." (6 words) → upright, `#A93F17`, color only.
+  3. index.html dark band "Dragoman (n.)" → "(n.)" upright, its cream color, pen on dark `#F07A4E`. Not on the item's list, found by the sweep.
+  4. 404.html h1 "doesn't go anywhere" (3) → upright, `#A93F17`, pen orange. **See the question.**
+  5. briefing.html h1 "system" → upright, blue, pen blue.
+  6. briefing.html h2 "I'll take it from here." (5) → upright, blue, color only.
+  7. comp3.html h1 "decoder" → upright, blue, pen blue.
+  8. comp3.html h2 "It never tells you what the number means." → upright, blue, color only.
+  9. mainframe.html h1 "The interest came out 100 times too high." → upright, blue, color only; its font-weight 400 dropped, so it is 300 like the rest of the h1.
+  10. mainframe.html thesis line "Only the real data your business stores can tell you which one is right." (42px serif) → upright, blue, color only. Not on the item's list, found by the sweep.
+  11. mainframe.html h2 "The real data settles it." (5) → upright, blue, color only.
+  12. mainframe.html h2 "and see what I'd look at first" (7) → upright, blue, color only.
+  Left alone: Mainframe's step numerals I. to IV. and three 18 to 20px lines (#mf-verdict, #xb-lesson, the "100% equivalence" line) are italic all the way through, not a switch; the caption tool's `<i>` is a legend swatch.
+- **Worth a look:** Studio's third gallery label, "One case, start to finish" (Birdsighted), shares `.ghead .label`, so the item's rule makes it the same 34 to 48px Barlow 900 as Then and Now (in ink, not orange). If it should stay small, say so.
+- **Older checks updated** (none loosened, skipped or deleted): `un34()` reads `_build/t34_undo.json` (T-34's changed lines in `out/` and in `canvas/Mainframe.dc.html`, beside origin/main's). `un30()` calls it first, so every check reading through `un30()`/`un29()`/`UN30`/`UN29` takes T-34 out; the direct `un33()` reads also go through it: `serve33` (UN33), T-18 (L4 line, `new_src`), T-20 (`new_ck`), T-21 (`SRC21`), T-30 (`SRC30`), T-33 (the un33() proof). T-24 "the Mainframe canvas is as at T-23" reads the canvas through `un34()`. T-33 R13 compares the themed studio.html as T-33 built it (`un34()` then `theme.py`). Expected strings changed to the approved ones: T-17 V1 (the new line); T-33's index.html text swap also carries T-34's opening.
+- **Tests:** the full parallel run, once: 6024/6029. The five misses: the 3 pen overlap checks on 404.html (the question), T-24's canvas check and T-33 R13 (both read a file T-34 changed without `un34()`; fixed as above). After the fix, `--only T-24,T-33,T-34`: 979/982 (T-24 222/222, T-33 386/386, T-34 370/373, the same three 404 checks). No section stopped on a refused connection. `test_site.py` 124/124. Workers 34/34 and 147/147. axe-core 4.10.3 at 390 and 1440 on the six pages, color contrast in and 1:1 pairs counted: 0. No sideways scroll on any of the 18 pages at 320, 390 or 1440. "Now" `#A93F17` on the chart green: 5.07:1 or better at every width (the T-34 check needs 4.5).
+- **Intent:** added: the period in the home h1 ("AI, made easy."), for a first-time visitor, the site's opening statement. Changed: the line under it, same reader, Josef's new wording ("I know how to run them. Hand me the job..."). Removed: the old line ("I already know how to run them. Tell me the job..."), index.html hero, replaced by Josef's wording. No other words on any page changed (the T-34 text check proves it against origin/main on all 18 pages).
+- **Looked at** (real web fonts, lazy images loaded; screenshots in the session's scratch folder `C:\Users\Josef\AppData\Local\Temp\claude\8d8258406c7029be\b8f275ab-a41f-46ae-b947-6e19cdb7820c\scratchpad\`, files `shots\<page>-<width>.png` for index, mainframe, comp3, briefing, 404 and studio at 320, 390 and 1440; `shots3\studio-<width>.png` with every gallery image loaded; crops beside them; temporary, and the test run keeps its own in `%TEMP%\dj-test-shots\t34-*.png`):
+  - index: reads as one big bold statement, "AI, made easy." with an orange hand-drawn line under "easy."; at 320 and 390 it breaks "AI, made / easy.", the underline under "easy." only, clear of the paragraph; at 1440 one line. The Mainframe card's orange phrase is upright serif. "Dragoman (n.)" on the dark band: "(n.)" upright with a light orange underline. Nothing floating, cut or overlapping.
+  - 404: "This trail doesn't go anywhere", orange phrase, underlined on both lines; the first line's underline cuts through the "h" of "anywhere" at every width (the question).
+  - briefing and comp3: "Ask me about your system" and "Packed-decimal decoder", the last word blue with a blue underline, clear of the line above and the paragraph below at every width. The briefing thank-you h2 shows only after a send; checked by computed style, not looked at.
+  - mainframe: every blue phrase upright in the same serif; the h1's blue half now 300 like its first half, so it reads lighter than before.
+  - studio: "Then" in ink and "Now" in rust-orange read as section labels (34px on phones, 48px at 1440), "November 2026" small and mono beside Now; each sits right above its own row of screenshots.
+- **Not run:** the share cards (`tools/og.py`), as the item says. The h1 changed, so index.html's card still shows the old headline "AI, made easy" (no period) until `og.py` runs.
+- **Josef, by hand:**
+  1. Answer the question above: "1" (line-height 1.15 on the 404 h1) or "2" (color only there). Claude makes the change, reruns T-34, and sets this item DONE.
+  2. Say whether "One case, start to finish" stays big (as now) or goes back to small.
 
 ---
 
