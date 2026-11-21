@@ -1483,19 +1483,27 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-34 · The home opening, no italic switches, bigger Then and Now · BLOCKED (question)
+## T-34 · The home opening, no italic switches, bigger Then and Now · DONE
 
 **Why:** Nov 20, 2026: Josef asked to reword the opening statement and said the italic halfway through a headline "feels tacky", needing a different way to differentiate; and that Then and Now on Studio must be "WAY MORE NOTICEABLE". Claude mocked up three directions on the real page; Josef picked A, "A, yes".
 
 **Done when:** the home opening reads as listed; no headline on any page switches to italic; marked words stay upright in their color, and short ones carry the hand-drawn underline; Then and Now read as section-size labels; the T-34 checks and the full run pass; axe 0; no sideways scroll.
 
 **Receipt:**
-- **Status: BLOCKED, one question for Josef (below).** Everything else is built, tested and looked at. Nothing pushed to `main`.
+- **Status: DONE (Nov 20, 2026).** Josef answered both questions (below); the two changes are built, T-34 and `test_site.py` pass, and the pages were looked at. The earlier "BLOCKED" text in this receipt is kept as history.
+- **Josef's answers (Nov 20, 2026), as applied.**
+  1. The 404 question: option 1. The 404 h1's line-height is **1.15** (was 0.98), so the pen underline under the first line clears the "h" of "anywhere". The three failing pen-overlap checks for 404.html (320, 390, 1440) now pass, beside the new T-34 "answer 1" checks.
+  2. "One case, start to finish" goes smaller: it gets the class `case`, **`clamp(24px, 2.4vw, 30px)`**, Barlow Semi Condensed 900 in ink, still smaller than the Birdsighted h3 above it. Then and Now keep the big labels.
+- **Files changed for the answers:** `_build/build.py` (the 404 h1's `line-height`, with a comment), `_build/tools/studio.py` (the `lab` choice: `now`, `label`, or `label case`; the `.ghead .label.case` rule), `404.html` and `studio.html` at the root and `_build/studio.html` (regenerated), `_build/test_new.py` (the T-34 block: "answer 1" and "answer 2" checks, and the axe wait below). **Regenerated undo data:** `_build/t34_undo.json` (so `un34()` takes the 404 h1's line-height and the `case` label out too).
+- **Axe wait (test fix, T-34 block only).** In the T-34 axe step, before axe runs on a page, the test waits for every running animation to finish (`document.getAnimations()`, each `.finished`) and then 100 ms. Reason: `mainframe.html` fades in over about 900 ms (`.fade2` waits 180 ms more); axe ran mid-fade and read `#848D87` (2.81:1); at 3 s the page has 0 violations. No expectation, threshold or other section changed.
+- **Does the T-34 block prove `un34()` takes T-34 out exactly?** Yes, already: for every one of the 18 pages, `un34()` on `out/`, themed by `theme.py`, equals origin/main's root page byte for byte (`T-34: un34() takes T-34 out of <page>`); `un34()` changes a page exactly when T-34 changed it and a second pass changes nothing; the undo data names exactly the six pages plus the Mainframe canvas; and the Mainframe canvas comes back byte for byte. Nothing was added. This covers the 21 older sections, which read `404.html` and `studio.html` through `un34()`, so they were not rerun (Josef's Nov 20 ruling).
+- **Final tests:** `python _build/run_tests.py --only T-34`: **392/392 passed** (the T-34 section: 391 checks, 0 failed; the runner's total is 392). `python _build/test_site.py` on `out/`: **124/124** ("fonts: live Google Fonts"); on origin/main's pages it also counts 124, so the drop from 125 predates T-34. Workers not touched, not rerun. The 21 older sections not rerun.
+- **Looked at (final, real web fonts, lazy images scrolled in):** screenshots in `C:\Users\Josef\dragomans-journey-site\_build\look-t34\` (untracked, not committed): `404-320.png`, `404-390.png`, `404-1440.png`, `studio-gallery-320.png`, `studio-gallery-390.png`, `studio-gallery-1440.png`. 404: "This trail doesn't go anywhere", the orange phrase underlined on each line, a clear gap between the underline and the line below at all three widths (320 breaks it over three lines, 390 and 1440 over two); nothing cut off or overlapping. Studio gallery: Then in ink, Now in rust-orange with "November 2026" in mono, "One case, start to finish" clearly smaller than the Birdsighted h3 above it but still a section label; no sideways scroll at any width. At 320 and 390 the screenshot rows are cut at the right edge by design (they scroll sideways, the next screen peeks in). At 1440 the Bird League email row's button ends flush with the section's right edge, about 30px further right than Deepcuts' (a layout difference I did not touch, not from T-34; no element is outside the section).
 - **Branch:** `trip/T-34`, cut from `origin/main` `61adbc7` (T-33 DONE). Commits: `aaf23ff` queue item, `1690ba7` the work, the T-34 test block and `un34()`. This receipt is the commit after them.
 - **The question (404.html only).** Item 2 gives "doesn't go anywhere" (3 words) the pen underline, and the 404 h1 keeps its line-height 0.98. The phrase wraps onto two lines at every width, and at 0.98 the underline under the first line runs through the top of the "h" in "anywhere" on the line below (measured at 320, 390 and 1440; at 1440 the stroke crosses the "h" by about 16px). The two rules can't both hold. Pick one:
   1. Give the 404 h1 line-height 1.15 (measured: 1.14 is the least that clears at all three widths). Recommended: the underline stays, as the 3-word rule says.
   2. Color only on "doesn't go anywhere" (no underline), an exception to the 3-word rule for this one page.
-  Until then the page carries the underline at 0.98, and the T-34 check "the pen ... overlaps no line above or below it" fails for 404.html at 320, 390 and 1440 (3 checks).
+  **Answered: 1.** (At the time of the first receipt the page carried the underline at 0.98 and the pen-overlap check failed for 404.html at 320, 390 and 1440 (3 checks); fixed as listed above.)
 - **Where each change is:**
   - Item 1, the home h1's style: `canvas/Fork.dc.html` (Big Shoulders Display 900 in the source, which `theme.py` writes as Barlow Semi Condensed; source ink `#12161F`, written as `#17212B`). Its words and the pen span around "easy." (nowrap): `plain.py` (the edit that already wrote "AI, made easy"). The line under it: `voice2.py` V1.
   - Item 2: `canvas/Fork.dc.html` (the Mainframe card, "(n.)"), `build.py` (404), `briefing.html`, `comp3.html`, `canvas/Mainframe.dc.html` (four lines). Every `<em>` became a `<span>` with the same color. The passes that matched the `<em>` now match the `<span>`: `plain.py` (two edits), `voice2.py` W30 and W31.
@@ -1527,8 +1535,7 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
   - studio: "Then" in ink and "Now" in rust-orange read as section labels (34px on phones, 48px at 1440), "November 2026" small and mono beside Now; each sits right above its own row of screenshots.
 - **Not run:** the share cards (`tools/og.py`), as the item says. The h1 changed, so index.html's card still shows the old headline "AI, made easy" (no period) until `og.py` runs.
 - **Josef, by hand:**
-  1. Answer the question above: "1" (line-height 1.15 on the 404 h1) or "2" (color only there). Claude makes the change, reruns T-34, and sets this item DONE.
-  2. Say whether "One case, start to finish" stays big (as now) or goes back to small.
+  1. Nothing now: both questions are answered and applied (above). `tools/og.py` is still not run, so the home share card still shows "AI, made easy" without the period.
 
 ---
 
