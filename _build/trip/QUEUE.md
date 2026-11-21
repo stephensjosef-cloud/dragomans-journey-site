@@ -1539,6 +1539,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-35 · Voice checker, a free tool · READY
+
+**Why:** Nov 20, 2026, R17 of the wider-range draft, approved "yes all": a free tool that passes "could someone build this in 5 minutes with AI?". Its checks come from Josef's voice harness, built testing his own site line by line.
+
+**Done when:** `voicecheck.html` works on the sample and on pasted text at 320, 390 and 1440; it is listed with the other free tools; the T-35 checks and `test_site.py` pass; the `un35()` proof holds; axe 0; pushed to `trip/T-35`, not `main`.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
