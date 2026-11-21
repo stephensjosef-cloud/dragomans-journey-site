@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice checker · Dragoman's Journey</title>
+<meta name="description" content="Paste words written with AI and see which sentences give it away, and what to put there instead. Nothing you paste leaves the page.">
+<link rel="canonical" href="https://dragomansjourney.com/voicecheck.html">
+<meta property="og:title" content="Voice checker · Dragoman's Journey">
+<meta property="og:description" content="Paste words written with AI and see which sentences give it away, and what to put there instead. Nothing you paste leaves the page.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/voicecheck.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/voicecheck.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800;900&amp;family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#E4ECD8}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:#A93F17}a:hover{color:#17212B}
+::selection{background:#E8592B;color:#17212B}
+.dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
+.big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#A93F17;text-transform:none}
+.panel{background:#F7F9F3;border:1.5px solid #9BAA90;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:none;color:#4F5A63;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #9BAA90;background:transparent;color:#17212B;font-size:15px;font-weight:600}
+.chip:hover{border-color:#17212B}
+.chip[aria-pressed="true"]{background:#17212B;border-color:#17212B;color:#F7F9F3}
+.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #17212B;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}
+.btn:hover{background:#17212B;color:#F7F9F3}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#17212B}
+.btn.ghost{background:transparent;color:#17212B}
+.btn.ghost:hover{background:#EDF2E6;color:#17212B}
+input,textarea,select{font:inherit;color:#17212B;background:#fff;border:1.5px solid #9BAA90;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
+textarea{min-height:140px;resize:vertical;line-height:1.5}
+.private{font-size:14px;color:#4F5A63;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17212B;color:#F7F9F3;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
+
+
+.vbox textarea{min-height:220px;font-size:17px}
+.vacts{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.vmsg{margin:12px 0 0;font-weight:600}
+.vmsg:empty{display:none}
+.proof{font-size:14px;color:#4F5A63;margin:14px 0 0}
+#res{display:flex;flex-direction:column;gap:16px}
+#res-h{margin:0;font-size:24px;line-height:1.3;outline:none}
+.vnote{margin:0;border-left:4px solid #D9A520;background:#F9EEDA;padding:12px 14px;font-size:16px}
+.vcards{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.vcard{background:#F7F9F3;border:1.5px solid #9BAA90;border-left:4px solid #A93F17;border-radius:2px;padding:14px 16px}
+.vcard .s{margin:0;font-size:18px;line-height:1.55;overflow-wrap:anywhere}
+.vcard mark{background:#F8E3DA;color:#17212B;font-weight:700;padding:0 2px;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.vmarks{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.vmarks li{border-top:1px solid #9BAA90;padding-top:10px}
+.vmarks p{margin:0;font-size:16px;line-height:1.5}
+.vmarks .try{margin-top:2px;color:#2E3A47;font-weight:600}
+.vend{margin:8px 0 0;font-size:17px}
+.fixit{display:inline-flex;align-items:center;min-height:48px;font-weight:700;color:#17212B;font-size:18px}
+
+</style>
+<style>
+.djm-btn{display:none}
+@media (max-width:699px){
+.djm{flex-wrap:wrap!important;row-gap:0!important;column-gap:0!important}
+.djm .djm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 12px;margin-left:auto;font:inherit;font-size:16px;font-weight:600;cursor:pointer;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:2px}
+.djm .djm-links{display:none!important}
+.djm.open .djm-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;flex-basis:100%;padding:12px 0 4px}
+.djm.open .djm-links>a{display:flex!important;align-items:center!important;min-height:48px!important;font-size:16px!important}
+.djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
+}
+</style>
+</head>
+<body>
+<div class="dj">
+
+<header style="background:#E4ECD8;color:#17212B" class="noprint">
+  <div class="wrap">
+    <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#17212B;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#17212B" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+        <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
+      </a>
+      <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
+        <a href="local.html" style="color:#4F5A63;text-decoration:none">Local Route</a>
+        <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
+      </div>
+    </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+    <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Does it sound like AI?</h1>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#4F5A63">Paste words you wrote with AI. I'll mark the sentences that give it away and tell you what to put there instead. Nothing you paste leaves this page.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+
+  <div class="panel vbox">
+    <label for="words" class="label">Your words</label>
+    <textarea id="words" autocomplete="off"></textarea>
+    <div class="vacts">
+      <button type="button" class="btn hot" id="check">Check it</button>
+      <button type="button" class="btn ghost" id="sample">Try a sample</button>
+    </div>
+    <p class="vmsg" id="msg" role="status" aria-live="polite"></p>
+    <p class="proof">I built these checks testing the words on my own site, line by line, against AI readers playing a baker and a nonprofit director.</p>
+  </div>
+
+  <section id="res" aria-labelledby="res-h" hidden>
+    <h2 id="res-h" tabindex="-1"></h2>
+    <p class="vnote" id="note" hidden>Most of your sentences are about the same length, which reads flat. Mix in a short one.</p>
+    <ol class="vcards" id="cards"></ol>
+    <p class="vend">This finds the marks. It can't make it sound like you. That takes your own words, and getting them out of you is the part I do.</p>
+    <a class="fixit" href="call.html">Want me to fix it?</a>
+  </section>
+
+  <p class="noprint" style="margin:4px 0 -4px -6px;padding:4px 0 4px 6px;overflow:hidden;font-size:15px;line-height:2;color:#4F5A63"><span style="display:block;margin-left:-20px;text-indent:20px"><span style="white-space: nowrap">More free tools: <a href="receipt.html"><span style="white-space: nowrap">Busywork receipt</span></a></span><wbr><span style="white-space: nowrap"><span style="display:inline-block;width:20px;text-align:center;text-indent:0">&nbsp;·&nbsp;</span><a href="shotlist.html"><span style="white-space: nowrap">Reel shot list</span></a></span><wbr><span style="white-space: nowrap"><span style="display:inline-block;width:20px;text-align:center;text-indent:0">&nbsp;·&nbsp;</span><a href="captions.html"><span style="white-space: nowrap">Caption fitter</span></a></span></span></p>
+</main>
+
+<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">
+  <span>Dragoman's Journey&nbsp;·&nbsp;Santa Rosa, California</span>
+  <a href="mailto:hello@dragomansjourney.com" style="color:#2E3A47">hello@dragomansjourney.com</a>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+function djToast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(djToast.t);djToast.t=setTimeout(function(){e.classList.remove('on')},1600)}
+function djCopy(text,label){
+  var done=function(){djToast((label||'Text')+' copied')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
+}
+function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}
+
+(function () {
+  // The rules, in the order they are checked. tells.py's regexes, ported exactly (long dashes written as \u escapes).
+  var L1 = [
+    ['a', /\u2014|\u2013(?=\s)|\s--\s/g,
+      'Long dashes are the mark people spot first now.', 'Use a period or a comma.'],
+    ['b', /\b(?:isn't|is not|aren't|not) (?:just |only |about )?[^.?!]{3,60}?(?:[,;.] ?(?:it's|it is|they're|but)\b|\u2014)/gi,
+      '"It\'s not this, it\'s that" is the most copied shape in AI writing.', 'Say the second half on its own.'],
+    ['c', /\b(?:leverag\w*|seamless\w*|unlock\w*|elevat\w*|robust|streamlin\w*|effortless\w*|game.chang\w*|delve\w*|tapestry|cutting.edge|empower\w*|harness the|supercharg\w*|revolutioni\w*|transformative|next.level|world.class|bespoke|curated|holistic|synerg\w*|journey to|in today's|landscape of|at the end of the day|when it comes to|it's worth noting|rest assured)\b/gi,
+      '"{hit}" is one of the words AI reaches for.', 'Say what actually happens.'],
+    ['d', /^(?:Whether you're|Whether you are|Imagine |Picture this|In a world|Let's face it|Here's the thing|The truth is|Simply put|Look,)/gi,
+      '"{hit}" warms up instead of starting.', 'Start with the point.'],
+    ['e', /\b(?:The (?:result|answer|secret|catch|best part|bottom line)|Here's (?:why|how|what))\s*[:?]/gi,
+      '"{hit}" sets up a reveal.', 'Just say it.']
+  ];
+  var L2 = ['guess', /\b(?:something|things|stuff|content|solutions|your needs|unique needs|everything you need|what matters|quality|value)\b/gi,
+    '"{hit}" makes the reader guess.', 'Name the real thing: which one, how many, or what it was last time.'];
+  var L3 = ['swap', 'Any business could paste this on their own site without changing a word.', 'Add one thing only you have: a number, a name or a place.'];
+  var L4 = {
+    f: [/\b[\w'\u2019-]+(?: [\w'\u2019-]+){0,3}, [\w'\u2019-]+(?: [\w'\u2019-]+){0,3},? (?:and|or) [\w'\u2019-]+/g,
+      'Three in a row is a rhythm AI loves.', 'Keep the one that matters most.'],
+    g: ['Asking a question and answering it yourself is a stage move.', 'On a page, just answer.'],
+    h: ['Three short sentences in a row reads like a slogan.', 'Join two of them.']
+  };
+  var MAX_WORDS = 3000;
+  var SAMPLE = "Whether you're a small business or a growing nonprofit, we deliver seamless solutions tailored to your unique needs. It's not just about marketing, it's about building real connections. Our team leverages cutting-edge tools to elevate your brand. Here's the secret: consistency. We handle everything so you can focus on what matters most. We bake 60 loaves before 6 every morning, and the rye sells out by noon. Ready to take your business to the next level?";
+
+  function words(s) { var w = String(s).trim().split(/\s+/); return w[0] ? w : []; }
+
+  // Sentences end at . ! ? followed by a space or the end (the punctuation stays), and at a line break.
+  function split(text) {
+    var out = [];
+    String(text).split(/\r\n|\r|\n/).forEach(function (line) {
+      var start = 0;
+      for (var i = 0; i < line.length; i++) {
+        if ('.!?'.indexOf(line[i]) > -1 && (i + 1 === line.length || /\s/.test(line[i + 1]))) {
+          out.push(line.slice(start, i + 1)); start = i + 1;
+        }
+      }
+      out.push(line.slice(start));
+    });
+    return out.map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function finds(re, s) {
+    var hits = [], m;
+    re.lastIndex = 0;
+    while ((m = re.exec(s))) {
+      hits.push({hit: m[0], at: m.index});
+      if (!m[0]) re.lastIndex++;
+      if (!re.global) break;
+    }
+    return hits;
+  }
+
+  // Level 3, the swap test: only a sentence that makes a claim about the business.
+  var CLAIM = /\b(?:we|our|us|your business|your brand)\b/i;
+  var OK_CAPS = ['I', "I'm", "I'll", "I've", "I'd", 'I\u2019m', 'I\u2019ll', 'I\u2019ve', 'I\u2019d'];
+  function swap(s) {
+    var w = words(s);
+    if (w.length < 8 || !CLAIM.test(s) || /[0-9$%]/.test(s)) return false;
+    return !w.slice(1).some(function (x) {
+      var core = x.replace(/^[^\p{L}\p{N}]+/u, '').replace(/[^\p{L}\p{N}'\u2019]+$/u, '');
+      return /^\p{Lu}/u.test(core) && OK_CAPS.indexOf(core) < 0;
+    });
+  }
+
+  function check(text) {
+    var sents = split(text).map(function (s) { return {text: s, words: words(s).length, marks: []}; });
+    sents.forEach(function (S) {
+      var s = S.text;
+      L1.forEach(function (r) {
+        finds(r[1], s).forEach(function (h) { S.marks.push({level: 1, rule: r[0], hit: h.hit, at: h.at}); });
+      });
+      finds(L2[1], s).forEach(function (h) { S.marks.push({level: 2, rule: L2[0], hit: h.hit, at: h.at}); });
+      if (swap(s)) S.marks.push({level: 3, rule: L3[0], hit: null, at: null});
+      finds(L4.f[0], s).forEach(function (h) { S.marks.push({level: 4, rule: 'f', hit: h.hit, at: h.at}); });
+    });
+    // g: a question answered by the very next sentence, short, starting with It, That, This, You, We, I or The.
+    sents.forEach(function (S, i) {
+      var nx = sents[i + 1];
+      if (/\?$/.test(S.text) && nx && nx.text.length <= 80 && /^(?:It|That|This|You|We|I|The)\b/.test(nx.text))
+        S.marks.push({level: 4, rule: 'g', hit: null, at: null});
+    });
+    // h: three sentences in a row of 2 to 6 words each; the first of the three is marked, and the next run starts after them.
+    var short = function (S) { return S && S.words >= 2 && S.words <= 6; };
+    for (var i = 0; i + 2 < sents.length; i++) {
+      if (short(sents[i]) && short(sents[i + 1]) && short(sents[i + 2])) {
+        sents[i].marks.push({level: 4, rule: 'h', hit: null, at: null});
+        i += 2;
+      }
+    }
+    sents.forEach(function (S) {   // worst first; the same level keeps the order the rules run in
+      S.marks = S.marks.map(function (m, k) { m.k = k; return m; }).sort(function (a, b) { return a.level - b.level || a.k - b.k; });
+      S.marks.forEach(function (m) { delete m.k; });
+    });
+    // The whole text: 8 or more sentences of 3 words or more, all about the same length (tells.py's rhythm rule).
+    var n = sents.filter(function (S) { return S.words >= 3; }).map(function (S) { return S.words; }), flat = false;
+    if (n.length >= 8) {
+      var mean = n.reduce(function (a, b) { return a + b; }, 0) / n.length;
+      var sd = Math.sqrt(n.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0) / n.length);
+      flat = sd / mean < 0.45;
+    }
+    return {sentences: sents, rhythm: flat, words: words(text).length};
+  }
+  window.voiceCheck = check;
+
+  // ---- The page.
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); };
+  var txt = function (s) { return djNw(esc(s)); };
+  function reason(m) {
+    var r = m.level === 1 ? L1.filter(function (x) { return x[0] === m.rule; })[0].slice(2)
+      : m.level === 2 ? L2.slice(2) : m.level === 3 ? L3.slice(1) : (m.rule === 'f' ? L4.f.slice(1) : L4[m.rule]);
+    return r.map(function (x) { return x.replace('{hit}', m.hit == null ? '' : m.hit); });
+  }
+  function marked(S) {   // the sentence, every matched stretch in a <mark> (joined where they touch)
+    var spans = S.marks.filter(function (m) { return m.hit; }).map(function (m) { return [m.at, m.at + m.hit.length]; })
+      .sort(function (a, b) { return a[0] - b[0]; }), merged = [];
+    spans.forEach(function (p) { var l = merged[merged.length - 1]; if (l && p[0] <= l[1]) l[1] = Math.max(l[1], p[1]); else merged.push(p.slice()); });
+    var out = '', at = 0;
+    merged.forEach(function (p) { out += txt(S.text.slice(at, p[0])) + '<mark>' + txt(S.text.slice(p[0], p[1])) + '</mark>'; at = p[1]; });
+    return out + txt(S.text.slice(at));
+  }
+  function say(t) { $('msg').textContent = t; }
+  function run() {
+    var text = $('words').value;
+    $('res').hidden = true;
+    if (!text.trim()) { say('Paste some words first.'); $('words').focus(); return; }
+    var R = check(text);
+    if (R.words > MAX_WORDS) { say("That's a lot at once. Paste one page at a time, about 3,000 words."); return; }
+    say('');
+    var hit = R.sentences.map(function (S, i) { S.i = i; return S; }).filter(function (S) { return S.marks.length; });
+    hit.sort(function (a, b) { return a.marks[0].level - b.marks[0].level || a.i - b.i; });
+    var m = R.sentences.length, n = hit.length;
+    $('res-h').textContent = !n ? "Nothing jumped out. Read it out loud once anyway. If you wouldn't say it, cut it."
+      : n === 1 ? '1 of ' + m + ' sentences has a mark' : n + ' of ' + m + ' sentences have a mark';
+    $('note').hidden = !R.rhythm;
+    $('cards').innerHTML = hit.map(function (S) {
+      return '<li class="vcard"><p class="s">' + marked(S) + '</p><ul class="vmarks">' + S.marks.map(function (k) {
+        var r = reason(k);
+        return '<li><p>' + txt(r[0]) + '</p><p class="try">' + txt(r[1]) + '</p></li>';
+      }).join('') + '</ul></li>';
+    }).join('');
+    $('res').hidden = false;
+    $('res-h').focus({preventScroll: true});
+    $('res').scrollIntoView({block: 'start'});
+  }
+  $('check').addEventListener('click', run);
+  $('sample').addEventListener('click', function () { $('words').value = SAMPLE; run(); });
+})();
+
+</script>
+</body>
+</html>

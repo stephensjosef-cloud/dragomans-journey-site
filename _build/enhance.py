@@ -398,7 +398,7 @@ def add_pages():
         mark = re.search(r"<!-- studio\.py (\S+) (\S+) -->", src.read_text(encoding="utf-8")) if src.exists() else None
         assert mark and mark.group(2) == STUDIO.fingerprint(), \
             f"{f} is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
-    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES:
+    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
         t = (HERE / f).read_text(encoding="utf-8")
         t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
         (OUT / f).write_text(t, encoding="utf-8")
@@ -439,7 +439,7 @@ def enhance_index():
 
 # Free tools, findable from every page (T-02, Nov 10, 2026). The tool pages
 # get their nav link and "More free tools" line from tools/chrome.py.
-FREE_TOOLS = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html")
+FREE_TOOLS = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html")   # T-35: the voice checker
 # The tools other pages link to (T-20 F2): the checkup only once CHECKUP_URL is set in
 # tools/checkup.py, read through chrome.py. checkup.html itself is always built.
 LINKED_TOOLS = tuple(href for href, _ in CHROME.linked_tools())
@@ -909,7 +909,7 @@ def use_hello():
 # the tool pages get their tags from tools/chrome.py.
 OG_PAGES = ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html",
             "work.html", "case-reels.html", "call.html")
-TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES   # tags from tools/chrome.py
+TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES   # tags from tools/chrome.py
 
 
 def add_og():
@@ -952,6 +952,6 @@ add_wrap()
 fix_contrast()
 use_hello()
 add_og()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html") + STUDIO_PAGES:
+for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
     assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
 print("enhanced")

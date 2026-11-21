@@ -382,11 +382,47 @@ def un34(s, name=None):
     return s
 
 
+# T-35 (Nov 21, 2026): the voice checker, a new free tool. It changes the tool pages' "More free tools" row, the work
+# page's free tools (its card first), local.html's tools (read from there), the Studio log, the sitemap and the home share
+# card. un35(s, name) takes them back out of a page (or sitemap.xml) from out/: t35_undo.json holds each changed block of
+# lines in out/ beside origin/main's (b41cfdd); the Studio pages' build-day stamp and data-built are left to stamp27(), as
+# T-34's are. The T-35 block proves it: every page and sitemap.xml from out/, through un35() and themed, is origin/main's
+# root byte for byte. un30() calls it first; the direct un33()/un34() reads take it out too. Idempotent.
+# For the files un35() can't read as text: un35_file() gives back origin/main's bytes for the share card T-35 redrew
+# (og/index.png), and T35_NEW_FILES are the files T-35 adds, left out of the older listings.
+T35_MAIN = 'b41cfdd'   # origin/main when T-35 was cut (T-34 DONE)
+T35_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 't35_undo.json'), encoding='utf-8'))
+T35_LOG = {'date': '2026-11-21', 'project': 'tools', 'line': 'A new free tool: paste words written with AI and see which sentences give it away.'}
+T35_REDRAWN = ('og/index.png', '_build/assets/og/index.png')
+T35_NEW_FILES = ('voicecheck.html', 'voicecheck.png', 'og/voicecheck.png', '_build/assets/og/voicecheck.png')
+
+
+def un35(s, name=None):
+    if name not in T35_UNDO:
+        return s
+    if '\r\n' in s:
+        return un35(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    for new, old in T35_UNDO[name]:
+        s = s.replace(new, old)
+    return s
+
+
+def un35_file(rel, data):
+    """A file as origin/main had it before T-35, for the share cards T-35 redrew; any other file as it is."""
+    rel = rel.replace(os.sep, '/')
+    if rel in T35_REDRAWN:
+        return _sp35.run(['git', 'show', f'{T35_MAIN}:{rel}'], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True, check=True).stdout
+    return data
+
+
+import subprocess as _sp35
+
+
 def un30(s, name=None):
     """studio.html or local.html as T-29 built it: the six paragraphs back, T-30's CSS rule out. Idempotent.
-    T-33: any page goes through un33() first. T-34: and through un34() before that."""
+    T-33: any page goes through un33() first. T-34: and through un34() before that. T-35: and un35() before that."""
     import re as _r
-    s = un33(un34(s, name), name)
+    s = un33(un34(un35(s, name), name), name)
     if name not in (None, 'studio.html', 'local.html'):
         return s
     if '\r\n' in s:
@@ -555,7 +591,7 @@ def serve33(route):
     path = route.request.url.split('/__un33/', 1)[1].split('?')[0].split('#')[0]
     body = urlopen(BASE + path).read()
     if path.endswith('.html'):
-        body = un33(un34(body.decode('utf-8').replace('\r\n', '\n'), path), path).encode('utf-8')   # T-34: its changes out too
+        body = un33(un34(un35(body.decode('utf-8').replace('\r\n', '\n'), path), path), path).encode('utf-8')   # T-34, T-35: their changes out too
     route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
                   'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
 
@@ -1731,7 +1767,7 @@ def s_intent_pass_2():
             "Every word on dragomansjourney.com rechecked: if it isn't there for a reader, it's gone.",
             'Deepcuts got its new look, built and walked through on iPhone.']
     check('N5: the removed log lines are on no page', not any(g in text_of(s) for g in GONE for s in site.values()))
-    check('N5: shipped.json no longer holds them', not any(g == e['line'] for g in GONE for e in SHIPPED_J['entries']) and len(SHIPPED_J['entries']) == 12)   # T-22 K9 removed two lines
+    check('N5: shipped.json no longer holds them', not any(g == e['line'] for g in GONE for e in SHIPPED_J['entries']) and len([e for e in SHIPPED_J['entries'] if e != T35_LOG]) == 12)   # T-22 K9 removed two lines; T-35's line left out
     check('N5: the Deepcuts line reads "Deepcuts got its new look."', any(e['line'] == 'Deepcuts got its new look.' and e['date'] == '2026-11-04' for e in SHIPPED_J['entries'])
           and 'Deepcuts got its new look.' in text_of(site['studio']) and 'Deepcuts got its new look.' in text_of(site['studio-deepcuts']))
     RULE = 'A line stays only if a stranger can picture what changed: no build number without what a person can now do.'
@@ -1948,7 +1984,7 @@ def s_t_18():
             check(f'T-18: {n} keeps its {rx[1:12]}... as at T-17', _re.findall(rx, new_src[n], _re.S) == _re.findall(rx, old_src[n], _re.S))
     for n in TOOLS6[:5]:
         for rx in (r'<p class="noprint"[^>]*>More free tools:.*?</p>', r'<section aria-labelledby="more-h".*?</section>'):
-            a, b_ = _re.findall(rx, un23(un33(un34(new_src[n], n + '.html'), n + '.html'), n + '.html'), _re.S), _re.findall(rx, old_src[n], _re.S)   # T-23 L4: the line's new markup out; T-33: R20's order out
+            a, b_ = _re.findall(rx, un23(un33(un34(un35(new_src[n], n + '.html'), n + '.html'), n + '.html'), n + '.html'), _re.S), _re.findall(rx, old_src[n], _re.S)   # T-23 L4: the line's new markup out; T-33: R20's order out
             if n == 'receipt' and 'more-h' in rx:   # T-19 W21 changed the panel's line; the rest stays as at T-17
                 b_ = [x.replace('Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.',
                                 'The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.') for x in b_]
@@ -2629,7 +2665,7 @@ def s_t_20():
     sm = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
     check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
     old_ck = t19_file('checkup.html').decode('utf-8').replace('\r\n', '\n')
-    new_ck = un21(un23(un33(un34(SRC20['checkup.html'], 'checkup.html'), 'checkup.html'), 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out; T-33: R20's row order out
+    new_ck = un21(un23(un33(un34(un35(SRC20['checkup.html'], 'checkup.html'), 'checkup.html'), 'checkup.html'), 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out; T-33: R20's row order out
     check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck,
           next((f'...{old_ck[max(0, i - 80):i + 80]}... | ...{new_ck[max(0, i - 80):i + 80]}...' for i in range(min(len(old_ck), len(new_ck))) if old_ck[i] != new_ck[i]), f'{len(old_ck)} vs {len(new_ck)}'))   # T-33: the first difference, when there is one
     check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
@@ -2982,7 +3018,7 @@ def s_t_21():
             out_.append(fn(q))
         return out_
 
-    SRC21 = {n: un26(un33(un34(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n), n) for n in ALL_HTML}   # git holds LF; T-26: the gallery out (its block checks it); T-33: its lines out
+    SRC21 = {n: un26(un33(un34(un35(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n), n), n) for n in ALL_HTML}   # git holds LF; T-26: the gallery out (its block checks it); T-33: its lines out
     NW = '<span style="white-space: nowrap">'
 
     # Every word as it was: each page's text content (after its scripts run), with the new
@@ -3006,7 +3042,7 @@ def s_t_21():
         rx = r'<script type="application/ld\+json">(.*?)</script>'
         check(f'T-21: {n}\'s structured data is exactly as before', _re.findall(rx, SRC21[n], _re.S) == _re.findall(rx, t20_file(n).decode('utf-8'), _re.S))
     # T-22 K1 redraws og/case-reels.png, so that one card is read as T-21 left it.
-    og_same = all((t21g_file('og/' + f) if f == 'case-reels.png' else open(os.path.join(here, '..', 'og', f), 'rb').read()) == t20_file('og/' + f) for f in os.listdir(os.path.join(here, '..', 'og')))
+    og_same = all((t21g_file('og/' + f) if f == 'case-reels.png' else un35_file('og/' + f, open(os.path.join(here, '..', 'og', f), 'rb').read())) == t20_file('og/' + f) for f in os.listdir(os.path.join(here, '..', 'og')) if f not in T35_NEW_FILES)   # T-35: its new card left out
     check('T-21: every share card in og/ is byte for byte as on origin/main', og_same)
 
     # G1: no hyphen pair splits at its hyphen; the pass leaves code, scripts, links and addresses alone.
@@ -3457,11 +3493,11 @@ def s_t_22():
     check('T-22 K1: the case-reels card is redrawn (not T-21\'s)', card != t21_file('og/case-reels.png'))
     check('T-22 K1: og/case-reels.png at the root is the redrawn card', open(os.path.join(here, '..', 'og', 'case-reels.png'), 'rb').read() == card)
     check('T-22 K1: the redrawn card is 1200 by 630', card[:8] == b'\x89PNG\r\n\x1a\n' and _struct.unpack('>II', card[16:24]) == (1200, 630))
-    others = sorted(f for f in os.listdir(os.path.join(here, '..', 'og')) if f != 'case-reels.png')
+    others = sorted(f for f in os.listdir(os.path.join(here, '..', 'og')) if f != 'case-reels.png' and f not in T35_NEW_FILES)   # T-35: its new card left out
     check('T-22: every other share card in og/ is byte for byte as at T-21', len(others) == 16 and all(
-        open(os.path.join(here, '..', 'og', f), 'rb').read() == t21_file('og/' + f) for f in others), str(len(others)))
+        un35_file('og/' + f, open(os.path.join(here, '..', 'og', f), 'rb').read()) == t21_file('og/' + f) for f in others), str(len(others)))
     check('T-22: every other share card in _build/assets/og/ is byte for byte as at T-21', all(
-        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == _sp18.run(['git', 'show', f'{T21C}:_build/assets/og/{f}'], cwd=here, capture_output=True).stdout for f in others))
+        un35_file('_build/assets/og/' + f, open(os.path.join(here, 'assets', 'og', f), 'rb').read()) == _sp18.run(['git', 'show', f'{T21C}:_build/assets/og/{f}'], cwd=here, capture_output=True).stdout for f in others))
 
     # K2 and K3 on case-reels, read from the page.
     q = newpage(1440); q.goto(BASE + 'case-reels.html'); settle(q)
@@ -3731,11 +3767,11 @@ def s_t_23():
         for what, rx in (('title', r'<title>.*?</title>'), ('meta description', r'<meta name="description"[^>]*>'),
                          ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>')):
             check(f'T-23: {n} keeps its {what}', _re.findall(rx, SRC23[n], _re.S) == _re.findall(rx, OLD23[n], _re.S))
-    ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
+    ogs = sorted(f for f in os.listdir(os.path.join(here, '..', 'og')) if f not in T35_NEW_FILES)   # T-35: its new card left out
     check('T-23: every share card in og/ is byte for byte as at T-22', len(ogs) == 17 and all(
-        open(os.path.join(here, '..', 'og', f), 'rb').read() == t22_file('og/' + f) for f in ogs), str(len(ogs)))
+        un35_file('og/' + f, open(os.path.join(here, '..', 'og', f), 'rb').read()) == t22_file('og/' + f) for f in ogs), str(len(ogs)))
     check('T-23: every share card in _build/assets/og/ is byte for byte as at T-22', all(
-        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == t22_file('_build/assets/og/' + f) for f in ogs))
+        un35_file('_build/assets/og/' + f, open(os.path.join(here, 'assets', 'og', f), 'rb').read()) == t22_file('_build/assets/og/' + f) for f in ogs))
     check('T-23: no em dash on any changed page, and no new en dash (the scaler\'s parser reads "1–2" ranges, as at T-22)',
           not any('—' in SRC23[n] for n in CHANGED23) and all(SRC23[n].count('–') == OLD23[n].count('–') for n in CHANGED23))
 
@@ -3997,11 +4033,11 @@ def s_t_24():
                          ('share card tags', r'<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>'), ('h1', r'<h1[^>]*>.*?</h1>'),
                          ('structured data', r'<script type="application/ld\+json">.*?</script>')):
             check(f'T-24: {n} keeps its {what}', _re.findall(rx, SRC24[n], _re.S) == _re.findall(rx, OLD24[n], _re.S))
-    ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
+    ogs = sorted(f for f in os.listdir(os.path.join(here, '..', 'og')) if f not in T35_NEW_FILES)   # T-35: its new card left out
     check('T-24: every share card in og/ is byte for byte as at T-23', len(ogs) == 17 and all(
-        open(os.path.join(here, '..', 'og', f), 'rb').read() == t23_file('og/' + f) for f in ogs), str(len(ogs)))
+        un35_file('og/' + f, open(os.path.join(here, '..', 'og', f), 'rb').read()) == t23_file('og/' + f) for f in ogs), str(len(ogs)))
     check('T-24: every share card in _build/assets/og/ is byte for byte as at T-23', all(
-        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == t23_file('_build/assets/og/' + f) for f in ogs))
+        un35_file('_build/assets/og/' + f, open(os.path.join(here, 'assets', 'og', f), 'rb').read()) == t23_file('_build/assets/og/' + f) for f in ogs))
     check('T-24: no em dash on mainframe or comp3, and no new en dash',
           not any('—' in SRC24[n] for n in ROOT24) and all(SRC24[n].count('–') == OLD24[n].count('–') for n in ROOT24))
 
@@ -4176,11 +4212,11 @@ def s_t_25():
                          ('alt texts', r'\balt="[^"]*"'), ('aria-labels', r'\baria-label="[^"]*"'), ('placeholders', r'\bplaceholder="[^"]*"'),
                          ('labels', r'<label\b[^>]*>.*?</label>')):
             check(f'T-25: {n} keeps its {what}', _re.findall(rx, SRC25[n], _re.S) == _re.findall(rx, OLD25[n], _re.S))
-    ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
+    ogs = sorted(f for f in os.listdir(os.path.join(here, '..', 'og')) if f not in T35_NEW_FILES)   # T-35: its new card left out
     check('T-25: every share card in og/ is byte for byte as at T-24', len(ogs) == 17 and all(
-        open(os.path.join(here, '..', 'og', f), 'rb').read() == t24_file('og/' + f) for f in ogs), str(len(ogs)))
+        un35_file('og/' + f, open(os.path.join(here, '..', 'og', f), 'rb').read()) == t24_file('og/' + f) for f in ogs), str(len(ogs)))
     check('T-25: every share card in _build/assets/og/ is byte for byte as at T-24', all(
-        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == t24_file('_build/assets/og/' + f) for f in ogs))
+        un35_file('_build/assets/og/' + f, open(os.path.join(here, 'assets', 'og', f), 'rb').read()) == t24_file('_build/assets/og/' + f) for f in ogs))
     check('T-25: no em dash on any changed page, and no new en dash',
           not any('—' in SRC25[n] for n in CHANGED25) and all(SRC25[n].count('–') == OLD25[n].count('–') for n in CHANGED25))
 
@@ -5237,7 +5273,7 @@ def s_t_30():
             T29_FILES[path] = r.stdout if r.returncode == 0 else None
         return T29_FILES[path]
     check('T-30: the T-29 files can be read from git for comparison', t29_file('studio.html') is not None and t29_file('local.html') is not None)
-    SRC30 = {n: un33(un34(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # T-33: its lines out (its block checks them)
+    SRC30 = {n: un33(un34(un35(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n), n) for n in ALL_HTML}   # T-33: its lines out (its block checks them)
     OLD30 = {n: t29_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT30 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
     S30, L30, W30 = SRC30['studio.html'], SRC30['local.html'], SRC30['work.html']
@@ -5887,7 +5923,7 @@ def _t33_checks(TB):
     # origin/main's root page byte for byte (the studio pages' build day and studio.json's hash aside, as stamp27()).
     import theme as _theme33
     for n in names:
-        new = un34(t32_read(outd, n), n)   # T-34: T-33's own page (the T-34 block checks un34())
+        new = un34(un35(t32_read(outd, n), n), n)   # T-34, T-35: T-33's own page (the T-34 block checks un34())
         u = un33(new, n)
         check(f'T-33: un33() takes T-33 out of {n}: through theme.py it is origin/main\'s root page byte for byte',
               stamp27(_theme33.theme_page(u, n)) == stamp27(t33_main(n).decode('utf-8').replace('\r\n', '\n')))
@@ -6177,7 +6213,7 @@ def _t33_checks(TB):
     q.close()
     check('T-33 R13: studio.html#birdsighted is the Birdsighted block', sid == ['gapp', 'Birdsighted'], str(sid))
     import theme as _theme33r
-    st33 = _theme33r.theme_page(un34(t32_read(outd, 'studio.html'), 'studio.html'), 'studio.html')   # T-34: the themed page as T-33 built it
+    st33 = _theme33r.theme_page(un34(un35(t32_read(outd, 'studio.html'), 'studio.html'), 'studio.html'), 'studio.html')   # T-34: the themed page as T-33 built it
     check('T-33 R13: the id is the only change to studio.html\'s Birdsighted block',
           st33.count('<div class="gapp" id="birdsighted">') == 1 and stamp27(st33).replace(' id="birdsighted"', '', 1)
           == stamp27(t33_main('studio.html').decode('utf-8').replace('\r\n', '\n')))
@@ -6363,7 +6399,7 @@ def _t34_checks(TB):
     check('T-34: every root page is the themed page (this build)', not t32_root_off(names), str(t32_root_off(names)))
     import theme as _theme34
     for n in names:
-        new = t32_read(outd, n)
+        new = un35(t32_read(outd, n), n)   # T-35: its changes out first (the T-35 block checks un35())
         u = un34(new, n)
         check(f'T-34: un34() takes T-34 out of {n}: through theme.py it is origin/main\'s root page byte for byte',
               stamp27(_theme34.theme_page(u, n)) == stamp27(t34_main(n).decode('utf-8').replace('\r\n', '\n')))
@@ -6569,6 +6605,412 @@ def _t34_checks(TB):
                 check(f'T-34: at {w}, {n}: axe-core {T32_AXE_VER}, color contrast included: 0 violations', not res, str(res)[:600])
                 q.screenshot(path=f'{SHOTS}/t34-{n[:-5]}-{w}.png', full_page=True)
             q.close()
+
+
+# ---------------- T-35 (Nov 21, 2026): the voice checker, a free tool
+# voicecheck.html (tools/voicecheck.py): paste words written with AI; the page marks the sentences that read as
+# machine-made, says why, and says what to put there instead, all in the browser. Listed with the other free tools.
+# Run on the themed root, as T-34. The un35() proof stands in for rerunning the older sections (Josef's Nov 20 ruling).
+T35_PAGES = ['captions.html', 'checkup.html', 'local.html', 'receipt.html', 'scaler.html', 'shotlist.html', 'studio.html', 'work.html']
+T35_TOOL_PAGES = ['voicecheck.html', 'receipt.html', 'shotlist.html', 'captions.html', 'scaler.html', 'checkup.html']
+T35_SAMPLE = ("Whether you're a small business or a growing nonprofit, we deliver seamless solutions tailored to your unique needs. "
+              "It's not just about marketing, it's about building real connections. Our team leverages cutting-edge tools to elevate "
+              "your brand. Here's the secret: consistency. We handle everything so you can focus on what matters most. We bake 60 "
+              "loaves before 6 every morning, and the rye sells out by noon. Ready to take your business to the next level?")
+# The sample's marks, sentence by sentence, as Josef approved them: (level, rule, the matched words; None = the whole sentence).
+T35_SAMPLE_MARKS = [
+    [(1, 'd', "Whether you're"), (1, 'c', 'seamless'), (2, 'guess', 'solutions'), (2, 'guess', 'unique needs'), (3, 'swap', None)],
+    [(1, 'b', "not just about marketing, it's")],
+    [(1, 'c', 'leverages'), (1, 'c', 'cutting-edge'), (1, 'c', 'elevate'), (3, 'swap', None)],
+    [(1, 'e', 'the secret:')],
+    [(2, 'guess', 'what matters'), (3, 'swap', None)],
+    [],
+    [(1, 'c', 'next level'), (3, 'swap', None)],
+]
+# THE WORDS, character for character.
+T35_W = {
+    'title': 'Voice checker',
+    'desc': 'Paste words written with AI and see which sentences give it away, and what to put there instead. Nothing you paste leaves the page.',
+    'h1': 'Does it sound like AI?',
+    'lede': "Paste words you wrote with AI. I'll mark the sentences that give it away and tell you what to put there instead. Nothing you paste leaves this page.",
+    'proof': 'I built these checks testing the words on my own site, line by line, against AI readers playing a baker and a nonprofit director.',
+    'label': 'Your words', 'check': 'Check it', 'sample': 'Try a sample',
+    'none': "Nothing jumped out. Read it out loud once anyway. If you wouldn't say it, cut it.",
+    'long': "That's a lot at once. Paste one page at a time, about 3,000 words.",
+    'empty': 'Paste some words first.',
+    'end': "This finds the marks. It can't make it sound like you. That takes your own words, and getting them out of you is the part I do.",
+    'fix': 'Want me to fix it?',
+    'rhythm': 'Most of your sentences are about the same length, which reads flat. Mix in a short one.',
+}
+T35_CARD = ['Free tool', 'Writing', 'Voice checker', 'Paste words written with AI and see which sentences give it away, and why. Nothing you paste leaves the page.', 'Check your words →']
+# One string per rule that hits it (the expected (level, rule, hit) among its first sentence's marks) and one that must not.
+T35_RULES = [
+    ('a', 'We open at 7 — the line starts at 6.', (1, 'a', '—'), 'We open at 7. The line starts at 6.'),
+    ('b', "It isn't a bakery, it's a home.", (1, 'b', "isn't a bakery, it's"), 'It is not open on Sundays.'),
+    ('c', 'We leverage local flour.', (1, 'c', 'leverage'), 'We use local flour.'),
+    ('d', 'Imagine a warm loaf at 6.', (1, 'd', 'Imagine '), 'A warm loaf waits at 6.'),
+    ('e', 'The result? Fresh bread daily.', (1, 'e', 'The result?'), 'The result was fresh bread.'),
+    ('level 2', 'We make quality bread.', (2, 'guess', 'quality'), 'We make rye bread.'),
+    ('level 3', 'We help our neighbors find the right gift for every season.', (3, 'swap', None), 'We bake rye bread for Petaluma families every single morning.'),
+    ('level 3, no claim', 'We help our neighbors find the right gift for every season.', (3, 'swap', None), 'Read it out loud once anyway before you post it today.'),
+    ('f', 'We sell rye, sourdough and brioche.', (4, 'f', 'We sell rye, sourdough and brioche'), 'We sell rye and sourdough.'),
+    ('g', 'Why rye? It keeps for a week.', (4, 'g', None), 'Why rye? Rye keeps for a week.'),
+    ('h', 'Fresh bread. Every day. No shortcuts.', (4, 'h', None), 'Fresh bread. Every day we bake 60 loaves before the doors open.'),
+]
+T35_LOAVES = 'We bake 60 loaves before 6 every morning, and the rye sells out by noon.'
+T35_EVEN = ' '.join(['We bake bread every day.'] * 8)
+T35_MIXED = ('Rye. We bake it before dawn. The oven runs hot by four, and the first loaves come out at six on the dot. '
+             'Then coffee. Most mornings the line reaches the door before we open, and the regulars wait. '
+             'Sourdough sells out first. Brioche lasts until noon, sometimes later on a slow Tuesday in winter.')
+T35_VC_JS = r"""(t) => window.voiceCheck(t)"""
+T35_STATE_JS = r"""() => { const v = e => e && !e.closest('[hidden]') && getComputedStyle(e).display !== 'none';
+  const res = document.getElementById('res'), sp = s => (s || '').replace(/[\s ]+/g, ' ').trim();
+  return {msg: sp(document.getElementById('msg').textContent), msgShown: v(document.getElementById('msg')) && !!sp(document.getElementById('msg').textContent),
+    res: v(res), head: sp(document.getElementById('res-h').textContent), note: v(document.getElementById('note')),
+    box: document.getElementById('words').value,
+    cards: [...document.querySelectorAll('#cards > li')].map(li => ({s: sp(li.querySelector('.s').textContent),
+      marks: [...li.querySelectorAll('mark')].map(m => [sp(m.textContent), getComputedStyle(m).fontWeight]),
+      why: [...li.querySelectorAll('.vmarks > li')].map(x => [...x.querySelectorAll('p')].map(p => sp(p.textContent)))})),
+    end: v(document.querySelector('.vend')) ? sp(document.querySelector('.vend').textContent) : null,
+    fix: v(document.querySelector('.fixit')) ? [sp(document.querySelector('.fixit').textContent), document.querySelector('.fixit').getAttribute('href')] : null}; }"""
+# Tap targets: every control in the page's own content (the "More free tools" row is a line of inline links, as on the
+# other tool pages), and the phone header's Menu button.
+T35_TAP_JS = r"""() => [...document.querySelectorAll('main a, main button, main textarea, .djm-btn')]
+  .filter(e => !e.closest('[hidden]') && getComputedStyle(e).display !== 'none' && e.getClientRects().length && !e.closest('p.noprint'))
+  .map(e => { const r = e.getBoundingClientRect(); return [e.id || e.className || e.tagName, (e.textContent || '').trim().slice(0, 30), Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10]; })"""
+T35_FIT_JS = r"""() => { const out = [];
+  for (const li of document.querySelectorAll('#cards > li')) { const c = li.getBoundingClientRect();
+    for (const e of li.querySelectorAll('*')) for (const r of e.getClientRects()) if (r.right > c.right + 0.5 || r.left < c.left - 0.5) out.push([e.tagName, (e.textContent || '').slice(0, 30), Math.round(r.left), Math.round(r.right), Math.round(c.left), Math.round(c.right)]); }
+  return out; }"""
+T35_MORE_JS = r"""() => { const p = [...document.querySelectorAll('p.noprint')].find(x => /More free tools:/.test(x.textContent));
+  return p ? [...p.querySelectorAll('a')].map(a => [a.getAttribute('href'), a.textContent.replace(/[\s ]+/g, ' ').trim()]) : null; }"""
+
+
+def t35_main(name):
+    return _sp.run(['git', 'show', f'{T35_MAIN}:{name}'], cwd=os.path.join(here, '..'), capture_output=True, check=True).stdout
+
+
+def t35_marks(r):
+    return [[(m['level'], m['rule'], m['hit']) for m in s['marks']] for s in r['sentences']]
+
+
+@section('T-35')
+def s_t_35():
+    port = free_port()
+    srv = _sp.Popen([sys.executable, '-m', 'http.server', str(port), '--bind', '127.0.0.1', '--directory', T32_DIR], cwd=here,
+                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+    TB = f'http://127.0.0.1:{port}/'
+    try:
+        for _i in range(100):
+            try:
+                urlopen(TB + 'index.html', timeout=2).read()
+                break
+            except OSError:
+                time.sleep(0.1)
+        _t35_checks(TB)
+    finally:
+        srv.kill()
+        srv.wait()
+
+
+def _t35_checks(TB):
+    MB = TB + '__m35/'
+    mains = {}
+
+    def serve_main(route):
+        path = route.request.url.split('/__m35/', 1)[1].split('?')[0].split('#')[0]
+        if path.endswith('.html'):
+            if path not in mains:
+                mains[path] = t35_main(path)
+            return route.fulfill(status=200, body=mains[path], content_type='text/html; charset=utf-8')
+        return route.continue_(url=TB + path)
+
+    def page35(w, h=900):
+        q = newpage(w, h)
+        q.route('**/__m35/**', serve_main)
+        return q
+
+    def load(q, url):
+        q.goto(url, wait_until='load')
+        q.evaluate('document.fonts.ready.then(() => 1)')
+        q.wait_for_timeout(150)
+
+    def settle_anim(q):
+        q.evaluate("Promise.all(document.getAnimations().map(a => a.finished.catch(() => null)))")
+        q.wait_for_timeout(100)
+
+    names = sorted(ALL_HTML)                 # origin/main's pages
+    NEW = names + ['voicecheck.html']
+    TH = {n: t32_read(T32_DIR, n) for n in NEW}
+    import theme as _theme35
+
+    # ---- The files: the root is this build, and un35() gives back origin/main exactly.
+    check('T-35: every root page is the themed page (this build), voicecheck.html included', not t32_root_off(NEW), str(t32_root_off(NEW)))
+    check('T-35: the root sitemap.xml is this build\'s', rb26('sitemap.xml') == open(os.path.join(T32_DIR, 'sitemap.xml'), 'rb').read().replace(b'\r\n', b'\n'))
+    for n in names:
+        new = t32_read(outd, n)
+        u = un35(new, n)
+        check(f'T-35: un35() takes T-35 out of {n}: through theme.py it is origin/main\'s root page byte for byte',
+              stamp27(_theme35.theme_page(u, n)) == stamp27(t35_main(n).decode('utf-8').replace('\r\n', '\n')))
+        check(f'T-35: un35() changes {n} exactly when T-35 changed it, and a second pass changes nothing',
+              (u != new) == (n in T35_PAGES) and un35(u, n) == u)
+    sm = t32_read(outd, 'sitemap.xml')
+    check('T-35: un35() takes T-35 out of sitemap.xml: it is origin/main\'s byte for byte',
+          un35(sm, 'sitemap.xml') == t35_main('sitemap.xml').decode('utf-8').replace('\r\n', '\n') and un35(sm, 'sitemap.xml') != sm)
+    check('T-35: the undo data names exactly the eight pages and sitemap.xml', sorted(T35_UNDO) == sorted(T35_PAGES + ['sitemap.xml']), str(sorted(T35_UNDO)))
+    check('T-35: voicecheck.html is new (origin/main has none)',
+          _sp.run(['git', 'cat-file', '-e', f'{T35_MAIN}:voicecheck.html'], cwd=os.path.join(here, '..'), capture_output=True).returncode != 0)
+    for n in NEW:
+        old = t35_main(n).decode('utf-8') if n != 'voicecheck.html' else ''
+        check(f'T-35: {n}: no em dash added', TH[n].count('—') <= old.count('—'))
+    vsrc = open(os.path.join(here, 'tools', 'voicecheck.py'), encoding='utf-8').read()
+    check('T-35: the generator is tools/voicecheck.py (not voice.py, which is a build pass), with the shared chrome',
+          'from chrome import write' in vsrc and os.path.exists(os.path.join(here, 'voice.py')) and 'write(sys.argv[1], "voicecheck.html"' in vsrc)
+    with _tmp.TemporaryDirectory() as td35:
+        r35 = _sp.run([sys.executable, 'voicecheck.py', td35], cwd=os.path.join(here, 'tools'), capture_output=True, text=True)
+        gen = open(os.path.join(td35, 'voicecheck.html'), 'rb').read() if r35.returncode == 0 else b''
+    check('T-35: _build/voicecheck.html is exactly what tools/voicecheck.py writes (README step 4b)',
+          gen and gen.replace(b'\r\n', b'\n') == open(os.path.join(here, 'voicecheck.html'), 'rb').read().replace(b'\r\n', b'\n'), r35.stderr[-300:])
+
+    # ---- The build log, the sitemap, the share card.
+    check('T-35: shipped.json\'s first line is the voice checker\'s', SHIPPED_J['entries'][0] == T35_LOG, str(SHIPPED_J['entries'][0]))
+    for d_ in (os.path.join(here, '..'), outd):
+        s_ = open(os.path.join(d_, 'sitemap.xml'), encoding='utf-8').read()
+        check(f'T-35: sitemap.xml ({os.path.basename(os.path.normpath(d_)) or "root"}) lists voicecheck.html once',
+              s_.count('<loc>https://dragomansjourney.com/voicecheck.html</loc>') == 1)
+    card = open(os.path.join(here, '..', 'og', 'voicecheck.png'), 'rb').read()
+    check('T-35: the share card og/voicecheck.png is 1200 by 630', card[:8] == b'\x89PNG\r\n\x1a\n' and _struct.unpack('>II', card[16:24]) == (1200, 630))
+    check('T-35: the root card is the one tools/og.py drew, and the one the build copied',
+          card == open(os.path.join(here, 'assets', 'og', 'voicecheck.png'), 'rb').read() == open(os.path.join(outd, 'og', 'voicecheck.png'), 'rb').read())
+    check('T-35: voicecheck.html names its card', TH['voicecheck.html'].count('<meta property="og:image" content="https://dragomansjourney.com/og/voicecheck.png">') == 1)
+    ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
+    changed = [f for f in ogs if f != 'voicecheck.png' and open(os.path.join(here, '..', 'og', f), 'rb').read() != t35_main('og/' + f)]
+    check('T-35: of the share cards, only index.png changed (T-34\'s "AI, made easy."); every other card is origin/main\'s byte for byte',
+          changed == ['index.png'] and len(ogs) == 18, str([changed, len(ogs)]))
+    check('T-35: _build/assets/og/ matches og/ at the root, card for card', all(
+        open(os.path.join(here, 'assets', 'og', f), 'rb').read() == open(os.path.join(here, '..', 'og', f), 'rb').read() for f in ogs))
+
+    # ---- The checker itself, fed strings without the page.
+    q = page35(390, 844)
+    load(q, TB + 'voicecheck.html')
+    R = q.evaluate(T35_VC_JS, T35_SAMPLE)
+    got = t35_marks(R)
+    check('T-35: the sample splits into 7 sentences', len(R['sentences']) == 7, str(len(R['sentences'])))
+    for i, want in enumerate(T35_SAMPLE_MARKS):
+        g_ = got[i] if i < len(got) else None
+        check(f'T-35: sample sentence {i + 1}: exactly the marks Josef approved {want}', g_ is not None and sorted(g_, key=str) == sorted(want, key=str), str(g_))
+        check(f'T-35: sample sentence {i + 1}: its marks are listed worst first', g_ is not None and [m[0] for m in g_] == sorted(m[0] for m in g_))
+    check('T-35: the sample has no rhythm note', R['rhythm'] is False)
+    for rid, hit_s, want, miss_s in T35_RULES:
+        h_ = t35_marks(q.evaluate(T35_VC_JS, hit_s))
+        check(f'T-35 rule {rid}: "{hit_s}" hits it {want}', want in h_[0], str(h_))
+        m_ = t35_marks(q.evaluate(T35_VC_JS, miss_s))
+        rule = want[1]
+        check(f'T-35 rule {rid}: "{miss_s}" does not', not any(m[1] == rule for s in m_ for m in s), str(m_))
+    lo = t35_marks(q.evaluate(T35_VC_JS, T35_LOAVES))
+    check('T-35: the loaves sentence hits nothing', lo == [[]], str(lo))
+    check('T-35: the rhythm note: 8 sentences of the same length read flat', q.evaluate(T35_VC_JS, T35_EVEN)['rhythm'] is True)
+    check('T-35: the rhythm note: mixed lengths do not', q.evaluate(T35_VC_JS, T35_MIXED)['rhythm'] is False)
+    check('T-35: the rhythm note needs 8 sentences of 3 words or more', q.evaluate(T35_VC_JS, ' '.join(['We bake bread every day.'] * 7))['rhythm'] is False)
+    check('T-35: a line break ends a sentence', len(q.evaluate(T35_VC_JS, 'We bake rye\nThe oven runs hot')['sentences']) == 2)
+    check('T-35: . ! ? end a sentence only before a space or the end (3.5 stays whole)',
+          [s['text'] for s in q.evaluate(T35_VC_JS, 'Rye is 3.5 dollars! Is it good? Yes.')['sentences']] == ['Rye is 3.5 dollars!', 'Is it good?', 'Yes.'])
+    # The page checks itself: its own words, line by line, give no mark.
+    # (Every line of THE WORDS on its own, the sample and the reasons aside; the rhythm note is a reason.)
+    for ln in [v_ for k, v_ in T35_W.items() if k != 'rhythm'] + ['6 of 7 sentences have a mark', '1 of 7 sentences has a mark', T35_CARD[3]]:
+        r_ = t35_marks(q.evaluate(T35_VC_JS, ln))
+        check(f'T-35: the page checks itself: "{ln[:50]}" has no mark', not any(r_), str(r_))
+    q.close()
+
+    # ---- The page: its words, the states, and nothing leaving it.
+    for w, h in ((320, 700), (390, 844), (1440, 900)):
+        q = page35(w, h)
+        q.add_init_script("""(() => { window.__st = 0; const S = Storage.prototype.setItem; Storage.prototype.setItem = function () { window.__st++; return S.apply(this, arguments); };
+          window.__nav = 0; const P = history.pushState, R = history.replaceState; history.pushState = function () { window.__nav++; return P.apply(this, arguments); };
+          history.replaceState = function () { window.__nav++; return R.apply(this, arguments); }; })()""")
+        reqs = []
+        q.on('request', lambda r_: reqs.append(r_.url))
+        load(q, TB + 'voicecheck.html')
+        start_url = q.url
+        reqs.clear()
+        if w == 390:
+            P = q.evaluate(r"""() => { const sp = s => (s || '').replace(/[\s ]+/g, ' ').trim();
+              return {title: document.title, ogt: document.querySelector('meta[property="og:title"]').content, desc: document.querySelector('meta[name="description"]').content,
+                ogd: document.querySelector('meta[property="og:description"]').content, h1: sp(document.querySelector('h1').textContent),
+                lede: sp(document.querySelector('header h1').parentElement.querySelector('p').textContent), proof: sp(document.querySelector('.proof').textContent),
+                label: sp(document.querySelector('label[for="words"]').textContent), check: sp(document.getElementById('check').textContent),
+                sample: sp(document.getElementById('sample').textContent), kick: !!document.querySelector('.kick'), band: !!document.getElementById('more-h'),
+                fn: typeof window.voiceCheck}; }""")
+            check('T-35: the title and og:title are "Voice checker" (with the site name, as every page)',
+                  P['title'] == T35_W['title'] + " · Dragoman's Journey" and P['ogt'] == T35_W['title'] + " · Dragoman's Journey", str([P['title'], P['ogt']]))
+            check('T-35: the meta and og descriptions are the approved words', P['desc'] == T35_W['desc'] == P['ogd'])
+            for k in ('h1', 'lede', 'proof', 'label', 'check', 'sample'):
+                check(f'T-35: the {k} reads the approved words', P[k] == T35_W[k], P[k])
+            check('T-35: no words beyond the approved ones: no kicker line and no closing call band', not P['kick'] and not P['band'])
+            check('T-35: window.voiceCheck is exposed for tests', P['fn'] == 'function')
+            S = q.evaluate(T35_STATE_JS)
+            check('T-35: on load, no result and no message', not S['res'] and not S['msgShown'] and S['box'] == '', str(S)[:300])
+        # Empty box.
+        q.click('#check')
+        S = q.evaluate(T35_STATE_JS)
+        check(f'T-35: at {w}, an empty box says "{T35_W["empty"]}"', S['msg'] == T35_W['empty'] and S['msgShown'] and not S['res'], str(S)[:300])
+        if w == 390:
+            q.screenshot(path=f'{SHOTS}/t35-voicecheck-empty-{w}.png', full_page=True)
+        # Too long: 3,001 words; 3,000 is checked.
+        q.fill('#words', ' '.join(['word'] * 3001))
+        q.click('#check')
+        S = q.evaluate(T35_STATE_JS)
+        check(f'T-35: at {w}, over 3,000 words says "{T35_W["long"]}"', S['msg'] == T35_W['long'] and S['msgShown'] and not S['res'], str(S)[:300])
+        sw = q.evaluate('[document.documentElement.scrollWidth, innerWidth]')
+        check(f'T-35: at {w}, voicecheck.html with the too-long message has no sideways scroll', sw[0] <= sw[1], str(sw))
+        q.screenshot(path=f'{SHOTS}/t35-voicecheck-long-{w}.png', full_page=True)
+        q.fill('#words', ' '.join(['word'] * 3000))
+        q.click('#check')
+        S = q.evaluate(T35_STATE_JS)
+        check(f'T-35: at {w}, exactly 3,000 words is checked', S['res'] and not S['msgShown'] and S['head'] == T35_W['none'], str(S)[:300])
+        # Nothing marked; one mark.
+        q.fill('#words', T35_LOAVES)
+        q.click('#check')
+        S = q.evaluate(T35_STATE_JS)
+        check(f'T-35: at {w}, nothing marked: the heading says "{T35_W["none"][:30]}...", no cards, the closing line and button show',
+              S['res'] and S['head'] == T35_W['none'] and not S['cards'] and S['end'] == T35_W['end'] and S['fix'] == [T35_W['fix'], 'call.html'], str(S)[:300])
+        q.fill('#words', 'We leverage local flour. Rye sells out by noon.')
+        q.click('#check')
+        S = q.evaluate(T35_STATE_JS)
+        check(f'T-35: at {w}, one mark: "1 of 2 sentences has a mark"', S['head'] == '1 of 2 sentences has a mark' and len(S['cards']) == 1, S['head'])
+        q.fill('#words', T35_EVEN)
+        q.click('#check')
+        S = q.evaluate(T35_STATE_JS)
+        check(f'T-35: at {w}, the rhythm note shows above the cards on 8 even sentences', S['note'], str(S)[:200])
+        q.fill('#words', T35_MIXED)
+        q.click('#check')
+        check(f'T-35: at {w}, and not on mixed ones', not q.evaluate(T35_STATE_JS)['note'])
+        # The sample.
+        q.click('#sample')
+        q.wait_for_timeout(100)
+        S = q.evaluate(T35_STATE_JS)
+        check(f'T-35: at {w}, "Try a sample" fills the box with the sample', S['box'] == T35_SAMPLE)
+        check(f'T-35: at {w}, and checks it at once: "6 of 7 sentences have a mark"', S['res'] and S['head'] == '6 of 7 sentences have a mark', S['head'])
+        order = [T35_SAMPLE.split('. ')[i][:20] for i in (0, 1, 2, 3)]
+        got_o = [c['s'][:20] for c in S['cards']]
+        check(f'T-35: at {w}, six cards, worst mark first, then by place: sentences 1, 2, 3, 4, 7, then 5',
+              got_o == order + ['Ready to take your b', 'We handle everything'], str(got_o))
+        c1 = S['cards'][0] if S['cards'] else {'marks': [], 'why': []}
+        check(f'T-35: at {w}, card 1 highlights "Whether you\'re", "seamless", "solutions", "unique needs" in bold',
+              [m[0] for m in c1['marks']] == ["Whether you're", 'seamless', 'solutions', 'unique needs'] and all(int(m[1]) >= 700 for m in c1['marks']), str(c1['marks']))
+        # Worst first: level 1 (c, then d: the rules run a to e), level 2 in the sentence's order, then level 3.
+        check(f'T-35: at {w}, card 1 lists five marks, worst first, each a WHY and a TRY line',
+              c1['why'] == [['"seamless" is one of the words AI reaches for.', 'Say what actually happens.'],
+                            ["\"Whether you're\" warms up instead of starting.", 'Start with the point.'],
+                            ['"solutions" makes the reader guess.', 'Name the real thing: which one, how many, or what it was last time.'],
+                            ['"unique needs" makes the reader guess.', 'Name the real thing: which one, how many, or what it was last time.'],
+                            ['Any business could paste this on their own site without changing a word.', 'Add one thing only you have: a number, a name or a place.']],
+              str(c1['why']))
+        c2 = S['cards'][1] if len(S['cards']) > 1 else {'why': []}
+        check(f'T-35: at {w}, card 2 says why and what instead for "It\'s not this, it\'s that"',
+              c2['why'] == [['"It\'s not this, it\'s that" is the most copied shape in AI writing.', 'Say the second half on its own.']], str(c2['why']))
+        check(f'T-35: at {w}, the closing line and "{T35_W["fix"]}" (to call.html) sit under the results',
+              S['end'] == T35_W['end'] and S['fix'] == [T35_W['fix'], 'call.html'])
+        fit = q.evaluate(T35_FIT_JS)
+        check(f'T-35: at {w}, nothing in a result card spills past its edges (highlights wrap inside)', not fit, str(fit)[:300])
+        sw = q.evaluate('[document.documentElement.scrollWidth, innerWidth]')
+        check(f'T-35: at {w}, voicecheck.html with the sample checked has no sideways scroll', sw[0] <= sw[1], str(sw))
+        taps = q.evaluate(T35_TAP_JS)
+        small = [t_ for t_ in taps if t_[3] < 48]
+        check(f'T-35: at {w}, every control is 48px tall or more (the box, both buttons, "Want me to fix it?", the Menu button)', not small and len(taps) >= 4, str(small or taps)[:300])
+        q.screenshot(path=f'{SHOTS}/t35-voicecheck-sample-{w}.png', full_page=True)
+        # Nothing leaves the page.
+        check(f'T-35: at {w}, no network request after load, through every state above', not reqs, str(reqs[:5]))
+        st = q.evaluate('[window.__st, localStorage.length, sessionStorage.length, window.__nav]')
+        check(f'T-35: at {w}, nothing written to localStorage or sessionStorage, and no history change', st == [0, 0, 0, 0], str(st))
+        check(f'T-35: at {w}, the text never goes into the address', q.url == start_url and '?' not in q.url and '#' not in q.url, q.url)
+        q.close()
+    js = TH['voicecheck.html'][TH['voicecheck.html'].index('// The rules'):]
+    bad = [x for x in ('fetch(', 'XMLHttpRequest', 'sendBeacon', 'WebSocket', 'Worker(', 'localStorage', 'sessionStorage', 'indexedDB',
+                       'location.hash', 'location.search', 'pushState', 'replaceState', 'document.cookie', '<form') if x in js]
+    check('T-35: the checker\'s script has no fetch, Worker, storage, cookie or address writes, and the page no form', not bad and '<form' not in TH['voicecheck.html'], str(bad))
+
+    # ---- Listed with the other free tools.
+    import chrome as _chrome35
+    check('T-35: tools/chrome.py TOOLS is in R16\'s order: checkup, voice checker, receipt, shot list, caption fitter',
+          [h for h, _n in _chrome35.TOOLS] == ['checkup.html', 'voicecheck.html', 'receipt.html', 'shotlist.html', 'captions.html'])
+    linked = [(h, n_) for h, n_ in _chrome35.linked_tools()]
+    for n in T35_TOOL_PAGES:
+        q = page35(1440)
+        load(q, TB + n)
+        more = q.evaluate(T35_MORE_JS)
+        q.close()
+        want = [[h, n_] for h, n_ in linked if h != n]
+        check(f'T-35: {n}: "More free tools" lists the others in TOOLS order, the voice checker included', more == want, str(more))
+    q = page35(390, 844)
+    load(q, TB + 'work.html')
+    W = q.evaluate(r"""() => { const sp = s => (s || '').replace(/[\s ]+/g, ' ').trim();
+      return [...document.querySelectorAll('article.card')].filter(a => a.dataset.k.split(' ').includes('free')).map(a =>
+        [...a.querySelectorAll('.tag')].map(t => sp(t.textContent)).concat([sp(a.querySelector('h2').textContent), sp(a.querySelector('p').textContent),
+          sp(a.querySelector('a.go').textContent), a.querySelector('a.go').getAttribute('href')])); }""")
+    check('T-35: work.html: the voice checker is first among the free tools, before the Busywork receipt, as written',
+          len(W) > 1 and W[0] == T35_CARD + ['voicecheck.html'] and W[1][2] == 'Busywork receipt', str(W[:2]))
+    q.screenshot(path=f'{SHOTS}/t35-work-390.png', full_page=True)
+    q.close()
+    q = page35(390, 844)
+    load(q, TB + 'local.html')
+    L = q.evaluate(r"""() => [...document.querySelectorAll('#tools article')].map(a => [a.querySelector('h3').textContent.trim(), a.querySelector('a').getAttribute('href'), a.querySelector('a').textContent.trim()])""")
+    check('T-35: local.html: the voice checker shows first in "Free tools for your pile", named and linked as on the work page',
+          L[:1] == [['Voice checker', 'voicecheck.html', 'Check your words →']] and [x[0] for x in L] == ['Voice checker', 'Busywork receipt', 'Reel shot list', 'Caption fitter'], str(L))
+    q.screenshot(path=f'{SHOTS}/t35-local-390.png', full_page=True)
+    q.close()
+
+    # ---- Every page's visible text is origin/main's, apart from the work card, the "More free tools" rows and the Studio log.
+    more_ins = ['Voice', 'checker', '·']
+    want_d = {'work.html': [('insert', [], ' '.join(T35_CARD).split())],
+              'local.html': [('insert', [], ['Voice', 'checker', 'Check', 'your', 'words', '→'])],
+              'studio.html': [('replace', ['11'], ['12']), ('insert', [], ('Nov 21 Free tools ' + T35_LOG['line']).split()), ('replace', ['11'], ['12'])]}
+    for n in ('receipt.html', 'shotlist.html', 'captions.html', 'scaler.html', 'checkup.html'):
+        want_d[n] = [('insert', [], more_ins)]
+    for n in names:
+        q = page35(1440)
+        load(q, MB + n)
+        a = q.evaluate(T32_DOM_JS)
+        load(q, TB + n)
+        t = q.evaluate(T32_DOM_JS)
+        q.close()
+        aw, tw_ = a['text'].split(), t['text'].split()   # words (T32_DOM_JS has already folded every run of spaces)
+        d_ = [(tag, aw[i1:i2], tw_[j1:j2]) for tag, i1, i2, j1, j2 in _difflib35.SequenceMatcher(None, aw, tw_, autojunk=False).get_opcodes() if tag != 'equal']
+        if n == 'work.html':   # the card's words whole at one place and nothing else (difflib may pair its "Free tool" with the next card's)
+            cw = ' '.join(T35_CARD).split()
+            at = [i for i in range(len(tw_)) if tw_[i:i + len(cw)] == cw]
+            if len(at) == 1 and tw_[:at[0]] + tw_[at[0] + len(cw):] == aw:
+                d_ = want_d[n]
+        check(f'T-35: {n}: its visible text is origin/main\'s, apart from the listed T-35 lines', d_ == want_d.get(n, []), str(d_)[:500])
+        check(f'T-35: {n}: title, description, images and structured data are origin/main\'s',
+              all(a[k] == t[k] for k in ('title', 'desc', 'imgs', 'ld')), str([k for k in ('title', 'desc', 'imgs', 'ld') if a[k] != t[k]]))
+
+    # ---- At 320, 390 and 1440: no sideways scroll on the changed pages; axe at 390 and 1440 (a 1:1 pair counted).
+    axe = t32_axe()
+    AXE = ('() => axe.run(document, {resultTypes: ["violations", "incomplete"]}).then(r => r.violations.map(v => [v.id, v.nodes.length, v.nodes.slice(0, 3).map(x => x.target.join(" "))])'
+           '.concat(r.incomplete.filter(v => v.id == "color-contrast").map(v => [v.id + " 1:1", v.nodes.filter(x => (x.any || []).some(c => c.data && c.data.messageKey == "equalRatio")).map(x => x.target.join(" "))]).filter(v => v[1].length)))')
+    for n in ['voicecheck.html'] + T35_PAGES:
+        for w, h in ((320, 700), (390, 844), (1440, 900)):
+            q = page35(w, h)
+            load(q, TB + n)
+            sw = q.evaluate('[document.documentElement.scrollWidth, innerWidth]')
+            check(f'T-35: at {w}, {n} has no sideways scroll', sw[0] <= sw[1], str(sw))
+            if w in (390, 1440):
+                states = [('', None)] + ([('sample', '#sample'), ('long', None)] if n == 'voicecheck.html' else [])
+                for label, sel in states:
+                    if label == 'long':
+                        q.fill('#words', ' '.join(['word'] * 3001))
+                        q.click('#check')
+                    elif sel:
+                        q.click(sel)
+                    settle_anim(q)
+                    q.add_script_tag(content=axe)
+                    res = q.evaluate(AXE)
+                    check(f'T-35: at {w}, {n}{" (" + label + ")" if label else ""}: axe-core {T32_AXE_VER}, color contrast included: 0 violations', not res, str(res)[:600])
+            q.close()
+
+
+import difflib as _difflib35
 
 
 # ================================================================ running the sections (T-31)

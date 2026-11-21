@@ -181,8 +181,12 @@ function djCopy(text,label){{
 # the recipe scaler is off the lists (it lives in the kids' app story on the work page, and
 # scaler.html stays as it is). This order is the "More free tools" row on every tool page and
 # the order of the tools on local.html, which groups the reel engine's pair as work.html does.
-TOOLS = (("receipt.html", "Busywork receipt"), ("shotlist.html", "Reel shot list"),
-         ("captions.html", "Caption fitter"), ("checkup.html", "Website checkup"))
+# T-35 (Nov 21, 2026, R17): the voice checker joins, linked from day one. The order is R16's:
+# the website checkup (still hidden while CHECKUP_URL is empty), the voice checker, the
+# Busywork receipt, then the reel engine's pair.
+TOOLS = (("checkup.html", "Website checkup"), ("voicecheck.html", "Voice checker"),
+         ("receipt.html", "Busywork receipt"), ("shotlist.html", "Reel shot list"),
+         ("captions.html", "Caption fitter"))
 
 
 # The website checkup is linked only once it is live (T-20 F2, Nov 15, 2026). The one
@@ -224,9 +228,11 @@ def more_tools(slug):
 
 
 # Under the tool: the line to the other tools and the dark panel. A page without
-# cta_h (the Studio page, T-08) gets neither.
-TAIL = """  <p class="noprint" style="margin:4px 0 -4px -{mt_pad}px;padding:4px 0 4px {mt_pad}px;overflow:hidden;font-size:15px;line-height:2;color:#5A635D">{more}</p>
-  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+# cta_h (the Studio page, T-08) gets neither. A page with more_line and no cta_h (the voice
+# checker, T-35, which ends on its own closing line) gets the line only.
+MORE_LINE = """  <p class="noprint" style="margin:4px 0 -4px -{mt_pad}px;padding:4px 0 4px {mt_pad}px;overflow:hidden;font-size:15px;line-height:2;color:#5A635D">{more}</p>
+"""
+TAIL = MORE_LINE + """  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:10px">
       <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">{cta_h}</h2>
       <p style="margin:0;font-size:18px;color:#C9D2CB">{cta_p}</p>
@@ -268,7 +274,8 @@ def page(**k):
     if k.get("more"):
         k["more"] = keep_dots(k["more"])
     k["mt_pad"] = MT_PAD
-    k["tail"] = TAIL.format(**k) if k.get("cta_h") else ""
+    k["tail"] = (TAIL.format(**k) if k.get("cta_h")
+                 else MORE_LINE.format(**k) if k.pop("more_line", False) else "")
     k["studio_cur"] = ' aria-current="page"' if k.get("slug") == "studio.html" else ""
     # The small line over the title; a page without one (the Studio, T-16) gets no empty span.
     k["kick"] = f'<span class="kick">{k["kicker"]}</span>\n      ' if k.get("kicker") else ""
