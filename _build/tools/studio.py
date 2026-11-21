@@ -425,9 +425,10 @@ def gallery(studio):
             out.append(app_intro(inside[app["product"]]))
         for grp in app["groups"]:
             cap = f'<p class="gcap">{t(grp["caption"])}</p>' if grp.get("caption") else ""
+            lab = "label now" if grp["label"] == "Now" else "label"   # T-34: Now in the accent
             name = f'{app["name"]}, {grp["label"].lower()}'
             out.append(f'\n      <div class="ggroup">'
-                       f'\n        <div class="ghead"><p class="label">{t(grp["label"])}</p>{cap}</div>'
+                       f'\n        <div class="ghead"><p class="{lab}">{t(grp["label"])}</p>{cap}</div>'
                        f'\n        <div class="grow" role="region" tabindex="0" aria-label="{a(name)}">')
             for n, it in enumerate(grp["items"], 1):
                 f = GALLERY_DIR / it["file"]
@@ -459,9 +460,10 @@ GALLERY_CSS = r"""
 .gapp{display:flex;flex-direction:column;gap:16px}
 .gapp h3{margin:0;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,3vw,40px);line-height:.95}
 .ggroup{display:flex;flex-direction:column;gap:10px;min-width:0}
-.ghead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
-.ghead .label{margin:0;color:#676D66}
-.ghead .gcap{margin:0;font-size:14px;color:#5A635D}
+.ghead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:6px 0 10px}
+.ghead .label{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:900;font-size:clamp(34px,3.6vw,48px);line-height:1;letter-spacing:-0.01em;color:#16201C;margin:0}
+.ghead .label.now{color:#A93F17}
+.ghead .gcap{margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.06em;color:#5A635D}
 .grow{--h:calc(197px * 1349 / 660 + 3px);display:flex;align-items:flex-start;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
 .grow figure{flex:none;margin:0;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start}
 .grow img{display:block;height:var(--h);width:auto;max-width:none;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}

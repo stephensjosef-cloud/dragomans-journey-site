@@ -18,8 +18,7 @@ OUT = Path(sys.argv[1])
 EDITS = [
     # ---------------- front door (index.html) ----------------
     ('>Choose your route<', '>Where are you coming from?<'),
-    ('Two routes, <em', 'AI, made <em'),
-    ('>one guide</em></h1>', '>easy</em></h1>'),
+    ('Two routes, <em style="color: #A93F17">one guide</em></h1>', 'AI, made <span class="pen" style="white-space: nowrap">easy.</span></h1>'),   # T-34: no italic, the pen underline
     ("A kids' cooking class and a bank's core systems need the same thing from AI: a guide who knows the ground and won't let anything reach your customers until a person has checked the proof. Pick your route. I'll take it from here.",
      "I'm Josef. I build AI tools that take real work off your plate, and I explain every one of them in plain English. Pick the one that sounds like you, and I'll take it from here."),
     ('STREET LEVEL · SONOMA COUNTY', 'SMALL BUSINESSES · SONOMA COUNTY'),
@@ -197,8 +196,8 @@ EDITS = [
     ('>§1<', '>01<'), ('>§2<', '>02<'), ('>§3<', '>03<'),
     ('>§4<', '>04<'),
     ('AI-assisted COBOL migration · with proof of behavioral equivalence', 'Moving off COBOL with AI · with proof nothing changed'),
-    ('The translation was faithful. <em', 'The code was translated correctly. <em'),
-    ('>The interest was off by a factor of one hundred.</em>', '>The interest came out 100 times too high.</em>'),
+    ('The translation was faithful. <span', 'The code was translated correctly. <span'),   # T-34: a span, not <em>
+    ('>The interest was off by a factor of one hundred.</span>', '>The interest came out 100 times too high.</span>'),   # T-34: a span, not <em>
     ("AI can translate COBOL in an afternoon now. It still can't tell you what a field means when the meaning was never written down. I build the harness that runs the original and the migrated system over the same files and compares every byte they write. Your auditors get the evidence before anything touches production.",
      "AI can translate COBOL in an afternoon now. What it can't do is tell you what a number means when nobody ever wrote it down. I build a tool that runs your old system and your new one on the same real data and flags every difference. You and your auditors see the proof before anything goes live."),
     ('Begin with the Survey · fixed fee', 'Start with the Survey · fixed fee'),

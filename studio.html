@@ -104,9 +104,10 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .gapp{display:flex;flex-direction:column;gap:16px}
 .gapp h3{margin:0;font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;font-size:clamp(30px,3vw,40px);line-height:.95}
 .ggroup{display:flex;flex-direction:column;gap:10px;min-width:0}
-.ghead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
-.ghead .label{margin:0;color:#4F5A63}
-.ghead .gcap{margin:0;font-size:14px;color:#4F5A63}
+.ghead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:6px 0 10px}
+.ghead .label{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:900;font-size:clamp(34px,3.6vw,48px);line-height:1;letter-spacing:-0.01em;color:#17212B;margin:0}
+.ghead .label.now{color:#A93F17}
+.ghead .gcap{margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.06em;color:#4F5A63}
 .grow{--h:calc(197px * 1349 / 660 + 3px);display:flex;align-items:flex-start;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
 .grow figure{flex:none;margin:0;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start}
 .grow img{display:block;height:var(--h);width:auto;max-width:none;border:1.5px solid #9BAA90;border-radius:2px;background:#EDF2E6}
@@ -226,7 +227,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
         </div>
       </div>
       <div class="ggroup">
-        <div class="ghead"><p class="label">Now</p><p class="gcap">November 2026</p></div>
+        <div class="ghead"><p class="label now">Now</p><p class="gcap">November 2026</p></div>
         <div class="grow" role="region" tabindex="0" aria-label="Deepcuts, now">
           <figure><img src="gallery/deepcuts-now-dig.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Today's Dig in the Deepcuts app: one game picked for you, with its fit score and why it was picked."></figure>
           <figure><img src="gallery/deepcuts-now-keeps.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Your Keeps: the games you saved, each with Started, Finished and Bounced buttons."></figure>
@@ -254,7 +255,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
         </div>
       </div>
       <div class="ggroup">
-        <div class="ghead"><p class="label">Now</p><p class="gcap">November 2026</p></div>
+        <div class="ghead"><p class="label now">Now</p><p class="gcap">November 2026</p></div>
         <div class="grow" role="region" tabindex="0" aria-label="Bird League, now">
           <figure><img src="gallery/birdleague-now-home.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="Bird League's home screen: a countdown to the Winter Big Day, the trophy case and recent sightings."></figure>
           <figure><img src="gallery/birdleague-now-log.jpg" width="660" height="1349" loading="lazy" decoding="async" alt="The Log screen: type a bird's name or identify it by sound or photo, then log it to your leagues or your life list."></figure>

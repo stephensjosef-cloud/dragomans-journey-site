@@ -361,11 +361,32 @@ def un33(s, name=None):
     return s
 
 
+# T-34 (Nov 20, 2026): the home opening, no italic switches and bigger Then and Now change index, 404, briefing, comp3,
+# mainframe and studio. un34(s, name) takes them back out of a page from out/: t34_undo.json holds each changed block of
+# lines in out/ beside origin/main's (61adbc7), each taken out wherever it stands (Studio's Now line stands twice). The
+# T-34 block proves it: each page of out/ through un34(), themed by theme.py, is origin/main's root page byte for byte. Every older
+# check that read a page through un33() now reads it through un33(un34()), and un30() calls un34() first. Idempotent.
+T34_H1, T34_H1_OLD = 'AI, made easy.', 'AI, made easy'
+T34_LINE = "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I know how to run them. Hand me the job that never gets done, and I'll take it from here."
+T34_LINE_OLD = "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here."
+T34_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 't34_undo.json'), encoding='utf-8'))
+
+
+def un34(s, name=None):
+    if name not in T34_UNDO:
+        return s
+    if '\r\n' in s:
+        return un34(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    for new, old in T34_UNDO[name]:
+        s = s.replace(new, old)
+    return s
+
+
 def un30(s, name=None):
     """studio.html or local.html as T-29 built it: the six paragraphs back, T-30's CSS rule out. Idempotent.
-    T-33: any page goes through un33() first."""
+    T-33: any page goes through un33() first. T-34: and through un34() before that."""
     import re as _r
-    s = un33(s, name)
+    s = un33(un34(s, name), name)
     if name not in (None, 'studio.html', 'local.html'):
         return s
     if '\r\n' in s:
@@ -534,7 +555,7 @@ def serve33(route):
     path = route.request.url.split('/__un33/', 1)[1].split('?')[0].split('#')[0]
     body = urlopen(BASE + path).read()
     if path.endswith('.html'):
-        body = un33(body.decode('utf-8').replace('\r\n', '\n'), path).encode('utf-8')
+        body = un33(un34(body.decode('utf-8').replace('\r\n', '\n'), path), path).encode('utf-8')   # T-34: its changes out too
     route.fulfill(status=200, body=body, content_type='text/html; charset=utf-8' if path.endswith('.html') else
                   'image/svg+xml' if path.endswith('.svg') else 'image/jpeg' if path.endswith('.jpg') else 'application/octet-stream')
 
@@ -1828,7 +1849,7 @@ def s_intent_pass_2():
 def s_t_17():
     src = _html.unescape(urlopen(BASE + 'index.html').read().decode('utf-8'))
     V_NEW = {
-        'V1': "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here.",
+        'V1': T34_LINE,   # T-34 (Nov 20, 2026): Josef reworded it
         'V2': T33_R2,   # T-19 W2; T-33 R2
         'V3 bold': "Nothing goes out until a person has looked at it.",
         'V3 line': "First me, then you.",
@@ -1927,7 +1948,7 @@ def s_t_18():
             check(f'T-18: {n} keeps its {rx[1:12]}... as at T-17', _re.findall(rx, new_src[n], _re.S) == _re.findall(rx, old_src[n], _re.S))
     for n in TOOLS6[:5]:
         for rx in (r'<p class="noprint"[^>]*>More free tools:.*?</p>', r'<section aria-labelledby="more-h".*?</section>'):
-            a, b_ = _re.findall(rx, un23(un33(new_src[n], n + '.html'), n + '.html'), _re.S), _re.findall(rx, old_src[n], _re.S)   # T-23 L4: the line's new markup out; T-33: R20's order out
+            a, b_ = _re.findall(rx, un23(un33(un34(new_src[n], n + '.html'), n + '.html'), n + '.html'), _re.S), _re.findall(rx, old_src[n], _re.S)   # T-23 L4: the line's new markup out; T-33: R20's order out
             if n == 'receipt' and 'more-h' in rx:   # T-19 W21 changed the panel's line; the rest stays as at T-17
                 b_ = [x.replace('Day 1 of a Blueprint is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the build price.',
                                 'The first step is me watching how the work actually gets done. Two weeks, $1,500, and it comes off the price if you go ahead.') for x in b_]
@@ -2608,7 +2629,7 @@ def s_t_20():
     sm = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
     check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
     old_ck = t19_file('checkup.html').decode('utf-8').replace('\r\n', '\n')
-    new_ck = un21(un23(un33(SRC20['checkup.html'], 'checkup.html'), 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out; T-33: R20's row order out
+    new_ck = un21(un23(un33(un34(SRC20['checkup.html'], 'checkup.html'), 'checkup.html'), 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out; T-33: R20's row order out
     check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck,
           next((f'...{old_ck[max(0, i - 80):i + 80]}... | ...{new_ck[max(0, i - 80):i + 80]}...' for i in range(min(len(old_ck), len(new_ck))) if old_ck[i] != new_ck[i]), f'{len(old_ck)} vs {len(new_ck)}'))   # T-33: the first difference, when there is one
     check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
@@ -2961,7 +2982,7 @@ def s_t_21():
             out_.append(fn(q))
         return out_
 
-    SRC21 = {n: un26(un33(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # git holds LF; T-26: the gallery out (its block checks it); T-33: its lines out
+    SRC21 = {n: un26(un33(un34(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n), n) for n in ALL_HTML}   # git holds LF; T-26: the gallery out (its block checks it); T-33: its lines out
     NW = '<span style="white-space: nowrap">'
 
     # Every word as it was: each page's text content (after its scripts run), with the new
@@ -4001,7 +4022,8 @@ def s_t_24():
     rd = lambda f: open(os.path.join(here, f), encoding='utf-8').read()
     v2 = rd('voice2.py')
     check('T-24: voice2.py writes A1 to A5, each with its ID', all(f"ref='{a}')" in v2 for a in ('A1', 'A2', 'A3', 'A4', 'A5')))
-    check('T-24: the Mainframe canvas is as at T-23', open(os.path.join(here, 'canvas', 'Mainframe.dc.html'), 'rb').read().replace(b'\r\n', b'\n')
+    check('T-24: the Mainframe canvas is as at T-23 (T-34: its <em> to <span> lines out, through un34())',
+          un34(open(os.path.join(here, 'canvas', 'Mainframe.dc.html'), encoding='utf-8', newline='').read().replace('\r\n', '\n'), 'canvas/Mainframe.dc.html').encode('utf-8')
           == t23_file('_build/canvas/Mainframe.dc.html').replace(b'\r\n', b'\n'))
     c3 = rd('comp3.html')
     check('T-24: _build/comp3.html carries A6 and A7 with their IDs, and A6 and A7 word for word',
@@ -5215,7 +5237,7 @@ def s_t_30():
             T29_FILES[path] = r.stdout if r.returncode == 0 else None
         return T29_FILES[path]
     check('T-30: the T-29 files can be read from git for comparison', t29_file('studio.html') is not None and t29_file('local.html') is not None)
-    SRC30 = {n: un33(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n) for n in ALL_HTML}   # T-33: its lines out (its block checks them)
+    SRC30 = {n: un33(un34(urlopen(BASE + n).read().decode('utf-8').replace('\r\n', '\n'), n), n) for n in ALL_HTML}   # T-33: its lines out (its block checks them)
     OLD30 = {n: t29_file(n).decode('utf-8').replace('\r\n', '\n') for n in ALL_HTML}
     ROOT30 = {n: open(os.path.join(here, '..', n), encoding='utf-8').read().replace('\r\n', '\n') for n in ALL_HTML}
     S30, L30, W30 = SRC30['studio.html'], SRC30['local.html'], SRC30['work.html']
@@ -5865,7 +5887,7 @@ def _t33_checks(TB):
     # origin/main's root page byte for byte (the studio pages' build day and studio.json's hash aside, as stamp27()).
     import theme as _theme33
     for n in names:
-        new = t32_read(outd, n)
+        new = un34(t32_read(outd, n), n)   # T-34: T-33's own page (the T-34 block checks un34())
         u = un33(new, n)
         check(f'T-33: un33() takes T-33 out of {n}: through theme.py it is origin/main\'s root page byte for byte',
               stamp27(_theme33.theme_page(u, n)) == stamp27(t33_main(n).decode('utf-8').replace('\r\n', '\n')))
@@ -5892,7 +5914,7 @@ def _t33_checks(TB):
         t = q.evaluate(T32_DOM_JS)
         q.close()
         D[n] = (a, t)
-    swaps = {'index.html': [(T33_R2_OLD, T33_R2)],
+    swaps = {'index.html': [(T33_R2_OLD, T33_R2), (T34_H1_OLD + ' ' + T34_LINE_OLD, T34_H1 + ' ' + T34_LINE)],   # T-34: the home opening
              'local.html': [(T33_R3_OLD, T33_R3), (T33_R4_OLD, T33_R4), (' '.join(T33_R5_OLD), ' '.join(T33_R5)),
                             (T33_R6_OLD[0], T33_R6[0]), (T33_R6_OLD[1], T33_R6[1]), (T33_R7_OLD, T33_R7),
                             *zip(T33_R8_OLD, T33_R8),
@@ -6154,8 +6176,10 @@ def _t33_checks(TB):
     sid = q.evaluate('() => { const e = document.getElementById("birdsighted"); return e ? [e.className, e.querySelector("h3").textContent.trim()] : null }')
     q.close()
     check('T-33 R13: studio.html#birdsighted is the Birdsighted block', sid == ['gapp', 'Birdsighted'], str(sid))
+    import theme as _theme33r
+    st33 = _theme33r.theme_page(un34(t32_read(outd, 'studio.html'), 'studio.html'), 'studio.html')   # T-34: the themed page as T-33 built it
     check('T-33 R13: the id is the only change to studio.html\'s Birdsighted block',
-          TH['studio.html'].count('<div class="gapp" id="birdsighted">') == 1 and stamp27(TH['studio.html']).replace(' id="birdsighted"', '', 1)
+          st33.count('<div class="gapp" id="birdsighted">') == 1 and stamp27(st33).replace(' id="birdsighted"', '', 1)
           == stamp27(t33_main('studio.html').decode('utf-8').replace('\r\n', '\n')))
 
     # ---- R20, R21: each tool page's "More free tools:" row.
@@ -6184,6 +6208,322 @@ def _t33_checks(TB):
                                  '.concat(r.incomplete.filter(v => v.id == "color-contrast").map(v => [v.id + " 1:1", v.nodes.filter(x => (x.any || []).some(c => c.data && c.data.messageKey == "equalRatio")).map(x => x.target.join(" "))]).filter(v => v[1].length)))')
                 check(f'T-33: at {w}, {n}: axe-core {T32_AXE_VER}, color contrast included: 0 violations', not res, str(res)[:600])
             q.screenshot(path=f'{SHOTS}/t33-{n[:-5]}-{w}.png', full_page=True)
+            q.close()
+
+
+# ---------------- T-34 (Nov 20, 2026): the home opening, no italic switches, bigger Then and Now
+# Josef picked direction A: the home h1 in Barlow Semi Condensed 900 with the pen underline under "easy.", the line under
+# it reworded; every headline that switched to italic partway through keeps its marked words upright in their color, the
+# pen underline under three words or fewer; Then and Now on Studio as section-size labels. Run on the themed root.
+T34_MAIN = '61adbc7'   # origin/main when T-34 was cut (T-33 DONE)
+T34_PAGES = ['index.html', '404.html', 'briefing.html', 'comp3.html', 'mainframe.html', 'studio.html']
+T34_BLUE = 'rgb(28, 95, 168)'
+# (page, the marked words, the color they keep: None = the color they had on origin/main, the pen's stroke or None)
+T34_MARKS = [
+    ('index.html', 'easy.', T32_INK, 'E8592B'),          # item 1: no color change on the word, the underline is the mark
+    ('index.html', '(n.)', None, 'F07A4E'),               # on the dark band
+    ('index.html', 'does what the old one did.', None, None),
+    ('404.html', "doesn't go anywhere", None, 'E8592B'),
+    ('briefing.html', 'system', None, '1C5FA8'),
+    ('briefing.html', "I'll take it from here.", None, None),
+    ('comp3.html', 'decoder', None, '1C5FA8'),
+    ('comp3.html', 'It never tells you what the number means.', None, None),
+    ('mainframe.html', 'The interest came out 100 times too high.', None, None),
+    ('mainframe.html', 'Only the real data your business stores can tell you which one is right.', None, None),
+    ('mainframe.html', 'The real data settles it.', None, None),
+    ('mainframe.html', "and see what I'd look at first", None, None),
+]
+T34_PEN = ("background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' "
+           "preserveAspectRatio='none'%3E%3Cpath d='M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11' fill='none' stroke='%23{}' "
+           "stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-size:100% 0.2em;"
+           "background-position:0 100%;padding-bottom:0.12em;box-decoration-break:clone;-webkit-box-decoration-break:clone")
+
+# A marked phrase: the element whose whole text it is, inside a headline line (its block holds more words).
+T34_MARK_JS = r"""(t) => { const sp = s => (s || '').replace(/[\s\u00a0]+/g, ' ').trim(), cs = e => getComputedStyle(e);
+  const els = [...document.querySelectorAll('body span, body em, body i')].filter(e => sp(e.textContent) === t && sp(e.parentElement.textContent) !== t);
+  return els.map(e => { const c = cs(e), pc = cs(e.parentElement);
+    return {tag: e.tagName, cls: e.className, style: c.fontStyle, fam: c.fontFamily, wt: c.fontWeight, size: c.fontSize, color: c.color, ws: c.whiteSpace,
+            pfam: pc.fontFamily, pwt: pc.fontWeight, psize: pc.fontSize, pstyle: pc.fontStyle, pcolor: pc.color,
+            bg: c.backgroundImage, tap: !!e.closest('a,button,label,input,select,textarea,summary'), pe: c.pointerEvents,
+            aria: [...e.attributes].map(a => a.name).filter(n => n.startsWith('aria-') || n === 'role')}; }); }"""
+# The italic sweep: every h1 to h3, and every line set at 28px or more that holds words of its own.
+T34_ITALIC_JS = r"""() => { const cs = e => getComputedStyle(e), sp = s => (s || '').replace(/\s+/g, ' ').trim(), bad = [];
+  const own = e => [...e.childNodes].some(n => n.nodeType === 3 && n.data.trim());
+  const heads = new Set([...document.querySelectorAll('h1,h2,h3')]);
+  for (const e of document.querySelectorAll('body *')) if (!e.closest('script,style,svg') && own(e) && parseFloat(cs(e).fontSize) >= 28) heads.add(e);
+  for (const h of heads) {
+    const st = cs(h).fontStyle, tw = document.createTreeWalker(h, NodeFilter.SHOW_TEXT); let n, sw = [];
+    while ((n = tw.nextNode())) if (n.data.trim() && cs(n.parentElement).fontStyle !== st) sw.push(sp(n.data));
+    const tags = h.querySelectorAll('em,i').length;
+    if (tags || sw.length || (/^H[123]$/.test(h.tagName) && st !== 'normal')) bad.push([h.tagName, sp(h.textContent).slice(0, 60), tags, st, sw]); }
+  return bad; }"""
+T34_PEN_JS = r"""() => { const ctx = document.createElement('canvas').getContext('2d');
+  const blockOf = el => { let e = el.parentElement; while (e && getComputedStyle(e).display === 'inline') e = e.parentElement; return e; };
+  const glyphs = root => { const out = []; if (!root) return out;
+    const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let t = tw.nextNode(); t; t = tw.nextNode()) { const cs = getComputedStyle(t.parentElement);
+      ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      for (let i = 0; i < t.length; i++) { if (/\s/.test(t.data[i])) continue;
+        const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const rc = r.getBoundingClientRect(); if (!rc.width) continue;
+        const m = ctx.measureText(t.data[i]), base = rc.top + m.fontBoundingBoxAscent + (rc.height - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+        out.push({ch: t.data[i], l: rc.left, r: rc.right, top: base - m.actualBoundingBoxAscent, bot: base + m.actualBoundingBoxDescent}); } }
+    return out; };
+  return [...document.querySelectorAll('.pen')].map(el => { const fs = parseFloat(getComputedStyle(el).fontSize), blk = blockOf(el);
+    const near = [...glyphs(blk), ...glyphs(blk.previousElementSibling), ...glyphs(blk.nextElementSibling)], hits = [];
+    const frags = [...el.getClientRects()];
+    for (const f of frags) { const b0 = f.bottom - 0.2 * fs, b1 = f.bottom;
+      for (const g of near) { if (g.r <= f.left || g.l >= f.right) continue;
+        if (Math.abs((g.top + g.bot) / 2 - (f.top + f.bottom) / 2) < fs * 0.5) continue;   // a glyph on the pen's own line
+        if (g.bot > b0 && g.top < b1) hits.push(`"${g.ch}" ink ${Math.round(g.top)}-${Math.round(g.bot)} vs line ${Math.round(b0)}-${Math.round(b1)}`); } }
+    return [el.textContent, frags.length, hits.slice(0, 4)]; }); }"""
+T34_GAL_JS = r"""() => [...document.querySelectorAll('.ghead')].map(g => { const l = g.querySelector('.label'), c = g.querySelector('.gcap'), cs = getComputedStyle(l);
+  let b = l, bg = 'rgba(0, 0, 0, 0)'; while (b && (bg = getComputedStyle(b).backgroundColor) === 'rgba(0, 0, 0, 0)') b = b.parentElement;
+  const cc = c && getComputedStyle(c);
+  return {t: l.textContent, cls: l.className, fam: cs.fontFamily, wt: cs.fontWeight, size: parseFloat(cs.fontSize), color: cs.color, bg,
+          cap: c && [c.textContent, cc.fontFamily, cc.fontSize, cc.color]}; })"""
+
+
+def t34_lum(c):
+    v = [float(x) / 255 for x in _re.findall(r'[\d.]+', c)[:3]]
+    v = [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in v]
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]
+
+
+def t34_ratio(a, b_):
+    la, lb = sorted((t34_lum(a), t34_lum(b_)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def t34_main(name):
+    return _sp.run(['git', 'show', f'{T34_MAIN}:{name}'], cwd=os.path.join(here, '..'), capture_output=True, check=True).stdout
+
+
+@section('T-34')
+def s_t_34():
+    port = free_port()
+    srv = _sp.Popen([sys.executable, '-m', 'http.server', str(port), '--bind', '127.0.0.1', '--directory', T32_DIR], cwd=here,
+                    stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+    TB = f'http://127.0.0.1:{port}/'
+    try:
+        for _i in range(100):
+            try:
+                urlopen(TB + 'index.html', timeout=2).read()
+                break
+            except OSError:
+                time.sleep(0.1)
+        _t34_checks(TB)
+    finally:
+        srv.kill()
+        srv.wait()
+
+
+def _t34_checks(TB):
+    MB = TB + '__m34/'
+    mains = {}
+
+    def serve_main(route):
+        path = route.request.url.split('/__m34/', 1)[1].split('?')[0].split('#')[0]
+        if path.endswith('.html'):
+            if path not in mains:
+                mains[path] = t34_main(path)
+            return route.fulfill(status=200, body=mains[path], content_type='text/html; charset=utf-8')
+        return route.continue_(url=TB + path)
+
+    def page34(w, h=900):
+        q = newpage(w, h)
+        q.route('**/__m34/**', serve_main)
+        q.route('**/dj-intake.stephens-josef.workers.dev/**', mock_ok)
+        return q
+
+    def load(q, url):
+        q.goto(url, wait_until='load')
+        q.evaluate('document.fonts.ready.then(() => 1)')
+        q.wait_for_timeout(150)
+
+    names = sorted(ALL_HTML)
+    TH = {n: t32_read(T32_DIR, n) for n in names}
+
+    # ---- The files: the root is this build, and un34() gives back origin/main exactly.
+    check('T-34: every root page is the themed page (this build)', not t32_root_off(names), str(t32_root_off(names)))
+    import theme as _theme34
+    for n in names:
+        new = t32_read(outd, n)
+        u = un34(new, n)
+        check(f'T-34: un34() takes T-34 out of {n}: through theme.py it is origin/main\'s root page byte for byte',
+              stamp27(_theme34.theme_page(u, n)) == stamp27(t34_main(n).decode('utf-8').replace('\r\n', '\n')))
+        check(f'T-34: un34() changes {n} exactly when T-34 changed it, and a second pass changes nothing',
+              (u != new) == (n in T34_PAGES) and un34(u, n) == u)
+    check('T-34: T-34 changes exactly the six pages (and, in the sources un34() reads, the Mainframe canvas)',
+          sorted(T34_UNDO) == sorted(T34_PAGES + ['canvas/Mainframe.dc.html']), str(sorted(T34_UNDO)))
+    cv = open(os.path.join(here, 'canvas', 'Mainframe.dc.html'), encoding='utf-8', newline='').read().replace('\r\n', '\n')
+    check('T-34: un34() gives back origin/main\'s Mainframe canvas byte for byte',
+          un34(cv, 'canvas/Mainframe.dc.html') == t34_main('_build/canvas/Mainframe.dc.html').decode('utf-8').replace('\r\n', '\n'))
+    for n in names:
+        old = t34_main(n).decode('utf-8')
+        check(f'T-34: {n}: no em dash added', TH[n].count('—') <= old.count('—'), f'{old.count(chr(0x2014))} -> {TH[n].count(chr(0x2014))}')
+    check('T-34: no em dash in the two new lines', '—' not in T34_H1 + T34_LINE)
+    # The pen underline: one definition, the item's, in the stroke for each side and band.
+    for n in names:
+        has = 'class="pen' in TH[n]
+        mf = n in T32_MF
+        want = [T34_PEN.format('1C5FA8' if mf else 'E8592B')]
+        if 'pen-ink' in TH[n]:
+            want.append("stroke='%23" + ('8FB8E8' if mf else 'F07A4E') + "'")
+        check(f'T-34: {n}: the pen underline\'s definition is on the page exactly when the page uses it, as the item writes it',
+              (all(x in TH[n] for x in want) if has else 'M3 13 C 60 6' not in TH[n]), str(has))
+    check('T-34: the pen underline is in DESIGN.md\'s components, beside the ring and the route',
+          '- **The pen underline:**' in open(os.path.join(here, 'DESIGN.md'), encoding='utf-8').read())
+    for n in names:
+        heads = _re.findall(r'<(h[1-3])\b[^>]*>(.*?)</\1>', TH[n], _re.S)
+        check(f'T-34: {n}: no <em> or <i> inside an h1 to h3 (source)', not [h for h in heads if _re.search(r'<(em|i)\b', h[1])])
+
+    # ---- Every page's visible text, title, description, links and images: origin/main's with only the two lines changed.
+    D = {}
+    for n in names:
+        q = page34(1440)
+        load(q, MB + n)
+        a = q.evaluate(T32_DOM_JS)
+        load(q, TB + n)
+        t = q.evaluate(T32_DOM_JS)
+        italic = q.evaluate(T34_ITALIC_JS)
+        q.close()
+        D[n] = (a, t)
+        want = t33_ws(a['text'])
+        if n == 'index.html':
+            o, nw = T34_H1_OLD + ' ' + T34_LINE_OLD, T34_H1 + ' ' + T34_LINE
+            check('T-34: index.html: origin/main reads the old opening exactly once', want.count(t33_ws(o)) == 1, str(want.count(t33_ws(o))))
+            want = want.replace(t33_ws(o), t33_ws(nw))
+        got = t33_ws(t['text'])
+        check(f'T-34: {n}: its visible text is origin/main\'s with only the two listed lines changed', got == want,
+              next((f'...{want[max(0, i - 60):i + 60]}... | ...{got[max(0, i - 60):i + 60]}...' for i in range(min(len(want), len(got))) if want[i] != got[i]), f'{len(want)} vs {len(got)}'))
+        check(f'T-34: {n}: title, description, links, images and structured data are origin/main\'s',
+              all(a[k] == t[k] for k in ('title', 'desc', 'links', 'imgs', 'ld')), str([k for k in ('title', 'desc', 'links', 'imgs', 'ld') if a[k] != t[k]]))
+        check(f'T-34: {n}: no h1 to h3 or headline line holds <em> or <i> or switches to italic', not italic, str(italic)[:400])
+
+    # ---- Item 1: the home opening.
+    for w in (320, 390, 1440):
+        q = page34(w)
+        load(q, TB + 'index.html')
+        H = q.evaluate(r"""() => { const h = document.querySelector('main h1'), p = h.nextElementSibling, c = getComputedStyle(h), sp = s => s.replace(/[\s\u00a0]+/g, ' ').trim();
+          const pen = h.querySelector('.pen'), pc = pen && getComputedStyle(pen), pp = getComputedStyle(p);
+          return {n: document.querySelectorAll('h1').length, text: sp(h.textContent), fam: c.fontFamily, wt: c.fontWeight, size: c.fontSize, lh: c.lineHeight, ls: c.letterSpacing,
+                  color: c.color, style: c.fontStyle, mw: c.maxWidth, ta: c.textAlign, wrap: c.textWrapStyle || c.textWrap, ch: (() => { const s = document.createElement('span');
+                  s.style.cssText = 'position:absolute;visibility:hidden;font:inherit;letter-spacing:inherit'; s.textContent = '0'; h.appendChild(s); const x = s.getBoundingClientRect().width; s.remove(); return x; })(),
+                  width: h.getBoundingClientRect().width, center: [h.getBoundingClientRect().left + h.getBoundingClientRect().width / 2, innerWidth / 2],
+                  pen: pen && [sp(pen.textContent), pc.whiteSpace, pc.color, pc.fontStyle, pc.backgroundImage],
+                  ptag: p.tagName, ptext: sp(p.textContent), pstyle: [pp.fontSize, pp.color, pp.maxWidth, pp.margin]}; }""")
+        q.close()
+        size = min(120, max(56, w * 0.08))
+        check(f'T-34 item 1: at {w}, the home h1 reads "{T34_H1}"', H['n'] == 1 and H['text'] == T34_H1, H['text'])
+        check(f'T-34 item 1: at {w}, the h1 is Barlow Semi Condensed 900, upright, #17212B',
+              H['fam'].startswith('"Barlow Semi Condensed", Impact') and H['wt'] == '900' and H['style'] == 'normal' and H['color'] == T32_INK, str(H)[:300])
+        check(f'T-34 item 1: at {w}, the h1 is {size:g}px (clamp(56px, 8vw, 120px)), line-height 0.9, letter-spacing -0.01em, balanced, centered',
+              abs(float(H['size'][:-2]) - size) < 0.05 and abs(float(H['lh'][:-2]) - 0.9 * size) < 0.1 and abs(float(H['ls'][:-2]) + 0.01 * size) < 0.02
+              and 'balance' in (H['wrap'] or '') and H['ta'] == 'center' and abs(H['center'][0] - H['center'][1]) < 1, str([H['size'], H['lh'], H['ls'], H['wrap'], H['ta'], H['center']]))
+        check(f'T-34 item 1: at {w}, the h1 is at most 16ch wide', H['mw'] != 'none' and H['width'] <= 16 * H['ch'] + 0.5, str([H['mw'], H['width'], H['ch']]))
+        check(f'T-34 item 1: at {w}, "easy." carries the orange pen underline, keeps together, upright, in the h1\'s ink',
+              H['pen'] and H['pen'][0] == 'easy.' and H['pen'][1] == 'nowrap' and H['pen'][2] == T32_INK and H['pen'][3] == 'normal'
+              and '%23E8592B' in H['pen'][4], str(H['pen'])[:200])
+        check(f'T-34 item 1: at {w}, the line under it reads Josef\'s new words', H['ptag'] == 'P' and H['ptext'] == T34_LINE, H['ptext'])
+    q = page34(1440)
+    load(q, MB + 'index.html')
+    oldp = q.evaluate("(() => { const p = document.querySelector('main h1').nextElementSibling, c = getComputedStyle(p); return [c.fontSize, c.color, c.maxWidth, c.margin]; })()")
+    q.close()
+    check('T-34 item 1: the line under the h1 keeps its paragraph style (at 1440)', oldp == H['pstyle'], str([oldp, H['pstyle']]))
+    check('T-34 item 1: the old line is gone from every page', not [n for n in names if T34_LINE_OLD in TH[n] or T34_LINE_OLD.replace("'", '&#39;') in TH[n]])
+
+    # ---- Item 2: each marked phrase upright, in its font, weight and size, keeping its color; the pen exactly where it belongs.
+    pens = {}
+    for n in names:
+        q = page34(1440)
+        load(q, TB + n)
+        pens[n] = q.evaluate("[...document.querySelectorAll('.pen')].map(e => e.textContent)")
+        q.close()
+    want_pens = {n: [m[1] for m in T34_MARKS if m[0] == n and m[3]] for n in names}
+    check('T-34 item 2: the pen underline sits exactly on the five short phrases and "easy." (no other page or phrase)',
+          all(sorted(pens[n]) == sorted(want_pens[n]) for n in names), str({n: v for n, v in pens.items() if v}))
+    for n, t, color, stroke in T34_MARKS:
+        q = page34(1440)
+        load(q, TB + n)
+        M = q.evaluate(T34_MARK_JS, t)
+        load(q, MB + n)
+        O = q.evaluate(T34_MARK_JS, 'easy' if t == 'easy.' else t)
+        q.close()
+        short = len(t.split()) <= 3
+        ok = len(M) == 1 and len(O) == 1
+        check(f'T-34 item 2: {n}: "{t}" is marked once, as it was on origin/main', ok, f'{len(M)} {len(O)}')
+        if not ok:
+            continue
+        m, o = M[0], O[0]
+        check(f'T-34 item 2: {n}: "{t}" is upright, a plain span, in its line\'s font, weight and size',
+              m['tag'] == 'SPAN' and m['style'] == 'normal' and m['pstyle'] == 'normal' and (m['fam'], m['wt'], m['size']) == (m['pfam'], m['pwt'], m['psize']), str(m)[:300])
+        check(f'T-34 item 2: {n}: "{t}"\'s line keeps origin/main\'s font (only the home h1 moves to Barlow)',
+              (m['pfam'] == o['pfam'] and m['psize'] == o['psize'] and m['pwt'] == o['pwt']) or t == 'easy.', str([m['pfam'], o['pfam'], m['pwt'], o['pwt']]))
+        keep = color or o['color']
+        check(f'T-34 item 2: {n}: "{t}" keeps its color ({keep})', m['color'] == keep, f'{m["color"]} (origin/main {o["color"]})')
+        if n in T32_MF:
+            check(f'T-34 item 2: {n}: "{t}" is the Mainframe blue', m['color'] == T34_BLUE, m['color'])
+        if stroke:
+            check(f'T-34 item 2: {n}: "{t}" ({len(t.split())} words) has the pen underline, stroke #{stroke}',
+                  short or t == 'easy.', str(len(t.split())))
+            check(f'T-34 item 2: {n}: "{t}"\'s pen draws in #{stroke}, as decoration only (no aria, no role, not on a tap target)',
+                  'pen' in m['cls'].split() and f'%23{stroke}' in m['bg'] and not m['aria'] and not m['tap'], str([m['cls'], m['bg'][:60], m['aria'], m['tap']]))
+        else:
+            check(f'T-34 item 2: {n}: "{t}" ({len(t.split())} words) has color only, no underline',
+                  not short and 'pen' not in m['cls'].split() and m['bg'] == 'none', str([m['cls'], m['bg'][:60]]))
+
+    # ---- The underlines don't reach the line above or below, at 320, 390 and 1440.
+    for n in [x for x in names if want_pens.get(x)]:
+        for w in (320, 390, 1440):
+            q = page34(w)
+            load(q, TB + n)
+            P = q.evaluate(T34_PEN_JS)
+            q.close()
+            for txt, frags, hits in P:
+                check(f'T-34 item 3: at {w}, {n}: the pen under "{txt}" ({frags} line{"s" if frags > 1 else ""}) overlaps no line above or below it',
+                      not hits, '; '.join(hits))
+
+    # ---- Item 4: Then and Now.
+    q = page34(1440)
+    load(q, MB + 'studio.html')
+    G0 = q.evaluate(T34_GAL_JS)
+    q.close()
+    for w in (320, 390, 1440):
+        q = page34(w)
+        load(q, TB + 'studio.html')
+        G = q.evaluate(T34_GAL_JS)
+        q.close()
+        check(f'T-34 item 4: at {w}, the gallery labels and captions are origin/main\'s words', [(g['t'], g['cap'] and g['cap'][0]) for g in G] == [(g['t'], g['cap'] and g['cap'][0]) for g in G0],
+              str([g['t'] for g in G]))
+        tn = [g for g in G if g['t'] in ('Then', 'Now')]
+        check(f'T-34 item 4: at {w}, four Then and Now labels', [g['t'] for g in tn] == ['Then', 'Now', 'Then', 'Now'], str([g['t'] for g in tn]))
+        want_size = min(48, max(34, w * 0.036))
+        for g in tn:
+            check(f'T-34 item 4: at {w}, "{g["t"]}" is Barlow Semi Condensed 900 at {want_size:g}px (34px or more)',
+                  g['fam'].startswith('"Barlow Semi Condensed", Impact') and g['wt'] == '900' and g['size'] >= 34 and abs(g['size'] - want_size) < 0.05, str(g))
+            now = g['t'] == 'Now'
+            check(f'T-34 item 4: at {w}, "{g["t"]}" is {"#A93F17, with the class now" if now else "ink"}',
+                  (g['color'] == 'rgb(169, 63, 23)' and 'now' in g['cls'].split()) if now else (g['color'] == T32_INK and 'now' not in g['cls'].split()), str(g))
+            r = t34_ratio(g['color'], g['bg'])
+            check(f'T-34 item 4: at {w}, "{g["t"]}" has contrast 4.5:1 or more on its background ({r:.2f}:1 on {g["bg"]})', r >= 4.5, f'{r:.2f}')
+            if now:
+                check(f'T-34 item 4: at {w}, "November 2026" beside Now is JetBrains Mono 13px, #4F5A63',
+                      g['cap'] and g['cap'][0] == 'November 2026' and g['cap'][1].startswith('"JetBrains Mono"') and g['cap'][2] == '13px' and g['cap'][3] == 'rgb(79, 90, 99)', str(g['cap']))
+
+    # ---- At 320, 390 and 1440: no sideways scroll on any page; axe on the six pages at 390 and 1440 (a 1:1 pair counted).
+    axe = t32_axe()
+    for n in names:
+        for w, h in ((320, 700), (390, 844), (1440, 900)):
+            q = page34(w, h)
+            load(q, TB + n)
+            sw = q.evaluate('[document.documentElement.scrollWidth, innerWidth]')
+            check(f'T-34: at {w}, {n} has no sideways scroll', sw[0] <= sw[1], str(sw))
+            if w in (390, 1440) and n in T34_PAGES:
+                q.add_script_tag(content=axe)
+                res = q.evaluate('() => axe.run(document, {resultTypes: ["violations", "incomplete"]}).then(r => r.violations.map(v => [v.id, v.nodes.length, v.nodes.slice(0, 3).map(x => x.target.join(" "))])'
+                                 '.concat(r.incomplete.filter(v => v.id == "color-contrast").map(v => [v.id + " 1:1", v.nodes.filter(x => (x.any || []).some(c => c.data && c.data.messageKey == "equalRatio")).map(x => x.target.join(" "))]).filter(v => v[1].length)))')
+                check(f'T-34: at {w}, {n}: axe-core {T32_AXE_VER}, color contrast included: 0 violations', not res, str(res)[:600])
+                q.screenshot(path=f'{SHOTS}/t34-{n[:-5]}-{w}.png', full_page=True)
             q.close()
 
 

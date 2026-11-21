@@ -43,7 +43,7 @@ def item(page, old_bold, old_line, new_bold, new_line, ref):
 # ---------------- Home (index.html), T-17 ----------------
 text('index.html',
      "I'm Josef. I build AI tools that take real work off your plate, and I explain every one of them in plain English. Pick the one that sounds like you, and I'll take it from here.",
-     "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here.",
+     "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I know how to run them. Hand me the job that never gets done, and I'll take it from here.",   # T-34 (Nov 20, 2026)
      ref='V1')
 text('index.html',
      "For small businesses and nonprofits in Sonoma County. Hand me the videos you never get to, the lessons in a binder or the chore that eats your week. I'll turn it into reels, an app with your name on it, or a chore that runs itself, and show you that it works.",
@@ -97,12 +97,12 @@ text('mainframe.html',
      "The code never divides by 100. The field definition allows two readings. See each one:",
      ref='W29')
 text('mainframe.html',
-     "Every record tells a different story. <em",
-     "The code, the layouts, the job setup and the data each tell a different story. <em",
+     "Every record tells a different story. <span",   # T-34: a span, not <em>
+     "The code, the layouts, the job setup and the data each tell a different story. <span",
      ref='W30')
 text('mainframe.html',
-     '>Send one program <em style="color: #A93F17">and see what I find</em>',
-     '>Tell me about one program <em style="color: #A93F17">and see what I\'d look at first</em>',
+     '>Send one program <span style="color: #A93F17">and see what I find</span>',   # T-34: a span, not <em>
+     '>Tell me about one program <span style="color: #A93F17">and see what I\'d look at first</span>',
      ref='W31')
 text('briefing.html',
      '<span class="label">Which programs</span>',

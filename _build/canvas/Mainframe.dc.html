@@ -64,7 +64,7 @@ a{color:#A93F17}a:hover{color:#12161F}
   <div style="position: relative; max-width: 1240px; margin: 0 auto; padding: clamp(56px, 8vw, 120px) clamp(16px, 4vw, 48px) clamp(64px, 8vw, 112px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(500px, 100%), 1fr)); gap: clamp(40px, 6vw, 88px); align-items: center">
     <div style="display: flex; flex-direction: column; gap: 28px">
       <p class="fade" style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #5D6576">AI-assisted COBOL migration · with proof of behavioral equivalence</p>
-      <h1 class="fade" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(46px, 6.2vw, 92px); line-height: 1.0; letter-spacing: -0.025em; text-wrap: balance">The translation was faithful. <em style="font-weight: 400; color: #A93F17">The interest was off by a factor of one hundred.</em></h1>
+      <h1 class="fade" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(46px, 6.2vw, 92px); line-height: 1.0; letter-spacing: -0.025em; text-wrap: balance">The translation was faithful. <span style="color: #A93F17">The interest was off by a factor of one hundred.</span></h1>
       <p class="fade2" style="margin: 0; max-width: 56ch; font-size: clamp(18px, 1.5vw, 20px); color: #3A4252">AI can translate COBOL in an afternoon now. It still can't tell you what a field means when the meaning was never written down. I build the harness that runs the original and the migrated system over the same files and compares every byte they write. Your auditors get the evidence before anything touches production.</p>
       <div class="fade2" style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
         <a href="#correspondence" class="seal" style="display: inline-flex; align-items: center; min-height: 54px; padding: 0 26px; background: #12161F; color: #F4F1EA; text-decoration: none; font-weight: 600; font-size: 16px">Send one program</a>
@@ -106,7 +106,7 @@ COMPUTE WS-INTEREST ROUNDED =
 <!-- ======= THESIS BAND ======= -->
 <section aria-label="Thesis" style="background: #12161F; color: #E6E2D8">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(44px, 6vw, 72px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 64px; align-items: center">
-    <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.15; letter-spacing: -0.01em">Both readings compile, and both pass a test written from the source. <em style="color: #F07A4E">The bytes your business loads into that field are the only thing that settles it.</em></p>
+    <p style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.15; letter-spacing: -0.01em">Both readings compile, and both pass a test written from the source. <span style="color: #F07A4E">The bytes your business loads into that field are the only thing that settles it.</span></p>
     <p style="margin: 0; font-size: 17px; color: #B7BDC9">Static analysis can't close that gap, and neither can a tool that checks its translation against the same ambiguous source it translated. The answer sits in production data and in the head of whoever loads that field. The job is finding that answer and proving the new system honors it.</p>
   </div>
 </section>
@@ -149,7 +149,7 @@ COMPUTE WS-INTEREST ROUNDED =
 <section aria-labelledby="voices-h" style="background: #EBE6DA">
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(72px, 9vw, 112px) clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 40px">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 24px 64px; align-items: end">
-      <h2 id="voices-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Every source has an opinion. <em style="color: #A93F17">The stored bytes settle it.</em></h2>
+      <h2 id="voices-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.04; letter-spacing: -0.02em">Every source has an opinion. <span style="color: #A93F17">The stored bytes settle it.</span></h2>
       <p style="margin: 0; font-size: 18px; color: #2C3341">In a real mainframe estate the sources disagree. The source says one thing, the copybook suggests another, the JCL a third, and the production files show something else again, and the engineer who knew why retired a decade ago. A tool that quietly picks one version to believe hides the problem, so every disagreement goes into the ledger as a finding.</p>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 14px">
@@ -359,7 +359,7 @@ COMPUTE WS-INTEREST ROUNDED =
   <div style="max-width: 1240px; margin: 0 auto; padding: clamp(80px, 10vw, 140px) clamp(16px, 4vw, 48px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 40px 72px; align-items: start">
     <div style="display: flex; flex-direction: column; gap: 22px">
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #5D6576">Correspondence</span>
-      <h2 id="corr-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(44px, 6vw, 84px); line-height: 1.0; letter-spacing: -0.025em">Send one program <em style="color: #A93F17">and let it make the case</em></h2>
+      <h2 id="corr-h" style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(44px, 6vw, 84px); line-height: 1.0; letter-spacing: -0.025em">Send one program <span style="color: #A93F17">and let it make the case</span></h2>
       <p style="margin: 0; max-width: 54ch; font-size: 18px; color: #2C3341">Write with the program family you're least sure about, roughly how large the estate is and where the migration stands. I'll reply personally with what I'd look at first, and if it isn't a fit, I'll tell you who is.</p>
     </div>
     <div style="display: flex; flex-direction: column; gap: 0; border-top: 1px solid #12161F">

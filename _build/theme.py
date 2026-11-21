@@ -14,6 +14,8 @@ What it changes, and nothing else (no word, link, image or structured data moves
    text-transform: uppercase becomes none, so headings read in sentence case.
 3. The ring: one hand-drawn ellipse around each page's one next step (RINGS below).
 4. The route: a dashed line, 3px, 10 on and 8 off, along each ordered list of steps (ROUTE_CSS below).
+5. The pen underline (T-34, Nov 20, 2026): a hand-drawn line under the few words a headline marks (class="pen" in
+   the sources), in place of the italic switch Josef found "tacky" (PEN below).
 
 The accent is today's orange (Josef, Nov 19, 2026, after Stephanie found DESIGN.md's magenta "too Barney"). The
 Mainframe pages (MF) use blue in its place.
@@ -420,6 +422,27 @@ def mark_routes(html, page):
     return html
 
 
+# ---------------------------------------------------------------- the pen underline
+# T-34 (Nov 20, 2026): a headline's marked words stay upright in their color; three words or fewer also get this line
+# under them (class="pen", written by the source that writes the headline). A background image, so it wraps with the
+# words, sits behind them and takes no taps. Orange on the Local side, blue on the Mainframe pages; on something that
+# stays dark the lighter one, by the element's zone (pen-ink, added here).
+PEN_PATH = 'M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11'
+PEN_ON = re.compile(r'class="pen[" ]')
+
+
+def pen_img(color):
+    return ("url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E"
+            f"%3Cpath d='{PEN_PATH}' fill='none' stroke='%23{color[1:]}' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E\")")
+
+
+def pen_css(mf):
+    return ('.pen{background-image:' + pen_img(BLUE if mf else ORANGE) + ';background-repeat:no-repeat;'
+            'background-size:100% 0.2em;background-position:0 100%;padding-bottom:0.12em;'
+            'box-decoration-break:clone;-webkit-box-decoration-break:clone}'
+            '.pen.pen-ink{background-image:' + pen_img(BLUE_ON_INK if mf else ORANGE_ON_INK) + '}')
+
+
 # ---------------------------------------------------------------- one page
 TAG = re.compile(r'<!--.*?-->|<(script|style)\b([^>]*)>(.*?)</\1\s*>|<(/?)([A-Za-z][\w:-]*)((?:[^>"\']|"[^"]*"|\'[^\']*\')*)>', re.S)
 SVG_PAINT = re.compile(r'(\s(?:fill|stroke|stop-color)=")([^"]*)(")')
@@ -455,6 +478,8 @@ def theme_page(html, page):
         style = attrs.get('style')
         parent = stack[-1][1]
         zone = elem_zone(tag, attrs, style or '', parent, page)
+        if zone == 'dark' and 'pen' in (attrs.get('class') or '').split():
+            rest = rest.replace('class="pen', 'class="pen pen-ink', 1)
         if style is not None:
             new = theme_decls(style, zone, mf, f'{page} <{tag} style>', tag)
             rest = rest.replace(f'style="{style}"', f'style="{new}"', 1)
@@ -478,7 +503,7 @@ def theme_page(html, page):
     html = fonts(''.join(out))
     html = mark_routes(html, page)
     html = add_ring(html, page, mf)
-    css = (RING_CSS if RINGS.get(page) else '') + route_css(page, mf)
+    css = (RING_CSS if RINGS.get(page) else '') + route_css(page, mf) + (pen_css(mf) if PEN_ON.search(html) else '')
     if css:
         if html.count('</head>') != 1:
             raise SystemExit(f'theme.py: {page}: no single </head>')

@@ -130,6 +130,7 @@ It is the feeling, not a theme. No aviation words in the copy. What carries over
 - Square corners on cards, buttons and fields. Status pills are the only rounded shape.
 - **The ring:** one hand-drawn magenta ellipse around the page's one next step. One per page, never more.
 - **The route:** a dashed magenta line (3px, 10 on, 8 off) linking the steps of a process, from where you are to done.
+- **The pen underline:** a slightly wavy hand-drawn line under a headline's marked words, in the accent (blue on the Mainframe pages). Headlines never switch to italic: marked words stay upright in their color, and three words or fewer also get the pen underline. Decoration only, never on a tap target.
 - **The location mark:** the ringed crosshair from the logo, next to "Santa Rosa".
 - Contour lines behind heroes; blue airspace circles only on the Mainframe pages.
 
