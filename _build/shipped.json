@@ -1,6 +1,7 @@
 {
   "_about": "The public build log. Newest first. One plain line per thing that shipped, written for a stranger. Claude adds a line whenever a session logs a ship in the vault. Never name the nonprofit client or anything private. Josef never edits this file. A line stays only if a stranger can picture what changed: no build number without what a person can now do.",
   "entries": [
+    {"date": "2026-11-21", "project": "tools", "line": "The website checkup is live: paste your site's address and get a plain report of what's broken, worst first."},
     {"date": "2026-11-21", "project": "tools", "line": "A new free tool: paste words written with AI and see which sentences give it away."},
     {"date": "2026-11-04", "project": "deepcuts", "line": "Deepcuts got its new look."},
     {"date": "2026-11-03", "project": "album", "line": "All 15 songs on the album are written. Production started."},

@@ -174,7 +174,7 @@ function djCopy(text,label){
 }
 function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}
 
-var CHECKUP_URL = '';   // the dj-checkup Worker's address; empty until it's live (then the box shows)
+var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-checkup Worker's address (live Nov 21, 2026)
 
 (function () {
   var $ = function (id) { return document.getElementById(id); };

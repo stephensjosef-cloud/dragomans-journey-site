@@ -76,7 +76,7 @@ BODY = r"""
 """
 
 SCRIPT = r"""
-var CHECKUP_URL = '';   // the dj-checkup Worker's address; empty until it's live (then the box shows)
+var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-checkup Worker's address (live Nov 21, 2026)
 
 (function () {
   var $ = function (id) { return document.getElementById(id); };

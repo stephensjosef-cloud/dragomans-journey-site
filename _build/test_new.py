@@ -626,6 +626,11 @@ def mock_fail(route):
 
 # T-20 F2: the checkup card and links show only once CHECKUP_URL is set in tools/checkup.py.
 CK_LIVE = "\nvar CHECKUP_URL = '';" not in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tools', 'checkup.py'), encoding='utf-8').read()
+# T-36 (Nov 21, 2026): the Worker is live and its address is set in tools/checkup.py (CK_LIVE is True now). A test page that must
+# talk to a test Worker gets that Worker's address in place of whatever the page holds, empty or the real one.
+CK_ADDR = 'https://dj-checkup.stephens-josef.workers.dev/'
+def ck_test_url(body):
+    return _re.sub(r"(\nvar CHECKUP_URL = )'[^']*';", r"\1'https://dj-checkup.test/';", body, count=1)
 
 SHARED = ('index', 'local', 'mainframe', 'work', 'comp3', 'shotlist', 'captions', 'receipt',
           'scaler', 'start', 'call', 'case-reels', 'briefing', 'studio', 'checkup')
@@ -1647,8 +1652,9 @@ def s_checkup():
 
     src = urlopen(BASE + 'checkup.html').read().decode('utf-8')
     check('checkup: sitemap lists it once it is live, and not before (T-20 F2)', ('https://dragomansjourney.com/checkup.html' in urlopen(BASE + 'sitemap.xml').read().decode('utf-8')) == CK_LIVE)
-    check('checkup: CHECKUP_URL is one empty constant at the top of the script', src.count("var CHECKUP_URL = '';") == 1
-          and _re.search(r"<script>\s*function djToast[\s\S]*?\n\s*var CHECKUP_URL = '';", src) is not None)
+    CK_WANT = CK_ADDR if CK_LIVE else ''   # T-36: the Worker's address once it is live, empty before
+    check('checkup: CHECKUP_URL is one constant at the top of the script (the Worker\'s address once live, T-36; empty before)', src.count(f"var CHECKUP_URL = '{CK_WANT}';") == 1
+          and _re.search(r"<script>\s*function djToast[\s\S]*?\n\s*var CHECKUP_URL = '" + _re.escape(CK_WANT) + "';", src) is not None)
     check('checkup: the line under the box', "This checks your public page the way a visitor's phone would. Nothing is stored." in src)
     check('checkup: no long dash', '—' not in src and '–' not in src)
     work = urlopen(BASE + 'work.html').read().decode('utf-8')
@@ -1665,8 +1671,12 @@ def s_checkup():
     for w in (390, 1440):
         q = newpage(w); q.on('request', lambda rq: sent.append(rq.url) if 'checkup' in rq.url and not rq.url.startswith(BASE) else None)
         q.goto(BASE + 'checkup.html'); q.wait_for_timeout(400)
-        check(f'checkup: says "Coming this week" at {w}', q.locator('#soon').is_visible() and q.inner_text('#soon').strip().upper() == 'COMING THIS WEEK')
-        check(f'checkup: no box while CHECKUP_URL is empty at {w}', not q.locator('#ask').is_visible() and not q.locator('#site').is_visible() and not q.locator('#go').is_visible())
+        if CK_LIVE:   # T-36: live, the script hides "Coming this week" and shows the box
+            check(f'checkup: no "Coming this week" shown at {w} (live, T-36)', not q.locator('#soon').is_visible())
+            check(f'checkup: the box and button show at {w} (live, T-36)', q.locator('#ask').is_visible() and q.locator('#site').is_visible() and q.locator('#go').is_visible())
+        else:
+            check(f'checkup: says "Coming this week" at {w}', q.locator('#soon').is_visible() and q.inner_text('#soon').strip().upper() == 'COMING THIS WEEK')
+            check(f'checkup: no box while CHECKUP_URL is empty at {w}', not q.locator('#ask').is_visible() and not q.locator('#site').is_visible() and not q.locator('#go').is_visible())
         check(f'checkup: no report cards before a check at {w}', not q.locator('#rep1').is_visible() and not q.locator('#rep2').is_visible() and not q.locator('#stat').is_visible())
         check(f'checkup: no sideways scroll, coming soon, at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
         q.screenshot(path=f'{SHOTS}/t04-soon-{w}.png', full_page=True)
@@ -1677,7 +1687,7 @@ def s_checkup():
         q = newpage(w, 1000)
         calls = []
         def page_route(route):
-            body = route.fetch().text().replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1)
+            body = ck_test_url(route.fetch().text())   # T-36: works whether the page's address is empty or the real one
             route.fulfill(status=200, content_type='text/html', body=body)
         def worker(route):
             calls.append(route.request.url)
@@ -2066,7 +2076,7 @@ def s_t_18():
     # The answer first: where each tool's answer starts at 390 wide (one phone screen is 844 px).
     ANSWER = {'shotlist': "document.querySelector('section[aria-labelledby=shoot-h]')", 'captions': "document.querySelector('.phone')",
               'receipt': "document.getElementById('paper')", 'scaler': "document.getElementById('out').closest('table')",
-              'checkup': "document.getElementById('soon')",
+              'checkup': "[...document.querySelectorAll('#soon, #ask')].find(e => !e.hidden)",   # T-36: "Coming this week" while not live, the box once live
               'comp3': "[...document.querySelectorAll('#out .label')].find(e => e.textContent === 'If this field is an annual rate').parentElement"}
     for n, js in ANSWER.items():
         tops = []
@@ -2201,7 +2211,7 @@ def s_t_18():
             q = pgf()
             def page_route(route, request=None, base_=base_):   # T-19: Playwright hands a second argument (the request) to a two-argument handler
                 body = route.fetch().text() if base_ == BASE else t17_file('checkup.html').decode('utf-8')
-                route.fulfill(status=200, content_type='text/html', body=body.replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1))
+                route.fulfill(status=200, content_type='text/html', body=ck_test_url(body))   # T-36: the page's address is the real one now
             q.route(base_ + 'checkup.html', page_route)
             q.route('https://dj-checkup.test/**', worker_(ans))
             q.goto(base_ + 'checkup.html'); q.wait_for_timeout(400)
@@ -2535,7 +2545,7 @@ def s_t_19():
     def checkup_live(q, base_):
         def page_route(route, request=None, base_=base_):   # T-19: Playwright hands a second argument (the request) to a two-argument handler
             body = route.fetch().text() if base_ == BASE else t18_file('checkup.html').decode('utf-8')
-            route.fulfill(status=200, content_type='text/html', body=body.replace("var CHECKUP_URL = '';", "var CHECKUP_URL = 'https://dj-checkup.test/';", 1))
+            route.fulfill(status=200, content_type='text/html', body=ck_test_url(body))   # T-36: the page's address is the real one now
         q.route(base_ + 'checkup.html', page_route)
     W22_24 = [(w[3], w[2]) for w in W19 if w[0] in ('W22', 'W23', 'W24')]
     for ans in (SAMPLE, thin):
@@ -2658,15 +2668,26 @@ def s_t_20():
     check('T-20 F1: nonprofits still count down to Giving Tuesday', q.inner_text('#days').strip() == '16 days' and 'Giving Tuesday' in q.inner_text('#dayslabel'), q.inner_text('#when'))
 
     # F2: no links to the checkup while CHECKUP_URL is empty; it all comes back once it is set.
-    check('T-20 F2: CHECKUP_URL is still empty in checkup.py', "\nvar CHECKUP_URL = '';" in ck_src and _chrome20.checkup_url() == '')
+    if CK_LIVE:   # T-36 (Nov 21, 2026): the address is set, so these asserts read the live state; the not-live ones stay in the else branches
+        check('T-20 F2 (live, T-36): CHECKUP_URL in checkup.py is the dj-checkup Worker\'s address', f"\nvar CHECKUP_URL = '{CK_ADDR}';" in ck_src and _chrome20.checkup_url() == CK_ADDR)
+        linked20 = sorted(n for n in ALL_HTML if n != 'checkup.html' and 'checkup.html' in urlopen(BASE + n).read().decode('utf-8'))
+        check('T-20 F2 (live, T-36): the same pages link to the checkup as before', linked20 == ['captions.html', 'local.html', 'receipt.html', 'scaler.html', 'shotlist.html', 'work.html'], str(linked20))
+    else:
+        check('T-20 F2: CHECKUP_URL is still empty in checkup.py', "\nvar CHECKUP_URL = '';" in ck_src and _chrome20.checkup_url() == '')
     for n in ALL_HTML:
-        if n != 'checkup.html':
+        if n != 'checkup.html' and not CK_LIVE:
             check(f'T-20 F2: {n} does not link to or list the checkup while it isn\'t live', 'checkup.html' not in SRC20[n] and 'Website checkup' not in SRC20[n])
     sm = urlopen(BASE + 'sitemap.xml').read().decode('utf-8')
-    check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
+    if CK_LIVE:
+        check('T-20 F2 (live, T-36): checkup.html is in sitemap.xml once', sm.count('<loc>https://dragomansjourney.com/checkup.html</loc>') == 1)
+    else:
+        check('T-20 F2: checkup.html is not in sitemap.xml while it isn\'t live', 'checkup.html' not in sm and sm.count('<url>') == t19_file('sitemap.xml').decode('utf-8').count('<url>') - 1)
     old_ck = t19_file('checkup.html').decode('utf-8').replace('\r\n', '\n')
     new_ck = un21(un23(un33(un34(un35(SRC20['checkup.html'], 'checkup.html'), 'checkup.html'), 'checkup.html'), 'checkup.html')).replace('\r\n', '\n').replace(WRAP20 + '\n', '', 1).replace('#0E1A17', '#0E1B17')   # T-21: line-breaking spans out; T-33: R20's row order out
-    check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text)', new_ck == old_ck,
+    if CK_LIVE:   # T-36: the address line is the one change; read both with the line's text taken out
+        new_ck = _re.sub(r"\nvar CHECKUP_URL = '[^']*';[^\n]*", "\nvar CHECKUP_URL = '';", new_ck, count=1)
+        old_ck = _re.sub(r"\nvar CHECKUP_URL = '[^']*';[^\n]*", "\nvar CHECKUP_URL = '';", old_ck, count=1)
+    check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text; T-36: and the address line)', new_ck == old_ck,
           next((f'...{old_ck[max(0, i - 80):i + 80]}... | ...{new_ck[max(0, i - 80):i + 80]}...' for i in range(min(len(old_ck), len(new_ck))) if old_ck[i] != new_ck[i]), f'{len(old_ck)} vs {len(new_ck)}'))   # T-33: the first difference, when there is one
     check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
     WORK_CARD = r'\n    <article class="card" data-k="free">(?:(?!</article>).)*?href="checkup\.html".*?</article>'
@@ -2683,13 +2704,13 @@ def s_t_20():
                                       [sys.executable, 'enhance.py', 'out'], [sys.executable, 'plain.py', 'out'], [sys.executable, 'intent.py', 'out'],
                                       [sys.executable, 'voice2.py', 'out'], [sys.executable, 'final.py', 'out'])]
         built = True
-        for st, cwd_ in steps:
+        for st, cwd_ in ([] if CK_LIVE else steps):   # T-36: once live, the real build is the address-set build, and the live asserts above read it
             r = _sp18.run(st, cwd=cwd_, capture_output=True, text=True)
             if r.returncode:
                 built = False
                 check('T-20 F2: the temp build with a checkup address runs', False, ' '.join(st[1:2]) + ': ' + (r.stdout + r.stderr)[-300:])
                 break
-        if built:
+        if built and not CK_LIVE:
             outd = os.path.join(bd, 'out')
             rd = lambda f: un21(un23(un30(open(os.path.join(outd, f), encoding='utf-8').read(), f), f))   # T-21: line-breaking spans out; T-23: its changes out; T-30: the descriptions back
             old = lambda f: t19_file(f).decode('utf-8')
@@ -2706,8 +2727,8 @@ def s_t_20():
                   links == ['captions.html', 'local.html', 'receipt.html', 'scaler.html', 'shotlist.html', 'work.html'], str(links))
     finally:
         _shutil.rmtree(tmp, ignore_errors=True)
-    check('T-20 F2: the temp copy is gone, and the real checkup.py still has no address',
-          not os.path.exists(tmp) and "\nvar CHECKUP_URL = '';" in open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read())
+    check('T-20 F2: the temp copy is gone, and the real checkup.py still has ' + ('the Worker\'s address (T-36)' if CK_LIVE else 'no address'),
+          not os.path.exists(tmp) and (f"\nvar CHECKUP_URL = '{CK_ADDR}';" if CK_LIVE else "\nvar CHECKUP_URL = '';") in open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read())
 
     # F3 and F4: the three word changes, each on its page exactly once, the old words gone.
     mf, br = SRC20['mainframe.html'], SRC20['briefing.html']
@@ -3217,7 +3238,7 @@ def s_t_21():
             q.goto(base_ + 'local.html'); settle(q)
             check(f'T-21 G4 ({label}): at {w}, local\'s free tools cards end with no empty slot', q.evaluate(LAST_JS, '#tools > div > div') <= 2, str(q.evaluate(LAST_JS, '#tools > div > div')))
             q.close()
-    grids21(BASE, 'checkup not live')
+    grids21(BASE, 'checkup live' if CK_LIVE else 'checkup not live')   # T-36: BASE is the live build now
     tmp21 = _tmp.mkdtemp()
     srv = None
     try:
@@ -3230,13 +3251,13 @@ def s_t_21():
                                       [sys.executable, 'enhance.py', 'out'], [sys.executable, 'plain.py', 'out'], [sys.executable, 'intent.py', 'out'],
                                       [sys.executable, 'voice2.py', 'out'], [sys.executable, 'final.py', 'out'])]
         built = True
-        for st, cwd_ in steps:
+        for st, cwd_ in ([] if CK_LIVE else steps):   # T-36: once live, BASE above is the address-set build
             r = _sp18.run(st, cwd=cwd_, capture_output=True, text=True)
             if r.returncode:
                 built = False
                 check('T-21 G4: the temp build with a checkup address runs', False, ' '.join(st[1:2]) + ': ' + (r.stdout + r.stderr)[-300:])
                 break
-        if built:
+        if built and not CK_LIVE:
             check('T-21 G4: the temp build with a checkup address has the fifth tool card', open(os.path.join(bd, 'out', 'work.html'), encoding='utf-8').read().count('href="checkup.html"') >= 1)
             srv = _sp18.Popen([sys.executable, '-m', 'http.server', str(TEMP_PORT), '--bind', '127.0.0.1'], cwd=os.path.join(bd, 'out'), stdout=_sp18.DEVNULL, stderr=_sp18.DEVNULL)
             import time as _time21
@@ -3246,8 +3267,8 @@ def s_t_21():
         if srv:
             srv.terminate(); srv.wait()
         _shutil.rmtree(tmp21, ignore_errors=True)
-    check('T-21 G4: the temp copy is gone, and the real checkup.py still has no address',
-          not os.path.exists(tmp21) and "\nvar CHECKUP_URL = '';" in open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read())
+    check('T-21 G4: the temp copy is gone, and the real checkup.py still has ' + ('the Worker\'s address (T-36)' if CK_LIVE else 'no address'),
+          not os.path.exists(tmp21) and (f"\nvar CHECKUP_URL = '{CK_ADDR}';" if CK_LIVE else "\nvar CHECKUP_URL = '';") in open(os.path.join(here, 'tools', 'checkup.py'), encoding='utf-8').read())
 
     # G5: Local at 1440.
     q = newpage(1440); q.goto(BASE + 'local.html'); settle(q)
