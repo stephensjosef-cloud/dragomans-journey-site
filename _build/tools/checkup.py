@@ -117,6 +117,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
 
   function finding(level, title, cost, fix) { return {level: level, title: title, cost: cost, fix: fix}; }
   var RANK = {bad: 0, warn: 1, info: 2};
+  function count(fs) { return fs.filter(function (g) { return g.level === 'bad' || g.level === 'warn'; }).length; }
   function render(ul, fs) {
     fs.sort(function (a, b) { return RANK[a.level] - RANK[b.level]; });
     ul.innerHTML = fs.map(function (f) {
@@ -183,6 +184,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
       list(working.slice(0, 4).map(function (l) { return '"' + l.label + '"'; })) + (working.length > 4 ? ' and more' : '') + '.');
     if (!r.cut && r.bytes <= 1048576) good.push('It weighs ' + Math.max(1, Math.round(r.bytes / 1024)) + ' KB before pictures.');
     render($('finds1'), f);
+    var nSite = count(f);
     $('oks1').innerHTML = good.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('');
     var looked = r.links.length;
     var untested = r.links.filter(function (l) { return l.status === 'script' || l.status === 'unchecked' || l.status === 'refused'; }).length;
@@ -190,11 +192,15 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
       ? 'I tried every button and link that looks like booking, ordering, contact, donate, menu, schedule, appointment or reserve: ' + looked + ' in all' +
         (untested ? ', ' + untested + " of them I couldn't test from here" : '') + '.'
       : "I couldn't find a button for booking, ordering, contact, donating, a menu, a schedule, appointments or reservations on this page.";
-    return f.length;
+    return nSite;
   }
 
+  // A business with no shop: its structured data names a business and the address has no digit in it
+  // (or there is none). With no structured data at all we can't tell, so that case isn't this one.
+  function serviceArea(s) { return !!(s.business && !/[0-9]/.test(s.business.address || '')); }
+
   function aiCard(r) {
-    var f = [], a = r.ai, s = r.structured, x = r.facts;
+    var f = [], a = r.ai, s = r.structured, x = r.facts, noShop = serviceArea(s);
     var bots = function (names) { return a.bots.filter(function (b) { return names.indexOf(b.name) > -1; }); };
     if (a.starBlocksAll) f.push(finding('bad', 'Your robots.txt asks every crawler to stay out',
       "Search engines and AI tools that follow it won't read any page on your site.",
@@ -221,14 +227,14 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
       'Under an hour. Many site builders add it from a business info setting.'));
     else {
       var miss = [['name', 'name'], ['address', 'address'], ['telephone', 'phone number'], ['openingHours', 'opening hours'], ['url', 'web address']]
-        .filter(function (k) { return !s.business.has[k[0]]; }).map(function (k) { return k[1]; });
+        .filter(function (k) { return !s.business.has[k[0]] && !(noShop && (k[0] === 'address' || k[0] === 'openingHours')); }).map(function (k) { return k[1]; });
       if (miss.length) f.push(finding('warn', 'Your structured data leaves out your ' + list(miss),
         'Your page describes itself as a ' + s.business.type + ' for machines, but without those facts.',
         'A short fix, wherever that block is set up.'));
     }
     if (!x.phone) f.push(finding('warn', "I couldn't find a phone number in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
-    if (!x.hours) f.push(finding('warn', "I couldn't find your opening hours in your page text", 'A machine reading the page may not find them either.', 'A five-minute fix: put them on the page as plain text, with the day names.'));
-    if (!x.address) f.push(finding('warn', "I couldn't find a street address in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
+    if (!x.hours && !noShop) f.push(finding('warn', "I couldn't find your opening hours in your page text", 'A machine reading the page may not find them either.', 'A five-minute fix: put them on the page as plain text, with the day names.'));
+    if (!x.address && !noShop) f.push(finding('warn', "I couldn't find a street address in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
     if (typeof a.robotsStatus !== 'number' || a.robotsStatus >= 500) f.push(finding('info', "I couldn't read your robots.txt", '', ''));
     if (a.trainingBlocked.length) f.push(finding('info', 'Your robots.txt keeps ' + list(a.trainingBlocked) +
       " from collecting your pages for AI training. That's a choice, not a fault.", '', ''));
@@ -236,11 +242,12 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
 
     var none = "I couldn't find it";
     var name = (s.business && s.business.name) || r.siteName || '';
-    var rows = [['Name', name], ['Phone', x.phone || (s.business && s.business.telephone) || ''], ['Address', x.address || ''],
-      ['Hours', x.hours || (s.business && s.business.openingHours) || '']];
+    var rows = [['Name', name], ['Phone', x.phone || (s.business && s.business.telephone) || '']];
+    if (!noShop) rows.push(['Address', x.address || ''], ['Hours', x.hours || (s.business && s.business.openingHours) || '']);
     $('facts').innerHTML = rows.map(function (row) {
       return '<dt>' + row[0] + '</dt><dd' + (row[1] ? '>' + esc(row[1]) : ' class="none">' + none) + '</dd>';
     }).join('');
+    return count(f);
   }
 
   $('form').addEventListener('submit', function (e) {
@@ -255,8 +262,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
         msg.textContent = '';
         $('rep1-h').textContent = host(r.finalUrl);
         $('rep1-url').textContent = r.finalUrl;
-        var n = siteCard(r);
-        aiCard(r);
+        var n = siteCard(r) + aiCard(r);
         $('rep1').hidden = false; $('stat').hidden = false; $('rep2').hidden = false;
         $('rep1-h').textContent = (n ? n + (n === 1 ? ' thing to fix on ' : ' things to fix on ') : 'Nothing broken on ') + host(r.finalUrl);
         $('rep1').scrollIntoView({behavior: 'smooth', block: 'start'});

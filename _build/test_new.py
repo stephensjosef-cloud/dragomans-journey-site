@@ -1223,7 +1223,7 @@ def s_machine_facts():
         faq = next((n for n in LD['local'].get('@graph', []) if n.get('@type') == 'FAQPage'), {})
         check('local business facts', biz.get('name') == "Dragoman's Journey" and biz.get('url') == 'https://dragomansjourney.com/local.html'
               and biz.get('email') == 'hello@dragomansjourney.com' and biz.get('founder') == {'@type': 'Person', 'name': 'Josef Stephens'}
-              and biz.get('areaServed') == 'Sonoma County, California'
+              and biz.get('areaServed') == 'Sonoma County, California' and biz.get('telephone') == '+1-707-394-8719'   # T-39: the telephone
               and biz.get('address') == {'@type': 'PostalAddress', 'addressLocality': 'Santa Rosa', 'addressRegion': 'CA', 'addressCountry': 'US'}, str(biz)[:300])
         check('local email is on the page', 'hello@dragomansjourney.com' in src)
         index_ld = _json.loads(ld_blocks(urlopen(BASE + 'index.html').read().decode('utf-8'))[0])
@@ -1251,12 +1251,17 @@ def s_machine_facts():
                   if '$' in _re.findall(r'<p[^>]*>(.*?)</p>', li, _re.S)[-1]]
         check('mainframe has one offer per step that prints a price', [o.get('name') for o in svc.get('offers', [])] == priced, str(priced))
     idx = ld_blocks(urlopen(BASE + 'index.html').read().decode('utf-8'))
-    check('index ld+json block is unchanged', len(idx) == 1 and _json.loads(idx[0]) == {
+    # T-39: the WebSite and Person nodes are as they were; the business (ProfessionalService) is added after them.
+    check('index ld+json block is the WebSite, the Person and the business', len(idx) == 1 and _json.loads(idx[0]) == {
         '@context': 'https://schema.org', '@graph': [
             {'@type': 'WebSite', 'name': "Dragoman's Journey", 'alternateName': "Dragoman's Journey · Josef Stephens", 'url': 'https://dragomansjourney.com/'},
             {'@type': 'Person', 'name': 'Josef Stephens', 'jobTitle': "Founder, Dragoman's Journey",
              'address': {'@type': 'PostalAddress', 'addressLocality': 'Santa Rosa', 'addressRegion': 'CA'},
-             'sameAs': ['https://github.com/stephensjosef-cloud']}]})
+             'sameAs': ['https://github.com/stephensjosef-cloud']},
+            {'@type': 'ProfessionalService', 'name': "Dragoman's Journey", 'url': 'https://dragomansjourney.com/',
+             'email': 'hello@dragomansjourney.com', 'telephone': '+1-707-394-8719', 'founder': {'@type': 'Person', 'name': 'Josef Stephens'},
+             'address': {'@type': 'PostalAddress', 'addressLocality': 'Santa Rosa', 'addressRegion': 'CA', 'addressCountry': 'US'},
+             'areaServed': 'Sonoma County, California'}]})
     for name in ('local', 'mainframe'):
         for w in (390, 1440):
             q = newpage(w); q.goto(BASE + name + '.html'); q.wait_for_timeout(300)

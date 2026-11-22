@@ -11,7 +11,7 @@ read from the page. If a price can't be found, the build fails and says which.
 Adds one <script type="application/ld+json"> just before </head> on:
   local.html      ProfessionalService (with its offers) and FAQPage
   mainframe.html  Service "The Mainframe Route" (with one offer per priced step)
-index.html keeps its own block as it is.
+index.html keeps its own block (WebSite and Person); T-39 adds the business to its @graph.
 
 T-12 (Nov 11 2026), the visit counter: CF_BEACON_TOKEN below. While it is
 empty, nothing is added anywhere. When it holds the token from Cloudflare's Web
@@ -44,6 +44,18 @@ OUT = Path(sys.argv[1])
 SITE = 'https://dragomansjourney.com/'
 NAME = "Dragoman's Journey"
 FOUNDER = {'@type': 'Person', 'name': 'Josef Stephens'}
+EMAIL = 'hello@dragomansjourney.com'
+PHONE = '+1-707-394-8719'   # the business line, Google Voice (T-39, Nov 21, 2026)
+ADDRESS = {'@type': 'PostalAddress', 'addressLocality': 'Santa Rosa', 'addressRegion': 'CA', 'addressCountry': 'US'}
+AREA = 'Sonoma County, California'   # a service-area business: no street address, no opening hours
+
+
+def business(url):
+    """The facts about the business that local.html and index.html both state."""
+    return {'@type': 'ProfessionalService', 'name': NAME, 'url': url, 'email': EMAIL, 'telephone': PHONE,
+            'founder': FOUNDER, 'address': ADDRESS, 'areaServed': AREA}
+
+
 problems = []
 pages = {f.name: f.read_text(encoding='utf-8') for f in sorted(OUT.glob('*.html'))}
 before = dict(pages)
@@ -158,13 +170,9 @@ def local():
                     'acceptedAnswer': {'@type': 'Answer', 'text': plain(a.group(1))}})
 
     return {'@context': 'https://schema.org', '@graph': [
-        {'@type': 'ProfessionalService', 'name': NAME, 'url': SITE + 'local.html',
-         'email': 'hello@dragomansjourney.com', 'founder': FOUNDER,
-         'address': {'@type': 'PostalAddress', 'addressLocality': 'Santa Rosa',
-                     'addressRegion': 'CA', 'addressCountry': 'US'},
-         'areaServed': 'Sonoma County, California',
-         'description': meta_description(page), 'sameAs': github(),
-         'makesOffer': [o for o in offers if o]},
+        dict(business(SITE + 'local.html'),
+             description=meta_description(page), sameAs=github(),
+             makesOffer=[o for o in offers if o]),
         {'@type': 'FAQPage', 'mainEntity': faq},
     ]}
 
@@ -200,6 +208,30 @@ def add(page, data):
         return
     body = json.dumps(data, indent=1, ensure_ascii=False).replace('</', '<\\/')
     pages[page] = pages[page].replace('</head>', '<script type="application/ld+json">\n%s\n</script>\n</head>' % body)
+
+
+def index_business():
+    """T-39: index.html keeps its own block (build.py writes it); this adds one node to its
+    @graph, the business, built from the same facts local.html states. The block is written
+    back the way build.py wrote it, so the WebSite and Person nodes come out as they were."""
+    page = 'index.html'
+    pat = r'(<script type="application/ld\+json">\n)(.*?)(\n</script>)'
+    if len(re.findall(pat, pages[page], flags=re.S)) != 1:
+        problems.append('%s: expected one ld+json block' % page)
+        return
+    m = re.search(pat, pages[page], flags=re.S)
+    try:
+        data = json.loads(m.group(2))
+        graph = data['@graph']
+    except (ValueError, KeyError, TypeError):
+        problems.append('%s: could not read the @graph in its ld+json' % page)
+        return
+    if [n.get('@type') for n in graph] != ['WebSite', 'Person']:
+        problems.append('%s: expected a WebSite and a Person in its @graph, found %s' % (page, [n.get('@type') for n in graph]))
+        return
+    graph.append(business(SITE))
+    body = json.dumps(data, indent=1, ensure_ascii=False).replace('</', '<\\/')
+    pages[page] = pages[page][:m.start(2)] + body + pages[page][m.end(2):]
 
 
 def counter_line():
@@ -240,6 +272,7 @@ if CF_BEACON_TOKEN:
     counter_line()
 add('local.html', local())
 add('mainframe.html', mainframe())
+index_business()
 if CF_BEACON_TOKEN:
     beacon(CF_BEACON_TOKEN)
 
