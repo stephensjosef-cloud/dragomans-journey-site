@@ -56,7 +56,7 @@ BODY = r"""
             <div><p class="label" id="l-box">Box behind the words</p><div class="chips" role="group" aria-labelledby="l-box" id="c-box"></div></div>
             <div><p class="label" id="l-app">Which app?</p><div class="chips" role="group" aria-labelledby="l-app" id="c-app"></div></div>
             <div style="max-width:300px"><label class="label" for="bg" style="display:block">Try it on your own video</label>
-              <input id="bg" type="file" accept="image/*"><p class="private" style="margin-top:6px">Add a screenshot from your video. It stays on your phone.</p></div>
+              <input id="bg" type="file" accept="image/*"><p class="private" style="margin-top:6px">Add a screenshot from your video.</p></div>
           </div>
         </section>
       </div>
@@ -80,9 +80,7 @@ BODY = r"""
 
     <div class="stage"><div class="stage-in">
       <div class="phone"><canvas id="cv" width="1080" height="1920" role="img" aria-label="Preview of the caption on a phone screen"></canvas></div>
-      <div class="legend"><span><i></i>Covered by the app's buttons and text (approximate)</span></div>
-      <p class="private" style="text-align:center">Nothing you type or load here leaves this page.</p>
-    </div></div>
+      <div class="legend"><span><i></i>Covered by the app's buttons and text (approximate)</span></div>    </div></div>
   </div>
 """
 

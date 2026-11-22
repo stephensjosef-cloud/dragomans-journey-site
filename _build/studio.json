@@ -29,7 +29,7 @@
      "proof": null, "image": null, "image_alt": null, "list": null,
      "link": {"href": "https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence", "label": "Open the repo"}, "gate": null},
     {"id": "tools", "name": "Free tools", "status": "Live", "kind": "Free",
-     "what": "A website checkup, a voice checker, a busywork receipt, a COBOL field decoder and two tools from my reel engine. The checkup reads your public website; the rest run in your browser, and nothing you type there leaves the page.",
+     "what": "A website checkup, a voice checker, a busywork receipt, a COBOL field decoder and two tools from my reel engine.",
      "proof": null, "image": null, "image_alt": null, "list": null,
      "link": {"href": "work.html#free", "label": "Use them"}, "gate": null},
     {"id": "chucklefits", "name": "ChuckleFits", "status": "Live", "kind": "My shop",

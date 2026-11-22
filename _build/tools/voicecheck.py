@@ -12,7 +12,6 @@ CSS = r"""
 .vacts{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
 .vmsg{margin:12px 0 0;font-weight:600}
 .vmsg:empty{display:none}
-.proof{font-size:14px;color:#5A635D;margin:14px 0 0}
 #res{display:flex;flex-direction:column;gap:16px}
 #res-h{margin:0;font-size:24px;line-height:1.3;outline:none}
 .vnote{margin:0;border-left:4px solid #D9A520;background:#F9EEDA;padding:12px 14px;font-size:16px}
@@ -37,7 +36,6 @@ BODY = r"""
       <button type="button" class="btn ghost" id="sample">Try a sample</button>
     </div>
     <p class="vmsg" id="msg" role="status" aria-live="polite"></p>
-    <p class="proof">I built these checks testing the words on my own site, line by line, against AI readers playing a baker and a nonprofit director.</p>
   </div>
 
   <section id="res" aria-labelledby="res-h" hidden>
@@ -204,7 +202,7 @@ SCRIPT = r"""
 
 write(sys.argv[1], "voicecheck.html",
       title="Voice checker",
-      description="Paste words written with AI and see which sentences give it away, and what to put there instead. Nothing you paste leaves the page.",
+      description="Paste words written with AI and see which sentences give it away, and what to put there instead.",
       h1="Does it sound like AI?",
-      lede="Paste words you wrote with AI. I'll mark the sentences that give it away and tell you what to put there instead. Nothing you paste leaves this page.",
+      lede="Paste words you wrote with AI. I'll mark the sentences that give it away and tell you what to put there instead.",
       css=CSS, body=BODY, script=SCRIPT, more_line=True)

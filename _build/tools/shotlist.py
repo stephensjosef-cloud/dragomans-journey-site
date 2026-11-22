@@ -75,9 +75,7 @@ BODY = r"""
 
   <div class="noprint" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
     <button type="button" class="btn" id="copy">Copy the shot list</button>
-    <button type="button" class="btn ghost" id="print">Print it</button>
-    <p class="private">Nothing you pick here leaves this page.</p>
-  </div>
+    <button type="button" class="btn ghost" id="print">Print it</button>  </div>
 """
 
 SCRIPT = r"""

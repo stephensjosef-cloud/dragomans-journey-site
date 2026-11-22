@@ -2009,13 +2009,13 @@ def s_t_18():
                      "Change the details", "Your 10 clips. Film them in this order.", "Start at the top of the list and film as you go. You never walk back.",   # T-19 W13, W14
                      "How it gets cut together"],
         'captions': ["Type the words that go on your video. See them on a phone, and find out if people can read them before they're gone.", "Change how it looks",   # T-19 W17
-                     "Which app?", "How long is your clip?", "Try it on your own video", "Add a screenshot from your video. It stays on your phone.",
+                     "Which app?", "How long is your clip?", "Try it on your own video", "Add a screenshot from your video.",
                      "Your caption, split up", "Save this caption as an image", "Save all of them", "Copy the text",
                      "This picture is see-through except for your words. Lay it over your video in CapCut or the Instagram editor and the words land right where you see them here."],   # T-19 W19
         'receipt': ["Tap the chores that eat your week. See what a year of them costs you.", "Guess. Close is good enough."],
         'scaler': ["Paste a recipe and say who's eating. You get amounts you can actually measure."],
         'checkup': ["Paste your website's address. You get a plain list of what's broken, worst first, and whether AI tools can find your business."],
-        'comp3': ["One stored number. Two ways to read it. On a $1,000 balance, one reading charges $2.92 of interest a month and the other charges $291.67. The code can't tell you which is right. Paste your own below. Nothing you paste leaves this page.",
+        'comp3': ["One stored number. Two ways to read it. On a $1,000 balance, one reading charges $2.92 of interest a month and the other charges $291.67. The code can't tell you which is right. Paste your own below.",
                   "The line in the program that says how the number is stored. Paste it however it appears: PIC S9(7)V99 COMP-3. works."],
     }
     OLD_LINES = {
@@ -6651,10 +6651,10 @@ T35_SAMPLE_MARKS = [
 # THE WORDS, character for character.
 T35_W = {
     'title': 'Voice checker',
-    'desc': 'Paste words written with AI and see which sentences give it away, and what to put there instead. Nothing you paste leaves the page.',
+    'desc': 'Paste words written with AI and see which sentences give it away, and what to put there instead.',   # T-37: "Nothing you paste leaves the page." cut
     'h1': 'Does it sound like AI?',
-    'lede': "Paste words you wrote with AI. I'll mark the sentences that give it away and tell you what to put there instead. Nothing you paste leaves this page.",
-    'proof': 'I built these checks testing the words on my own site, line by line, against AI readers playing a baker and a nonprofit director.',
+    'lede': "Paste words you wrote with AI. I'll mark the sentences that give it away and tell you what to put there instead.",   # T-37: "Nothing you paste leaves this page." cut
+    # T-37: the proof line ("I built these checks testing the words on my own site...") is cut; the page has no .proof element.
     'label': 'Your words', 'check': 'Check it', 'sample': 'Try a sample',
     'none': "Nothing jumped out. Read it out loud once anyway. If you wouldn't say it, cut it.",
     'long': "That's a lot at once. Paste one page at a time, about 3,000 words.",
@@ -6663,7 +6663,7 @@ T35_W = {
     'fix': 'Want me to fix it?',
     'rhythm': 'Most of your sentences are about the same length, which reads flat. Mix in a short one.',
 }
-T35_CARD = ['Free tool', 'Writing', 'Voice checker', 'Paste words written with AI and see which sentences give it away, and why. Nothing you paste leaves the page.', 'Check your words →']
+T35_CARD = ['Free tool', 'Writing', 'Voice checker', 'Paste words written with AI and see which sentences give it away, and why.', 'Check your words →']
 # One string per rule that hits it (the expected (level, rule, hit) among its first sentence's marks) and one that must not.
 T35_RULES = [
     ('a', 'We open at 7 — the line starts at 6.', (1, 'a', '—'), 'We open at 7. The line starts at 6.'),
@@ -6858,15 +6858,16 @@ def _t35_checks(TB):
             P = q.evaluate(r"""() => { const sp = s => (s || '').replace(/[\s ]+/g, ' ').trim();
               return {title: document.title, ogt: document.querySelector('meta[property="og:title"]').content, desc: document.querySelector('meta[name="description"]').content,
                 ogd: document.querySelector('meta[property="og:description"]').content, h1: sp(document.querySelector('h1').textContent),
-                lede: sp(document.querySelector('header h1').parentElement.querySelector('p').textContent), proof: sp(document.querySelector('.proof').textContent),
+                lede: sp(document.querySelector('header h1').parentElement.querySelector('p').textContent), proofs: document.querySelectorAll('.proof').length,
                 label: sp(document.querySelector('label[for="words"]').textContent), check: sp(document.getElementById('check').textContent),
                 sample: sp(document.getElementById('sample').textContent), kick: !!document.querySelector('.kick'), band: !!document.getElementById('more-h'),
                 fn: typeof window.voiceCheck}; }""")
             check('T-35: the title and og:title are "Voice checker" (with the site name, as every page)',
                   P['title'] == T35_W['title'] + " · Dragoman's Journey" and P['ogt'] == T35_W['title'] + " · Dragoman's Journey", str([P['title'], P['ogt']]))
             check('T-35: the meta and og descriptions are the approved words', P['desc'] == T35_W['desc'] == P['ogd'])
-            for k in ('h1', 'lede', 'proof', 'label', 'check', 'sample'):
+            for k in ('h1', 'lede', 'label', 'check', 'sample'):
                 check(f'T-35: the {k} reads the approved words', P[k] == T35_W[k], P[k])
+            check('T-37: the page has no proof line', P['proofs'] == 0, str(P['proofs']))
             check('T-35: no words beyond the approved ones: no kicker line and no closing call band', not P['kick'] and not P['band'])
             check('T-35: window.voiceCheck is exposed for tests', P['fn'] == 'function')
             S = q.evaluate(T35_STATE_JS)

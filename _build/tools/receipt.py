@@ -60,7 +60,7 @@ BODY = r"""
         <button type="button" class="btn ghost" id="copy">Copy it</button>
         <button type="button" class="btn ghost" id="print">Print it</button>
       </div>
-      <p class="private noprint">The hours you could get back are a rough rule of thumb for each kind of chore, not a promise. The real numbers come from me watching how the work actually gets done. Nothing you type here leaves this page unless you press the orange button.</p>
+      <p class="private noprint">The hours you could get back are a rough rule of thumb for each kind of chore, not a promise. The real numbers come from me watching how the work actually gets done.</p>
     </div>
   </div>
 """

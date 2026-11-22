@@ -337,7 +337,7 @@ EDITS = [
     ('See Program Apps →', 'About custom apps →'),
     ('>Packed-decimal decoder</h2>', '>COBOL field decoder</h2>'),
     ('Paste the bytes of a COMP-3 field and its picture clause, and see every digit, the sign and both readings of a rate. Runs in your browser.',
-     'A free tool for COBOL teams. Paste a packed number and see what it really says. Runs in your browser.'),
+     'A free tool for COBOL teams. Paste a packed number and see what it really says.'),
     ('Two weeks, $1,500, credited in full toward the build. Or start with a free 15-minute call.',
      'Two weeks, $1,500, and it comes off the build price. Or start with a free 15-minute call.'),
 
