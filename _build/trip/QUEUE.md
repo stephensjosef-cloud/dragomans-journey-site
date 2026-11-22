@@ -1693,6 +1693,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-39 · The business number, structured data on the home page, and two checkup fixes · READY
+
+**Why:** Nov 21, 2026: Josef ran the live checkup on his own site at 4:42 PM. It found no phone and no business block in the home page's structured data, asked a no-shop business for opening hours and a street address, and its header said "1 thing to fix" while four more warnings showed below. Josef's business number is the Google Voice line 707-394-8719.
+
+**Done when:** every public page's footer shows 707-394-8719 once, as a tel: link right after the email link, in the email's style and with a tap target of at least 44px; `local.html`'s ProfessionalService node has the telephone and `index.html`'s @graph has a ProfessionalService node (name, url, email, telephone, Santa Rosa address with no street, areaServed, founder) built from the same constants; the checkup treats a business whose structured address has no digit as a service-area business (no hours or street address notes, no Address or Hours rows, nothing about them in the structured-data finding) and its header counts every bad and warn finding from both cards; no root page has any other phone number; a file comparison against the baseline lists every changed file and every visible word outside the footer number matches, `checkup.html` differing only in its script and footer; `checkup.html` with two stubbed Worker answers (a service-area business and a shop) and `index.html`'s footer look right at 390 and 320 with the real web fonts; axe at 390 on the shop case is reported; the receipt is filled in, status DONE (build), and pushed to `trip/T-39`, not `main`.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
