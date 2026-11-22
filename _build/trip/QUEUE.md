@@ -1661,6 +1661,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-38 · The last privacy line, and the checkup first on Work · READY
+
+**Why:** Josef, Nov 21, 2026, 4:06 PM: "get rid of all the 'nothing you paste leaves this page'". The sweep after T-37 found "Nothing is stored." still on `checkup.html`. R16 puts the checkup first among the free tools, and on `work.html` its card is last.
+
+**Done when:** "Nothing is stored." is cut from `checkup.html` (its source, `tools/checkup.py`) with nothing added; the Website checkup card is the first free tool card on `work.html`, before the Voice checker, with nothing changed inside any card; the COBOL decoder's work card line in `plain.py` and `work.html` match the live text; the by-script checks pass (no root page, meta tags included, contains "Nothing is stored", "leaves this page", "leaves the page", "stays on your phone" or "Runs in your browser"; the card order is right; a file comparison against the baseline lists every changed file and every visible word outside these changes matches); `checkup.html` as a visitor first sees it and `work.html`'s free tools look right at 390 with the real web fonts; axe at 390 on `checkup.html` is reported; the receipt is filled in, status DONE (build), and pushed to `trip/T-38`, not `main`.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
