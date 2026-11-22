@@ -1618,6 +1618,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-37 · Cut the privacy lines and the voice checker's proof line · READY
+
+**Why:** Josef, Nov 21, 2026, 4:06 PM: "get rid of all the 'nothing you paste leaves this page' nobody actually cares about that kind of stuff", and about the voice checker's proof line: "reads as AI cause its just offering up way too sensitive of data for no reason".
+
+**Done when:** the privacy lines and the voice checker's proof line are cut from the sources and the rebuilt pages, with nothing added (the safety allergen sentence on the scaler and the two rule-of-thumb sentences on the receipt stay word for word); the by-script checks (a to c) pass, and every changed page differs from the baseline only by the cuts; `voicecheck.html` empty and after "Try a sample", and `captions.html`, look right at 390 with the real web fonts; axe at 390 on `voicecheck.html` is reported; the receipt is filled in, status DONE (build), and pushed to `trip/T-37`, not `main`.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
