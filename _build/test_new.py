@@ -407,9 +407,28 @@ def un35(s, name=None):
     return s
 
 
+# T-40 (Nov 22, 2026): every share card redrawn in the chart style, same words. un40_file() gives back origin/main's
+# bytes from before T-40 (8634f2e) for any card in og/ or _build/assets/og/; un35_file() calls it first, so every older
+# card listing reads the cards as they were. Any other file as it is.
+T40_MAIN = '8634f2e'   # origin/main when T-40 was cut (T-39 DONE)
+T40_CARD = r'(?:og|_build/assets/og)/[a-z0-9-]+\.png'
+
+
+def un40_file(rel, data):
+    """A share card as origin/main had it before T-40's redraw; any other file as it is."""
+    import re as _re40
+    rel = rel.replace(os.sep, '/')
+    if _re40.fullmatch(T40_CARD, rel):
+        got = _sp35.run(['git', 'show', f'{T40_MAIN}:{rel}'], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True)
+        if got.returncode == 0:
+            return got.stdout
+    return data
+
+
 def un35_file(rel, data):
     """A file as origin/main had it before T-35, for the share cards T-35 redrew; any other file as it is."""
     rel = rel.replace(os.sep, '/')
+    data = un40_file(rel, data)   # T-40: every card as it was before the chart-style redraw
     if rel in T35_REDRAWN:
         return _sp35.run(['git', 'show', f'{T35_MAIN}:{rel}'], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True, check=True).stdout
     return data
@@ -4588,8 +4607,8 @@ def s_t_26():
     pub25 = [f for f in _sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n')
              if f and not f.startswith('_build/') and not f.endswith('.html')]
     check('T-26: every other public file at the root (sitemap, robots, images, share cards...) is byte for byte as at T-25',
-          len(pub25) > 20 and all(rb26(f) == t25_file(f).replace(b'\r\n', b'\n') for f in pub25),
-          str([f for f in pub25 if rb26(f) != t25_file(f).replace(b'\r\n', b'\n')][:5]))
+          len(pub25) > 20 and all(un35_file(f, rb26(f)).replace(b'\r\n', b'\n') == t25_file(f).replace(b'\r\n', b'\n') for f in pub25),   # T-40: cards read as before its redraw
+          str([f for f in pub25 if un35_file(f, rb26(f)).replace(b'\r\n', b'\n') != t25_file(f).replace(b'\r\n', b'\n')][:5]))
     outf = sorted(os.path.relpath(os.path.join(d, f), outd).replace(os.sep, '/') for d, _x, fs in os.walk(outd) for f in fs)
     t25tree = set(_sp18.run(['git', 'ls-tree', '-r', '--full-tree', '--name-only', T25C], cwd=here, capture_output=True, text=True).stdout.split('\n'))
     check('T-26: the build adds only gallery/ (every other file in out/ was at the root at T-25; T-27\'s images/shelf/ aside, its block checks it)',
@@ -6810,7 +6829,7 @@ def _t35_checks(TB):
           card == open(os.path.join(here, 'assets', 'og', 'voicecheck.png'), 'rb').read() == open(os.path.join(outd, 'og', 'voicecheck.png'), 'rb').read())
     check('T-35: voicecheck.html names its card', TH['voicecheck.html'].count('<meta property="og:image" content="https://dragomansjourney.com/og/voicecheck.png">') == 1)
     ogs = sorted(os.listdir(os.path.join(here, '..', 'og')))
-    changed = [f for f in ogs if f != 'voicecheck.png' and open(os.path.join(here, '..', 'og', f), 'rb').read() != t35_main('og/' + f)]
+    changed = [f for f in ogs if f != 'voicecheck.png' and un40_file('og/' + f, open(os.path.join(here, '..', 'og', f), 'rb').read()) != t35_main('og/' + f)]   # T-40: the cards as before its redraw
     check('T-35: of the share cards, only index.png changed (T-34\'s "AI, made easy."); every other card is origin/main\'s byte for byte',
           changed == ['index.png'] and len(ogs) == 18, str([changed, len(ogs)]))
     check('T-35: _build/assets/og/ matches og/ at the root, card for card', all(
