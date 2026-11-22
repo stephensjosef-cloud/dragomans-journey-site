@@ -47,7 +47,7 @@ BODY = r"""
       <input id="site" name="site" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="yourbusiness.com" required>
       <button type="submit" class="btn hot" id="go">Check it</button>
     </form>
-    <p class="private" style="margin-top:10px">This checks your public page the way a visitor's phone would. Nothing is stored.</p>
+    <p class="private" style="margin-top:10px">This checks your public page the way a visitor's phone would.</p>
     <p class="stat" id="msg" role="status" aria-live="polite" style="margin-top:10px"></p>
   </section>
 

@@ -1655,7 +1655,7 @@ def s_checkup():
     CK_WANT = CK_ADDR if CK_LIVE else ''   # T-36: the Worker's address once it is live, empty before
     check('checkup: CHECKUP_URL is one constant at the top of the script (the Worker\'s address once live, T-36; empty before)', src.count(f"var CHECKUP_URL = '{CK_WANT}';") == 1
           and _re.search(r"<script>\s*function djToast[\s\S]*?\n\s*var CHECKUP_URL = '" + _re.escape(CK_WANT) + "';", src) is not None)
-    check('checkup: the line under the box', "This checks your public page the way a visitor's phone would. Nothing is stored." in src)
+    check('checkup: the line under the box', "This checks your public page the way a visitor's phone would.</p>" in src and 'Nothing is stored' not in src)   # T-38: the privacy line is cut
     check('checkup: no long dash', '—' not in src and '–' not in src)
     work = urlopen(BASE + 'work.html').read().decode('utf-8')
     card = _re.search(r'<article class="card" data-k="([^"]*)">((?:(?!</article>).)*href="checkup\.html"(?:(?!</article>).)*)</article>', work, _re.S)
@@ -5387,8 +5387,8 @@ def s_t_30():
     WCARDS30 = {m[1]: (m[0], m[2]) for m in _re.findall(r'<h2>([^<]*)</h2>\s*<p>.*?</p>\s*<a class="go" href="([^"]*)">([^<]*)</a>', W30, _re.S)}
     check('T-30: each tool\'s name and link words on local.html are the work page card\'s (read from it)',
           all(WCARDS30.get(a_) == (h, g) for h, _p, a_, g in t30), str([(h, a_, g, WCARDS30.get(a_)) for h, _p, a_, g in t30]))
-    check('T-30: the work page\'s free-tool cards are as at T-29, descriptions and all',
-          _re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', W30, _re.S) == _re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', OLD30['work.html'], _re.S))
+    check('T-30: the work page\'s free-tool cards are as at T-29, descriptions and all (T-38: compared without regard to order; the checkup card moved to first)',
+          sorted(_re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', W30, _re.S)) == sorted(_re.findall(r'<article class="card" data-k="free[^"]*">.*?</article>', OLD30['work.html'], _re.S)))
 
     # studio.json, studio.py, enhance.py: the two "what" lines are null, _about says what that means, nothing else changed.
     check('T-30: what29() gives kids\' and COBOL\'s "what" exactly as in T-29\'s studio.json, and every other product\'s as it is',
@@ -6970,8 +6970,9 @@ def _t35_checks(TB):
       return [...document.querySelectorAll('article.card')].filter(a => a.dataset.k.split(' ').includes('free')).map(a =>
         [...a.querySelectorAll('.tag')].map(t => sp(t.textContent)).concat([sp(a.querySelector('h2').textContent), sp(a.querySelector('p').textContent),
           sp(a.querySelector('a.go').textContent), a.querySelector('a.go').getAttribute('href')])); }""")
-    check('T-35: work.html: the voice checker is first among the free tools, before the Busywork receipt, as written',
-          len(W) > 1 and W[0] == T35_CARD + ['voicecheck.html'] and W[1][2] == 'Busywork receipt', str(W[:2]))
+    # T-38: the Website checkup card is first now (R16), so the voice checker is second, before the Busywork receipt.
+    check('T-35: work.html: the voice checker is second among the free tools (the checkup first, T-38), before the Busywork receipt, as written',
+          len(W) > 2 and W[0][2] == 'Website checkup' and W[1] == T35_CARD + ['voicecheck.html'] and W[2][2] == 'Busywork receipt', str(W[:3]))
     q.screenshot(path=f'{SHOTS}/t35-work-390.png', full_page=True)
     q.close()
     q = page35(390, 844)

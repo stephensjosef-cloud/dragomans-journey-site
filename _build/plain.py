@@ -336,8 +336,7 @@ EDITS = [
     ('<span class="tag">In build</span>', '<span class="tag">In progress</span>'),
     ('See Program Apps →', 'About custom apps →'),
     ('>Packed-decimal decoder</h2>', '>COBOL field decoder</h2>'),
-    ('Paste the bytes of a COMP-3 field and its picture clause, and see every digit, the sign and both readings of a rate. Runs in your browser.',
-     'A free tool for COBOL teams. Paste a packed number and see what it really says.'),
+    # The COBOL field decoder card's line ("A free tool for COBOL teams. Paste a packed number and see what it really says.") is now written in work.html itself (T-38), so there is nothing here to replace.
     ('Two weeks, $1,500, credited in full toward the build. Or start with a free 15-minute call.',
      'Two weeks, $1,500, and it comes off the build price. Or start with a free 15-minute call.'),
 
