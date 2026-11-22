@@ -1725,6 +1725,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-40 · The share cards in the chart style · READY
+
+**Why:** Nov 22, 2026: every share card is still the dark style from Nov 9 while the site went light chart paper, Barlow and orange on Nov 19 (T-32); a link pasted on LinkedIn or in a text shows a picture that doesn't match the page; same words, new look.
+
+**Done when:** every card `tools/og.py` draws is redrawn in the chart style with the same words as before, every root file outside `og/` is byte for byte the same as a build of `origin/main`, a fresh reviewer has passed the cards, T-40's receipt is filled in, and `trip/T-40` is pushed. `main` moves only on Josef's "push it" in this session.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
