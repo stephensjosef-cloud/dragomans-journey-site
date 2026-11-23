@@ -1958,6 +1958,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-44 · Tap any app picture to see it big, and get back out with zero effort · READY
+
+**Why:** Nov 23, 2026: Josef, after looking at the gallery on his phone: "I want the pictures to be easily clickable to zoom in, and super easy to click out of, zero frustration".
+
+**Done when:** every app screenshot on studio.html, studio-birdleague.html and work.html opens big on a tap or click and closes every way listed in step 3; swiping or arrow keys move through the pictures of the same app; with scripts off, a tap opens the picture file itself; the checks in step 6 pass; the fresh reviewer's play pass finds nothing frustrating left; T-44's receipt is filled in; trip/T-44 is pushed. main moves only on Josef's "push it" in this session.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
