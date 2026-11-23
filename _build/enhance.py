@@ -11,7 +11,8 @@ import shutil
 import sys
 from pathlib import Path
 
-OUT = Path(sys.argv[1])
+# T-42: tools/board.py imports this file for studio_steps(); the run over out/ happens only as a script.
+OUT = Path(sys.argv[1]) if __name__ == "__main__" else None
 HERE = Path(__file__).resolve().parent
 
 # Fill these in when Josef sets the first drop-in. Leave None until then.
@@ -362,14 +363,16 @@ def fix_linkedin():
 CLOSING_CALL = re.compile(r'\n  <section aria-labelledby="next-h".*?</section>\n', re.S)
 
 
-def add_closing_call():
+def closing_call(t):
     src = CLOSING_CALL.findall((HERE / "work.html").read_text(encoding="utf-8"))
     assert len(src) == 1, "work.html: expected one closing call box"
-    p = OUT / "studio.html"
-    t = p.read_text(encoding="utf-8")
     assert 'id="next-h"' not in t, "studio.html already has a closing call box"
-    t = rep(t, "\n</main>", "\n" + src[0].lstrip("\n").rstrip("\n") + "\n</main>")
-    p.write_text(t, encoding="utf-8")
+    return rep(t, "\n</main>", "\n" + src[0].lstrip("\n").rstrip("\n") + "\n</main>")
+
+
+def add_closing_call():
+    p = OUT / "studio.html"
+    p.write_text(closing_call(p.read_text(encoding="utf-8")), encoding="utf-8")
 
 
 # T-25 F5: the closing call box (work.html's, which add_closing_call() sets on studio.html,
@@ -383,13 +386,21 @@ CALL_BOX_CSS = ('<style>@media (min-width:900px){section[aria-labelledby="next-h
 CALL_BOX_PAGES = {"work.html": "next-h", "studio.html": "next-h", "case-reels.html": "c7"}
 
 
+def balance(f, t):
+    h = CALL_BOX_PAGES[f]
+    assert t.count(f'<section aria-labelledby="{h}"') == 1, f + ": expected one closing call box"
+    assert CALL_BOX_CSS not in t
+    return rep(t, "</head>", CALL_BOX_CSS + "</head>")
+
+
 def balance_closing_call():
-    for f, h in CALL_BOX_PAGES.items():
+    for f in CALL_BOX_PAGES:
         p = OUT / f
-        t = p.read_text(encoding="utf-8")
-        assert t.count(f'<section aria-labelledby="{h}"') == 1, f + ": expected one closing call box"
-        assert CALL_BOX_CSS not in t
-        p.write_text(rep(t, "</head>", CALL_BOX_CSS + "</head>"), encoding="utf-8")
+        p.write_text(balance(f, p.read_text(encoding="utf-8")), encoding="utf-8")
+
+
+def client(t):
+    return t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
 
 
 def add_pages():
@@ -399,9 +410,7 @@ def add_pages():
         assert mark and mark.group(2) == STUDIO.fingerprint(), \
             f"{f} is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
     for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
-        t = (HERE / f).read_text(encoding="utf-8")
-        t = t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
-        (OUT / f).write_text(t, encoding="utf-8")
+        (OUT / f).write_text(client((HERE / f).read_text(encoding="utf-8")), encoding="utf-8")
     add_closing_call()
     balance_closing_call()
     if PHOTO.exists():
@@ -598,16 +607,21 @@ def add_phone_menu():
             rest = rest[:j] + "\n  " + MENU_JS + rest[j:]
             t = head + rest
         else:
-            assert t.count(DARK_NAV) == 1, "header nav in " + f
-            a = t.index(DARK_NAV)
-            end = t.index("</nav>", a)
-            nav = t[a:end]
-            logo_end = nav.index("</a>") + len("</a>")
-            links = nav.index("<div ", logo_end)
-            nav = (nav[:logo_end] + "\n      " + MENU_BTN + nav[logo_end:links]
-                   + '<div class="djm-links" id="djm-links" ' + nav[links + len("<div "):])
-            t = t[:a] + nav + "</nav>" + MENU_JS + t[end + len("</nav>"):]
+            t = phone_menu(f, t)
         p.write_text(t, encoding="utf-8")
+
+
+def phone_menu(f, t):
+    """The menu on a page with the dark nav (every menu page but index.html), after MENU_CSS."""
+    assert t.count(DARK_NAV) == 1, "header nav in " + f
+    a = t.index(DARK_NAV)
+    end = t.index("</nav>", a)
+    nav = t[a:end]
+    logo_end = nav.index("</a>") + len("</a>")
+    links = nav.index("<div ", logo_end)
+    nav = (nav[:logo_end] + "\n      " + MENU_BTN + nav[logo_end:links]
+           + '<div class="djm-links" id="djm-links" ' + nav[links + len("<div "):])
+    return t[:a] + nav + "</nav>" + MENU_JS + t[end + len("</nav>"):]
 
 
 # No word alone on a line (T-20 F5): the same rules tools/chrome.py gives the pages it
@@ -882,11 +896,15 @@ def add_landmarks():
 ORANGE_TEXT = re.compile(r'(background: ?#E8592B;(?:[^"{}]*?[;\s])?color: ?)#0E1B17')
 
 
+def contrast(t):
+    return ORANGE_TEXT.subn(lambda m: m.group(1) + "#0E1A17", t)
+
+
 def fix_contrast():
     hit = []
     for p in sorted(OUT.glob("*.html")):
         t = p.read_text(encoding="utf-8")
-        t2, n = ORANGE_TEXT.subn(lambda m: m.group(1) + "#0E1A17", t)
+        t2, n = contrast(t)
         if n:
             hit.append(f"{p.name} ({n})")
             p.write_text(t2, encoding="utf-8")
@@ -898,11 +916,14 @@ def fix_contrast():
     print("contrast: orange buttons on " + ", ".join(hit))
 
 
-def use_hello():
+def hello(t):
     # The site's public address is hello@, which forwards to Josef's Gmail.
+    return t.replace("stephens.josef@gmail.com", EMAIL)
+
+
+def use_hello():
     for p in OUT.glob("*.html"):
-        t = p.read_text(encoding="utf-8")
-        p.write_text(t.replace("stephens.josef@gmail.com", EMAIL), encoding="utf-8")
+        p.write_text(hello(p.read_text(encoding="utf-8")), encoding="utf-8")
 
 
 # Share cards (T-01, Nov 9, 2026). tools/og.py draws them into assets/og/;
@@ -936,22 +957,43 @@ def add_og():
         assert (og_dir / (f[:-len(".html")] + ".png")).exists(), "no share card for " + f
 
 
-fix_linkedin()
-enhance_local()
-enhance_mainframe()
-add_pages()
-enhance_index()
-add_free_tools()
-add_phone_menu()
-layout_mainframe()
-layout_local_index()
-layout_mainframe_t21()
-layout_local_t21()
-add_landmarks()
-add_wrap()
-fix_contrast()
-use_hello()
-add_og()
-for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
-    assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
-print("enhanced")
+def studio_steps(f, t):
+    """T-42 (Nov 22, 2026), for tools/board.py: what the run below does to one Studio page (f is
+    "studio.html" or a "studio-<id>.html"), in the same order, from the page tools/studio.py
+    wrote to the page this script leaves in out/. No other step touches these pages; a new step
+    that does must be added here too (README step 4d says so)."""
+    assert f in STUDIO_PAGES, f
+    t = client(t)                                                 # add_pages()
+    if f in CALL_BOX_PAGES:
+        t = balance(f, closing_call(t))                           # add_closing_call(), balance_closing_call()
+    t = phone_menu(f, rep(t, "</head>", MENU_CSS + "</head>"))     # add_phone_menu()
+    assert t.count(CHROME.WRAP_CSS) == 1, "wrap rules in " + f    # add_wrap()
+    t = contrast(t)[0]                                            # fix_contrast()
+    assert not ORANGE_TEXT.search(t), "orange pair left in " + f
+    t = hello(t)                                                  # use_hello()
+    assert t.count('property="og:image"') == 1, "og:image count in " + f   # add_og()
+    assert (HERE / "assets" / "og" / (f[:-len(".html")] + ".png")).exists(), "no share card for " + f
+    assert "—" not in t, "em dash in " + f
+    return t
+
+
+if __name__ == "__main__":
+    fix_linkedin()
+    enhance_local()
+    enhance_mainframe()
+    add_pages()
+    enhance_index()
+    add_free_tools()
+    add_phone_menu()
+    layout_mainframe()
+    layout_local_index()
+    layout_mainframe_t21()
+    layout_local_t21()
+    add_landmarks()
+    add_wrap()
+    fix_contrast()
+    use_hello()
+    add_og()
+    for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
+        assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
+    print("enhanced")

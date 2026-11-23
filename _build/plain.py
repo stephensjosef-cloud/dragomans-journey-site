@@ -13,7 +13,8 @@ import json
 import sys
 from pathlib import Path
 
-OUT = Path(sys.argv[1])
+# T-42: tools/board.py imports this file for apply(); the run over out/ happens only as a script.
+OUT = Path(sys.argv[1]) if __name__ == '__main__' else None
 
 EDITS = [
     # ---------------- front door (index.html) ----------------
@@ -390,26 +391,35 @@ def variants(old, new):
         yield ja, jna
 
 
-files = {p: p.read_text(encoding='utf-8') for p in sorted(OUT.glob('*.html'))}
-missed = []
-for old, new in EDITS:
-    assert '—' not in new, new
-    hit = 0
-    for p in files:
+def apply(text):
+    """Every edit on one page, in order, as the run below does it page by page (T-42: tools/board.py)."""
+    for old, new in EDITS:
         for o, n in variants(old, new):
-            c = files[p].count(o)
-            if c:
-                files[p] = files[p].replace(o, n)
-                hit += c
-    if not hit:
-        missed.append(old)
+            text = text.replace(o, n)
+    return text
 
-for p, t in files.items():
-    p.write_text(t, encoding='utf-8')
 
-if missed:
-    print('MISSED %d:' % len(missed))
-    for m in missed:
-        print('  ' + m[:110])
-    sys.exit(1)
-print('plain: %d edits applied' % len(EDITS))
+if __name__ == '__main__':
+    files = {p: p.read_text(encoding='utf-8') for p in sorted(OUT.glob('*.html'))}
+    missed = []
+    for old, new in EDITS:
+        assert '—' not in new, new
+        hit = 0
+        for p in files:
+            for o, n in variants(old, new):
+                c = files[p].count(o)
+                if c:
+                    files[p] = files[p].replace(o, n)
+                    hit += c
+        if not hit:
+            missed.append(old)
+
+    for p, t in files.items():
+        p.write_text(t, encoding='utf-8')
+
+    if missed:
+        print('MISSED %d:' % len(missed))
+        for m in missed:
+            print('  ' + m[:110])
+        sys.exit(1)
+    print('plain: %d edits applied' % len(EDITS))

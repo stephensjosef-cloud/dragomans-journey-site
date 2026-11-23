@@ -425,6 +425,19 @@ def un40_file(rel, data):
     return data
 
 
+# T-42 (Nov 22, 2026): 16 catch-up lines in shipped.json (dated Nov 7 to Nov 22). An older check that compares the
+# Studio log with an earlier one leaves them out through t42_new_lines(): the lines origin/main (273fa0d) didn't have.
+T42_MAIN = '273fa0d'
+
+
+def t42_new_lines():
+    import json as _j42
+    got = _sp35.run(['git', 'show', f'{T42_MAIN}:_build/shipped.json'], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True)
+    old = {e['line'] for e in _j42.loads(got.stdout)['entries']} if got.returncode == 0 else set()
+    now = _j42.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shipped.json'), encoding='utf-8').read())['entries']
+    return {e['line'] for e in now if e['line'] not in old}
+
+
 def un35_file(rel, data):
     """A file as origin/main had it before T-35, for the share cards T-35 redrew; any other file as it is."""
     rel = rel.replace(os.sep, '/')
@@ -3648,6 +3661,8 @@ def s_t_22():
     log = q.evaluate("[...document.querySelectorAll('#log li')].map(li => [li.querySelector('time').getAttribute('datetime'), li.querySelector('.proj').textContent, li.querySelector('.line').textContent])")
     count = q.evaluate("[document.querySelector('#stats strong').textContent, document.getElementById('log-all') ? document.getElementById('log-all').textContent : '']")
     q.close()
+    log_all = log
+    log = [l for l in log if l[2] not in t42_new_lines()]   # T-42: its 16 catch-up lines out
     check('T-22 K8: the Studio\'s cooking app card has the new body', K8 in kids, kids[:200])
     old_kids = _re.search(r'<article class="prod[^"]*"[^>]*>(?:(?!</article>).)*A kids\' cooking app.*?</article>', OLD22['studio.html'], _re.S)
     new_kids = _re.search(r'<article class="prod[^"]*"[^>]*>(?:(?!</article>).)*A kids\' cooking app.*?</article>', SRC22['studio.html'], _re.S)
@@ -3661,10 +3676,10 @@ def s_t_22():
     want_log = [l for l in old_log if l[0] not in ('2026-11-08', '2026-10-07') or l[1] != "A kids' cooking app"]
     want_log = [[a, b_, K9 if (a, b_) == ('2026-10-27', "A kids' cooking app") else c] for a, b_, c in want_log]
     check('T-22 K9: every other log line is as at T-21', log == want_log, str(log)[:300])
-    check('T-22 K9: the Studio\'s count matches the lines that show', count[0] == str(len(log)) and count[1] == f'See all {len(log)}', str(count) + f' / {len(log)} lines')
+    check('T-22 K9: the Studio\'s count matches the lines that show', count[0] == str(len(log_all)) and count[1] == f'See all {len(log_all)}', str(count) + f' / {len(log_all)} lines')
     sj = _json.loads(open(os.path.join(here, 'shipped.json'), encoding='utf-8').read())
     check('T-22 K9: shipped.json has neither removed line and the new Oct 27 line once',
-          [e for e in sj['entries'] if e['project'] == 'kids'] == [{'date': '2026-10-27', 'project': 'kids', 'line': K9}, {'date': '2026-10-06', 'project': 'kids', 'line': K9_KEPT}])
+          [e for e in sj['entries'] if e['project'] == 'kids' and e['line'] not in t42_new_lines()] == [{'date': '2026-10-27', 'project': 'kids', 'line': K9}, {'date': '2026-10-06', 'project': 'kids', 'line': K9_KEPT}])   # T-42: its lines out
     check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and back23(what29(p)) == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
 
     # Everything else is as at T-21. Pages this item doesn't touch: byte for byte (the Studio pages' stamp aside).
@@ -3859,7 +3874,7 @@ def s_t_23():
     check('T-23 K5b and K7b: voice2.py edits with their IDs', rd('voice2.py').count("ref='K5b'") == 2 and rd('voice2.py').count("ref='K7b'") == 1)
     check('T-23 K8b: in _build/work.html with its ID, and the kids product in studio.json', 'T-23 K8b' in rd('work.html') and rd('work.html').count(K8B) == 1
           and any(p.get('id') == 'kids' and what29(p) == K8B for p in _json.loads(rd('studio.json'))['products']))   # T-30: the kids' "what" as at T-29 (null now; the T-30 block checks it)
-    check('T-23: the Studio card\'s proof line stays', "535 tests, and every change checked on a real phone before it ships." in TXT23['studio.html'])
+    check('T-23: the Studio card\'s proof line stays', "Over 700 tests, and every change checked on a real phone before it ships." in TXT23['studio.html'])   # T-42 C2: "535 tests" became "Over 700 tests"
 
     # L1: a two-hyphen word up to 24 characters never breaks, on any page, at 320, 390 and 1440.
     L1_JS = r'''(() => {
@@ -5393,7 +5408,7 @@ def s_t_30():
         check(f'T-30: the {pid} card reads name, pill,{" proof," if P30[pid].get("proof") else ""} link, in that order, and nothing else',
               [k if not k.startswith('<div class="acts">') else '<div class="acts">' for k in kids_] == want and card.count('<p') == (1 if P30[pid].get('proof') else 0), str(kids_))
     check('T-30: the kids\' card keeps "Built for a client", its bold proof line and "See the work →"',
-          '<span class="pill">Built for a client</span>' in S30 and '<p class="proof"><strong>535 tests, and every change checked on a real phone before it ships.</strong></p>' in S30
+          '<span class="pill">Built for a client</span>' in S30 and '<p class="proof"><strong>Over 700 tests, and every change checked on a real phone before it ships.</strong></p>' in S30
           and '<a class="go" href="work.html">See the work →</a>' in S30)
     check('T-30: the COBOL card keeps "Public" and "Open the repo ↗"', '<span class="pill">Public</span>' in S30
           and '<a class="go" href="https://github.com/stephensjosef-cloud/cobol-behavioral-equivalence">Open the repo ↗</a>' in S30)
@@ -6859,7 +6874,7 @@ def _t35_checks(TB):
           [s['text'] for s in q.evaluate(T35_VC_JS, 'Rye is 3.5 dollars! Is it good? Yes.')['sentences']] == ['Rye is 3.5 dollars!', 'Is it good?', 'Yes.'])
     # The page checks itself: its own words, line by line, give no mark.
     # (Every line of THE WORDS on its own, the sample and the reasons aside; the rhythm note is a reason.)
-    for ln in [v_ for k, v_ in T35_W.items() if k != 'rhythm'] + ['6 of 7 sentences have a mark', '1 of 7 sentences has a mark', T35_CARD[3]]:
+    for ln in [v_ for k, v_ in T35_W.items() if k != 'rhythm'] + ['6 of 7 sentences have marks', '1 of 7 sentences has a mark', T35_CARD[3]]:   # T-42 W1
         r_ = t35_marks(q.evaluate(T35_VC_JS, ln))
         check(f'T-35: the page checks itself: "{ln[:50]}" has no mark', not any(r_), str(r_))
     q.close()
@@ -6933,7 +6948,7 @@ def _t35_checks(TB):
         q.wait_for_timeout(100)
         S = q.evaluate(T35_STATE_JS)
         check(f'T-35: at {w}, "Try a sample" fills the box with the sample', S['box'] == T35_SAMPLE)
-        check(f'T-35: at {w}, and checks it at once: "6 of 7 sentences have a mark"', S['res'] and S['head'] == '6 of 7 sentences have a mark', S['head'])
+        check(f'T-35: at {w}, and checks it at once: "6 of 7 sentences have marks"', S['res'] and S['head'] == '6 of 7 sentences have marks', S['head'])   # T-42 W1
         order = [T35_SAMPLE.split('. ')[i][:20] for i in (0, 1, 2, 3)]
         got_o = [c['s'][:20] for c in S['cards']]
         check(f'T-35: at {w}, six cards, worst mark first, then by place: sentences 1, 2, 3, 4, 7, then 5',

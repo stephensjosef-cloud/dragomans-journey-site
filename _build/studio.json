@@ -1,5 +1,6 @@
 {
-  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero shows only intro. The meta description uses lede_album_gated while the album card is hidden, so it names the album only when the album shows. kind and kicker are kept but not printed (T-16); the page title is the kicker's first part. The gallery's words live in \"gallery\" too: its heading, each app's name, each group's label and caption, and each image's caption and alt text. Its images are in assets/gallery, and studio.py numbers the captions of a group marked numbered. A gallery app with a \"product\" (that product's id) shows that product's card words inside its gallery block instead of as a card: its status, what, proof, page link and join box. The ChuckleFits shelf lives in the chucklefits product's \"shelf\" (each product's handle, name, kind, price, tags, image and alt), with \"link_tag\" on every shop link; it is refreshed from a new shop snapshot, and its photos are in assets/shelf. studio.py stops the build if a shelf product carries a tag containing unhinged. A product whose \"what\" is null shows no description line, because its description lives on the Work page. A gallery app with an \"id\" carries it on its block, so another page can link to it (T-33: Work's Birdsighted card links studio.html#birdsighted).",
+  "_about": "Everything on the Studio page. Each product shows only if it has no gate. Claude fills a gate's blank when Josef answers, then clears the gate. Counts on join lists show only at 10 or more. The hero shows only intro. The meta description uses lede_album_gated while the album card is hidden, so it names the album only when the album shows. kind and kicker are kept but not printed (T-16); the page title is the kicker's first part. The gallery's words live in \"gallery\" too: its heading, each app's name, each group's label and caption, and each image's caption and alt text. Its images are in assets/gallery, and studio.py numbers the captions of a group marked numbered. A gallery app with a \"product\" (that product's id) shows that product's card words inside its gallery block instead of as a card: its status, what, proof, page link and join box. The ChuckleFits shelf lives in the chucklefits product's \"shelf\" (each product's handle, name, kind, price, tags, image and alt), with \"link_tag\" on every shop link; it is refreshed from a new shop snapshot, and its photos are in assets/shelf. studio.py stops the build if a shelf product carries a tag containing unhinged. A product whose \"what\" is null shows no description line, because its description lives on the Work page. A gallery app with an \"id\" carries it on its block, so another page can link to it (T-33: Work's Birdsighted card links studio.html#birdsighted). \"labels\" names a build log project that has no product card (T-42: Birdsighted, whose block is in the gallery): its id and the label shown beside its lines.",
+  "labels": {"birdsighted": "Birdsighted"},
   "hero": {
     "kicker": "The studio · updated as things ship",
     "h1": "Follow along<br>while I piece it together",
@@ -8,7 +9,7 @@
     "lede_album_gated": "Everything I'm building right now, and the date each piece shipped. Apps, free tools and shirts, made with AI and a lot of real-phone testing. Get on a list and you hear first."
   },
   "products": [
-    {"id": "birdleague", "name": "Bird League", "status": "In testing on iPhone", "kind": "My own app",
+    {"id": "birdleague", "name": "Bird League", "status": "In testing on iPhone and Android", "kind": "My own app",
      "what": "Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.",
      "proof": "Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.",
      "image": "bird-league-then-now.jpg", "image_alt": "Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.",
@@ -21,7 +22,7 @@
      "link": null, "gate": null},
     {"id": "kids", "name": "A kids' cooking app", "status": "Built for a client", "kind": "Client app",
      "what": null,
-     "proof": "535 tests, and every change checked on a real phone before it ships.",
+     "proof": "Over 700 tests, and every change checked on a real phone before it ships.",
      "image": null, "image_alt": null, "list": null,
      "link": {"href": "work.html", "label": "See the work"}, "gate": null},
     {"id": "cobol", "name": "COBOL, checked in public", "status": "Public", "kind": "Proof",

@@ -23,6 +23,7 @@ CSS = r"""
 .find .fix b{font-weight:600}
 .oks{margin:18px 0 0;padding:0 0 0 20px;font-size:16px;line-height:1.7;color:#3B4540}
 .note{font-size:15px;color:#5A635D;margin:14px 0 0}
+.aiok{margin:18px 0 0;font-size:17px;font-weight:600;color:#16201C}
 .facts{margin-top:18px;background:#fff;border:1.5px solid #CFC6B2;padding:14px 16px}
 .facts h3{margin:0 0 8px;font-size:18px}
 .facts dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0;font-size:16px}
@@ -63,6 +64,7 @@ BODY = r"""
     <h2 id="rep2-h">Can AI find you?</h2>
     <p style="margin:8px 0 0">This doesn't tell you what ChatGPT says about you. It checks whether a computer can find the basic facts about your business on your page.</p>
     <ul class="finds" id="finds2"></ul>
+    <p class="aiok" id="aiok" hidden>AI tools can read your basic facts.</p>
     <div class="facts">
       <h3>What a computer can read off your page</h3>
       <dl id="facts"></dl>
@@ -114,6 +116,16 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     budget: "That took more checking than I can do at once. Try again in a minute.",
     wait: 'One check every 20 seconds. Try again in a moment.'
   };
+
+  // T-42 W6: "a" or "an" by sound, before a name the page quotes: "an NGO", "a LocalBusiness", "an Organization".
+  function an(w) {
+    w = String(w);
+    if (/^[A-Z]{2}/.test(w)) return ('AEFHILMNORSX'.indexOf(w[0]) > -1 ? 'an ' : 'a ') + w;   // read as letters
+    var l = w.toLowerCase();
+    if (/^(?:hour|honest|honou?r|heir)/.test(l)) return 'an ' + w;
+    if (/^(?:uni|use|usu|uti|ur[aeiou]|eu|one|once)/.test(l)) return 'a ' + w;
+    return (/^[aeiou]/.test(l) ? 'an ' : 'a ') + w;
+  }
 
   function finding(level, title, cost, fix) { return {level: level, title: title, cost: cost, fix: fix}; }
   var RANK = {bad: 0, warn: 1, info: 2};
@@ -183,8 +195,11 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     if (r.tel) good.push('Your phone number can be tapped to call.');
     if (r.email || r.contactForm) good.push(r.contactForm ? 'It has a contact form.' : 'It has an email address.');
     if (r.title && r.description) good.push('It has a title and a description.');
+    // T-42 W8: the list names each button once (a label seen twice, at two addresses, once) and fills from the next one.
+    var names = working.map(function (l) { return l.label; }).filter(function (x, i, all) { return all.indexOf(x) === i; });
     if (working.length) good.push(working.length + (working.length === 1 ? ' button works: ' : ' buttons work: ') +
-      list(working.slice(0, 4).map(function (l) { return '"' + l.label + '"'; })) + (working.length > 4 ? ' and more' : '') + '.');
+      (names.length > 4 ? names.slice(0, 4).map(function (x) { return '"' + x + '"'; }).join(', ') + ' and more'
+        : list(names.map(function (x) { return '"' + x + '"'; }))) + '.');
     if (!r.cut && r.bytes <= 1048576) good.push('It weighs ' + Math.max(1, Math.round(r.bytes / 1024)) + ' KB before pictures.');
     render($('finds1'), f);
     var nSite = count(f);
@@ -212,7 +227,9 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
       "Search engines and AI tools that follow it won't read any page on your site.",
       'A five-minute fix, unless it was put there on purpose: remove "Disallow: /" under "User-agent: *" in robots.txt.'));
     if (a.answerBlocked.length) f.push(finding('bad', 'Your site turns AI readers away',
-      'Your robots.txt asks ' + list(a.answerBlocked) + ' to stay out, so ' + list(bots(a.answerBlocked).map(function (b) { return b.what; })) +
+      // T-42 W7: the companies behind the blocked crawlers, each once ("the AI tools from OpenAI and Perplexity").
+      'Your robots.txt asks ' + list(a.answerBlocked) + ' to stay out, so the AI tools from ' +
+      list(bots(a.answerBlocked).map(function (b) { return b.company || b.name; }).filter(function (x, i, all) { return all.indexOf(x) === i; })) +
       " can't read this page to answer questions about you.",
       'A five-minute fix: remove those lines from robots.txt.'));
     if (a.noindexMeta) f.push(finding('bad', 'Your page tells search engines not to list it',
@@ -235,7 +252,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
       var miss = [['name', 'name'], ['address', 'address'], ['telephone', 'phone number'], ['openingHours', 'opening hours'], ['url', 'web address']]
         .filter(function (k) { return !s.business.has[k[0]] && !(noShop && (k[0] === 'address' || k[0] === 'openingHours')) && !(noPhone && k[0] === 'telephone'); }).map(function (k) { return k[1]; });
       if (miss.length) f.push(finding('warn', 'Your structured data leaves out your ' + list(miss),
-        'Your page describes itself as a ' + s.business.type + ' for machines, but without those facts.',
+        'Your page describes itself as ' + an(s.business.type) + ' for machines, but without those facts.',
         'A short fix, wherever that block is set up.'));
     }
     // T-41 play pass: the page-text notes stay quiet when the structured data already gives a machine the fact.
@@ -246,6 +263,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     if (a.trainingBlocked.length) f.push(finding('info', 'Your robots.txt keeps ' + list(a.trainingBlocked) +
       " from collecting your pages for AI training. That's a choice, not a fault.", '', ''));
     render($('finds2'), f);
+    $('aiok').hidden = f.length > 0;   // T-42 W9
 
     var none = "I couldn't find it";
     // T-41 play pass: a page title that is just a name ("Sunnyside Nails") is a name a computer can read; a title with
@@ -272,7 +290,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     e.preventDefault();
     var v = $('site').value.trim(), go = $('go'), msg = $('msg');
     if (!v) { msg.textContent = ERR.empty; $('site').focus(); return; }
-    go.disabled = true; go.textContent = 'Checking…'; msg.textContent = 'Checking ' + v + '. This can take up to 30 seconds.';
+    go.disabled = true; go.textContent = 'Checking…'; msg.textContent = 'Checking ' + v + '. This can take a minute or two.';
     // T-41 play pass: "name:password@site.com" or "site.com:8080" typed without https:// reads to the Worker as an odd
     // scheme ("Only web addresses that start with http..."); sent with https:// in front, it gets the message that fits.
     var send = /^[^\/:?#]+:/.test(v) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(v) && !/^(?:mailto|javascript|data|tel|sms|file|ftp|about|blob|vbscript):/i.test(v) ? 'https://' + v : v;

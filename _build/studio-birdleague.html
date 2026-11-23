@@ -62,13 +62,33 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 @media (min-width:800px){.loghead{flex-direction:row-reverse;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:baseline;gap:8px clamp(24px,3vw,40px)}
 .loghead .stats{border:0}.loghead .stats p{padding:0}
 .loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}
-.log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
-.log li{display:grid;grid-template-columns:5.5em 13em minmax(0,1fr);gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid #DDD5C3}
-.log time{font-size:14px;color:#676D66;white-space:nowrap}
-.log .proj{justify-self:start;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:3px 9px;background:#EAE3D3;color:#3B4540;border-radius:2px}
+.log{list-style:none;margin:0;padding:0}
+.log li{position:relative;display:grid;grid-template-columns:5.5em 11em minmax(0,1fr);gap:2px 18px;align-items:baseline;padding:11px 0 11px 46px}
+.log li::before{content:"";position:absolute;left:15px;top:25px;bottom:-25px;width:3px;background:repeating-linear-gradient(to bottom,#E8592B 0 10px,transparent 10px 18px)}
+.log li::after{content:"";position:absolute;left:8px;top:16.5px;width:17px;height:17px;box-sizing:border-box;border-radius:50%;background:currentColor;color:#5A635D}
+.log li.front::after{left:7px;top:15.5px;width:19px;height:19px;outline:2.5px solid currentColor;outline-offset:3px}
+@media (prefers-reduced-motion:no-preference){.log li.front::after{animation:djpulse 1.6s ease-out .6s 1}}
+@keyframes djpulse{from{box-shadow:0 0 0 0 currentColor}to{box-shadow:0 0 0 18px transparent}}
+.log time{font-size:14px;color:#5A635D;white-space:nowrap}
+.log .proj{justify-self:start;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:700;font-size:16px;color:#3B4540}
 .log .line{font-size:17px}
-@media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr)}.log .line{grid-column:1/-1}}
-#log-all{align-self:flex-start}
+.log li.front .line{font-size:20px;line-height:1.35;font-weight:500}
+@media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr);gap:0 14px;padding-left:40px}.log .line{grid-column:1/-1}
+.log li::before{left:12px;top:24px;bottom:-24px}.log li::after{left:5px;top:15.5px}.log li.front::after{left:4px;top:14.5px}#log-all{margin-left:40px}}
+#log-all{align-self:flex-start;margin-left:46px}
+.log li:last-child::before,.log li.end::before{bottom:0}
+.logtop{display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px 64px}
+.wk{margin:0;flex:0 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px}
+.wk figcaption{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:600;font-size:17px;line-height:1.2;color:#3B4540}
+.wk-bars{display:block;max-width:100%;height:auto;overflow:visible}
+.wk-bars text{font-family:'JetBrains Mono',monospace;font-size:12px}
+.sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.lf{display:none;flex-wrap:wrap;gap:8px}
+.logsec.js .lf{display:flex}
+.lf .chip{display:inline-flex;align-items:center;gap:8px;padding:0 14px}
+.lf .n{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:400}
+.lf .dot{flex:none;width:12px;height:12px;box-sizing:border-box;border-radius:50%;background:currentColor}
+.logsec.js:not(.ready) #log>li[data-more]{display:none}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .jf{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px}
 .jf-e{flex:1 1 220px;max-width:340px;display:flex;flex-direction:column;gap:6px}
@@ -95,6 +115,8 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .prod.feature .acts{margin-top:8px}
 .prod.feature img{width:100%;height:auto;display:block;border:1.5px solid #CFC6B2;border-radius:2px;background:#F4EFE6}
 @media (min-width:800px){.prod.feature{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.log li[data-p="birdleague"]::after,.lf .dot[data-p="birdleague"]{color:#1C5FA8}
+.log li[data-p="birdleague"] .proj{color:#1C5FA8}
 
 .kick a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:underline;text-underline-offset:3px}
 .kick a:hover{color:#E9EEE9}
@@ -131,25 +153,32 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <span class="kick"><a href="studio.html">← The Studio</a></span>
       <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Bird League</h1>
-      <span class="hero-pill">In testing on iPhone</span>
+      <span class="hero-pill">In testing on iPhone and Android</span>
       <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.</p>
     </div>
   </div>
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-22 e73cabf9dfb553de -->
+<!-- studio.py 2026-11-22 60c390cec86e1e95 -->
   <div class="top has-img has-log">
     <p class="proof"><strong>Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.</strong></p>
     <img src="bird-league-then-now.jpg" width="1200" height="1331" alt="Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.">
     <section class="sec" aria-labelledby="log-h">
       <h2 id="log-h" class="big">Shipped lately</h2>
       <ol class="log solo" id="log">
-        <li><time class="mono" datetime="2026-11-02">Nov 2</time><span class="line">Bird League build 49: the map crash fixed, new stats cards, sharper art.</span></li>
-        <li><time class="mono" datetime="2026-10-26">Oct 26</time><span class="line">Bird League's sound ID now runs on its own, and newcomers get a trophy ceremony.</span></li>
-        <li><time class="mono" datetime="2026-10-15">Oct 15</time><span class="line">Duel medals went live in Bird League.</span></li>
-        <li><time class="mono" datetime="2026-10-14">Oct 14</time><span class="line">Bird League players can now send their sightings to eBird in one tap.</span></li>
-        <li><time class="mono" datetime="2026-10-08">Oct 8</time><span class="line">Bird League got The Almanac and a trophy ceremony.</span></li>
+        <li data-p="birdleague" class="front"><time class="mono" datetime="2026-11-21">Nov 21</time><span class="line">Bird League players can add a photo to any bird they've already logged.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-11-20">Nov 20</time><span class="line">New Bird League players get a short welcome and land in a league near them.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-11-18">Nov 18</time><span class="line">Bird League added safety settings for its teen players.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-11-16">Nov 16</time><span class="line">Bird League runs on Android now, as well as iPhone.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-11-14">Nov 14</time><span class="line">New Bird League players see the birds near them first.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-11-12">Nov 12</time><span class="line">Bird League players can submit their best photos to a shared gallery.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-11-09">Nov 9</time><span class="line">Open Leagues went live in Bird League: anyone can join a league and play.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-11-02">Nov 2</time><span class="line">Bird League build 49: the map crash fixed, new stats cards, sharper art.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-10-26">Oct 26</time><span class="line">Bird League's sound ID now runs on its own, and newcomers get a trophy ceremony.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-10-15">Oct 15</time><span class="line">Duel medals went live in Bird League.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-10-14">Oct 14</time><span class="line">Bird League players can now send their sightings to eBird in one tap.</span></li>
+        <li data-p="birdleague"><time class="mono" datetime="2026-10-08">Oct 8</time><span class="line">Bird League got The Almanac and a trophy ceremony.</span></li>
       </ol>
     </section>
   </div>

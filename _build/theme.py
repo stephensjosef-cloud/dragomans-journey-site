@@ -49,6 +49,10 @@ BAND_LINES = {'#3A4D44', '#4C5F56', '#2B3D35', '#33463D', '#2A3140', '#3A4252'} 
 # Colors kept as they are, by role (listed in T-32's Receipt): status signals and the shot list's role tags.
 KEPT = {'#2E7D4F', '#D9A520', '#7BD389', '#F9EEDA', '#F8E3DA', '#8A6A12',
         '#F6C9B5', '#D9E4D2', '#F2DEA8', '#E6DCF0', '#CFE0EE', '#000000', 'BLACK'}
+# T-42 (Nov 22, 2026): blue as a data mark (DESIGN.md: "and data marks"), on any page: the Studio build log's
+# Bird League and Birdsighted dots. Written in the new palette by tools/studio.py and kept as it is. No source used
+# this color before (it would have stopped the build), so no other page changes.
+DATA_MARKS = {BLUE}
 RGBA = {
     'rgba(147,163,154,0.35)': 'rgba(168,139,92,0.30)',    # Local's contour lines (the table)
     'rgba(240,122,78,0.55)': 'rgba(168,139,92,0.55)',     # Local's orange contour lines (the table)
@@ -105,7 +109,7 @@ def map_color(role, tok, zone, mf, tag=''):
         if c in RGBA:
             return RGBA[c]
         raise Unknown(c)
-    if c in KEPT:
+    if c in KEPT or c in DATA_MARKS:
         return tok
     if role == 'bg':
         if c in ('#FFFFFF', 'WHITE'):

@@ -16,8 +16,13 @@ Rules:
   The count over the log ("<n> things finished since <date>") counts the lines
   that are left, so it always agrees with the list under it.
 - "Shipped lately" shows the 8 newest; "See all <N>" reveals the rest in place.
-- Each log line carries a small label: its project's product name, or the
-  site's own address for project "site".
+  With scripts off every line shows (T-42).
+- Each log line carries a small label: its project's product name, a name from
+  studio.json's "labels" (T-42), or the site's own address for project "site".
+- The look (T-42, Nov 22, 2026): the log is a route, a dashed line with a dot per line
+  in its project's color (MARKS), the newest the front; above it a strip of lines per
+  week from the oldest line's week (strip_svg(), no script) and a filter button per project (filters(), SCRIPT).
+  tools/board.py rebuilds these pages alone for a new line.
 - The hero shows only "intro" (T-16). The meta description names the album
   only while the album card shows: "lede" then, "lede_album_gated" while the
   album has a gate. The kicker and each product's "kind" stay in the JSON but
@@ -96,7 +101,10 @@ def fingerprint():
 
 
 def labels(studio):
+    """Each project's label: its product's name, a name from studio.json's "labels" (T-42: a
+    project with no product card, like Birdsighted), or the site's own address for "site"."""
     out = {p["id"]: p["name"] for p in studio["products"] if p.get("gate") is None}
+    out.update(studio.get("labels") or {})
     out["site"] = SITE_LABEL
     return out
 
@@ -149,11 +157,118 @@ def a(s):
     return html.escape(s, quote=False).replace('"', "&quot;")
 
 
-def log_item(r, today, more=False, label=True):
-    return (f'\n      <li{" hidden data-more" if more else ""}>'
+def log_item(r, today, more=False, label=True, front=False):
+    """One waypoint on the route (T-42): data-p names its project (its dot's color and the
+    filters); the newest line is the front; data-more marks a line past the 8 newest."""
+    cls = ' class="front"' if front else ''
+    return (f'\n      <li data-p="{a(r["project"])}"{cls}{" data-more" if more else ""}>'
             f'<time class="mono" datetime="{r["date"]}">{short_date(r["day"], today)}</time>'
             + (f'<span class="proj">{t(r["label"])}</span>' if label else '')
             + f'<span class="line">{t(r["line"])}</span></li>')
+
+
+# T-42 (Nov 22, 2026): each project's mark on the route, from DESIGN.md's palette, written in the
+# old palette's names that theme.py turns into it (blue is kept as it is, theme.py's DATA_MARKS):
+#   #16201C ink #17212B (13.41:1 on chart), #5A635D ink muted #4F5A63 (5.80:1),
+#   #A93F17 orange text #A93F17 (5.07:1), #1C5FA8 blue (5.32:1).
+# "ring" is a hollow dot, its 3px edge in the color, for the two projects with the fewest lines,
+# so no two projects look alike. A project not listed gets DEFAULT_MARK. The label beside each
+# line always names the project, so the color is never the only sign.
+MARKS = {
+    "birdleague": ("#1C5FA8", "dot"),
+    "tools": ("#A93F17", "dot"),
+    "deepcuts": ("#16201C", "dot"),
+    "kids": ("#5A635D", "dot"),
+    "site": ("#16201C", "ring"),
+    "birdsighted": ("#1C5FA8", "ring"),
+    "album": ("#A93F17", "ring"),
+}
+DEFAULT_MARK = ("#5A635D", "ring")
+
+
+def marks_css(projects):
+    """The dot (on the route and in the filter buttons) and the label color for each project."""
+    out = []
+    for pid in projects:
+        color, kind = MARKS.get(pid, DEFAULT_MARK)
+        sel = f'.log li[data-p="{pid}"]::after,.lf .dot[data-p="{pid}"]'
+        out.append(sel + '{color:' + color + '}')
+        if kind == "ring":
+            out.append(sel + '{background:#F2EDE1;border:3px solid currentColor}')
+        out.append(f'.log li[data-p="{pid}"] .proj{{color:{color}}}')
+    return "\n".join(out) + "\n"
+
+
+def monday(d):
+    return d - datetime.timedelta(days=d.weekday())
+
+
+def weeks(rows, today):
+    """[(first day of the week, lines that week)], oldest first: from the week of the oldest line that shows (so at
+    most the 120 days the log keeps; T-42 review: weeks from before the log began read as idle) to this week."""
+    first, last = monday(min(r["day"] for r in rows)), monday(today)
+    out, w = [], first
+    while w <= last:
+        out.append((w, sum(1 for r in rows if w <= r["day"] < w + datetime.timedelta(days=7))))
+        w += datetime.timedelta(days=7)
+    return out
+
+
+SLOT, BAR, TOP, TALL, BASE = 16, 10, 16, 44, 62   # strip geometry, in the SVG's own units
+SCALE = 1.5                                        # drawn at 1.5 px a unit, smaller only where it doesn't fit
+
+
+def strip_svg(rows, today):
+    """The strip (T-42): one bar per week, its height the lines finished that week, the number
+    over it; this week's bar in the accent with a mark under it. Drawn here, no script. The
+    picture is hidden from screen readers; the list after it gives every week's count."""
+    wk = weeks(rows, today)
+    top = max(n for _, n in wk)
+    w = SLOT * len(wk)
+    parts = [f'<svg class="wk-bars" viewBox="0 0 {w} 76" width="{w * SCALE:g}" height="{76 * SCALE:g}" aria-hidden="true" focusable="false">',
+             f'<line x1="0" y1="{BASE + .75}" x2="{w}" y2="{BASE + .75}" stroke="#CFC6B2" stroke-width="1.5"/>',
+             # a tick between weeks, so the empty ones read as weeks
+             '<path d="' + "".join(f"M{i * SLOT}.5 {BASE + 1.5}v4" for i in range(len(wk) + 1)) + '" stroke="#CFC6B2" stroke-width="1"/>']
+    for i, (d, n) in enumerate(wk):
+        now = i == len(wk) - 1
+        x = i * SLOT + (SLOT - BAR) / 2
+        cx = i * SLOT + SLOT / 2
+        fill = "#A93F17" if now else "#5A635D"
+        if n:
+            h = max(4, round(TALL * n / top))
+            parts.append(f'<rect x="{x:g}" y="{BASE - h}" width="{BAR}" height="{h}" fill="{fill}"/>')
+            bold = ' font-weight="700"' if now else ''
+            ink = "#A93F17" if now else "#3B4540"
+            parts.append(f'<text x="{cx:g}" y="{BASE - h - 4}" text-anchor="middle" fill="{ink}"{bold}>{n}</text>')
+        else:                                   # T-42 second review: an empty week says 0, so it doesn't read as missing
+            parts.append(f'<text x="{cx:g}" y="{BASE - 4}" text-anchor="middle" fill="#3B4540">0</text>')
+        if now:
+            parts.append(f'<path d="M{cx - 5:g} 75 L{cx:g} 67 L{cx + 5:g} 75 Z" fill="#A93F17"/>')
+    parts.append('</svg>')
+    sr = "".join(f'<li>{short_date(d, today)}: {n}</li>' for d, n in wk)
+    return ('\n    <figure class="wk">'
+            '\n      <figcaption>Finished each week</figcaption>'
+            f'\n      {"".join(parts)}'
+            f'\n      <ol class="sr">{sr}</ol>'
+            '\n    </figure>')
+
+
+def filters(rows):
+    """One button per project with lines showing (its label and its count), and All first.
+    Shown only with scripts on (the section's js class); STRIP_SCRIPT runs them."""
+    count, label, order = {}, {}, []
+    for r in rows:
+        if r["project"] not in count:
+            order.append(r["project"])
+            count[r["project"]], label[r["project"]] = 0, r["label"]
+        count[r["project"]] += 1
+    order.sort(key=lambda p: -count[p])                       # stable: newest first among equals
+    btns = [f'<button type="button" class="chip" data-f="all" aria-pressed="true" aria-controls="log">All <span class="n">{len(rows)}</span></button>']
+    btns += [f'<button type="button" class="chip" data-f="{a(p)}" aria-pressed="false" aria-controls="log">'
+             f'<span class="dot" data-p="{a(p)}" aria-hidden="true"></span>{t(label[p])} <span class="n">{count[p]}</span></button>'
+             for p in order]
+    return ('\n    <div class="lf" id="log-f" role="group" aria-labelledby="log-h">\n      '
+            + "\n      ".join(btns) + '\n    </div>'), order
 
 
 def page_slug(p):
@@ -223,13 +338,33 @@ CSS = r"""
 @media (min-width:800px){.loghead{flex-direction:row-reverse;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:baseline;gap:8px clamp(24px,3vw,40px)}
 .loghead .stats{border:0}.loghead .stats p{padding:0}
 .loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}
-.log{list-style:none;margin:0;padding:0;border-top:1px solid #16201C}
-.log li{display:grid;grid-template-columns:5.5em 13em minmax(0,1fr);gap:4px 18px;align-items:baseline;padding:14px 0;border-bottom:1px solid #DDD5C3}
-.log time{font-size:14px;color:#676D66;white-space:nowrap}
-.log .proj{justify-self:start;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:3px 9px;background:#EAE3D3;color:#3B4540;border-radius:2px}
+.log{list-style:none;margin:0;padding:0}
+.log li{position:relative;display:grid;grid-template-columns:5.5em 11em minmax(0,1fr);gap:2px 18px;align-items:baseline;padding:11px 0 11px 46px}
+.log li::before{content:"";position:absolute;left:15px;top:25px;bottom:-25px;width:3px;background:repeating-linear-gradient(to bottom,#E8592B 0 10px,transparent 10px 18px)}
+.log li::after{content:"";position:absolute;left:8px;top:16.5px;width:17px;height:17px;box-sizing:border-box;border-radius:50%;background:currentColor;color:#5A635D}
+.log li.front::after{left:7px;top:15.5px;width:19px;height:19px;outline:2.5px solid currentColor;outline-offset:3px}
+@media (prefers-reduced-motion:no-preference){.log li.front::after{animation:djpulse 1.6s ease-out .6s 1}}
+@keyframes djpulse{from{box-shadow:0 0 0 0 currentColor}to{box-shadow:0 0 0 18px transparent}}
+.log time{font-size:14px;color:#5A635D;white-space:nowrap}
+.log .proj{justify-self:start;font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:700;font-size:16px;color:#3B4540}
 .log .line{font-size:17px}
-@media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr)}.log .line{grid-column:1/-1}}
-#log-all{align-self:flex-start}
+.log li.front .line{font-size:20px;line-height:1.35;font-weight:500}
+@media (max-width:760px){.log li{grid-template-columns:auto minmax(0,1fr);gap:0 14px;padding-left:40px}.log .line{grid-column:1/-1}
+.log li::before{left:12px;top:24px;bottom:-24px}.log li::after{left:5px;top:15.5px}.log li.front::after{left:4px;top:14.5px}#log-all{margin-left:40px}}
+#log-all{align-self:flex-start;margin-left:46px}
+.log li:last-child::before,.log li.end::before{bottom:0}
+.logtop{display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px 64px}
+.wk{margin:0;flex:0 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px}
+.wk figcaption{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:600;font-size:17px;line-height:1.2;color:#3B4540}
+.wk-bars{display:block;max-width:100%;height:auto;overflow:visible}
+.wk-bars text{font-family:'JetBrains Mono',monospace;font-size:12px}
+.sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.lf{display:none;flex-wrap:wrap;gap:8px}
+.logsec.js .lf{display:flex}
+.lf .chip{display:inline-flex;align-items:center;gap:8px;padding:0 14px}
+.lf .n{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:400}
+.lf .dot{flex:none;width:12px;height:12px;box-sizing:border-box;border-radius:50%;background:currentColor}
+.logsec.js:not(.ready) #log>li[data-more]{display:none}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .jf{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px}
 .jf-e{flex:1 1 220px;max-width:340px;display:flex;flex-direction:column;gap:6px}
@@ -296,17 +431,32 @@ document.querySelectorAll('form.jf').forEach(function(f){
 })();
 """ % (ENDPOINT, json.dumps(JOINED))
 
+# The build log with scripts on (T-42): the filter buttons show one project's lines or All;
+# "See all <N>" shows the rest of whatever the filter shows, N counted from it; the 8 newest
+# show until then. With scripts off the section never gets its js class: every line shows
+# and the buttons and "See all" stay hidden. The js class goes on the section from a line at
+# its top, so nothing past the 8 newest shows for a moment before this runs.
 SCRIPT = r"""
 (function(){
-var b=document.getElementById('log-all');
-if(!b)return;
-b.addEventListener('click',function(){
-  document.querySelectorAll('#log li[data-more]').forEach(function(li){li.hidden=false});
-  b.setAttribute('aria-expanded','true');
-  b.hidden=true;
-});
+var ol=document.getElementById('log');
+if(!ol)return;
+var sec=ol.closest('section'),lis=[].slice.call(ol.children),b=document.getElementById('log-all');
+var cs=[].slice.call(document.querySelectorAll('#log-f .chip')),f='all',open=false;
+function draw(){
+  var n=0;
+  var end=null;
+  lis.forEach(function(li){var m=f==='all'||li.getAttribute('data-p')===f;if(m)n++;li.hidden=!(m&&(open||n<=%d));li.classList.remove('end');if(!li.hidden)end=li;});
+  if(end)end.classList.add('end');
+  if(b){b.hidden=open||n<=%d;b.textContent='See all '+n;}
+  cs.forEach(function(c){c.setAttribute('aria-pressed',String(c.getAttribute('data-f')===f));});
+}
+cs.forEach(function(c){c.addEventListener('click',function(){f=c.getAttribute('data-f');draw();});});
+if(b)b.addEventListener('click',function(){open=true;b.setAttribute('aria-expanded','true');draw();});
+draw();
+sec.classList.add('js','ready');
 })();
-""" + JOIN_SCRIPT
+""" % (FIRST, FIRST) + JOIN_SCRIPT
+JS_ON = "<script>document.currentScript.parentNode.classList.add('js')</script>"
 
 
 def build(studio, shipped, today):
@@ -316,16 +466,24 @@ def build(studio, shipped, today):
     strip = (f'\n  <div class="stats" id="stats" data-built="{today.isoformat()}">'
              f'\n    <p><strong>{n}</strong> {"thing" if n == 1 else "things"} finished since {short_date(oldest, today)}</p>'
              '\n  </div>')
-    items = "".join(log_item(r, today, i >= FIRST) for i, r in enumerate(rows))
-    toggle = (f'\n    <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false">See all {n}</button>'
+    # T-42: every line is in the page and shows with scripts off; with scripts on, SCRIPT shows
+    # the 8 newest (data-more marks the rest) and "See all" (hidden until then).
+    items = "".join(log_item(r, today, i >= FIRST, front=i == 0) for i, r in enumerate(rows))
+    toggle = (f'\n    <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false" hidden>See all {n}</button>'
               if n > FIRST else "")
+    buttons, projects = filters(rows)
     # T-23 L7: the count sits with "Shipped lately" in one head row. Phones: the band above
     # the heading, as before. From 800 px: beside the heading, on its baseline. The count
     # still comes first in the page, so a screen reader hears it in the same order as before.
-    log = (f'\n  <section class="sec logsec" aria-labelledby="log-h">'
+    # T-42: then the strip of weeks, the filter buttons, and the route.
+    log = (f'\n  <section class="sec logsec" aria-labelledby="log-h">{JS_ON}'
+           '\n    <div class="logtop">'
            f'\n    <div class="loghead">{strip.replace(chr(10) + "  ", chr(10) + "      ")}'
            f'\n      <h2 id="log-h" class="big">Shipped lately</h2>'
            '\n    </div>'
+           f'{strip_svg(rows, today)}'
+           '\n    </div>'
+           f'{buttons}'
            f'\n    <ol class="log" id="log">{items}\n    </ol>{toggle}'
            '\n  </section>')
     # T-29: a product named by a gallery app shows inside that app's gallery block, not as a card.
@@ -607,7 +765,7 @@ def product_page(p, rows, today, stamp):
     mine = [r for r in rows if r["project"] == p["id"]]
     log = ""
     if mine:
-        items = "".join(log_item(r, today, label=False) for r in mine)
+        items = "".join(log_item(r, today, label=False, front=i == 0) for i, r in enumerate(mine))
         log = (f'\n  <section class="sec" aria-labelledby="log-h">'
                f'\n    <h2 id="log-h" class="big">Shipped lately</h2>'
                f'\n    <ol class="log solo" id="log">{items}\n    </ol>'
@@ -636,15 +794,16 @@ def main(out_dir):
     title = hero["kicker"].split(" · ")[0]          # "The studio"; the kicker itself isn't printed (T-16)
     lede = hero_lede(studio)                         # the meta description, as before T-16
     stamp = f'<!-- studio.py {today.isoformat()} {fingerprint()} -->'
+    rows = visible(studio, shipped, today)
+    shown = list(dict.fromkeys(r["project"] for r in rows))   # the projects with lines showing, newest first
     from chrome import write
     write(out_dir, "studio.html",
           title=title,
           description=lede.replace('"', "&quot;"),
           kicker="", h1=hero["h1"], lede=t(hero["intro"]),
-          css=CSS + LOG_PHONE_CSS + GALLERY_CSS + APP_CSS + WIDE_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
+          css=CSS + marks_css(shown) + LOG_PHONE_CSS + GALLERY_CSS + APP_CSS + WIDE_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
-    rows = visible(studio, shipped, today)
     keep = set()
     for slug, p in product_pages(studio):
         keep.add(slug)
@@ -655,7 +814,7 @@ def main(out_dir):
               h1=t(p["name"]),
               badge=f'\n      <span class="hero-pill">{t(p["status"])}</span>',
               lede=t(p["what"]),
-              css=CSS + PAGE_CSS, body=product_page(p, rows, today, stamp), script=JOIN_SCRIPT, more="")
+              css=CSS + marks_css([p["id"]]) + PAGE_CSS, body=product_page(p, rows, today, stamp), script=JOIN_SCRIPT, more="")
     for old in pathlib.Path(out_dir).glob("studio-*.html"):
         if old.name not in keep:
             old.unlink()

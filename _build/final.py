@@ -40,7 +40,9 @@ from pathlib import Path
 # data-cf-beacon='{"token": "..."}'). Public by design: it sits in every page.
 CF_BEACON_TOKEN = ""
 
-OUT = Path(sys.argv[1])
+# T-42: tools/board.py imports this file for nobreak_page() and the beacon; the run itself
+# (reading out/, the edits, writing) happens only as a script.
+OUT = Path(sys.argv[1]) if __name__ == '__main__' else None
 SITE = 'https://dragomansjourney.com/'
 NAME = "Dragoman's Journey"
 FOUNDER = {'@type': 'Person', 'name': 'Josef Stephens'}
@@ -57,7 +59,7 @@ def business(url):
 
 
 problems = []
-pages = {f.name: f.read_text(encoding='utf-8') for f in sorted(OUT.glob('*.html'))}
+pages = {f.name: f.read_text(encoding='utf-8') for f in sorted(OUT.glob('*.html'))} if OUT else {}
 before = dict(pages)
 
 # The Web Analytics snippet, in the form Cloudflare's docs give it
@@ -268,13 +270,14 @@ def beacon(token):
             pages[name] = pages[name].replace('</body>', BEACON % token + '</body>')
 
 
-if CF_BEACON_TOKEN:
-    counter_line()
-add('local.html', local())
-add('mainframe.html', mainframe())
-index_business()
-if CF_BEACON_TOKEN:
-    beacon(CF_BEACON_TOKEN)
+if __name__ == '__main__':
+    if CF_BEACON_TOKEN:
+        counter_line()
+    add('local.html', local())
+    add('mainframe.html', mainframe())
+    index_business()
+    if CF_BEACON_TOKEN:
+        beacon(CF_BEACON_TOKEN)
 
 
 # ---------------- line breaking (T-21, Nov 16, 2026) ----------------
@@ -352,26 +355,33 @@ def nobreak_page(page):
 
 
 
-for name in pages:
-    done = nobreak_page(pages[name])
-    if visible(done) != visible(pages[name]):
-        problems.append('%s: the line-breaking pass changed the visible text' % name)
-    elif nobreak_page(done) != done:
-        problems.append('%s: the line-breaking pass is not stable on a second run' % name)
-    else:
-        pages[name] = done
+def nobreak_checked(name, page):
+    """One page through the line-breaking pass, or (page, the problem) if it fails a check."""
+    done = nobreak_page(page)
+    if visible(done) != visible(page):
+        return page, '%s: the line-breaking pass changed the visible text' % name
+    if nobreak_page(done) != done:
+        return page, '%s: the line-breaking pass is not stable on a second run' % name
+    return done, None
 
-# ---------------- write ----------------
-if problems:
-    print('FINAL: %d problem(s), nothing written:' % len(problems))
-    for p in problems:
-        print('  ' + p)
-    sys.exit(1)
-for name in pages:
-    if pages[name] != before[name]:
-        (OUT / name).write_text(pages[name], encoding='utf-8')
-print('final: structured data on local.html and mainframe.html')
-if CF_BEACON_TOKEN:
-    print('final: visit counter on %d pages (not %s)' % (len(pages) - len(NO_BEACON), ', '.join(NO_BEACON)))
-else:
-    print('final: no visit counter (CF_BEACON_TOKEN is empty)')
+
+if __name__ == '__main__':
+    for name in pages:
+        pages[name], problem = nobreak_checked(name, pages[name])
+        if problem:
+            problems.append(problem)
+
+    # ---------------- write ----------------
+    if problems:
+        print('FINAL: %d problem(s), nothing written:' % len(problems))
+        for p in problems:
+            print('  ' + p)
+        sys.exit(1)
+    for name in pages:
+        if pages[name] != before[name]:
+            (OUT / name).write_text(pages[name], encoding='utf-8')
+    print('final: structured data on local.html and mainframe.html')
+    if CF_BEACON_TOKEN:
+        print('final: visit counter on %d pages (not %s)' % (len(pages) - len(NO_BEACON), ', '.join(NO_BEACON)))
+    else:
+        print('final: no visit counter (CF_BEACON_TOKEN is empty)')
