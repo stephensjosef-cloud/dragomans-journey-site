@@ -1759,6 +1759,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-41 · The rule audit's fixes and the play pass · READY
+
+**Why:** Nov 22, 2026: Claude's rule audit of the live site against the rulings of Nov 15 to 22, approved by Josef "yes all"; and the voice checker and the checkup reached the public with no play-it-as-a-person pass.
+
+**Done when:** items A to H of AUDIT-FIX-1 are in, the play pass has run with every true finding fixed, the checks in step 5 pass, T-41's receipt is filled in, and `trip/T-41` is pushed. `main` moves only on Josef's "push it" in this session.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
