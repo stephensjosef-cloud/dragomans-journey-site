@@ -351,6 +351,7 @@ T33_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)
 
 
 def un33(s, name=None):
+    s = un43(s, name)   # T-43: its words out first, so T-33's blocks match again
     if name not in T33_UNDO:
         return s
     if '\r\n' in s:
@@ -435,7 +436,53 @@ def t42_new_lines():
     got = _sp35.run(['git', 'show', f'{T42_MAIN}:_build/shipped.json'], cwd=os.path.dirname(os.path.abspath(__file__)), capture_output=True)
     old = {e['line'] for e in _j42.loads(got.stdout)['entries']} if got.returncode == 0 else set()
     now = _j42.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shipped.json'), encoding='utf-8').read())['entries']
-    return {e['line'] for e in now if e['line'] not in old}
+    return {e['line'] for e in now if un43_line(e['line']) not in old}   # T-43: a reworded line is not a new one
+
+
+# T-43 (Nov 23, 2026): eight log lines reworded in place (same date, same project), the Bird League picture's alt text
+# and proof line, and local.html's "535" spots. An older check reads a log line through un43_line() and a page through
+# un43() (un33() calls it first), so it keeps proving what it proved before T-43.
+T43_LINES = {
+    "The kids' cooking app got the nonprofit's logo on every screen and a font that's easier to read.":
+        "The cooking app got the program's logo everywhere and an easier font to read.",
+    "The nonprofit's leaders started testing the kids' cooking app on their own phones.":
+        "The program's leaders started testing the cooking app on their own phones.",
+    "The nonprofit's own recipes went into the kids' cooking app, ready to print.":
+        "The program's own recipes went into the cooking app, ready to print.",
+    "Bird League's bird map stopped crashing when you zoom in, and its bird pages got new stats cards.":
+        "Bird League build 49: the map crash fixed, new stats cards, sharper art.",
+    "Bird League fixed 320 problems from a full audit in one round of updates.":
+        "Bird League's sound ID now runs on its own, and newcomers get a trophy ceremony.",
+    "Bird League players now earn a medal for every head-to-head win, kept in their trophy case.":
+        "Duel medals went live in Bird League.",
+    "Bird League got a monthly almanac for its players and a trophy ceremony for league champions.":
+        "Bird League got The Almanac and a trophy ceremony.",
+    "Deepcuts' iPhone app got its game-matching engine, the same one behind the website.":
+        "The Deepcuts iPhone app was built overnight.",
+}
+T43_STUDIO = list(T43_LINES.items()) + [
+    ("Then: the first Bird League build, naming birds by sound with mock data. Now: the Log screen, which identifies a bird by sound or photo.",
+     "Then: an early Bird League screen that still says mock data. Now: build 49's life list wall."),
+    ("<strong>It names birds from a photo or a song, and sends sightings to eBird in one tap.</strong>",
+     "<strong>Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.</strong>")]
+T43_PAGES = {
+    'local.html': [('white-space: nowrap">Over 700 tests</strong>', 'white-space: nowrap">535 tests</strong>'),
+                   ('{"k": "Automatic checks on the latest version", "v": "Over 700"}', '{"k": "Automatic checks on the latest version", "v": "535"}'),
+                   ('"head": "RESULT · APPS", "date": "NOV 2026"', '"head": "RESULT · APPS", "date": "OCT 2026"')],
+    'work.html': [("Then: the first Bird League build, naming birds by sound with mock data. Now: the Log screen, where you type a bird's name or identify it by sound or photo, then log it.",
+                   "Then: an early Bird League screen that still says mock data, real API coming next. Now: build 49's life list wall, 139 of 1,123 birds.")],
+    'studio.html': T43_STUDIO, 'studio-birdleague.html': T43_STUDIO, 'studio-deepcuts.html': T43_STUDIO}
+
+
+def un43_line(s):
+    return T43_LINES.get(s, s)
+
+
+def un43(s, name=None):
+    """A page as it was before T-43's words (the strip's labels and "Show fewer" are left in). Idempotent."""
+    for new, old in T43_PAGES.get(name, []):
+        s = s.replace(new, old)
+    return s
 
 
 def un35_file(rel, data):
@@ -1437,7 +1484,9 @@ def s_studio_log():
     check('studio "See all" names the count', btn.count() == 1 and btn.inner_text().strip() == f'See all {N}', btn.inner_text() if btn.count() else 'none')
     if btn.count():
         btn.click(); q.wait_for_timeout(150)
-        check('studio "See all" reveals the rest in place', q.locator('#log li:visible').count() == N and not btn.is_visible() and q.url.endswith('studio.html'))
+        check('studio "See all" reveals the rest in place', q.locator('#log li:visible').count() == N and q.url.endswith('studio.html'))
+        # T-43: the same button then reads "Show fewer" (it used to hide) and closes the list back to the 8 newest.
+        check('studio "See all" becomes "Show fewer"', btn.is_visible() and btn.inner_text().strip() == 'Show fewer' and btn.get_attribute('aria-expanded') == 'true')
     arts = q.locator('#products article')
     check('studio renders every open product, in order', arts.evaluate_all('e => e.map(a => a.dataset.id)') == [x['id'] for x in open_p],
           str(arts.evaluate_all('e => e.map(a => a.dataset.id)')))
@@ -3662,7 +3711,7 @@ def s_t_22():
     count = q.evaluate("[document.querySelector('#stats strong').textContent, document.getElementById('log-all') ? document.getElementById('log-all').textContent : '']")
     q.close()
     log_all = log
-    log = [l for l in log if l[2] not in t42_new_lines()]   # T-42: its 16 catch-up lines out
+    log = [[a, b_, un43_line(c)] for a, b_, c in log if c not in t42_new_lines()]   # T-42: its 16 catch-up lines out; T-43: its rewordings read as before
     check('T-22 K8: the Studio\'s cooking app card has the new body', K8 in kids, kids[:200])
     old_kids = _re.search(r'<article class="prod[^"]*"[^>]*>(?:(?!</article>).)*A kids\' cooking app.*?</article>', OLD22['studio.html'], _re.S)
     new_kids = _re.search(r'<article class="prod[^"]*"[^>]*>(?:(?!</article>).)*A kids\' cooking app.*?</article>', SRC22['studio.html'], _re.S)
@@ -3679,7 +3728,7 @@ def s_t_22():
     check('T-22 K9: the Studio\'s count matches the lines that show', count[0] == str(len(log_all)) and count[1] == f'See all {len(log_all)}', str(count) + f' / {len(log_all)} lines')
     sj = _json.loads(open(os.path.join(here, 'shipped.json'), encoding='utf-8').read())
     check('T-22 K9: shipped.json has neither removed line and the new Oct 27 line once',
-          [e for e in sj['entries'] if e['project'] == 'kids' and e['line'] not in t42_new_lines()] == [{'date': '2026-10-27', 'project': 'kids', 'line': K9}, {'date': '2026-10-06', 'project': 'kids', 'line': K9_KEPT}])   # T-42: its lines out
+          [dict(e, line=un43_line(e['line'])) for e in sj['entries'] if e['project'] == 'kids' and e['line'] not in t42_new_lines()] == [{'date': '2026-10-27', 'project': 'kids', 'line': K9}, {'date': '2026-10-06', 'project': 'kids', 'line': K9_KEPT}])   # T-42: its lines out
     check('T-22 K8: studio.json carries the new body', any(p.get('id') == 'kids' and back23(what29(p)) == K8 for p in _json.loads(open(os.path.join(here, 'studio.json'), encoding='utf-8').read())['products']))
 
     # Everything else is as at T-21. Pages this item doesn't touch: byte for byte (the Studio pages' stamp aside).
@@ -5811,7 +5860,7 @@ T33_R3_OLD = ("I'm Josef. Hand me the work you never get to, like the phone vide
 T33_R3 = ("I'm Josef. Hand me the work you never get to. If someone on your team does it by hand every week, I can usually build an "
           "AI tool that does it instead, and I'll walk you through it in plain English. Nothing reaches your customers until a person "
           "has checked it.")
-T33_R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'), ('A teaching app, iPhone, iPad, Android and web', '535 tests'),
+T33_R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'), ('A teaching app, iPhone, iPad, Android and web', 'Over 700 tests'),   # T-43: was '535 tests'
                ('A birding league with real players', 'zero lines of code to start'),
                ('A banking COBOL program, checked in public', '2 AIs compared')]
 T33_R4_OLD = ("REAL RESULT KIDS' COOKING REELS A 40-reel series for a children's nonprofit, cut by one engine. Editing each reel, before "

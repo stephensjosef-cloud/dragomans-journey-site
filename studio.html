@@ -77,15 +77,19 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .log li::before{left:12px;top:24px;bottom:-24px}.log li::after{left:5px;top:15.5px}.log li.front::after{left:4px;top:14.5px}#log-all{margin-left:40px}}
 #log-all{align-self:flex-start;margin-left:46px}
 .log li:last-child::before,.log li.end::before{bottom:0}
-.logtop{display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px 64px}
-.wk{margin:0;flex:0 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px}
+.logtop{display:flex;flex-direction:column;align-items:flex-start;gap:24px}
+.wk{margin:0;flex:0 1 auto;min-width:0;max-width:100%;display:flex;flex-direction:column;gap:4px}
 .wk figcaption{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:600;font-size:17px;line-height:1.2;color:#2E3A47}
 .wk-bars{display:block;max-width:100%;height:auto;overflow:visible}
 .wk-bars text{font-family:'JetBrains Mono',monospace;font-size:12px}
+.wk-bars .d{font-size:10px}
+.wk-bars .now{font-family:inherit;font-size:11px;font-weight:700}
 .sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 .lf{display:none;flex-wrap:wrap;gap:8px}
 .logsec.js .lf{display:flex}
-.lf .chip{display:inline-flex;align-items:center;gap:8px;padding:0 14px}
+.lf .chip{display:inline-flex;align-items:center;gap:8px;padding:0 14px;border-radius:2px}
+@media (max-width:760px){.logsec.js .lf{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:6px clamp(16px,4vw,48px) 8px 6px;margin:-6px calc(-1*clamp(16px,4vw,48px)) -8px -6px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent)}
+.lf .chip{flex:none;white-space:nowrap}}
 .lf .n{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:400}
 .lf .dot{flex:none;width:12px;height:12px;box-sizing:border-box;border-radius:50%;background:currentColor}
 .logsec.js:not(.ready) #log>li[data-more]{display:none}
@@ -220,19 +224,19 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 </header>
 
 <main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
-<!-- studio.py 2026-11-22 60c390cec86e1e95 -->
+<!-- studio.py 2026-11-23 77c18c2cbb7e612f -->
   <section class="sec logsec" aria-labelledby="log-h"><script>document.currentScript.parentNode.classList.add('js')</script>
     <div class="logtop">
     <div class="loghead">
-      <div class="stats" id="stats" data-built="2026-11-22">
+      <div class="stats" id="stats" data-built="2026-11-23">
         <p><strong>29</strong> things finished since Oct 6</p>
       </div>
       <h2 id="log-h" class="big">Shipped lately</h2>
     </div>
     <figure class="wk">
       <figcaption>Finished each week</figcaption>
-      <svg class="wk-bars" viewBox="0 0 112 76" width="168" height="114" aria-hidden="true" focusable="false"><line x1="0" y1="62.75" x2="112" y2="62.75" stroke="#9BAA90" stroke-width="1.5"/><path d="M0.5 63.5v4M16.5 63.5v4M32.5 63.5v4M48.5 63.5v4M64.5 63.5v4M80.5 63.5v4M96.5 63.5v4M112.5 63.5v4" stroke="#9BAA90" stroke-width="1"/><rect x="3" y="49" width="10" height="13" fill="#4F5A63"/><text x="8" y="45" text-anchor="middle" fill="#2E3A47">3</text><rect x="19" y="49" width="10" height="13" fill="#4F5A63"/><text x="24" y="45" text-anchor="middle" fill="#2E3A47">3</text><text x="40" y="58" text-anchor="middle" fill="#2E3A47">0</text><rect x="51" y="53" width="10" height="9" fill="#4F5A63"/><text x="56" y="49" text-anchor="middle" fill="#2E3A47">2</text><rect x="67" y="44" width="10" height="18" fill="#4F5A63"/><text x="72" y="40" text-anchor="middle" fill="#2E3A47">4</text><rect x="83" y="31" width="10" height="31" fill="#4F5A63"/><text x="88" y="27" text-anchor="middle" fill="#2E3A47">7</text><rect x="99" y="18" width="10" height="44" fill="#A93F17"/><text x="104" y="14" text-anchor="middle" fill="#A93F17" font-weight="700">10</text><path d="M99 75 L104 67 L109 75 Z" fill="#A93F17"/></svg>
-      <ol class="sr"><li>Oct 5: 3</li><li>Oct 12: 3</li><li>Oct 19: 0</li><li>Oct 26: 2</li><li>Nov 2: 4</li><li>Nov 9: 7</li><li>Nov 16: 10</li></ol>
+      <svg class="wk-bars" viewBox="0 0 128 106" width="192" height="159" aria-hidden="true" focusable="false"><line x1="0" y1="62.75" x2="128" y2="62.75" stroke="#9BAA90" stroke-width="1.5"/><path d="M0.5 63.5v4M16.5 63.5v4M32.5 63.5v4M48.5 63.5v4M64.5 63.5v4M80.5 63.5v4M96.5 63.5v4M112.5 63.5v4M128.5 63.5v4" stroke="#9BAA90" stroke-width="1"/><rect x="3" y="49" width="10" height="13" fill="#4F5A63"/><text x="8" y="45" text-anchor="middle" fill="#2E3A47">3</text><rect x="19" y="49" width="10" height="13" fill="#4F5A63"/><text x="24" y="45" text-anchor="middle" fill="#2E3A47">3</text><text x="40" y="58" text-anchor="middle" fill="#2E3A47">0</text><rect x="51" y="53" width="10" height="9" fill="#4F5A63"/><text x="56" y="49" text-anchor="middle" fill="#2E3A47">2</text><rect x="67" y="44" width="10" height="18" fill="#4F5A63"/><text x="72" y="40" text-anchor="middle" fill="#2E3A47">4</text><rect x="83" y="31" width="10" height="31" fill="#4F5A63"/><text x="88" y="27" text-anchor="middle" fill="#2E3A47">7</text><rect x="99" y="18" width="10" height="44" fill="#4F5A63"/><text x="104" y="14" text-anchor="middle" fill="#2E3A47">10</text><text x="120" y="58" text-anchor="middle" fill="#2E3A47">0</text><path d="M115 75 L120 67 L125 75 Z" fill="#A93F17"/><text class="now" x="128" y="88" text-anchor="end" fill="#A93F17">This week</text><text class="d" x="0" y="102" fill="#4F5A63">Oct 5</text><text class="d" x="128" y="102" text-anchor="end" fill="#4F5A63">Nov 23</text></svg>
+      <ol class="sr"><li>Oct 5: 3</li><li>Oct 12: 3</li><li>Oct 19: 0</li><li>Oct 26: 2</li><li>Nov 2: 4</li><li>Nov 9: 7</li><li>Nov 16: 10</li><li>Nov 23: 0</li></ol>
     </figure>
     </div>
     <div class="lf" id="log-f" role="group" aria-labelledby="log-h">
@@ -261,18 +265,18 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
       <li data-p="birdsighted" data-more><time class="mono" datetime="2026-11-12">Nov 12</time><span class="proj">Birdsighted</span><span class="line">Birdsighted, a detective game for birders, went onto testers' phones.</span></li>
       <li data-p="tools" data-more><time class="mono" datetime="2026-11-09">Nov 9</time><span class="proj">Free tools</span><span class="line">Four free tools went live, including a recipe scaler and a shot list maker for phone video.</span></li>
       <li data-p="birdleague" data-more><time class="mono" datetime="2026-11-09">Nov 9</time><span class="proj">Bird League</span><span class="line">Open Leagues went live in Bird League: anyone can join a league and play.</span></li>
-      <li data-p="kids" data-more><time class="mono" datetime="2026-11-09">Nov 9</time><span class="proj">A kids' cooking app</span><span class="line">The cooking app got the program's logo everywhere and an easier font to read.</span></li>
-      <li data-p="kids" data-more><time class="mono" datetime="2026-11-07">Nov 7</time><span class="proj">A kids' cooking app</span><span class="line">The program's leaders started testing the cooking app on their own phones.</span></li>
+      <li data-p="kids" data-more><time class="mono" datetime="2026-11-09">Nov 9</time><span class="proj">A kids' cooking app</span><span class="line">The kids' cooking app got the nonprofit's logo on every screen and a font that's easier to read.</span></li>
+      <li data-p="kids" data-more><time class="mono" datetime="2026-11-07">Nov 7</time><span class="proj">A kids' cooking app</span><span class="line">The nonprofit's leaders started testing the kids' cooking app on their own phones.</span></li>
       <li data-p="deepcuts" data-more><time class="mono" datetime="2026-11-04">Nov 4</time><span class="proj">Deepcuts</span><span class="line">Deepcuts got its new look.</span></li>
-      <li data-p="birdleague" data-more><time class="mono" datetime="2026-11-02">Nov 2</time><span class="proj">Bird League</span><span class="line">Bird League build 49: the map crash fixed, new stats cards, sharper art.</span></li>
+      <li data-p="birdleague" data-more><time class="mono" datetime="2026-11-02">Nov 2</time><span class="proj">Bird League</span><span class="line">Bird League's bird map stopped crashing when you zoom in, and its bird pages got new stats cards.</span></li>
       <li data-p="deepcuts" data-more><time class="mono" datetime="2026-11-02">Nov 2</time><span class="proj">Deepcuts</span><span class="line">The first Deepcuts build went up to TestFlight, Apple's testing app.</span></li>
-      <li data-p="kids" data-more><time class="mono" datetime="2026-10-27">Oct 27</time><span class="proj">A kids' cooking app</span><span class="line">The program's own recipes went into the cooking app, ready to print.</span></li>
-      <li data-p="birdleague" data-more><time class="mono" datetime="2026-10-26">Oct 26</time><span class="proj">Bird League</span><span class="line">Bird League's sound ID now runs on its own, and newcomers get a trophy ceremony.</span></li>
+      <li data-p="kids" data-more><time class="mono" datetime="2026-10-27">Oct 27</time><span class="proj">A kids' cooking app</span><span class="line">The nonprofit's own recipes went into the kids' cooking app, ready to print.</span></li>
+      <li data-p="birdleague" data-more><time class="mono" datetime="2026-10-26">Oct 26</time><span class="proj">Bird League</span><span class="line">Bird League fixed 320 problems from a full audit in one round of updates.</span></li>
       <li data-p="site" data-more><time class="mono" datetime="2026-10-18">Oct 18</time><span class="proj">dragomansjourney.com</span><span class="line">dragomansjourney.com went live.</span></li>
-      <li data-p="birdleague" data-more><time class="mono" datetime="2026-10-15">Oct 15</time><span class="proj">Bird League</span><span class="line">Duel medals went live in Bird League.</span></li>
+      <li data-p="birdleague" data-more><time class="mono" datetime="2026-10-15">Oct 15</time><span class="proj">Bird League</span><span class="line">Bird League players now earn a medal for every <span style="white-space: nowrap">head-to-head</span> win, kept in their trophy case.</span></li>
       <li data-p="birdleague" data-more><time class="mono" datetime="2026-10-14">Oct 14</time><span class="proj">Bird League</span><span class="line">Bird League players can now send their sightings to eBird in one tap.</span></li>
-      <li data-p="deepcuts" data-more><time class="mono" datetime="2026-10-08">Oct 8</time><span class="proj">Deepcuts</span><span class="line">The Deepcuts iPhone app was built overnight.</span></li>
-      <li data-p="birdleague" data-more><time class="mono" datetime="2026-10-08">Oct 8</time><span class="proj">Bird League</span><span class="line">Bird League got The Almanac and a trophy ceremony.</span></li>
+      <li data-p="deepcuts" data-more><time class="mono" datetime="2026-10-08">Oct 8</time><span class="proj">Deepcuts</span><span class="line">Deepcuts' iPhone app got its <span style="white-space: nowrap">game-matching</span> engine, the same one behind the website.</span></li>
+      <li data-p="birdleague" data-more><time class="mono" datetime="2026-10-08">Oct 8</time><span class="proj">Bird League</span><span class="line">Bird League got a monthly almanac for its players and a trophy ceremony for league champions.</span></li>
       <li data-p="kids" data-more><time class="mono" datetime="2026-10-06">Oct 6</time><span class="proj">A kids' cooking app</span><span class="line">The kids' cooking app runs on Android as well as iPhone and iPad.</span></li>
     </ol>
     <button type="button" id="log-all" class="btn ghost" aria-controls="log" aria-expanded="false" hidden>See all 29</button>
@@ -311,7 +315,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
         <div class="gtext">
           <div class="meta"><span class="pill">In testing on iPhone and Android</span></div>
           <p>Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.</p>
-          <p class="proof"><strong>Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.</strong></p>
+          <p class="proof"><strong>It names birds from a photo or a song, and sends sightings to eBird in one tap.</strong></p>
           <a class="go" data-page href="studio-birdleague.html">More on Bird League →</a>
         </div>
         <div class="gjoin"><form class="jf" data-list="birdleague" action="mailto:hello@dragomansjourney.com?subject=List%3A%20Bird%20League" method="post" enctype="text/plain"><div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div><label class="jf-e"><span>Email</span><input name="email" type="email" autocomplete="email" required></label><button type="submit" class="btn hot">Get the launch email</button><div class="jf-ok" role="status"></div></form></div>
@@ -424,11 +428,11 @@ function draw(){
   var end=null;
   lis.forEach(function(li){var m=f==='all'||li.getAttribute('data-p')===f;if(m)n++;li.hidden=!(m&&(open||n<=8));li.classList.remove('end');if(!li.hidden)end=li;});
   if(end)end.classList.add('end');
-  if(b){b.hidden=open||n<=8;b.textContent='See all '+n;}
+  if(b){b.hidden=n<=8;b.textContent=open?"Show fewer":'See all '+n;b.setAttribute('aria-expanded',String(open));}
   cs.forEach(function(c){c.setAttribute('aria-pressed',String(c.getAttribute('data-f')===f));});
 }
 cs.forEach(function(c){c.addEventListener('click',function(){f=c.getAttribute('data-f');draw();});});
-if(b)b.addEventListener('click',function(){open=true;b.setAttribute('aria-expanded','true');draw();});
+if(b)b.addEventListener('click',function(){open=!open;draw();if(!open){var r=b.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)b.scrollIntoView({block:'center'});}});
 draw();
 sec.classList.add('js','ready');
 })();

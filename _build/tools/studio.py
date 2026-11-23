@@ -216,16 +216,22 @@ def weeks(rows, today):
 
 SLOT, BAR, TOP, TALL, BASE = 16, 10, 16, 44, 62   # strip geometry, in the SVG's own units
 SCALE = 1.5                                        # drawn at 1.5 px a unit, smaller only where it doesn't fit
+NOW_Y, DATE_Y, HIGH = 88, 102, 106                 # T-43: "This week" under the mark, then the two dates, then the bottom
+THIS_WEEK = "This week"                            # T-43, approved Nov 23, 2026
+MONO_W = .6                                        # a JetBrains Mono character is .6 of its size wide
 
 
 def strip_svg(rows, today):
     """The strip (T-42): one bar per week, its height the lines finished that week, the number
     over it; this week's bar in the accent with a mark under it. Drawn here, no script. The
-    picture is hidden from screen readers; the list after it gives every week's count."""
+    picture is hidden from screen readers; the list after it gives every week's count.
+    T-43 (Nov 23, 2026): under the mark, "This week" in the accent's ink, right-aligned to the
+    strip's end so it never clips; under it, one row in the quiet gray: the first week's date
+    at the left edge, the last week's at the right, so the strip reads as a timeline."""
     wk = weeks(rows, today)
     top = max(n for _, n in wk)
     w = SLOT * len(wk)
-    parts = [f'<svg class="wk-bars" viewBox="0 0 {w} 76" width="{w * SCALE:g}" height="{76 * SCALE:g}" aria-hidden="true" focusable="false">',
+    parts = [f'<svg class="wk-bars" viewBox="0 0 {w} {HIGH}" width="{w * SCALE:g}" height="{HIGH * SCALE:g}" aria-hidden="true" focusable="false">',
              f'<line x1="0" y1="{BASE + .75}" x2="{w}" y2="{BASE + .75}" stroke="#CFC6B2" stroke-width="1.5"/>',
              # a tick between weeks, so the empty ones read as weeks
              '<path d="' + "".join(f"M{i * SLOT}.5 {BASE + 1.5}v4" for i in range(len(wk) + 1)) + '" stroke="#CFC6B2" stroke-width="1"/>']
@@ -244,6 +250,14 @@ def strip_svg(rows, today):
             parts.append(f'<text x="{cx:g}" y="{BASE - 4}" text-anchor="middle" fill="#3B4540">0</text>')
         if now:
             parts.append(f'<path d="M{cx - 5:g} 75 L{cx:g} 67 L{cx + 5:g} 75 Z" fill="#A93F17"/>')
+    # T-43: "This week", its right edge at the end of this week's slot (centring it would clip).
+    parts.append(f'<text class="now" x="{w:g}" y="{NOW_Y}" text-anchor="end" fill="#A93F17">{THIS_WEEK}</text>')
+    first, last = short_date(wk[0][0], today), short_date(wk[-1][0], today)
+    # The first date shows when the two fit side by side with a gap of a slot (a log under a
+    # few weeks old); the list for screen readers always has every week.
+    if len(wk) > 1 and (len(first) + len(last)) * 10 * MONO_W + SLOT <= w:
+        parts.append(f'<text class="d" x="0" y="{DATE_Y}" fill="#5A635D">{first}</text>')
+    parts.append(f'<text class="d" x="{w:g}" y="{DATE_Y}" text-anchor="end" fill="#5A635D">{last}</text>')
     parts.append('</svg>')
     sr = "".join(f'<li>{short_date(d, today)}: {n}</li>' for d, n in wk)
     return ('\n    <figure class="wk">'
@@ -353,15 +367,19 @@ CSS = r"""
 .log li::before{left:12px;top:24px;bottom:-24px}.log li::after{left:5px;top:15.5px}.log li.front::after{left:4px;top:14.5px}#log-all{margin-left:40px}}
 #log-all{align-self:flex-start;margin-left:46px}
 .log li:last-child::before,.log li.end::before{bottom:0}
-.logtop{display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px 64px}
-.wk{margin:0;flex:0 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px}
+.logtop{display:flex;flex-direction:column;align-items:flex-start;gap:24px}
+.wk{margin:0;flex:0 1 auto;min-width:0;max-width:100%;display:flex;flex-direction:column;gap:4px}
 .wk figcaption{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:600;font-size:17px;line-height:1.2;color:#3B4540}
 .wk-bars{display:block;max-width:100%;height:auto;overflow:visible}
 .wk-bars text{font-family:'JetBrains Mono',monospace;font-size:12px}
+.wk-bars .d{font-size:10px}
+.wk-bars .now{font-family:inherit;font-size:11px;font-weight:700}
 .sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 .lf{display:none;flex-wrap:wrap;gap:8px}
 .logsec.js .lf{display:flex}
-.lf .chip{display:inline-flex;align-items:center;gap:8px;padding:0 14px}
+.lf .chip{display:inline-flex;align-items:center;gap:8px;padding:0 14px;border-radius:2px}
+@media (max-width:760px){.logsec.js .lf{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:6px clamp(16px,4vw,48px) 8px 6px;margin:-6px calc(-1*clamp(16px,4vw,48px)) -8px -6px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 36px),transparent)}
+.lf .chip{flex:none;white-space:nowrap}}
 .lf .n{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:400}
 .lf .dot{flex:none;width:12px;height:12px;box-sizing:border-box;border-radius:50%;background:currentColor}
 .logsec.js:not(.ready) #log>li[data-more]{display:none}
@@ -436,6 +454,11 @@ document.querySelectorAll('form.jf').forEach(function(f){
 # show until then. With scripts off the section never gets its js class: every line shows
 # and the buttons and "See all" stay hidden. The js class goes on the section from a line at
 # its top, so nothing past the 8 newest shows for a moment before this runs.
+# T-43 (Nov 23, 2026): once open, the same button reads "Show fewer" and closes the list back
+# to the 8 newest of whatever the filter shows (aria-expanded follows; focus stays on it, and
+# if closing moved it off screen it is scrolled back into view). A filter keeps the list open
+# or closed as it was.
+SHOW_FEWER = "Show fewer"
 SCRIPT = r"""
 (function(){
 var ol=document.getElementById('log');
@@ -447,15 +470,15 @@ function draw(){
   var end=null;
   lis.forEach(function(li){var m=f==='all'||li.getAttribute('data-p')===f;if(m)n++;li.hidden=!(m&&(open||n<=%d));li.classList.remove('end');if(!li.hidden)end=li;});
   if(end)end.classList.add('end');
-  if(b){b.hidden=open||n<=%d;b.textContent='See all '+n;}
+  if(b){b.hidden=n<=%d;b.textContent=open?%s:'See all '+n;b.setAttribute('aria-expanded',String(open));}
   cs.forEach(function(c){c.setAttribute('aria-pressed',String(c.getAttribute('data-f')===f));});
 }
 cs.forEach(function(c){c.addEventListener('click',function(){f=c.getAttribute('data-f');draw();});});
-if(b)b.addEventListener('click',function(){open=true;b.setAttribute('aria-expanded','true');draw();});
+if(b)b.addEventListener('click',function(){open=!open;draw();if(!open){var r=b.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)b.scrollIntoView({block:'center'});}});
 draw();
 sec.classList.add('js','ready');
 })();
-""" % (FIRST, FIRST) + JOIN_SCRIPT
+""" % (FIRST, FIRST, json.dumps(SHOW_FEWER)) + JOIN_SCRIPT
 JS_ON = "<script>document.currentScript.parentNode.classList.add('js')</script>"
 
 

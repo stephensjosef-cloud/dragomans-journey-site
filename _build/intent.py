@@ -71,8 +71,12 @@ sub('local.html', r'<span([^>]*)>It\'s <span id="sr-clock">([^<]*)</span> in San
 sub('local.html', r'\s*<section aria-labelledby="other-route".*?</section>', '', ref='L30')
 sub('local.html', r'\s*<span[^>]*>Dragoman \(n\.\): a guide and interpreter for travelers crossing country where they didn\'t speak the language\.</span>', '', ref='L31')
 sub('local.html', r'\s*<span[^>]*>Made by Josef Stephens in Santa Rosa, California</span>', '', ref='L31')
+# T-43 (Nov 23, 2026): the kids' app has over 700 tests now (the Studio card says so since T-42),
+# so the Apps result card's value and its date move with it (Josef's words, approved Nov 23).
 text('local.html', '{"k": "Automatic checks on the latest version", "v": "324"}',
-     '{"k": "Automatic checks on the latest version", "v": "535"}', ref='F1')
+     '{"k": "Automatic checks on the latest version", "v": "Over 700"}', ref='F1')
+text('local.html', '"head": "RESULT · APPS", "date": "OCT 2026"',
+     '"head": "RESULT · APPS", "date": "NOV 2026"', ref='F1')
 text('local.html', '"The app\'s automatic checks on the latest version, Oct 7, 2026."',
      '"The app\'s automatic checks on the latest version, Oct 27, 2026."', ref='F1')
 text('local.html', '{"k": "Accounts or child data collected", "v": "None"}',

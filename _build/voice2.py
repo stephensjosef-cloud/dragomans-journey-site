@@ -255,7 +255,7 @@ text('index.html',
 # leader at least 24px wide, as these longer labels wrap beside their values there. The rows
 # take the 14px the line under the labels used to leave.
 R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'),
-           ('A teaching app, iPhone, iPad, Android and web', '535 tests'),
+           ('A teaching app, iPhone, iPad, Android and web', 'Over 700 tests'),   # T-43 (Nov 23, 2026): was '535 tests'
            ('A birding league with real players', 'zero lines of code to start'),
            ('A banking COBOL program, checked in public', '2 AIs compared')]
 R4_ROW = HERO_ROW

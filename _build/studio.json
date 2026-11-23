@@ -11,8 +11,8 @@
   "products": [
     {"id": "birdleague", "name": "Bird League", "status": "In testing on iPhone and Android", "kind": "My own app",
      "what": "Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.",
-     "proof": "Build 49 names birds from a photo or a song, and sends sightings to eBird in one tap.",
-     "image": "bird-league-then-now.jpg", "image_alt": "Then: an early Bird League screen that still says mock data. Now: build 49's life list wall.",
+     "proof": "It names birds from a photo or a song, and sends sightings to eBird in one tap.",
+     "image": "bird-league-then-now.jpg", "image_alt": "Then: the first Bird League build, naming birds by sound with mock data. Now: the Log screen, which identifies a bird by sound or photo.",
      "list": {"id": "birdleague", "button": "Get the launch email", "line": "One email when it's out. No newsletter.", "count": 0},
      "link": null, "gate": null},
     {"id": "deepcuts", "name": "Deepcuts", "status": "In testing on iPhone", "kind": "My own app",
