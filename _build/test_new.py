@@ -1695,12 +1695,9 @@ def s_checkup():
     for w in (390, 1440):
         q = newpage(w); q.on('request', lambda rq: sent.append(rq.url) if 'checkup' in rq.url and not rq.url.startswith(BASE) else None)
         q.goto(BASE + 'checkup.html'); q.wait_for_timeout(400)
-        if CK_LIVE:   # T-36: live, the script hides "Coming this week" and shows the box
-            check(f'checkup: no "Coming this week" shown at {w} (live, T-36)', not q.locator('#soon').is_visible())
-            check(f'checkup: the box and button show at {w} (live, T-36)', q.locator('#ask').is_visible() and q.locator('#site').is_visible() and q.locator('#go').is_visible())
-        else:
-            check(f'checkup: says "Coming this week" at {w}', q.locator('#soon').is_visible() and q.inner_text('#soon').strip().upper() == 'COMING THIS WEEK')
-            check(f'checkup: no box while CHECKUP_URL is empty at {w}', not q.locator('#ask').is_visible() and not q.locator('#site').is_visible() and not q.locator('#go').is_visible())
+        # T-41: the "Coming this week" panel is gone and the box is in the HTML, live or not.
+        check(f'checkup: no "Coming this week" panel at {w} (T-41)', q.locator('#soon').count() == 0 and 'Coming this week' not in q.content())
+        check(f'checkup: the box and button show at {w} (T-36, T-41)', q.locator('#ask').is_visible() and q.locator('#site').is_visible() and q.locator('#go').is_visible())
         check(f'checkup: no report cards before a check at {w}', not q.locator('#rep1').is_visible() and not q.locator('#rep2').is_visible() and not q.locator('#stat').is_visible())
         check(f'checkup: no sideways scroll, coming soon, at {w}', q.evaluate('document.documentElement.scrollWidth - innerWidth') <= 0)
         q.screenshot(path=f'{SHOTS}/t04-soon-{w}.png', full_page=True)
@@ -2713,7 +2710,7 @@ def s_t_20():
         old_ck = _re.sub(r"\nvar CHECKUP_URL = '[^']*';[^\n]*", "\nvar CHECKUP_URL = '';", old_ck, count=1)
     check('T-20 F2: checkup.html itself is unchanged (apart from the wrapping rules and the darker button text; T-36: and the address line)', new_ck == old_ck,
           next((f'...{old_ck[max(0, i - 80):i + 80]}... | ...{new_ck[max(0, i - 80):i + 80]}...' for i in range(min(len(old_ck), len(new_ck))) if old_ck[i] != new_ck[i]), f'{len(old_ck)} vs {len(new_ck)}'))   # T-33: the first difference, when there is one
-    check('T-20 F2: checkup.html still says "Coming this week"', '>Coming this week<' in SRC20['checkup.html'])
+    check('T-20 F2 (T-41): checkup.html no longer says "Coming this week"', 'Coming this week' not in SRC20['checkup.html'])
     WORK_CARD = r'\n    <article class="card" data-k="free">(?:(?!</article>).)*?href="checkup\.html".*?</article>'
     TOOLS_SEC = r'<section id="tools".*?</section>'
     MORE = r'<p class="noprint"[^>]*>More free tools: .*?</p>'
@@ -6668,7 +6665,7 @@ T35_SAMPLE_MARKS = [
     [(1, 'b', "not just about marketing, it's")],
     [(1, 'c', 'leverages'), (1, 'c', 'cutting-edge'), (1, 'c', 'elevate'), (3, 'swap', None)],
     [(1, 'e', 'the secret:')],
-    [(2, 'guess', 'what matters'), (3, 'swap', None)],
+    [(2, 'guess', 'what matters most'), (3, 'swap', None)],   # T-41: the widened catch takes "most" too
     [],
     [(1, 'c', 'next level'), (3, 'swap', None)],
 ]

@@ -49,11 +49,14 @@ BODY = r"""
 
 SCRIPT = r"""
 (function () {
-  // The rules, in the order they are checked. tells.py's regexes, ported exactly (long dashes written as \u escapes).
+  // The rules, in the order they are checked. tells.py's regexes, ported (long dashes written as \u escapes); T-41's
+  // play pass narrowed a and b and widened f's last item, each noted where it changed.
   var L1 = [
-    ['a', /\u2014|\u2013(?=\s)|\s--\s/g,
+    // T-41 play pass: a typed " -- " is not marked (people type it; AI tools write the long dash), and "not X, but" is
+    // marked only as "not just/only/about X, but", so a plain "I'm not a morning person, but ..." isn't.
+    ['a', /\u2014|\u2013(?=\s)/g,
       'Long dashes are the mark people spot first now.', 'Use a period or a comma.'],
-    ['b', /\b(?:isn't|is not|aren't|not) (?:just |only |about )?[^.?!]{3,60}?(?:[,;.] ?(?:it's|it is|they're|but)\b|\u2014)/gi,
+    ['b', /\b(?:isn't|is not|aren't|not) (?:(?:just |only |about )?[^.?!]{3,60}?(?:[,;.] ?(?:it's|it is|they're)\b|\u2014)|(?:just |only |about )[^.?!]{3,60}?[,;] ?but\b)/gi,
       '"It\'s not this, it\'s that" is the most copied shape in AI writing.', 'Say the second half on its own.'],
     ['c', /\b(?:leverag\w*|seamless\w*|unlock\w*|elevat\w*|robust|streamlin\w*|effortless\w*|game.chang\w*|delve\w*|tapestry|cutting.edge|empower\w*|harness the|supercharg\w*|revolutioni\w*|transformative|next.level|world.class|bespoke|curated|holistic|synerg\w*|journey to|in today's|landscape of|at the end of the day|when it comes to|it's worth noting|rest assured)\b/gi,
       '"{hit}" is one of the words AI reaches for.', 'Say what actually happens.'],
@@ -62,12 +65,12 @@ SCRIPT = r"""
     ['e', /\b(?:The (?:result|answer|secret|catch|best part|bottom line)|Here's (?:why|how|what))\s*[:?]/gi,
       '"{hit}" sets up a reveal.', 'Just say it.']
   ];
-  var L2 = ['guess', /\b(?:something|things|stuff|content|solutions|your needs|unique needs|everything you need|what matters|quality|value)\b/gi,
+  var L2 = ['guess', /\b(?:something|things|stuff|content|solutions|your needs|unique needs|everything you need|(?:what|the (?:\w+ )?(?:that|which))(?: (?:really|actually|truly))? matters?(?: most)?|quality|value)\b/gi,
     '"{hit}" makes the reader guess.', 'Name the real thing: which one, how many, or what it was last time.'];
   var L3 = ['swap', 'Any business could paste this on their own site without changing a word.', 'Add one thing only you have: a number, a name or a place.'];
   var L4 = {
-    f: [/\b[\w'\u2019-]+(?: [\w'\u2019-]+){0,3}, [\w'\u2019-]+(?: [\w'\u2019-]+){0,3},? (?:and|or) [\w'\u2019-]+/g,
-      'Three in a row is a rhythm AI loves.', 'Keep the one that matters most.'],
+    f: [/\b[\w'\u2019-]+(?: [\w'\u2019-]+){0,3}, [\w'\u2019-]+(?: [\w'\u2019-]+){0,3},? (?:and|or) [\w'\u2019-]+(?: [\w'\u2019-]+){0,2}/g,
+      'Three in a row is a rhythm AI loves.', 'Keep the one you\'d miss.'],
     g: ['Asking a question and answering it yourself is a stage move.', 'On a page, just answer.'],
     h: ['Three short sentences in a row reads like a slogan.', 'Join two of them.']
   };
@@ -105,25 +108,42 @@ SCRIPT = r"""
   // Level 3, the swap test: only a sentence that makes a claim about the business.
   var CLAIM = /\b(?:we|our|us|your business|your brand)\b/i;
   var OK_CAPS = ['I', "I'm", "I'll", "I've", "I'd", 'I\u2019m', 'I\u2019ll', 'I\u2019ve', 'I\u2019d'];
+  // T-41 play pass: a sentence holding a web or email address is the business's own, so it never fails the swap test.
+  var ADDR = /https?:\/\/|\bwww\.|\b[\w-]+\.(?:com|org|net|edu|gov|io|co|us|biz|info|shop|app|dev|studio)\b|[\w.+-]+@[\w-]+\./i;
   function swap(s) {
     var w = words(s);
-    if (w.length < 8 || !CLAIM.test(s) || /[0-9$%]/.test(s)) return false;
+    if (w.length < 8 || !CLAIM.test(s) || /[0-9$%]/.test(s) || ADDR.test(s)) return false;
     return !w.slice(1).some(function (x) {
       var core = x.replace(/^[^\p{L}\p{N}]+/u, '').replace(/[^\p{L}\p{N}'\u2019]+$/u, '');
       return /^\p{Lu}/u.test(core) && OK_CAPS.indexOf(core) < 0;
     });
   }
 
+  // T-41 play pass: the rules read a copy with curly quotes made straight (phones and word processors type them) and a
+  // list line's bullet or number blanked out; the copy keeps every position, so the marks land on the words as typed.
+  var LIST = /^(?:[-*\u2022\u2023\u25E6\u2013\u2014]|\d{1,2}[.)])\s+/;
+  function plainCopy(s) {
+    var c = s.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+    var m = LIST.exec(c);
+    return m ? new Array(m[0].length + 1).join(' ') + c.slice(m[0].length) : c;
+  }
+
   function check(text) {
-    var sents = split(text).map(function (s) { return {text: s, words: words(s).length, marks: []}; });
+    var sents = split(text).map(function (s) {
+      var list = LIST.test(s);
+      return {text: s, words: words(list ? s.replace(LIST, '') : s).length, marks: [], list: list};
+    });
     sents.forEach(function (S) {
-      var s = S.text;
+      var s = plainCopy(S.text);
+      var at = function (h) { return S.text.substr(h.at, h.hit.length); };
       L1.forEach(function (r) {
-        finds(r[1], s).forEach(function (h) { S.marks.push({level: 1, rule: r[0], hit: h.hit, at: h.at}); });
+        finds(r[1], s).forEach(function (h) { S.marks.push({level: 1, rule: r[0], hit: at(h), at: h.at}); });
       });
-      finds(L2[1], s).forEach(function (h) { S.marks.push({level: 2, rule: L2[0], hit: h.hit, at: h.at}); });
-      if (swap(s)) S.marks.push({level: 3, rule: L3[0], hit: null, at: null});
-      finds(L4.f[0], s).forEach(function (h) { S.marks.push({level: 4, rule: 'f', hit: h.hit, at: h.at}); });
+      finds(L2[1], s).forEach(function (h) { S.marks.push({level: 2, rule: L2[0], hit: at(h), at: h.at}); });
+      // T-41 play pass: the swap test speaks only where the sentence already reaches for generic words (a level 1 or 2
+      // mark); on its own it marked plain, specific talk like "We do cakes but we need a week."
+      if (S.marks.length && swap(s)) S.marks.push({level: 3, rule: L3[0], hit: null, at: null});
+      finds(L4.f[0], s).forEach(function (h) { S.marks.push({level: 4, rule: 'f', hit: at(h), at: h.at}); });
     });
     // g: a question answered by the very next sentence, short, starting with It, That, This, You, We, I or The.
     sents.forEach(function (S, i) {
@@ -132,10 +152,12 @@ SCRIPT = r"""
         S.marks.push({level: 4, rule: 'g', hit: null, at: null});
     });
     // h: three sentences in a row of 2 to 6 words each; the first of the three is marked, and the next run starts after them.
-    var short = function (S) { return S && S.words >= 2 && S.words <= 6; };
+    // T-41 play pass: list lines are not sentences here, and the card shows all three sentences it means.
+    var short = function (S) { return S && !S.list && S.words >= 2 && S.words <= 6; };
     for (var i = 0; i + 2 < sents.length; i++) {
       if (short(sents[i]) && short(sents[i + 1]) && short(sents[i + 2])) {
         sents[i].marks.push({level: 4, rule: 'h', hit: null, at: null});
+        sents[i].run = [sents[i + 1].text, sents[i + 2].text];
         i += 2;
       }
     }
@@ -144,7 +166,7 @@ SCRIPT = r"""
       S.marks.forEach(function (m) { delete m.k; });
     });
     // The whole text: 8 or more sentences of 3 words or more, all about the same length (tells.py's rhythm rule).
-    var n = sents.filter(function (S) { return S.words >= 3; }).map(function (S) { return S.words; }), flat = false;
+    var n = sents.filter(function (S) { return S.words >= 3 && !S.list; }).map(function (S) { return S.words; }), flat = false;   // T-41: list lines don't count
     if (n.length >= 8) {
       var mean = n.reduce(function (a, b) { return a + b; }, 0) / n.length;
       var sd = Math.sqrt(n.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0) / n.length);
@@ -186,8 +208,11 @@ SCRIPT = r"""
       : n === 1 ? '1 of ' + m + ' sentences has a mark' : n + ' of ' + m + ' sentences have a mark';
     $('note').hidden = !R.rhythm;
     $('cards').innerHTML = hit.map(function (S) {
-      return '<li class="vcard"><p class="s">' + marked(S) + '</p><ul class="vmarks">' + S.marks.map(function (k) {
-        var r = reason(k);
+      var said = {};   // T-41 play pass: the same advice once per sentence (two long dashes gave it twice)
+      return '<li class="vcard"><p class="s">' + marked(S) + (S.run ? ' ' + S.run.map(txt).join(' ') : '') + '</p><ul class="vmarks">' + S.marks.map(function (k) {
+        var r = reason(k), key = r[0] + '\n' + r[1];
+        if (said[key]) return '';
+        said[key] = 1;
         return '<li><p>' + txt(r[0]) + '</p><p class="try">' + txt(r[1]) + '</p></li>';
       }).join('') + '</ul></li>';
     }).join('');

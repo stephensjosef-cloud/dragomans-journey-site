@@ -7,12 +7,13 @@ colors:
   card: "#F7F9F3"
   ink: "#17212B"
   ink-muted: "#4F5A63"
-  magenta: "#A21C8A"
+  orange: "#E8592B"
+  orange-text: "#A93F17"
   blue: "#1C5FA8"
   contour: "#A88B5C"
   on-ink: "#F7F9F3"
   on-ink-muted: "#B9C3CC"
-  magenta-on-ink: "#E58FD3"
+  orange-on-ink: "#F07A4E"
   blue-on-ink: "#8FB8E8"
 typography:
   display:
@@ -81,12 +82,12 @@ components:
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
   link-hover:
-    textColor: "{colors.magenta}"
+    textColor: "{colors.orange-text}"
 ---
 
 ## Overview
 
-Dragoman's Journey is one person, Josef Stephens, building AI tools for small businesses and nonprofits around Santa Rosa, and checking COBOL translations for banks. The look borrows from an aeronautical chart: chart-paper green, a magenta route, blue airspace, brown contour lines. The feeling it borrows is the one a good bush pilot gives you: you are in calm, competent hands, and you always know what happens next.
+Dragoman's Journey is one person, Josef Stephens, building AI tools for small businesses and nonprofits around Santa Rosa, and checking COBOL translations for banks. The look borrows from an aeronautical chart: chart-paper green, an orange route, blue airspace, brown contour lines. The feeling it borrows is the one a good bush pilot gives you: you are in calm, competent hands, and you always know what happens next.
 
 It is the feeling, not a theme. No aviation words in the copy. What carries over is behavior:
 
@@ -102,10 +103,10 @@ It is the feeling, not a theme. No aviation words in the copy. What carries over
 - **Card (#F7F9F3):** cards, panels and form fields.
 - **Ink (#17212B):** text, 2px card borders, the main button, and dark bands (the footer and the closing call box).
 - **Ink muted (#4F5A63):** secondary text, 5.8:1 on chart.
-- **Magenta (#A21C8A):** the Local route and the one next step: its ring, route lines and short labels. Never body text, never a background.
-- **Blue (#1C5FA8):** the Mainframe route's accent, in place of magenta on the Mainframe pages, and data marks.
+- **Orange (#E8592B fill, #A93F17 text on light):** the Local route and the one next step: its ring, route lines and short labels. Never body text, never a background.
+- **Blue (#1C5FA8):** the Mainframe route's accent, in place of orange on the Mainframe pages, and data marks.
 - **Contour (#A88B5C):** background contour lines only, at about 38% opacity. Never text.
-- **On ink (#F7F9F3), on ink muted (#B9C3CC), magenta on ink (#E58FD3), blue on ink (#8FB8E8):** the same roles inside a dark band.
+- **On ink (#F7F9F3), on ink muted (#B9C3CC), orange on ink (#F07A4E), blue on ink (#8FB8E8):** the same roles inside a dark band.
 - Every text pair keeps WCAG AA: 4.5:1 for body text, 3:1 for large text and controls.
 
 ## Typography
@@ -128,15 +129,15 @@ It is the feeling, not a theme. No aviation words in the copy. What carries over
 ## Shapes
 
 - Square corners on cards, buttons and fields. Status pills are the only rounded shape.
-- **The ring:** one hand-drawn magenta ellipse around the page's one next step. One per page, never more.
-- **The route:** a dashed magenta line (3px, 10 on, 8 off) linking the steps of a process, from where you are to done.
+- **The ring:** one hand-drawn orange ellipse around the page's one next step. One per page, never more.
+- **The route:** a dashed orange line (3px, 10 on, 8 off) linking the steps of a process, from where you are to done.
 - **The pen underline:** a slightly wavy hand-drawn line under a headline's marked words, in the accent (blue on the Mainframe pages). Headlines never switch to italic: marked words stay upright in their color, and three words or fewer also get the pen underline. Decoration only, never on a tap target.
 - **The location mark:** the ringed crosshair from the logo, next to "Santa Rosa".
 - Contour lines behind heroes; blue airspace circles only on the Mainframe pages.
 
 ## Motion & Micro-interaction
 
-- Almost none. The route line may draw itself once when it scrolls into view; reduced motion turns that off. A link turns magenta on hover.
+- Almost none. The route line may draw itself once when it scrolls into view; reduced motion turns that off. A link turns orange on hover.
 
 ## Voice & Content Strategy
 
@@ -150,13 +151,13 @@ It is the feeling, not a theme. No aviation words in the copy. What carries over
 - **button-primary:** ink, square, 52px tall. The page's one next step gets the ring around it.
 - **card:** 2px ink border, card background, square corners.
 - **status-pill:** an ink pill with an on-ink label, like "In testing on iPhone".
-- **link / link-hover:** ink, underlined 4px below the text, magenta on hover.
+- **link / link-hover:** ink, underlined 4px below the text, orange on hover.
 
 ## Do's and Don'ts
 
 - Do give each page one next step, ringed.
 - Do say when someone will hear back.
 - Don't draw a second ring on a page.
-- Don't use magenta for body text or as a background.
+- Don't use orange for body text or as a background.
 - Don't build dark hero sections; dark is for the footer and the closing call box.
 - Don't put all-caps tracked labels above headings, or monospace labels outside data.

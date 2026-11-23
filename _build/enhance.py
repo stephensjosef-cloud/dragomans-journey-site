@@ -81,7 +81,7 @@ INTAKE = f"""
       </label>
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
         <button type="button" id="iq-send" disabled="" class="btn-blaze" style="min-height: 56px; padding: 0 26px; border: 0; border-radius: 2px; background: #E8592B; color: #0E1B17; font: 700 17px 'Instrument Sans', sans-serif; cursor: pointer">Continue to my Blueprint →</button>
-        <span style="font-size: 15px; color: #93A39A">Your answers carry over. Nothing is sent yet.</span>
+        <span style="font-size: 15px; color: #93A39A">Your answers carry over.</span>
       </div>
     </div>"""
 

@@ -1,7 +1,7 @@
 """Website checkup (T-04, Nov 12, 2026): one address box, a "Check it" button,
 then two report cards built from what worker/checkup.js answers.
-Until the Worker is live (CHECKUP_URL empty at the top of the script), the page
-says "Coming this week" and shows no box."""
+The box is in the HTML, so a reader without scripts sees the live tool (T-41, Nov 22, 2026).
+CHECKUP_URL at the top of the script is the Worker's address."""
 from chrome import write
 import sys
 
@@ -9,8 +9,8 @@ CSS = r"""
 .box{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
 .box input{flex:1 1 260px;width:auto;font-size:18px}
 .box .btn{flex:0 0 auto}
-.soon{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(40px,5vw,64px);line-height:.9;margin:0}
 .rep h2{margin:0;font-size:24px;line-height:1.2}
+#rep1-h{overflow-wrap:anywhere}
 .rep .label{margin-bottom:6px}
 .addr{font-family:'JetBrains Mono',monospace;font-size:14px;color:#5A635D;margin:6px 0 0;overflow-wrap:anywhere}
 .finds{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
@@ -36,11 +36,7 @@ CSS = r"""
 """
 
 BODY = r"""
-  <section class="panel" id="soon" aria-labelledby="soon-h">
-    <p class="soon" id="soon-h">Coming this week</p>
-  </section>
-
-  <section class="panel" id="ask" aria-labelledby="ask-h" hidden>
+  <section class="panel" id="ask" aria-labelledby="ask-h">
     <h2 id="ask-h" class="label">Your website's address</h2>
     <form id="form" class="box" novalidate>
       <label for="site" style="position:absolute;left:-9999px">Your website's address</label>
@@ -80,12 +76,16 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
 
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  if (!CHECKUP_URL) return;                        // "Coming this week" stays, no box
-  $('soon').hidden = true; $('ask').hidden = false;
+  if (!CHECKUP_URL) return;                        // no Worker address: the box does nothing
 
   var started = Date.now();
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); };
   var host = function (u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
+  // T-41 play pass: the headline names the page that was checked, not only the site, so a check of a missing or side
+  // page can't pass for the home page.
+  var place = function (u) {
+    try { var p = new URL(u).pathname; return host(u) + (p === '/' ? '' : p.length > 60 ? p.slice(0, 59) + '…' : p); } catch (e) { return host(u); }
+  };
   var list = function (a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; };
 
   // What each kind of button costs when it fails.
@@ -133,7 +133,9 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
       'Often quick once you find it: check the address, or ask whoever hosts your site.'));
     var broken = r.links.filter(function (l) { return l.status === 'broken'; });
     var nowhere = r.links.filter(function (l) { return l.status === 'nowhere'; });
-    var working = r.links.filter(function (l) { return l.status === 'working'; });
+    // T-41 play pass: a button that appears twice (same words, same address) is one button.
+    var once = {}, links = r.links.filter(function (l) { var k = l.label + '\n' + (l.url || l.href); if (once[k]) return false; once[k] = 1; return true; });
+    var working = links.filter(function (l) { return l.status === 'working'; });
     var seen = {};
     broken.forEach(function (l) {
       var k = 'b' + l.label + l.url; if (seen[k]) return; seen[k] = 1;
@@ -158,7 +160,8 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     if (!r.tel) f.push(r.facts.phone
       ? finding('warn', "Your phone number can't be tapped to call", 'On a phone, people have to copy it by hand.', 'A five-minute fix: make the number a phone link.')
       : finding('warn', "I couldn't find a phone number to tap", 'People who would rather call have to go looking.', 'A five-minute fix in your site builder: add your number as a phone link.'));
-    if (!r.email && !r.contactForm) f.push(finding('warn', "I couldn't find an email address or a contact form",
+    var contactWorks = working.some(function (l) { return l.kind === 'contact'; });   // T-41: a working Contact button is a way to write
+    if (!r.email && !r.contactForm && !contactWorks) f.push(finding('warn', "I couldn't find an email address or a contact form",
       'People with a question have no easy way to write to you from this page.',
       'A short fix: add your email as a link, or a contact form.'));
     if (!r.title) f.push(finding('warn', 'Your page has no title',
@@ -186,8 +189,8 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     render($('finds1'), f);
     var nSite = count(f);
     $('oks1').innerHTML = good.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('');
-    var looked = r.links.length;
-    var untested = r.links.filter(function (l) { return l.status === 'script' || l.status === 'unchecked' || l.status === 'refused'; }).length;
+    var looked = links.length;
+    var untested = links.filter(function (l) { return l.status === 'script' || l.status === 'unchecked' || l.status === 'refused'; }).length;
     $('note1').textContent = looked
       ? 'I tried every button and link that looks like booking, ordering, contact, donate, menu, schedule, appointment or reserve: ' + looked + ' in all' +
         (untested ? ', ' + untested + " of them I couldn't test from here" : '') + '.'
@@ -201,6 +204,9 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
 
   function aiCard(r) {
     var f = [], a = r.ai, s = r.structured, x = r.facts, noShop = serviceArea(s);
+    var sb = s.business || {};
+    // T-41 play pass: no phone anywhere on the page is one thing to fix (the site card says it), not three.
+    var noPhone = !r.tel && !x.phone && !sb.telephone;
     var bots = function (names) { return a.bots.filter(function (b) { return names.indexOf(b.name) > -1; }); };
     if (a.starBlocksAll) f.push(finding('bad', 'Your robots.txt asks every crawler to stay out',
       "Search engines and AI tools that follow it won't read any page on your site.",
@@ -227,13 +233,14 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
       'Under an hour. Many site builders add it from a business info setting.'));
     else {
       var miss = [['name', 'name'], ['address', 'address'], ['telephone', 'phone number'], ['openingHours', 'opening hours'], ['url', 'web address']]
-        .filter(function (k) { return !s.business.has[k[0]] && !(noShop && (k[0] === 'address' || k[0] === 'openingHours')); }).map(function (k) { return k[1]; });
+        .filter(function (k) { return !s.business.has[k[0]] && !(noShop && (k[0] === 'address' || k[0] === 'openingHours')) && !(noPhone && k[0] === 'telephone'); }).map(function (k) { return k[1]; });
       if (miss.length) f.push(finding('warn', 'Your structured data leaves out your ' + list(miss),
         'Your page describes itself as a ' + s.business.type + ' for machines, but without those facts.',
         'A short fix, wherever that block is set up.'));
     }
-    if (!x.phone) f.push(finding('warn', "I couldn't find a phone number in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
-    if (!x.hours && !noShop) f.push(finding('warn', "I couldn't find your opening hours in your page text", 'A machine reading the page may not find them either.', 'A five-minute fix: put them on the page as plain text, with the day names.'));
+    // T-41 play pass: the page-text notes stay quiet when the structured data already gives a machine the fact.
+    if (!x.phone && !noPhone && !sb.telephone) f.push(finding('warn', "I couldn't find a phone number in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
+    if (!x.hours && !noShop && !sb.openingHours) f.push(finding('warn', "I couldn't find your opening hours in your page text", 'A machine reading the page may not find them either.', 'A five-minute fix: put them on the page as plain text, with the day names.'));
     if (!x.address && !noShop) f.push(finding('warn', "I couldn't find a street address in your page text", 'A machine reading the page may not find one either.', 'A five-minute fix: put it on the page as plain text.'));
     if (typeof a.robotsStatus !== 'number' || a.robotsStatus >= 500) f.push(finding('info', "I couldn't read your robots.txt", '', ''));
     if (a.trainingBlocked.length) f.push(finding('info', 'Your robots.txt keeps ' + list(a.trainingBlocked) +
@@ -241,9 +248,20 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     render($('finds2'), f);
 
     var none = "I couldn't find it";
-    var name = (s.business && s.business.name) || r.siteName || '';
+    // T-41 play pass: a page title that is just a name ("Sunnyside Nails") is a name a computer can read; a title with
+    // separators ("Home | Acme") isn't used, since which part is the name is a guess.
+    var bare = r.title && !/[|\u00B7\u2022:\u2013\u2014]|\s-\s/.test(r.title) && r.title.split(/\s+/).length <= 6 ? r.title : '';
+    var name = (s.business && s.business.name) || r.siteName || bare;
     var rows = [['Name', name], ['Phone', x.phone || (s.business && s.business.telephone) || '']];
-    if (!noShop) rows.push(['Address', x.address || ''], ['Hours', x.hours || (s.business && s.business.openingHours) || '']);
+    // T-41 play pass: under "They should match exactly", only what was read whole. The page-text reader takes a street
+    // line without its town, and hours only up to the first time ("Tuesday to Sunday, 7am"), so those rows are left out
+    // rather than shown cut short; the structured data's hours come first.
+    var times = function (h) { return (String(h).match(/\d{1,2}(?::\d{2})?\s*(?:a\.?m|p\.?m)|\b\d{1,2}:\d{2}\b|\bnoon\b|\bmidnight\b/gi) || []).length; };
+    var hours = sb.openingHours || (x.hours && times(x.hours) >= 2 ? x.hours : '');
+    if (!noShop) {
+      if (!(x.address && x.addressFrom === 'text')) rows.push(['Address', x.address || '']);
+      if (hours || !x.hours) rows.push(['Hours', hours]);
+    }
     $('facts').innerHTML = rows.map(function (row) {
       return '<dt>' + row[0] + '</dt><dd' + (row[1] ? '>' + esc(row[1]) : ' class="none">' + none) + '</dd>';
     }).join('');
@@ -255,20 +273,46 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     var v = $('site').value.trim(), go = $('go'), msg = $('msg');
     if (!v) { msg.textContent = ERR.empty; $('site').focus(); return; }
     go.disabled = true; go.textContent = 'Checking…'; msg.textContent = 'Checking ' + v + '. This can take up to 30 seconds.';
-    fetch(CHECKUP_URL + '?url=' + encodeURIComponent(v), {method: 'GET', mode: 'cors', credentials: 'omit'})
+    // T-41 play pass: "name:password@site.com" or "site.com:8080" typed without https:// reads to the Worker as an odd
+    // scheme ("Only web addresses that start with http..."); sent with https:// in front, it gets the message that fits.
+    var send = /^[^\/:?#]+:/.test(v) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(v) && !/^(?:mailto|javascript|data|tel|sms|file|ftp|about|blob|vbscript):/i.test(v) ? 'https://' + v : v;
+    var typedHost = '';
+    try { typedHost = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(send) ? send : 'https://' + send).hostname.replace(/\.$/, '').toLowerCase(); } catch (e2) {}
+    // T-41 play pass: a reply the checker never finishes gets an answer after two minutes, not "Checking…" for ever.
+    var ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    var limit = setTimeout(function () { if (ctl) ctl.abort(); }, 120000);
+    fetch(CHECKUP_URL + '?url=' + encodeURIComponent(send), {method: 'GET', mode: 'cors', credentials: 'omit', signal: ctl ? ctl.signal : undefined})
       .then(function (res) { return res.json().catch(function () { return {ok: false, error: 'failed'}; }); })
       .then(function (r) {
-        if (!r.ok) { msg.textContent = ERR[r.error] || "Something went wrong on my side. Try again in a minute."; return; }
+        if (!r.ok) {
+          var why = r.error;
+          // T-41 play pass: a name with no dot is a typo ("https://goldencrustbakery"), not a home network.
+          if (why === 'private-name' && typedHost && typedHost.indexOf('.') < 0 && typedHost !== 'localhost') why = 'not-a-url';
+          msg.textContent = ERR[why] || "Something went wrong on my side. Try again in a minute.";
+          return;
+        }
         msg.textContent = '';
-        $('rep1-h').textContent = host(r.finalUrl);
         $('rep1-url').textContent = r.finalUrl;
-        var n = siteCard(r) + aiCard(r);
-        $('rep1').hidden = false; $('stat').hidden = false; $('rep2').hidden = false;
-        $('rep1-h').textContent = (n ? n + (n === 1 ? ' thing to fix on ' : ' things to fix on ') : 'Nothing broken on ') + host(r.finalUrl);
+        var n;
+        if (r.status >= 400) {
+          // T-41 play pass: an error page is reported as the error; its own markup says nothing about the real site.
+          render($('finds1'), [finding('bad', 'Your page answers with an error (' + r.status + ')',
+            'Anyone who opens this address sees an error instead of your page.',
+            'Often quick once you find it: check the address, or ask whoever hosts your site.')]);
+          $('oks1').innerHTML = ''; $('note1').textContent = '';
+          n = 1;
+          $('stat').hidden = true; $('rep2').hidden = true;
+        } else {
+          n = siteCard(r) + aiCard(r);
+          $('stat').hidden = false; $('rep2').hidden = false;
+        }
+        $('rep1').hidden = false;
+        $('rep1').querySelector('.fixit').style.display = n ? '' : 'none';   // T-41: nothing to fix, no "Want me to fix it?"
+        $('rep1-h').textContent = (n ? n + (n === 1 ? ' thing to fix on ' : ' things to fix on ') : 'Nothing broken on ') + place(r.finalUrl);
         $('rep1').scrollIntoView({behavior: 'smooth', block: 'start'});
       })
       .catch(function () { msg.textContent = "I couldn't reach the checker just now. Try again in a minute."; })
-      .then(function () { go.disabled = false; go.textContent = 'Check it'; });
+      .then(function () { clearTimeout(limit); go.disabled = false; go.textContent = 'Check it'; });
   });
 })();
 """

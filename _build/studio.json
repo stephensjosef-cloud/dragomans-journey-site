@@ -15,7 +15,7 @@
      "list": {"id": "birdleague", "button": "Get the launch email", "line": "One email when it's out. No newsletter.", "count": 0},
      "link": null, "gate": null},
     {"id": "deepcuts", "name": "Deepcuts", "status": "In testing on iPhone", "kind": "My own app",
-     "what": "Indie games matched by how they actually play, not by what's trending.",
+     "what": "Indie games matched by how they actually play.",
      "proof": null, "image": null, "image_alt": null,
      "list": {"id": "deepcuts", "button": "Join the beta", "line": "One email when a tester spot opens. No newsletter.", "count": 0},
      "link": null, "gate": null},

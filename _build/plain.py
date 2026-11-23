@@ -99,7 +99,7 @@ EDITS = [
      '8 or 12 captioned reels a month in the style you picked, all delivered by the 5th.'),
     ('>PROOF BUILT IN<', '>HOW YOU KNOW IT WORKS<'),
     ('A person checks every reel against a style sheet you signed, and nothing posts without your yes. The monthly page counts inquiries and bookings. Views are at the bottom.',
-     'I check every reel against the style you approved, and nothing posts without your yes. Your monthly report counts the calls and bookings the reels bring in, not just views.'),
+     'I check every reel against the style you approved, and nothing posts without your yes. Your monthly report counts the calls and bookings the reels bring in.'),
     ('>Program Apps<', '>Your know-how, in an app<'),   # T-33 R8
     ('Your curriculum or recipes, as an app your program owns instead of rents.', 'What you teach or sell, in an app with your name on it.'),   # T-33 R8
     ('An iPhone, iPad and Android app on a tested engine, published under your own store accounts.',
