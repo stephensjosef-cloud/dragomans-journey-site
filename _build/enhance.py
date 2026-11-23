@@ -27,6 +27,7 @@ CLIENT_SHORT = "a Sonoma County children's nonprofit"
 sys.path.insert(0, str(HERE / "tools"))
 import studio as STUDIO   # the Studio page and its build log (T-08)
 import chrome as CHROME   # the tools' shared page parts; the checkup switch (T-20 F2)
+import zoom as ZOOM       # the picture viewer (T-44), the same one the Studio pages use
 # One page per open product with a join list, written by tools/studio.py (T-09).
 STUDIO_PAGES = ("studio.html",) + tuple(slug for slug, _ in STUDIO.product_pages(STUDIO.load()[0]))
 PHOTO = HERE / "assets" / "josef.jpg"   # drop Josef's photo here and rebuild      # Josef's profile URL; until then the footer link is left out
@@ -403,6 +404,17 @@ def client(t):
     return t.replace("CLIENT_LONG", CLIENT_LONG).replace("CLIENT_SHORT", CLIENT_SHORT)
 
 
+def add_zoom_work():
+    """T-44 (Nov 23, 2026): work.html's Bird League Then and Now opens big on a tap, with the Studio's own viewer
+    (tools/zoom.py, which tools/studio.py uses for the Studio pages). The picture stands alone: no counter, no arrows."""
+    p = OUT / "work.html"
+    t = p.read_text(encoding="utf-8")
+    imgs = re.findall(r'<img src="bird-league-then-now\.jpg"[^>]*>', t)
+    assert len(imgs) == 1, "work.html: expected one Then and Now picture"
+    t = rep(t, imgs[0], ZOOM.link(imgs[0], "bird-league-then-now.jpg"))
+    p.write_text(ZOOM.page(t), encoding="utf-8")
+
+
 def add_pages():
     for f in STUDIO_PAGES:
         src = HERE / f
@@ -411,6 +423,7 @@ def add_pages():
             f"{f} is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
     for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
         (OUT / f).write_text(client((HERE / f).read_text(encoding="utf-8")), encoding="utf-8")
+    add_zoom_work()
     add_closing_call()
     balance_closing_call()
     if PHOTO.exists():

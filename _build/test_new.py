@@ -351,6 +351,7 @@ T33_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)
 
 
 def un33(s, name=None):
+    s = un44(s, name)   # T-44: the picture viewer out first
     s = un43(s, name)   # T-43: its words out first, so T-33's blocks match again
     if name not in T33_UNDO:
         return s
@@ -374,6 +375,7 @@ T34_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)
 
 
 def un34(s, name=None):
+    s = un44(s, name)   # T-44: the picture viewer out first
     if name not in T34_UNDO:
         return s
     if '\r\n' in s:
@@ -399,6 +401,7 @@ T35_NEW_FILES = ('voicecheck.html', 'voicecheck.png', 'og/voicecheck.png', '_bui
 
 
 def un35(s, name=None):
+    s = un44(s, name)   # T-44: the picture viewer out first
     if name not in T35_UNDO:
         return s
     if '\r\n' in s:
@@ -476,6 +479,31 @@ T43_PAGES = {
 
 def un43_line(s):
     return T43_LINES.get(s, s)
+
+
+# T-44 (Nov 23, 2026): every app screenshot opens big (tools/zoom.py). On studio.html, studio-birdleague.html and
+# work.html each picture is wrapped in a link to its own file with the zoom mark after it, and the viewer's CSS and
+# script are added (in the page's own <style> and <script> on the Studio pages, in their own data-zoom tags on
+# work.html; a product page with a picture also gets PAGE_ZOOM_CSS). un44(s, name) takes all of it back out, from out/
+# or from a themed page, so an older check that compares one of these pages with an earlier build keeps proving what
+# it proved. un33(), un34() and un35() call it first. Idempotent: on a page without the viewer nothing matches.
+T44_PAGES = ('studio.html', 'studio-birdleague.html', 'work.html')
+
+
+def un44(s, name=None):
+    import re as _r44
+    if name not in T44_PAGES or 'class="zm"' not in s:
+        return s
+    if '\r\n' in s:
+        return un44(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    s = _r44.sub(r'<a class="zm" href="[^"]*"(?: data-zg="[^"]*")?>(<img [^>]*>)<span class="zm-i" aria-hidden="true">.*?</span></a>',
+                 r'\1', s, flags=_r44.S)
+    s = _r44.sub(r'<style data-zoom>.*?</style>\n', '', s, count=1, flags=_r44.S)
+    s = _r44.sub(r'<script data-zoom>.*?</script>\n', '', s, count=1, flags=_r44.S)
+    s = _r44.sub(r'\n\.top>\.zm\{width:100%;max-width:560px\}\n@media \(min-width:800px\)\{\.top\.has-log>\.zm\{grid-area:img\}\}\n', '', s, count=1)
+    s = _r44.sub(r'\na\.zm\{position:relative;.*?\n@media \(prefers-reduced-motion:reduce\)\{\.zv,[^\n]*\}\}\n', '', s, count=1, flags=_r44.S)
+    s = _r44.sub(r'\n\(function\(\)\{\nvar D=document,R=D\.documentElement;.*?\n\}\)\(\);\n', '', s, count=1, flags=_r44.S)
+    return s
 
 
 def un43(s, name=None):

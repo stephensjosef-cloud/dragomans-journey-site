@@ -60,6 +60,8 @@ import pathlib
 import sys
 from urllib.parse import quote
 
+import zoom                          # T-44: the picture viewer, shared with enhance.py (work.html)
+
 HERE = pathlib.Path(__file__).resolve().parent.parent      # _build/
 STUDIO = HERE / "studio.json"
 SHIPPED = HERE / "shipped.json"
@@ -336,7 +338,8 @@ def product_card(p, wide=False):
     if not feature:
         cls = "prod wide" if wide else "prod"
         return f'\n    <article class="{cls}" data-id="{a(p["id"])}">\n        {body}\n    </article>'
-    img = (f'<img src="{a(p["image"])}" width="1200" height="1331" loading="lazy" alt="{a(p["image_alt"] or "")}">')
+    img = zoom.link(f'<img src="{a(p["image"])}" width="1200" height="1331" loading="lazy" alt="{a(p["image_alt"] or "")}">',
+                    a(p["image"]))                          # T-44: tap to see it big
     return (f'\n    <article class="prod feature" data-id="{a(p["id"])}">\n      <div class="fb">\n        {body}\n      </div>\n      {img}\n    </article>')
 
 
@@ -592,6 +595,11 @@ def app_intro(p):
     return out + '\n      </div>'
 
 
+def zgroup(app):
+    """T-44: the viewer's group for one app's gallery block, from its id or its name."""
+    return "".join(ch if ch.isalnum() else "-" for ch in (app.get("id") or app["name"]).lower()).strip("-")
+
+
 def gallery(studio):
     g = studio.get("gallery")
     if not g:
@@ -621,8 +629,10 @@ def gallery(studio):
                 fc = ""
                 if it.get("caption"):
                     fc = f'<figcaption>{f"{n}. " if grp.get("numbered") else ""}{t(it["caption"])}</figcaption>'
-                out.append(f'\n          <figure><img src="gallery/{a(it["file"])}" width="{w}" height="{h}" '
-                           f'loading="lazy" decoding="async" alt="{a(it["alt"])}">{fc}</figure>')
+                # T-44: each picture opens big; the pictures of one app's block step through together
+                pic = (f'<img src="gallery/{a(it["file"])}" width="{w}" height="{h}" '
+                       f'loading="lazy" decoding="async" alt="{a(it["alt"])}">')
+                out.append(f'\n          <figure>{zoom.link(pic, "gallery/" + a(it["file"]), zgroup(app))}{fc}</figure>')
             out.append('\n        </div>\n      </div>')
         out.append('\n    </div>')
     out.append('\n  </section>')
@@ -764,6 +774,13 @@ LOG_PHONE_CSS = r"""
 .loghead .stats strong{display:inline;font-size:clamp(38px,4.6vw,60px);margin-right:.18em}}
 """
 
+# T-44 (Nov 23, 2026): on a product page with a picture, the picture sits in its zoom link (tools/zoom.py), so the
+# link takes the picture's place in the grid and its 560px limit (the mark then sits on the picture's corner).
+PAGE_ZOOM_CSS = r"""
+.top>.zm{width:100%;max-width:560px}
+@media (min-width:800px){.top.has-log>.zm{grid-area:img}}
+"""
+
 PAGE_CSS = r"""
 .kick a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:underline;text-underline-offset:3px}
 .kick a:hover{color:#E9EEE9}
@@ -783,7 +800,8 @@ def product_page(p, rows, today, stamp):
     """One product's page (T-09): name, status, what, proof, image, its own log, one join box."""
     parts = [stamp]
     proof = f'<p class="proof"><strong>{t(p["proof"])}</strong></p>' if p.get("proof") else ""
-    img = (f'<img src="{a(p["image"])}" width="1200" height="1331" alt="{a(p["image_alt"] or "")}">'
+    img = (zoom.link(f'<img src="{a(p["image"])}" width="1200" height="1331" alt="{a(p["image_alt"] or "")}">',
+                     a(p["image"]))                         # T-44: tap to see it big
            if p.get("image") else "")
     mine = [r for r in rows if r["project"] == p["id"]]
     log = ""
@@ -824,7 +842,8 @@ def main(out_dir):
           title=title,
           description=lede.replace('"', "&quot;"),
           kicker="", h1=hero["h1"], lede=t(hero["intro"]),
-          css=CSS + marks_css(shown) + LOG_PHONE_CSS + GALLERY_CSS + APP_CSS + WIDE_CSS + SHELF_CSS, body=stamp + body, script=SCRIPT, more="")
+          css=CSS + marks_css(shown) + LOG_PHONE_CSS + GALLERY_CSS + APP_CSS + WIDE_CSS + SHELF_CSS + zoom.CSS, body=stamp + body,
+          script=SCRIPT + zoom.SCRIPT, more="")
     # One page per open product with a join list (T-09). A page whose product
     # closed or lost its list is removed, so it can't be copied into the site.
     keep = set()
@@ -837,7 +856,8 @@ def main(out_dir):
               h1=t(p["name"]),
               badge=f'\n      <span class="hero-pill">{t(p["status"])}</span>',
               lede=t(p["what"]),
-              css=CSS + marks_css([p["id"]]) + PAGE_CSS, body=product_page(p, rows, today, stamp), script=JOIN_SCRIPT, more="")
+              css=CSS + marks_css([p["id"]]) + PAGE_CSS + (PAGE_ZOOM_CSS + zoom.CSS if p.get("image") else ""),
+              body=product_page(p, rows, today, stamp), script=JOIN_SCRIPT + (zoom.SCRIPT if p.get("image") else ""), more="")
     for old in pathlib.Path(out_dir).glob("studio-*.html"):
         if old.name not in keep:
             old.unlink()

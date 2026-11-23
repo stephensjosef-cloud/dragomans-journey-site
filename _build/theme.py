@@ -53,6 +53,10 @@ KEPT = {'#2E7D4F', '#D9A520', '#7BD389', '#F9EEDA', '#F8E3DA', '#8A6A12',
 # Bird League and Birdsighted dots. Written in the new palette by tools/studio.py and kept as it is. No source used
 # this color before (it would have stopped the build), so no other page changes.
 DATA_MARKS = {BLUE}
+# T-44 (Nov 23, 2026): the picture viewer (tools/zoom.py) stays dark on every page, so its colors are written in the
+# new palette and kept as they are: ink, the light text on ink and its muted grey. No source used these before (they
+# would have stopped the build), so no other page changes. Its two see-through fills are in RGBA below.
+VIEWER = {INK, ON_INK, ON_INK_MUTED}
 RGBA = {
     'rgba(147,163,154,0.35)': 'rgba(168,139,92,0.30)',    # Local's contour lines (the table)
     'rgba(240,122,78,0.55)': 'rgba(168,139,92,0.55)',     # Local's orange contour lines (the table)
@@ -65,6 +69,9 @@ RGBA = {
     'rgba(22,32,28,.35)': 'rgba(23,33,43,.35)',
     'rgba(232,89,43,.45)': 'rgba(232,89,43,.45)',         # the caption tool's safe-zone legend: the accent, kept
     'rgba(0,0,0,0.45)': 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.2)': 'rgba(0,0,0,0.2)',
+    'rgba(23,33,43,.98)': 'rgba(23,33,43,.98)',         # T-44: the picture viewer's backdrop, ink, kept
+    'rgba(247,249,243,.14)': 'rgba(247,249,243,.14)',     # T-44: its arrow buttons, light on ink, kept
+    'rgba(247,249,243,.26)': 'rgba(247,249,243,.26)',     # T-44: the same, on hover
 }
 
 SMALL = {'a', 'button', 'span', 'strong', 'b', 'em', 'i', 'small', 'label', 'code', 'kbd', 'mark', 'time', 'abbr'}
@@ -109,7 +116,7 @@ def map_color(role, tok, zone, mf, tag=''):
         if c in RGBA:
             return RGBA[c]
         raise Unknown(c)
-    if c in KEPT or c in DATA_MARKS:
+    if c in KEPT or c in DATA_MARKS or c in VIEWER:
         return tok
     if role == 'bg':
         if c in ('#FFFFFF', 'WHITE'):
