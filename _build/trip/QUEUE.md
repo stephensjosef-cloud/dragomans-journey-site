@@ -1849,6 +1849,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-42 · The build log catches up, gets its new look, and can take a line on its own · READY
+
+**Why:** Nov 22, 2026: the Studio build log had 2 lines since Nov 4 while Josef shipped weekly; Josef: "more accurate, way cooler, and capable of actually keeping up with my feats without me having to hold its hand"; he ruled it may go live on its own with tight filters.
+
+**Done when:** the 16 catch-up lines and C1 to C3 are in; the log has its new look on studio.html and the product pages; `tools/board.py` adds a line and rebuilds only the Studio pages with Python alone, byte for byte the same as a full build; `tools/board_guard.py` rejects every bad case in the brief; W1 to W9 and the list rule are in the two tools; the checks in step 7 pass; a fresh reviewer has passed the look; T-42's receipt is filled in; `trip/T-42` is pushed. `main` moves only on Josef's "push it" in this session.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
