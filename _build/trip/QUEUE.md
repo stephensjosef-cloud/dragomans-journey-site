@@ -1903,6 +1903,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-43 · The build log's finishing touches, local.html's numbers, and a Then and Now that shows the same job · READY
+
+**Why:** Nov 23, 2026: T-42's review notes, Josef "yes make those corrections"; Josef on the Bird League Then and Now: "these don't make sense for then/now pictures, because they aren't showing the same screen".
+
+**Done when:** the strip has its dates and "This week"; "See all" toggles to "Show fewer" and back; the filters take at most two rows at 390 and the strip sits with the log at 1440; the eight log lines read as written; local.html's three spots are current; bird-league-then-now.jpg shows the first build's sound screen beside today's Log screen with the new labels, and both pages' alt text and the Studio proof line match; the checks in step 7 pass; the fresh reviewers pass; T-43's receipt is filled in; trip/T-43 is pushed. main moves only on Josef's "push it" in this session.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
