@@ -1759,13 +1759,93 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-41 · The rule audit's fixes and the play pass · READY
+## T-41 · The rule audit's fixes and the play pass · DONE (build)
 
 **Why:** Nov 22, 2026: Claude's rule audit of the live site against the rulings of Nov 15 to 22, approved by Josef "yes all"; and the voice checker and the checkup reached the public with no play-it-as-a-person pass.
 
 **Done when:** items A to H of AUDIT-FIX-1 are in, the play pass has run with every true finding fixed, the checks in step 5 pass, T-41's receipt is filled in, and `trip/T-41` is pushed. `main` moves only on Josef's "push it" in this session.
 
 **Receipt:**
+- **Status: DONE (build), Nov 22, 2026.** Nothing is live: it goes live when Josef says "push it". No Worker edited or deployed (`_build/worker/` untouched); nothing pushed to `main`.
+- **Branch:** `trip/T-41`, cut from `origin/main` `77b359e`, exactly the required commit. Commits: `d5cbfdb` this item in the queue (READY), `e5aa440` the work, and this receipt in the commit after it.
+- **Baseline:** origin/main exported with `git archive` into the scratchpad (outside the repository) and built there (dump.js, build.py, enhance.py, plain.py, intent.py, voice2.py, final.py, theme.py). Its `out-themed/` equals the repository root byte for byte: 70 of 70 files. The final build was made into a clean `_build/out` (the old ones moved aside to the scratchpad, not deleted) and copied to the root.
+- **What changed, by source:**
+  - A. `_build/work.html`: the meta description and og:description, exactly as approved.
+  - B. `enhance.py`: the line under "Continue to my Blueprint" reads "Your answers carry over."
+  - C. `studio.json`: Deepcuts' `what` ends at "how they actually play."; `tools/studio.py` rerun, so studio, studio-deepcuts and their descriptions and share descriptions follow.
+  - D. `plain.py`: the plain pass writes "Your monthly report counts the calls and bookings the reels bring in."
+  - E. `tools/voicecheck.py`: the guess rule's "what matters" is now the tested pattern; the three-in-a-row tip reads "Keep the one you'd miss."
+  - F. `tools/checkup.py`: the "Coming this week" section, its CSS and the script line that hid it are out; `#ask` has no `hidden`. With scripts on the box behaves as before.
+  - G. `_build/DESIGN.md`: tokens `orange` #E8592B, `orange-text` #A93F17, `orange-on-ink` #F07A4E (magenta and magenta-on-ink gone); link-hover reads `orange-text`; "orange route", "orange ellipse", "dashed orange line", "turns orange on hover", "orange on hover", "Don't use orange for body text". Blue unchanged. No page changed from this.
+  - H. The footer email link gets `display:inline-flex; align-items:center; min-height:44px` in `tools/chrome.py`, the six hand pages (briefing, call, case-reels, start, work, comp3) and the three canvas files. A second change was needed (see "Differed").
+  - Cards: og.py's words compared against the baseline's: only `work` and `studio-deepcuts` changed; og.py redrew all 18 and the other 16 came out byte for byte the same, so nothing needed restoring.
+  - README: two notes brought up to date (the checkup panel is gone; DESIGN.md names the orange).
+- **Checks** (scratchpad scripts, one line each):
+  - **5a PASS:** 20 files changed, 50 identical. 18 pages (every page with a footer: briefing, call, captions, case-reels, checkup, comp3, index, local, mainframe, receipt, scaler, shotlist, start, studio-birdleague, studio-deepcuts, studio, voicecheck, work) and `og/work.png`, `og/studio-deepcuts.png`. Sitemap, robots, 404 and every other file unchanged. Each changed line is one of: A (work, 4), B and D (local, 2 each), C (studio 2, studio-deepcuts 6), E (voicecheck, 4), F (checkup, 10), H (every page, 2), the play-pass fixes below (the script and style of checkup, 82 lines, and voicecheck, 54), and studio.py's own stamp (see "Differed").
+  - **5b PASS:** every approved line in A to E reads exactly as written on the built pages; "the number that matters" 0, "Nothing is sent yet." 0, "not by what's trending" 0, "not just views" 0, "Keep the one that matters most." 0, "Coming this week" 0, on 19 built pages.
+  - **5c PASS:** axe-core 4.10.3 at 390, all 18 changed pages, baseline against new: 0 violations before, 0 after, on every page. Color-contrast "needs review" items (axe can't read the background) as before.
+  - **5d PASS:** the footer email link measures 44px tall on all 18 pages at 390 and at 320, on the same row as the 44px number, no sideways scroll.
+  - **E by script PASS:** "what matters", "the number that matters", "the part that matters", "what really matters most" and "what actually matters" flag; "It doesn't matter." and "no matter what" don't. Every page's own words (title, both descriptions, the text), old checker on old words against new checker on new words: the same flags on 18 pages. On work.html the three "Things..." flags went with A's old words, and **A's approved words each carry one "three in a row" mark** ("Plus two apps, a birding game and a public COBOL check." and "...a public COBOL check, and free tools."), as the old description did. Left as approved.
+- **Play pass:** one fresh reviewer (a new subagent, nothing from this session), Chromium with a new profile every run, 390 wide (one run at 320), real web fonts, the quoted brief. The checkup's Worker answered from a local stand-in: `_build/worker/checkup.js` loaded unchanged (as `test_checkup.mjs` loads it), with a made-up internet of 12 sites (healthy bakery, a salon with several faults, an inn that blocks AI crawlers, a florist that redirects to www, a 4-hop redirect, a redirect into 192.168.x, a 500 page, a nonprofit with no phone, a 30-second host, a plumber whose buttons take 30 seconds, a script-only page, a 2 MB page) plus a private-DNS name; numbers, localhost, ports and schemes as live. After fixing, every case that found something was rerun once, by me. Findings, one line each:
+  - Voice checker:
+    - V1 the swap test marked a tired owner's plain sentences ("We do cakes but we need a week."): **fixed**, the swap test speaks only on a sentence that already has a word or phrase mark (the sample's approved marks unchanged); rerun "Nothing jumped out."
+    - V2 "I'm not a morning person, but..." marked as "not this, it's that"; a typed " -- " marked as a long dash: **fixed**, "not X, but" needs just/only/about; " -- " is no longer a mark. Rerun: neither marked.
+    - V2b "bread, coffee and the odd pie" marked as three in a row: **not changed**: it's Josef's own voice rule (no lists of three), the mark says what the shape is, and the rule can't tell a stock list from a rhythm without guessing. Josef's call whether plain inventories should be spared.
+    - V3 light edits and stray capitals dodge the marks: **not true as a fault**: a rule checker can always be dodged by its own user, who only fools themself; nothing is scored or shown to anyone else.
+    - V4 curly apostrophes (phones, Word, Google Docs) slipped past four rules: **fixed**, the rules read a copy with straight quotes, the marks land on the words as typed. Rerun 4 of 4, as with straight quotes.
+    - V5 a sentence holding the business's own web address got "Any business could paste this": **fixed**, never with a web or email address in the sentence.
+    - V6 list lines read as slogans and as flat rhythm: **fixed**, a line starting with a bullet, dash or number is a list line, left out of the short-sentence rule and the rhythm count (its bullet doesn't count as a word). Rerun: the menu list "Nothing jumped out."; an AI-style list still marks its words.
+    - V6b the slogan card didn't show which three sentences: **fixed**, the card shows all three.
+    - V7 Spanish gets "Nothing jumped out.": true; **waits on Josef's words** (W2).
+    - V8 two long dashes gave the same advice twice: **fixed**, once per sentence.
+    - V9 the three-in-a-row highlight stopped before the last item's noun: **fixed**, the last item takes up to two more words ("and the odd pie").
+    - V10 "tell you what to put there instead" isn't kept: **not true**: every mark carries a line on what to put there; the end line says it can't write it for you.
+    - V11 "Nothing jumped out" above the "reads flat" note: true; **waits on Josef's words** (W3).
+    - V12 scripts off, the button does nothing: true; **waits on Josef's words** (W4).
+    - V13 "1 of 1 sentences has a mark": true; **waits on Josef's words** (W1).
+  - Checkup:
+    - C1 hours cut short in the "should match exactly" box ("Tuesday to Sunday, 7am"): **fixed on the page**: the structured data's hours come first; hours read from the text show only when they hold a range, otherwise the row is left out. The reading itself is the Worker's (K2).
+    - C2 "daily, 8am to 8pm" not seen as hours: on the inn (structured hours present) **fixed**, the text note stays quiet when the structured data holds the hours; on the florist (no structured hours) it **waits on a Worker change** (K2).
+    - C3 the name missed when the title is the name: **fixed**, a page title with no separators and six words or fewer is read as the name ("Sunnyside Nails", "Studio Flow Yoga").
+    - C4 address cut to the street ("2245 Mendocino Ave"): **fixed on the page**, a street line read from the text is left out of the match-exactly box; the reading is the Worker's (K3).
+    - C5 one missing phone counted three times: **fixed**, once (the site card's); rerun "1 thing to fix". "a NGO": **waits on Josef's words** (W6).
+    - C6 a missing or side page headlined as the whole site: **fixed**, the headline names the page ("1 thing to fix on goldencrustbakery.com/nope"). The "/menu, 10 things" case was the stand-in's bare side page, not the tool.
+    - C7 a 500 page reported with 8 findings about the error page: **fixed**, an error page gets the error alone, with no AI card; rerun "1 thing to fix".
+    - C8 a redirect into 192.168.x gets "I only check addresses with a name": true; **waits on a Worker change and Josef's words** (K6, W10). The Worker reports the typed address, so the page can't tell where the redirect went.
+    - C9 65 seconds against "up to 30 seconds": true; **waits on Josef's words** (W5) and a Worker limit (K4). Buttons slower than 8 seconds called "doesn't load": **not true**, it's the same rule the page applies to the main page (a phone gives up).
+    - C10 a page over 1.5 MB stalled the checker (the stand-in hung about 20 minutes): **page fixed, Worker waits**: the page now stops waiting after 2 minutes and says "I couldn't reach the checker just now" (rerun: 121 s). The cause is the Worker's email pattern on a long run of letters (K1).
+    - C11 "admin:secret@site.com" got the http/https message: **fixed**, the page puts https:// in front of an address whose first part would read as a scheme; rerun "Leave out the name and password...". "site.com:8080" now gets the port message the same way.
+    - C12 "https://goldencrustbakery" got "inside a home or office network": **fixed**, a name with no dot (other than localhost) gets "That doesn't look like a web address..."; localhost unchanged.
+    - C13 a repeated button listed twice: **fixed**, a button with the same words and address counts once ("4 buttons work"). The crawler list's commas and "and ... and more": **wait on Josef's words** (W7, W8).
+    - C14 "Nothing broken" followed by "Want me to fix it?": **fixed**, the link hides when nothing needs fixing. No plain "yes" on a clean AI card: **waits on Josef's words** (W9).
+    - C15 "couldn't find an email or contact form" next to a working Contact button: **fixed**, a working Contact button counts as a way to write.
+    - C16 4 redirects, no report: true; **waits on a Worker change** (K5, the 3-hop limit).
+- **Removed and added, not built (Josef approves before they go live):**
+  - W1 voice checker headline, one sentence in all: removed "1 of 1 sentences has a mark" / added "1 of 1 sentence has a mark"
+  - W2 voice checker, words that are almost all not English: added headline "This reads English only, so I can't check these words."
+  - W3 voice checker, no sentence marked but the rhythm note shows: removed "Nothing jumped out. Read it out loud once anyway. If you wouldn't say it, cut it." (that case only) / added "No sentence has a mark, but the rhythm does."
+  - W4 voice checker, scripts off: added under the box "The checker runs in your browser, so it needs JavaScript turned on."
+  - W5 checkup status line: removed "This can take up to 30 seconds." / added "This can take a minute or two."
+  - W6 checkup: removed "Your page describes itself as a NGO for machines" / added "Your page describes itself as an NGO for machines" (a or an by sound, for every type)
+  - W7 checkup crawler finding: removed "so ChatGPT search, ChatGPT, when someone asks it to look and Perplexity search can't read this page to answer questions about you." / added "so the AI tools from OpenAI and Perplexity can't read this page to answer questions about you." (the companies named from the list)
+  - W8 checkup working buttons, more than four: removed '"Menu", "Order a cake", "Contact" and "Order a cake" and more.' / added '"Menu", "Order a cake", "Contact", "See the full menu" and more.'
+  - W9 checkup, AI card with no finding: added above the facts box "A computer can read your basic facts."
+  - W10 checkup, a redirect into a private network (needs K6): removed "I only check addresses with a name, like yourbusiness.com, not a number." (that case) / added "Your address sends visitors on to a private address, so I stopped there."
+- **Worker items (the job's rule: no Worker edited; each needs Josef to ask for it):** K1 (most serious) the email pattern `[\w.+-]+@[\w-]+(\.[\w-]+)+` slows with the square of a run of letters; a page cut at 1.5 MB inside a script leaves that run in the text, so anyone can host a page that stalls a check (live, likely stopped by the CPU limit as an error). K2 hours are read only to the first time, and "daily" or "every day" isn't a day. K3 a street address is read only to its street word. K4 no overall time limit (65 s seen). K5 more than 3 redirects gives no report. K6 an error after a redirect reports the typed address, not where the chain ended.
+- **Older asserts updated** (`_build/test_new.py`, none run): 1. lines 1698 to 1700, the checkup section: no "Coming this week" panel and the box shows, live or not (was: hidden while live, shown while not). 2. line 2713, T-20 F2: checkup.html no longer says "Coming this week" (was: still says it). 3. line 6668, T-35's sample marks: sentence 5's guess mark is "what matters most" (the widened catch takes "most"). The byte-for-byte proofs through `un33()`, `un34()`, `un35()` and T-20 F2's "checkup.html itself is unchanged" will differ on these pages, as after T-36 to T-40; no `un41()` was built. The untracked `test_*win.py` copies hold the old asserts.
+- **Looked at** (the root served locally, live Google Fonts), screenshots in `C:\Users\Josef\dragomans-journey-site\_build\look-t41\` (untracked): work, local (the Blueprint line with the quiz open, "How you know it works"), studio (the Deepcuts card), studio-deepcuts (hero), checkup, voicecheck and index, each at 390 and 320; index and work footers at both; the two cards at 1200 and 300 wide (`card-*-300.png`); the play-pass reruns in `play/` (checkup with scripts off at 320, every rerun case at 390). Fixes from looking: the footer row (below). Left: the work card's subhead breaks after "Plus"; it reads, and fitting it would mean changing og.py's layout.
+- **Differed from this plan:**
+  1. **H needed a second change.** As an inline-flex box the email made a break point between itself and the dot, so the home page's footer column shrank from 291 to 288px at 320 and the number dropped to its own row under a dangling dot. The span holding the email, dot and number now has `white-space:nowrap`, which restores the row exactly as origin/main has it.
+  2. **studio.py's stamp lines changed** on the three Studio pages (the build date and the hash of studio.json in a comment; `data-built` on studio.html). They change whenever studio.json does, and enhance.py refuses a stale stamp (README 4d). Counted under C in 5a.
+  3. The play pass ran against a local stand-in of the Worker, its own code with a made-up network (`_build/worker/` untouched, the live Worker never called). The harness, stand-in and inputs are in the scratchpad, not committed.
+  4. The vault's copy of DESIGN.md still says magenta; only the repo copy changed.
+  5. Voice checker comment: "tells.py's regexes, ported exactly" now says "ported", with T-41's narrowing noted.
+  6. Order of work: one command at the start was chained against the brief (the baseline export: a `;` and a pipe). Every later command ran on its own; the build steps ran from one scratchpad script, one command per build. Old builds moved aside, never deleted. Files staged by path.
+- **Josef, by hand:**
+  1. Look at `_build/look-t41/` (and `play/`).
+  2. Read W1 to W10; say which to build.
+  3. Say whether to open a Worker item for K1 to K6 (K1 first).
+  4. Say "push it" to Claude in chat; then the live pages change as above.
 
 ---
 
