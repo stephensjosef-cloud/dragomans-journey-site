@@ -2035,6 +2035,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-49 · FIX-R2b: with support, and planned, on Local · READY
+
+**Why:** Josef ruled on Nov 24 that support is optional and that the 40 reels are planned. T-48 changed most places; three lines on Local still say otherwise. The words are exact, as Josef wrote them.
+
+**Done when:** the three lines read as approved on the built local.html at the repo root, the checks C1 to C3 pass, T-49's receipt is filled in, and trip/T-49 is pushed. main does not move.
+
+**Receipt:**
+
+---
+
 ## T-48 · FIX-R2: two sides, support optional, three lines, R-02 fixes · DONE (build)
 
 **Why:** Josef ruled on Nov 24 that the site speaks to small businesses at his standard rate, with nonprofits as one short word-of-mouth section; that support is optional; that boards are welcome; and he picked new words for three lines two strangers called AI. Every word below is approved exactly as written; where this prompt says "judgment", favor what a busy small-business owner on a phone needs at that spot.
