@@ -2035,6 +2035,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-47 · Proof: a sample Blueprint and a sample monthly report · READY
+
+**Why:** Nov 24, 2026: after T-46 the fresh reviewer (the nonprofit skeptic) scored the site 5 of 10 and asked for a sample Blueprint, a sample monthly report and a worked busywork example. PROOF-1 (vault: `Claude outputs/dragomans-journey/prompt-PROOF-1.md`), a Duet build (ruled Nov 24): one made-up bakery carried through the real Blueprint days and its first monthly report, labeled as made up on every page.
+
+**Done when:** `sample-blueprint.html` and `sample-report.html` are built from `tools/samples.py`, linked from Local's Day 14 line and monthly report block and from each other, in the sitemap, llms.txt and share cards; checks 4a to 4f pass; this receipt is filled in; trip/T-47 is pushed. main moves only on Josef's "push it".
+
+**Receipt:**
+
+---
+
 ## T-46 · The launch fixes from the two reviews and Josef's four calls · DONE (build)
 
 **Why:** Nov 23, 2026: review/R-01's `R-01.md` and `R-01b.md` (two independent pre-marketing reviews); Josef's calls: split payment, "See it working in a week", a reply by the next weekday afternoon, keep the tool for good; "go".
