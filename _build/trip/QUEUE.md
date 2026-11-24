@@ -2002,13 +2002,36 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-45 · The home line becomes the dragoman line · READY
+## T-45 · The home line becomes the dragoman line · DONE (build)
 
 **Why:** Nov 23, 2026: Josef on the old line under "AI, made easy.", "this reads as condescending ... i want to love it"; on the new line, "love it, lets go".
 
 **Done when:** index.html shows the new line exactly, nothing else on the site changed, the checks in step 4 pass, T-45's receipt is filled in, trip/T-45 is pushed. main moves only on Josef's "push it" in this session.
 
 **Receipt:**
+- **Status: DONE (build), Nov 23, 2026.** Nothing is live until Josef says "push it". No Worker edited or deployed (`_build/worker/` untouched); `main` not moved.
+- **Branch:** `trip/T-45`, cut from `origin/main` `49e6753` (the required commit; it is origin/main). Commits: `14dbdbb` this item (READY), `8fad111` the work, and this receipt in the commit after it. The branch was cut with origin/main as its upstream, so it is pushed by an explicit refspec only.
+- **The line, old:** "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I know how to run them. Hand me the job that never gets done, and I'll take it from here."
+- **The line, new** (under "AI, made easy.", words exactly as approved): "Hey, I'm Josef, your dragoman. That's the old word for the guide travelers trusted in a strange land. Out there, AI is loud and confusing. In here, I'll walk you through it one plain step at a time."
+- **What changed, by source:** `_build/voice2.py` (the `index.html` `text()` call, `ref='V1'`: its new value is the New line; the T-34 comment kept, "T-45 (Nov 23, 2026)" added); `_build/test_new.py` (below); the built `index.html` at the root (one line). Nothing else.
+- **Baseline:** origin/main exported with `git archive` into the scratchpad and built there (dump.js, build.py, the seven tools, enhance, plain, intent, voice2, final, theme). Its `out-themed/` equals the repository root byte for byte. No date pin needed: the root was built Nov 23, the day of this build.
+- **Checks:**
+  - **Gate 1 PASS:** baseline equals the root, 70 of 70.
+  - **4a PASS:** the new build against the baseline: 69 of 70 identical; the only file that differs is `index.html`, 15,762 to 15,803 bytes, and in it one line (117, the paragraph under the h1). The diff: `-    <p style="margin: 0; max-width: 46ch; ...">Hey, I'm Josef. Take a deep breath. ... and I'll take it from here.</p>` / `+    <p style="margin: 0; max-width: 46ch; ...">Hey, I'm Josef, your dragoman. That's the old word ... one plain step at a time.</p>`; the paragraph's style attribute is unchanged. The root equals the new build, 70 of 70. No other tracked file changed except the two sources and this file.
+  - **4b PASS:** the New line is in the root's `index.html` exactly once, character for character (and in no other root file); "Take a deep breath" (any case) appears in no file of the built root (outside `_build/`).
+  - **4c PASS** (Chromium, a new context per run with empty storage, the real Google web fonts, Barlow Semi Condensed 900 and Barlow 400 loaded; touch at 390 and 320, 2x): the line sits 22px under the h1 at both widths, no overlap, no sideways scroll (scrollWidth 390 and 320, scrollX 0), text inside the page (right edge 367 and 303). At 390 it wraps to five lines (8, 8, 8, 9, 5 words); the last line is "plain step at a time." At 320 it wraps to six lines (6, 7, 7, 8, 8, 2 words); the last line is "a time." Two words, no word alone, so no wrap change was made. Also at 1440 (four lines; the last "at a time."), only to look. For comparison, the old line wrapped to 4 lines at 390 and 5 at 320 (last line "from here.").
+  - **4d PASS:** axe-core 4.10.3 on `index.html` at 390: no violations on the baseline, none on the new page, no new violations.
+- **Asserts updated** (`_build/test_new.py`, none run): (1) new `T45_LINE_OLD` (T-34's line) and `T45_LINE` (the New line); `T34_LINE` now equals `T45_LINE`, so every check that expects T34_LINE on the built site (T-17's V1, the T-33 and T-34 sections' text comparisons against origin/main with the line swapped, the T-34 "reads Josef's new words" check at 320, 390 and 1440, the no-em-dash check) now expects the New line. (2) new `un45(s, name)`: on `index.html` it puts T-34's line back (also the `&#39;` form); `un34()` calls it first, before `un44()`, so `t34_undo.json` still matches and every older read through `un34()` is unchanged. `_build/t34_undo.json` not edited. Checked without running the suite: `un45()` on the new `index.html` gives the baseline's `index.html` byte for byte, a second pass changes nothing, another page is untouched, and `t34_undo.json`'s `index.html` entries still hold T-34's line. Likely to need a look if run: any check that counts the home paragraph's lines or height (it wraps to 5 lines at 390, not 4).
+- **Words:** only the approved ones. Any other word wanted and not built: none.
+- **Looked at:** `_build/look-t45/` (untracked): `new-390.png`, `new-320.png`, `new-1440.png`, and `old-*` for comparison; the check scripts are in `_build/look-t45/scripts/` (`check4c.py`, `axe4d.py`). Looked at the two new phone pictures myself: the line sits under "AI, made easy." with room around it, centered, no collision. Not looked at: widths other than 320, 390 and 1440; a real phone; Safari. No fresh reviewer was asked for (step 4 names none).
+- **Differed from this plan:**
+  1. Against the standing rules: one command at the start joined a `git merge-base` check with an `echo` using `;`. Every other command ran on its own (the builds went through a one-command helper that sets the folder). Files staged by path; old `_build/out/`, `_build/out-themed/` and `_build/vals.json` moved aside to the scratchpad, never deleted, and rebuilt.
+  2. axe-core 4.10.3, copied from an earlier session's scratchpad (T-44 used 4.11.3); the same copy ran on the baseline and the new page.
+  3. Only `index.html` was copied from `out-themed/` to the root, since it is the only file that differs (the root equals `out-themed/`, 70 of 70).
+  4. Untracked older test copies (`_build/test_new_win.py`, `test_t22win.py` to `test_t30win.py`, `test_site_t24win.py`) still hold T-34's line; they are not in the repository and were not touched.
+- **Josef, by hand:**
+  1. Look at `_build/look-t45/new-390.png` and `new-320.png`.
+  2. Say "push it" to Claude in this session; then the home page changes as above.
 
 ---
 
