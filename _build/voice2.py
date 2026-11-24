@@ -403,6 +403,20 @@ for k, cta in (('reels', 'See reels'), ('app', 'See custom apps'), ('flow', 'See
 t48('local.html', 'I come to you, anywhere in Sonoma County, and watch',
     'I come to you, anywhere in Sonoma County, or we meet on a video call, and watch', ref='R2-12')
 
+# ---------------- T-49 (Nov 24, 2026, FIX-R2b): "with support" and "planned" in the last three places on Local ----------------
+# Josef ruled that support is optional and that the 40 reels are planned; T-48 missed these three lines.
+# Words exactly as approved. Each edit checks first that its new words aren't already on the page (t48 above).
+# R2b-1: the Results tab for reels, the row label, both in the rendered row and in the tab's embedded data,
+# so the tab shows the same words after a tap.
+t48('local.html', '>Reels in the series<', '>Reels planned in the series<', ref='R2b-1')
+t48('local.html', '"k": "Reels in the series"', '"k": "Reels planned in the series"', ref='R2b-1')
+# R2b-2: the busywork card, HOW YOU KNOW IT WORKS.
+t48('local.html', 'Each month you get one page showing what it did and anything it held for a person to check.',
+    'With support, each month you get one page showing what it did and anything it held for a person to check.', ref='R2b-2')
+# R2b-3: How it works, THE 1ST OF EVERY MONTH, The monthly report. The next sentence and the sample link stay.
+t48('local.html', '>One page you can read in a minute. It shows',
+    '>With support, one page you can read in a minute. It shows', ref='R2b-3')
+
 # ---------------- write ----------------
 if problems:
     print('VOICE: %d edit(s) missed, nothing written:' % len(problems))
