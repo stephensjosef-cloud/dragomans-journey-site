@@ -421,7 +421,7 @@ def add_pages():
         mark = re.search(r"<!-- studio\.py (\S+) (\S+) -->", src.read_text(encoding="utf-8")) if src.exists() else None
         assert mark and mark.group(2) == STUDIO.fingerprint(), \
             f"{f} is older than studio.json or shipped.json: run  cd tools && python3 studio.py ..  first"
-    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
+    for f in ("comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html", "sample-blueprint.html", "sample-report.html") + STUDIO_PAGES:   # T-47: the two samples
         (OUT / f).write_text(client((HERE / f).read_text(encoding="utf-8")), encoding="utf-8")
     add_zoom_work()
     add_closing_call()
@@ -600,7 +600,7 @@ MENU_JS = ("<script>(function(n){n.classList.add('djm');var b=n.querySelector('.
            "n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})"
            "})(document.currentScript.previousElementSibling)</script>")
 DARK_NAV = '<nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">'
-MENU_PAGES = ("index.html", "work.html", "call.html", "case-reels.html", "start.html") + FREE_TOOLS + STUDIO_PAGES
+MENU_PAGES = ("index.html", "work.html", "call.html", "case-reels.html", "start.html") + FREE_TOOLS + STUDIO_PAGES + ("sample-blueprint.html", "sample-report.html")   # T-47
 
 
 def add_phone_menu():
@@ -945,7 +945,7 @@ def use_hello():
 # the tool pages get their tags from tools/chrome.py.
 OG_PAGES = ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html",
             "work.html", "case-reels.html", "call.html")
-TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES   # tags from tools/chrome.py
+TOOL_PAGES = ("shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html", "sample-blueprint.html", "sample-report.html") + STUDIO_PAGES   # T-47: the samples get their tags from chrome.py too   # tags from tools/chrome.py
 
 
 def add_og():
@@ -1009,6 +1009,6 @@ if __name__ == "__main__":
     fix_contrast()
     use_hello()
     add_og()
-    for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html") + STUDIO_PAGES:
+    for f in ("index.html", "local.html", "mainframe.html", "comp3.html", "start.html", "briefing.html", "work.html", "case-reels.html", "call.html", "shotlist.html", "captions.html", "receipt.html", "scaler.html", "checkup.html", "voicecheck.html", "sample-blueprint.html", "sample-report.html") + STUDIO_PAGES:
         assert "—" not in (OUT / f).read_text(encoding="utf-8"), "em dash in " + f
     print("enhanced")

@@ -45,7 +45,7 @@ FONTS = HERE / "assets" / "fonts"
 DEST = HERE / "assets" / "og"
 
 PAGES = ["index", "local", "mainframe", "work", "comp3", "shotlist", "captions",
-         "receipt", "scaler", "start", "call", "case-reels", "briefing", "studio", "checkup", "voicecheck"]   # T-35: the voice checker
+         "receipt", "scaler", "start", "call", "case-reels", "briefing", "studio", "checkup", "voicecheck", "sample-blueprint", "sample-report"]   # T-47   # T-35: the voice checker
 # Plus one card per Studio product page (T-09), the same list studio.py writes.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import studio  # noqa: E402

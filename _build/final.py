@@ -414,7 +414,8 @@ LIGHT_CALL = ('display: inline-flex; align-items: center; min-height: 44px; padd
               'color: #12161F; text-decoration: none; font-weight: 600')
 T46_CURRENT = {'studio.html': 'studio.html', 'work.html': 'work.html', 'call.html': 'call.html'}
 DARK_PAGES = ('call.html', 'captions.html', 'case-reels.html', 'checkup.html', 'receipt.html', 'scaler.html',
-              'shotlist.html', 'start.html', 'voicecheck.html', 'work.html')   # and every Studio page
+              'shotlist.html', 'start.html', 'voicecheck.html', 'work.html',
+              'sample-blueprint.html', 'sample-report.html')   # T-47   # and every Studio page
 
 
 def t46_menu():

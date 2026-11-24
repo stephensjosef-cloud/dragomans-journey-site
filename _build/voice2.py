@@ -321,6 +321,13 @@ text('local.html', '>Most AI projects quietly break by month two<', ">Most AI to
 text('local.html', 'went from zero lines of code to real users and an App Store submission',
      'went from zero lines of code to real players in testing and an App Store submission', ref='T46-4d')
 # 4f: mainframe.html. Exhibit D is drawn from the tabs' state data only.
+# T-47 (Nov 24, 2026, PROOF-1): Local links to the two sample pages, from the Day 14 line and the monthly report.
+text('local.html', "Or a straight answer that you don't need me.</span>",
+     "Or a straight answer that you don't need me. <a href=\"sample-blueprint.html\" style=\"color: #A93F17; font-weight: 600; white-space: nowrap\">See a sample plan →</a></span>",
+     ref='P1-a')
+text('local.html', "anything that broke and how I fixed it.</p>",
+     "anything that broke and how I fixed it. <a href=\"sample-report.html\" style=\"color: #A93F17; font-weight: 600; white-space: nowrap\">See a sample report →</a></p>",
+     ref='P1-b')
 text('mainframe.html', '{"k": "Lines changed", "v": "1"}', '{"k": "Lines changed", "v": "2"}', ref='T46-4f')
 text('mainframe.html', 'Fixing that one line took both from unusable to mostly correct.',
      "Fixing that line, along with a second change I didn't control for, took both from unusable to mostly correct.",

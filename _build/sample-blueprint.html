@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sample Blueprint · Dragoman's Journey</title>
+<meta name="description" content="A sample of the plan you get on Day 14 of a Blueprint, for a made-up bakery.">
+<link rel="canonical" href="https://dragomansjourney.com/sample-blueprint.html">
+<meta property="og:title" content="Sample Blueprint · Dragoman's Journey">
+<meta property="og:description" content="A sample of the plan you get on Day 14 of a Blueprint, for a made-up bakery.">
+<meta property="og:site_name" content="Dragoman's Journey">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dragomansjourney.com/sample-blueprint.html">
+<meta property="og:image" content="https://dragomansjourney.com/og/sample-blueprint.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F2EDE1}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:#A93F17}a:hover{color:#16201C}
+::selection{background:#E8592B;color:#0E1B17}
+.dj{font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif;color:#16201C;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
+.big{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;margin:0}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.kick{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#F07A4E;text-transform:uppercase}
+.panel{background:#FBF8F1;border:1.5px solid #CFC6B2;border-radius:2px;padding:clamp(18px,2.4vw,28px)}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B716A;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;cursor:pointer;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid #B9B09C;background:transparent;color:#16201C;font-size:15px;font-weight:600}
+.chip:hover{border-color:#16201C}
+.chip[aria-pressed="true"]{background:#16201C;border-color:#16201C;color:#F2EDE1}
+.btn{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:2px;border:1.5px solid #16201C;background:#16201C;color:#F2EDE1;font-weight:700;font-size:16px;text-decoration:none}
+.btn:hover{background:#0E1B17;color:#F2EDE1}
+.btn.hot{background:#E8592B;border-color:#E8592B;color:#0E1B17}
+.btn.ghost{background:transparent;color:#16201C}
+.btn.ghost:hover{background:#EAE3D3;color:#16201C}
+input,textarea,select{font:inherit;color:#16201C;background:#fff;border:1.5px solid #B9B09C;border-radius:2px;padding:10px 12px;min-height:46px;width:100%}
+textarea{min-height:140px;resize:vertical;line-height:1.5}
+.private{font-size:14px;color:#5A635D;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16201C;color:#F2EDE1;padding:10px 18px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}
+@media (min-width:800px){section[aria-labelledby="more-h"]{grid-template-columns:minmax(0,1fr) auto!important;column-gap:clamp(48px,6vw,96px)!important}section[aria-labelledby="more-h"]>div:first-child{max-width:62ch}}
+.smp{display:grid;gap:20px}
+.smp h2{font-family:'Big Shoulders Display',Impact,sans-serif;font-weight:800;text-transform:uppercase;line-height:.95;margin:0 0 12px;font-size:clamp(28px,3.4vw,40px)}
+.smp h3{margin:18px 0 6px;font-size:18px;line-height:1.3}
+.smp p{margin:0 0 10px;max-width:64ch}
+.smp p:last-child{margin-bottom:0}
+.day{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.08em;color:#A93F17;margin:0 0 6px}
+.rows{list-style:none;margin:6px 0 0;padding:0;max-width:640px}
+.rows li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 24px;padding:10px 0;border-top:1px solid #CFC6B2}
+.rows li:last-child{border-bottom:1px solid #CFC6B2}
+.rows b{font-family:'JetBrains Mono',monospace;font-weight:700;white-space:nowrap}
+.next{font-weight:700}
+
+</style>
+</head>
+<body>
+<div class="dj">
+
+<header style="background:#0E1B17;color:#E9EEE9" class="noprint">
+  <div class="wrap">
+    <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#E9EEE9;text-decoration:none">
+        <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#E9EEE9" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#E8592B"/></svg>
+        <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
+      </a>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#C9D2CB;text-decoration:none">The work</a>
+        <a href="local.html" style="color:#C9D2CB;text-decoration:none">Local Route</a>
+        <a href="studio.html" style="color:#C9D2CB;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#C9D2CB;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px">Free 15-min call</a>
+      </div>
+    </nav>
+    <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
+      <span class="kick">Sample · a made-up bakery</span>
+      <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">A sample Blueprint</h1>
+      <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#C9D2CB">This is what you'd hold on Day 14. The bakery is made up, and so are its numbers. The days and the steps are the real ones.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+<div class="smp"><section class="panel"><p class="day">DAY 1</p><h2>What I saw</h2><p>The owner takes wholesale orders from 11 cafes. They come in by text, email and voicemail.</p><p>Every Sunday night she types them all into a spreadsheet, then copies the totals onto a bake sheet for the morning crew. It takes her about four hours.</p><p>Last month two orders slipped through, and one cafe opened without its croissants.</p></section><section class="panel"><p class="day">DAY 7</p><h2>The sample</h2><p>I built a working sample from four weeks of her real orders. It reads each order, adds it to the week and writes the bake sheet.</p><p>She checked it against her own sheets, and they matched except for one order that came in as a photo of a handwritten note. The sample set that one aside for her to read.</p></section><section class="panel"><p class="day">DAY 14</p><h2>The plan</h2><h3>What I'll build</h3><p>One place for every order. By 6 PM each Sunday, the week&#x27;s order list and Monday&#x27;s bake sheet are ready.</p><p>Anything it can&#x27;t read goes to her first. Invoices are drafted for her, and none go out until she says yes.</p><h3>What stays the same</h3><p>The cafes order the way they always have, by text, email or voicemail.</p><h3>The price</h3><ul class="rows"><li><span>The Build, fixed</span><b>$3,600</b></li><li><span>Less the Blueprint</span><b>−$1,500</b></li><li><span>Left to pay for the build</span><b>$2,100</b></li><li><span>Support, if she wants it</span><b>$750 a month</b></li></ul><h3>Launch date</h3><p>The second Monday after she says go.</p><h3>What it should save</h3><p>Most of her four hours on Sunday nights. The monthly report will show the real number.</p><h3>If the answer had been no</h3><p>With five cafes or fewer, I&#x27;d have told her a free shared order form would do the job.</p></section><p class="next"><a href="sample-report.html">See the sample report from its first month →</a></p></div>
+  <section aria-labelledby="more-h" class="noprint" style="margin-top:16px;background:#16201C;color:#E9EEE9;padding:clamp(26px,4vw,44px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 id="more-h" class="big" style="font-size:clamp(34px,4.4vw,56px)">Want a plan like this for your pile?</h2>
+      <p style="margin:0;font-size:18px;color:#C9D2CB">Two weeks, $1,500. Half after the Day 7 sample, and it comes off the price if you go ahead.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <a href="start.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#0E1B17;text-decoration:none;font-weight:700;border-radius:2px">Start a Blueprint →</a>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #C9C1AE;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#5A635D">
+  <span>Dragoman's Journey · Santa Rosa, California</span>
+  <span style="white-space:nowrap"><a href="mailto:hello@dragomansjourney.com" style="color:#3B4540;display:inline-flex;align-items:center;min-height:44px">hello@dragomansjourney.com</a> · <a href="tel:+17073948719" style="color:#3B4540;display:inline-flex;align-items:center;min-height:44px;white-space:nowrap">707-394-8719</a></span>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+function djToast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(djToast.t);djToast.t=setTimeout(function(){e.classList.remove('on')},1600)}
+function djCopy(text,label){
+  var done=function(){djToast((label||'Text')+' copied')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){djToast('Select it and copy by hand')}ta.remove()}
+}
+function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-z0-9]+)(?=$|[\s).,;:!?…”"'’])/g,function(m,a,b){return b.length>24?m:a+'<span style="white-space: nowrap">'+b+'</span>'})}
+
+</script>
+</body>
+</html>

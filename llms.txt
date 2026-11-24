@@ -16,5 +16,7 @@
 - [Website Checkup · Dragoman's Journey](https://dragomansjourney.com/checkup.html): A free check for small businesses and nonprofits: paste your site's address and get a plain report of what's broken, and whether a machine can read your facts.
 - [Voice checker · Dragoman's Journey](https://dragomansjourney.com/voicecheck.html): Paste words written with AI and see which sentences give it away, and what to put there instead.
 - [The studio · Dragoman's Journey](https://dragomansjourney.com/studio.html): Everything I'm building right now, and the date each piece shipped. Apps, free tools and shirts, made with AI and a lot of real-phone testing. Get on a list and you hear first.
+- [Sample Blueprint · Dragoman's Journey](https://dragomansjourney.com/sample-blueprint.html): A sample of the plan you get on Day 14 of a Blueprint, for a made-up bakery.
+- [Sample monthly report · Dragoman's Journey](https://dragomansjourney.com/sample-report.html): A sample of the one-page monthly report, for a made-up bakery's order tool.
 - [Bird League · Dragoman's Journey](https://dragomansjourney.com/studio-birdleague.html): Fantasy sports for birders. Draft real species, then score points against your league each week by finding them in the wild.
 - [Deepcuts · Dragoman's Journey](https://dragomansjourney.com/studio-deepcuts.html): Indie games matched by how they actually play.
