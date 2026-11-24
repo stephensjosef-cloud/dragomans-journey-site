@@ -143,8 +143,7 @@ EDITS = [
     ("One codebase, laid out for all three screen sizes.", "One app, laid out for all three screen sizes."),
     ("Each translation checked against the original program in the findings file. A byte-level run over one shared input file hasn't been done yet.",
      "Each translation checked against the original in the findings file. Running all of them on the same data file and comparing the output hasn't been done yet."),
-    ("This is a client's app, so the repo stays private. I'll share my screen and run the tests while you watch.",
-     "This is a client's app, so the code stays private. I'll share my screen and run the checks while you watch."),
+    # T-49 R2c (Nov 24, 2026): the Apps tab's footnote is gone from enhance.py, so its plain-language edit is too.
     ('The route, start to finish', 'How it works'),
     ('Three stops, agreed before we set out, so you always know where we are and what comes next.',
      "Three steps, with dates we agree on up front, so you always know what's next."),

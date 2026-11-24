@@ -58,6 +58,7 @@ LOCAL_CSS = """<style>
 .iq:hover{border-color:#F07A4E}
 .iq[aria-pressed="true"]{background:#E8592B;border-color:#E8592B;color:#0E1B17}
 #iq-send[disabled]{opacity:.45;cursor:not-allowed}
+#rc-src-foot:empty{display:none}
 </style>"""
 
 
@@ -133,6 +134,8 @@ PHOTO_MF = """<div role="img" aria-label="Josef Stephens" style="margin-top: 8px
         <span style="display: flex; flex-direction: column; gap: 6px"><em style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(52px, 5vw, 68px); line-height: 1">J. S.</em><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #B7BDC9">SANTA ROSA, CALIFORNIA</span></span>
       </div>"""
 
+# T-49 R2c (Nov 24, 2026): a client's footage, code and app are never shown to a prospect, so FOOT's
+# Reels and Apps footnotes are empty (and take no space: #rc-src-foot:empty in LOCAL_CSS).
 LOCAL_JS = r"""
 <script>
 (function () {
@@ -161,8 +164,8 @@ LOCAL_JS = r"""
     ]
   };
   var FOOT = {
-    reels: "These logs hold a client's footage, so they stay private. I'll open any of them on a call.",
-    app: "This is a client's app, so the repo stays private. I'll share my screen and run the tests while you watch.",
+    reels: "",
+    app: "",
     method: "All of it is public. Open the repo and check it yourself."
   };
   var rowsEl = document.getElementById('rc-rows');
@@ -281,8 +284,9 @@ def enhance_local():
 
 
     # Receipts: hint, sources footer, timeline.
+    # T-49 R2c (Nov 24, 2026): the hint names what's orange, words as well as numbers.
     t = rep(t, '>One shoot, one finished reel</h3>',
-            '>One shoot, one finished reel</h3>\n      <span style="margin-top: -8px; font-size: 13px; color: #93A39A">Tap any orange number to see where it comes from.</span>')
+            '>One shoot, one finished reel</h3>\n      <span style="margin-top: -8px; font-size: 13px; color: #93A39A">Tap anything in orange to see where it comes from.</span>')
     t = rep(t, '<a id="rc-link"',
             '<p id="rc-src-foot" style="margin: 0; font-family: \'Instrument Sans\', sans-serif; font-size: 14px; color: #93A39A"></p>\n      <a id="rc-link"')
 
@@ -313,6 +317,11 @@ def enhance_local():
     t = rep_re(t, r'<!-- ============ SHIPPED LOG ============ -->\s*<section aria-labelledby="log-h".*?</section>\s*', '')
 
     t = rep(t, "</body>", LOCAL_JS + "</body>")
+    # T-49 R2c: no offer to show a client's work, and the hint says what's orange, once.
+    for gone in ("open any of them on a call", "share my screen", "orange number"):
+        assert gone not in t, f"T-49 R2c: {gone!r} is still on local.html"
+    assert t.count("Tap anything in orange to see where it comes from.") == 1, "T-49 R2c: the orange hint"
+    assert t.count("#rc-src-foot:empty{display:none}") == 1, "T-49 R2c: the empty footnote rule"
     body = re.sub(r"<script.*?</script>|<style.*?</style>", "", t, flags=re.S)
     left = re.findall(r"\[[A-Z ,.]{6,}\]", body)
     assert not left, f"bracket placeholder left in local.html: {left}"

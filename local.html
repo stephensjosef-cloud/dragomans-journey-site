@@ -51,6 +51,7 @@ a{color:#A93F17}a:hover{color:#17212B}
 .iq:hover{border-color:#A93F17}
 .iq[aria-pressed="true"]{background:#E8592B;border-color:#E8592B;color:#17212B}
 #iq-send[disabled]{opacity:.45;cursor:not-allowed}
+#rc-src-foot:empty{display:none}
 </style>
 <style>
 @media (max-width:420px){
@@ -413,7 +414,7 @@ a{color:#A93F17}a:hover{color:#17212B}
         <span id="rc-date">AUG 2026</span>
       </div>
       <h3 id="rc-title" style="margin: 0; font-family: 'Barlow Semi Condensed', Impact, sans-serif; font-weight: 800; text-transform: none; font-size: 34px; line-height: 1; color: #17212B">Forty reels, one engine.</h3>
-      <span style="margin-top: -8px; font-size: 13px; color: #4F5A63">Tap any orange number to see where it comes from.</span>
+      <span style="margin-top: -8px; font-size: 13px; color: #4F5A63">Tap anything in orange to see where it comes from.</span>
       <div id="rc-rows" style="display: flex; flex-direction: column"><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #9BAA90; align-items: baseline"><span style="font-size: 14px; color: #4F5A63; line-height: 1.45">Editing each reel, before</span><strong style="font-size: 18px; font-weight: 700; color: #A93F17; text-align: right">An evening</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #9BAA90; align-items: baseline"><span style="font-size: 14px; color: #4F5A63; line-height: 1.45">Engine time each reel</span><strong style="font-size: 18px; font-weight: 700; color: #A93F17; text-align: right">~4 min</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #9BAA90; align-items: baseline"><span style="font-size: 14px; color: #4F5A63; line-height: 1.45">Reels planned in the series</span><strong style="font-size: 18px; font-weight: 700; color: #A93F17; text-align: right">40</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #9BAA90; align-items: baseline"><span style="font-size: 14px; color: #4F5A63; line-height: 1.45">Her notes it now checks on every reel</span><strong style="font-size: 18px; font-weight: 700; color: #A93F17; text-align: right">3 of 3</strong></div><div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 12px 0; border-top: 1px solid #9BAA90; align-items: baseline"><span style="font-size: 14px; color: #4F5A63; line-height: 1.45">Posted without her yes</span><strong style="font-size: 18px; font-weight: 700; color: #A93F17; text-align: right">0</strong></div></div>
       <p style="margin: 0; padding-top: 14px; border-top: 1px dashed #9BAA90; font-family: 'Barlow', sans-serif; font-size: 16px; line-height: 1.55; color: #4F5A63" id="rc-note">She caught three things in the first rounds: uneven caption boxes, square corners and words left alone on a line. The engine now checks for all three on every reel.</p>
       <p id="rc-src-foot" style="margin: 0; font-family: 'Barlow', sans-serif; font-size: 14px; color: #4F5A63"></p>
@@ -721,8 +722,8 @@ function djNb(s){return String(s).split(/(\s+|&nbsp;|&#160;)/).map(function(p){i
     ]
   };
   var FOOT = {
-    reels: "These logs hold a client's footage, so they stay private. I'll open any of them on a call.",
-    app: "This is a client's app, so the code stays private. I'll share my screen and run the checks while you watch.",
+    reels: "",
+    app: "",
     method: "All of it is public. Open the repo and check it yourself."
   };
   var rowsEl = document.getElementById('rc-rows');
