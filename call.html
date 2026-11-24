@@ -26,7 +26,7 @@ body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 ::selection{background:#E8592B;color:#17212B}
 .dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
-.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
@@ -56,9 +56,11 @@ a{color:#A93F17}a:hover{color:#17212B}
 }
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
 </head>
 <body>
 <div class="dj">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header style="background:#E4ECD8;color:#17212B">
   <div class="wrap">
@@ -68,8 +70,19 @@ a{color:#A93F17}a:hover{color:#17212B}
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
-      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px"><a href="studio.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Studio</a><a href="work.html#free" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Free tools</a><a href="work.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">See the work</a></div>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
+        <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px" aria-current="page"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
+      </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+  </div>
+</header>
+
+<main id="main">
+<div style="background:#E4ECD8;color:#17212B">
+  <div class="wrap">
     <div style="padding:clamp(24px,4vw,56px) 0 clamp(40px,5vw,72px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:24px 64px;align-items:end">
       <div style="display:flex;flex-direction:column;gap:16px">
         <span class="mono" style="font-size:13px;letter-spacing:.1em;color:#A93F17">FREE&nbsp;·&nbsp;15 MINUTES&nbsp;·&nbsp;BY PHONE OR VIDEO</span>
@@ -78,9 +91,10 @@ a{color:#A93F17}a:hover{color:#17212B}
       <p style="margin:0;max-width:50ch;font-size:clamp(18px,1.6vw,21px);color:#4F5A63">Fifteen minutes, free. Tell me what you run and when you're free. I'll call you, we'll look at the part that never gets done, and you'll leave with one idea you can use whether or not we work together.</p>
     </div>
   </div>
-</header>
+</div>
 
-<main class="wrap" style="padding-top:clamp(36px,5vw,64px);padding-bottom:clamp(64px,8vw,112px)">
+<div class="wrap" style="padding-top:clamp(36px,5vw,64px);padding-bottom:clamp(64px,8vw,112px)">
+  <noscript><p style="max-width:880px;margin:0 auto 24px;font-size:17px;color:#2E3A47">This form needs JavaScript. You can email <a href="mailto:hello@dragomansjourney.com">hello@dragomansjourney.com</a> instead.</p></noscript>
   <form id="cl" novalidate style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:26px">
     <div class="hp" aria-hidden="true"><label>Website <input id="website" tabindex="-1" autocomplete="off"></label></div>
 
@@ -108,6 +122,7 @@ a{color:#A93F17}a:hover{color:#17212B}
         <button type="button" class="chip" aria-pressed="false">Wednesday</button>
         <button type="button" class="chip" aria-pressed="false">Thursday</button>
         <button type="button" class="chip" aria-pressed="false">Friday</button>
+        <button type="button" class="chip" aria-pressed="false">Mornings</button>
         <button type="button" class="chip" aria-pressed="false">Afternoons</button>
       </div>
     </div>
@@ -118,7 +133,7 @@ a{color:#A93F17}a:hover{color:#17212B}
       <p id="cl-err" class="err" role="alert" hidden></p>
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px">
         <button type="submit" class="send" id="cl-send">Request my call →</button>
-        <span style="font-size:15px;color:#4F5A63">I'll reply with a time that works.</span>
+        <span style="font-size:15px;color:#4F5A63">I'll reply with a time by the next weekday afternoon.</span>
       </div>
     </div>
   </form>
@@ -126,9 +141,10 @@ a{color:#A93F17}a:hover{color:#17212B}
   <section id="cl-done" hidden tabindex="-1" aria-labelledby="cld-h" style="max-width:880px;margin:0 auto;border:2px solid #17212B;background:#F7F9F3;padding:clamp(24px,4vw,48px);display:flex;flex-direction:column;gap:16px">
     <span class="mono" style="font-size:13px;letter-spacing:.1em;color:#A93F17">RECEIVED</span>
     <h2 id="cld-h" class="big" style="font-size:clamp(44px,6vw,80px)">Talk soon</h2>
-    <p style="margin:0;font-size:19px;color:#2E3A47;max-width:56ch">I'll reply with a time that fits. In the meantime, here's what I've been building.</p>
+    <p style="margin:0;font-size:19px;color:#2E3A47;max-width:56ch">I'll reply with a time by the next weekday afternoon. In the meantime, here's what I've been building.</p>
     <a href="work.html" style="align-self:flex-start;display:inline-flex;align-items:center;min-height:52px;padding:0 22px;background:#17212B;color:#F7F9F3;text-decoration:none;font-weight:700;border-radius:2px">See the work →</a>
   </section>
+</div>
 </main>
 
 <footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">

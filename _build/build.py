@@ -362,7 +362,7 @@ def build_local():
       parts.forEach(function (p) { if (p.type === 'weekday') wd = p.value; if (p.type === 'hour') hr = parseInt(p.value, 10); });
       var working = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(wd) !== -1 && hr >= 13 && hr < 18;
       $('sr-clock').textContent = clock;
-      $('sr-status').textContent = working ? "I'm in a work block, so you'll likely hear back today." : "I'm off the clock. Expect a reply the next weekday afternoon.";
+      $('sr-status').textContent = working ? "I'm in a work block, so you'll likely hear back today." : "Expect a reply the next weekday afternoon.";   // T-46 2c (Nov 23, 2026)
       $('sr-dot').style.background = working ? '#7BD389' : '#93A39A';
     } catch (e) { /* the clock is decoration only */ }
   }
@@ -523,6 +523,30 @@ def build_mainframe():
 
 
 # ------------------------------------------------------------- small files
+# T-46 3n (Nov 23, 2026): each sitemap URL carries <lastmod>, the date (YYYY-MM-DD) of the last commit of that
+# page at the repository root. A page whose root copy differs from the last commit (it is about to be committed)
+# gets today's date in Los Angeles, so a build before the commit and a build after it write the same sitemap.
+# Outside a git checkout (a scratch copy) there is no history to read, and no <lastmod> is written.
+def lastmod(url):
+    import subprocess
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "tools"))
+    import studio   # la_today(): today in Los Angeles, with or without a time zone database
+    root = Path(__file__).resolve().parent.parent
+    name = url[len(SITE):] or "index.html"
+
+    def git(*args):
+        r = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
+        return r.stdout.strip() if r.returncode == 0 else None
+
+    if git("rev-parse", "--show-toplevel") is None or Path(git("rev-parse", "--show-toplevel")).resolve() != root:
+        return ""
+    if git("status", "--porcelain", "--", name):
+        day = studio.la_today().isoformat()
+    else:
+        day = git("log", "-1", "--format=%cd", "--date=format:%Y-%m-%d", "--", name)
+    return f"<lastmod>{day}</lastmod>" if day else ""
+
+
 def build_extras(fork_helmet):
     (OUT / "CNAME").write_text("dragomansjourney.com", encoding="utf-8")
     (OUT / "robots.txt").write_text("User-agent: *\nAllow: /\n\nSitemap: https://dragomansjourney.com/sitemap.xml\n", encoding="utf-8")
@@ -537,7 +561,7 @@ def build_extras(fork_helmet):
     urls += [SITE + slug for slug, _ in studio.product_pages(studio.load()[0])]
     (OUT / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls)
+        + "".join(f"  <url><loc>{u}</loc>{lastmod(u)}</url>\n" for u in urls)
         + "</urlset>\n", encoding="utf-8")
     (OUT / "favicon.svg").write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34">'

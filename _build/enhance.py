@@ -702,6 +702,8 @@ def layout_mainframe():
 # are the card's second block: the two .tear rules below find them there. Its labels are longer
 # now and wrap beside the value on wider screens, so there the dotted leader keeps at least 24px
 # instead of shrinking to nothing (on phones the label takes its own line, as before).
+# T-46 3g (Nov 23, 2026): the Blueprint heading is no longer held on one line at 420 px and under, so "$1,500" can
+# wrap after "The Blueprint ·" (final.py leaves a normal space after the dot there); its size rule stays.
 # Local Route and Home layout (T-20 F8, Nov 15, 2026). Layout only. On wide screens the
 # Results and FAQ headings sit above their content, so no tall empty column is left beside it.
 LOCAL_T20_CSS = """<style>
@@ -713,7 +715,7 @@ LOCAL_T20_CSS = """<style>
 #rc-rows>div>strong{text-align:left!important}
 [aria-label="Receipts"]>button{flex:1 1 auto}
 #blueprint{padding-right:0!important}
-#blueprint h3{white-space:nowrap;font-size:min(38px,10.6vw)!important}
+#blueprint h3{font-size:min(38px,10.6vw)!important}
 }
 @media (min-width:421px){.tear>div:nth-child(2)>div>span:nth-child(2){min-width:24px}}
 @media (min-width:900px){

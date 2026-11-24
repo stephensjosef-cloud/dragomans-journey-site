@@ -26,7 +26,7 @@ body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 ::selection{background:#E8592B;color:#17212B}
 .dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
-.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
@@ -81,9 +81,11 @@ td.note b{color:#A93F17;font-weight:600}
 .djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
 }
 </style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
 </head>
 <body>
 <div class="dj">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header style="background:#E4ECD8;color:#17212B" class="noprint">
   <div class="wrap">
@@ -95,22 +97,28 @@ td.note b{color:#A93F17;font-weight:600}
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
       <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
-        <a href="local.html" style="color:#4F5A63;text-decoration:none">Local Route</a>
         <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+  </div>
+</header>
+
+<main id="main">
+<div style="background:#E4ECD8;color:#17212B" class="noprint">
+  <div class="wrap">
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <span class="kick">Free tool</span>
       <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Any recipe.<br>Any crowd.</h1>
       <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#4F5A63">Paste a recipe and say who's eating. You get amounts you can actually measure.</p>
     </div>
   </div>
-</header>
+</div>
 
-<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+<div class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
 
+  <noscript><p style="margin:0;font-size:17px;color:#2E3A47">This tool needs JavaScript to run.</p></noscript>
   <div class="lay">
     <section class="panel noprint" aria-labelledby="r-h">
       <h2 id="r-h" class="label">Paste the ingredients</h2>
@@ -156,6 +164,7 @@ pinch of salt</textarea>
       <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 24px;background:#E8592B;color:#17212B;text-decoration:none;font-weight:700;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
+</div>
 </main>
 
 <footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">
@@ -199,6 +208,9 @@ var QTY=/^((?:\d+\s+\d+\/\d+)|(?:\d+\s*[¼-¾⅐-⅞])|(?:\d+\/\d+)|(?:\d*\.?\d+
 function parse(line){
   var raw=line.trim();if(!raw)return null;
   var m=raw.match(QTY);
+  // T-46 3k (Nov 23, 2026): a number after "of" scales too ("juice of 1 lemon").
+  var om=m?null:raw.match(/^([A-Za-z][A-Za-z ]*?\bof\s+)((?:\d+\s+\d+\/\d+)|(?:\d+\/\d+)|(?:\d*\.?\d+)|[¼-¾⅐-⅞])\s+(\S.*)$/i);
+  if(om&&num(om[2])!=null)return {raw:raw,q:num(om[2]),q2:null,kind:'of',mult:1,unit:'',lead:om[1],name:om[3]};
   if(!m){
     var pm=raw.match(/^(a\s+)?(pinch|dash)\b\s*(of\s+)?(.*)$/i);
     if(pm)return {raw:raw,q:1,kind:'pinch',mult:1,name:pm[4]||'',unit:pm[2].toLowerCase(),wasText:'a '+pm[2].toLowerCase()};
@@ -235,8 +247,21 @@ function wtText(oz){if(oz>=16){var lb=Math.round(oz/16*4)/4;return frac(lb,4)+' 
 function gText(g){return g>=1000?(Math.round(g/100)/10)+' kg':(g<20?Math.round(g):Math.round(g/5)*5)+' g'}
 function mlText(ml){return ml>=1000?(Math.round(ml/100)/10)+' L':Math.round(ml/5)*5+' ml'}
 function gramsFor(name){var n=name.toLowerCase(),best=null;Object.keys(GRAMS).forEach(function(k){if(n.indexOf(k)>=0&&(!best||k.length>best.length))best=k});return best?GRAMS[best]:null}
+// T-46 3k: a count word agrees with its number ("2 large eggs", "1 ripe banana"). The word is the last one
+// before a comma, a bracket or a joining word ("eggs, beaten", "eggs at room temperature").
+var IRR={leaf:'leaves',loaf:'loaves',knife:'knives',half:'halves',potato:'potatoes',tomato:'tomatoes'};
+function isPlural(w){var l=w.toLowerCase();return Object.keys(IRR).some(function(k){return IRR[k]===l})||/ies$|(ss|x|z|ch|sh)es$|[^s]s$/i.test(w)}
+function toPlural(w){var l=w.toLowerCase();if(IRR[l])return IRR[l];if(/[^aeiou]y$/i.test(w))return w.slice(0,-1)+'ies';if(/(s|x|z|ch|sh)$/i.test(w))return w+'es';return w+'s'}
+function toSingle(w){var l=w.toLowerCase();for(var k in IRR)if(IRR[k]===l)return k;if(/ies$/i.test(w))return w.slice(0,-3)+'y';if(/(ss|x|z|ch|sh)es$/i.test(w))return w.slice(0,-2);if(/[^s]s$/i.test(w))return w.slice(0,-1);return w}
+function agree(name,n){
+  var cut=name.search(/[,(]|\s(?:at|for|from|in|to|with|or|and|plus)\s/i),head=cut<0?name:name.slice(0,cut),tail=cut<0?'':name.slice(cut);
+  var m=head.match(/^(.*?)([A-Za-z]+)(\s*)$/);if(!m)return name;
+  var w=m[2],pl=isPlural(w),nw=n===1?(pl?toSingle(w):w):(pl?w:toPlural(w));
+  return m[1]+nw+m[3]+tail;
+}
 function scaleLine(p,f){
   if(!p)return null;
+  if(p.kind==='of'){var oq=p.q*f,on=Math.ceil(oq-1e-9);return {amt:p.lead+on+' '+agree(p.name,on),name:'',note:Math.abs(oq-on)>.01?'Rounded up from '+(Math.round(oq*10)/10)+'.':'',was:p.raw}}
   if(p.q==null)return {amt:'',name:p.name,note:'No amount to scale. Season to taste.'};
   var q=p.q*f,q2=p.q2!=null?p.q2*f:null,note='',was=p.raw.slice(0,p.raw.length-p.name.length).trim();
   if(p.kind==='vol'){
@@ -257,17 +282,17 @@ function scaleLine(p,f){
   var hi=q2!=null?Math.ceil(q2-1e-9):null,top=hi||whole;
   var label=(hi&&hi!==whole?whole+' to '+hi:String(whole))+(u?' '+u+(top>1&&!/s$/.test(u)?(/(ch|sh)$/.test(u)?'es':'s'):''):'');
   if(hi)note='';
-  return {amt:label,name:p.name,note:note,was:was};
+  return {amt:label,name:u?p.name:agree(p.name,top),note:note,was:was};
 }
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 var lastRows=[];
 function render(){
   var serves=Math.max(1,parseFloat(document.getElementById('serves').value)||1);
   var A=Math.max(0,parseFloat(document.getElementById('adults').value)||0),K=Math.max(0,parseFloat(document.getElementById('kids').value)||0);
-  var portions=A+K/2,f=portions/serves,batches=f>3?Math.ceil(f/2.5):1;
+  var portions=Math.max(1,A+K/2),f=portions/serves,batches=f>3?Math.ceil(f/2.5):1;   // T-46 3k: at least one serving
   var showF=st.batch==='one'&&batches>1?f/batches:f;
   document.getElementById('fac').textContent='×'+(Math.round(f*100)/100);
-  document.getElementById('facl').innerHTML=amtNw(esc((Math.round(portions*10)/10)+' portions from a recipe that serves '+serves+'.'));
+  document.getElementById('facl').innerHTML=amtNw(esc((Math.round(portions*10)/10)+(portions===1?' portion':' portions')+' from a recipe that serves '+serves+'.'));
   document.getElementById('warn').innerHTML=batches>1?'<p class="warn"><b>'+amtNw('Make it in '+batches+' batches.')+'</b> Most home pots, pans and mixing bowls top out at two or three times a recipe. Past that, things cook unevenly and pans crowd. Switch to "One batch" for the amounts per round.</p>':'';
   document.getElementById('batchrow').hidden=batches<2;
   if(batches<2)st.batch='all';
@@ -278,7 +303,7 @@ function render(){
 }
 document.addEventListener('click',function(e){var b=e.target.closest('[data-b]');if(b){st.batch=b.dataset.b;render()}});
 ['rec','serves','adults','kids'].forEach(function(id){document.getElementById(id).addEventListener('input',render)});
-document.getElementById('copy').addEventListener('click',function(){djCopy(lastRows.map(function(r){return '[ ] '+(r.amt?r.amt+' ':'')+r.name+(r.note&&/Buy|stick|weigh/.test(r.note)?' ('+r.note.replace(/\.$/,'')+')':'')}).join('\n'),'Shopping list')});
+document.getElementById('copy').addEventListener('click',function(){djCopy(lastRows.map(function(r){return '[ ] '+((r.amt?r.amt+' ':'')+r.name).trim()+(r.note&&/Buy|stick|weigh/.test(r.note)?' ('+r.note.replace(/\.$/,'')+')':'')}).join('\n'),'Shopping list')});
 document.getElementById('print').addEventListener('click',function(){window.print()});
 render();
 })();

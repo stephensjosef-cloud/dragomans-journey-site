@@ -256,7 +256,7 @@ text('index.html',
 # take the 14px the line under the labels used to leave.
 R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'),
            ('A teaching app, iPhone, iPad, Android and web', 'Over 700 tests'),   # T-43 (Nov 23, 2026): was '535 tests'
-           ('A birding league with real players', 'zero lines of code to start'),
+           ('A birding league app, with real players in testing', 'zero lines of code to start'),   # T-46 (Nov 23, 2026): was 'A birding league with real players'
            ('A banking COBOL program, checked in public', '2 AIs compared')]
 R4_ROW = HERO_ROW
 text('local.html',
@@ -289,6 +289,49 @@ text('local.html',
      "\n        <p style=\"margin: auto 0 0; padding-top: 16px; border-top: 1.5px solid #16201C; font-family: 'JetBrains Mono', monospace; font-size: 14px\"><strong>Priced in the Blueprint</strong></p>"
      '\n      </article>\n',
      ref='R9')
+
+# ---------------- T-46 (Nov 23, 2026): the launch fixes, Josef's four calls ----------------
+# Josef's words, exactly as approved (old, then new). Only lines a pass before this one writes
+# (the canvas through plain.py and intent.py) change here; call.html, start.html, work.html and
+# tools/receipt.py change in their own files, the local status line in build.py, and the R4 row
+# above in R4_ROWS. Each still has to hit exactly once.
+# 2a: the headline. The home card's title, then Local's h1 (the orange part stays the span).
+text('index.html', '>AI that works the first day<', '>See it working in a week<', ref='T46-2a')
+text('local.html',
+     '>AI that works the first day <span style="color: #F07A4E">and keeps working</span></h1>',
+     '>See it working in a week, <span style="color: #F07A4E">and keep it working.</span></h1>',
+     ref='T46-2a')
+# 2b: split payment, in the Blueprint block.
+text('local.html', "If you don't, the plan is still yours.",
+     "If you don't, the plan is still yours. Half is due up front and half after the Day 7 sample. Stop at Day 7 and you owe nothing more.",
+     ref='T46-2b')
+# 2d: ownership, the FAQ "Who owns what?" (final.py reads the FAQ data from here).
+text('local.html', 'The tool underneath is mine, and you can keep using it for as long as you like.',
+     'The tool underneath is mine, and you can keep using it for good, with or without support. Support pays for fixes, and for me to watch it when something it depends on changes.',
+     ref='T46-2d')
+# 4a, 4b, 4c, 4d: accuracy on local.html. 4b: the About section's "Hey, I'm Josef." heading goes,
+# so it starts "I grew up in Alaska"; the hero keeps its "I'm Josef.".
+text('local.html', 'until MS took that work from him', 'until multiple sclerosis took that work from him', ref='T46-4a')
+text('local.html', '<section id="josef" aria-labelledby="josef-h" ', '<section id="josef" ', ref='T46-4b')
+text('local.html',
+     "\n      <h2 id=\"josef-h\" style=\"margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; "
+     "text-transform: uppercase; font-size: clamp(44px, 5.2vw, 72px); line-height: 0.9\">Hey, I'm Josef.</h2>",
+     '', ref='T46-4b')
+text('local.html', '>Most AI projects quietly break by month two<', ">Most AI tools I've seen quietly break by month two<", ref='T46-4c')
+text('local.html', 'went from zero lines of code to real users and an App Store submission',
+     'went from zero lines of code to real players in testing and an App Store submission', ref='T46-4d')
+# 4f: mainframe.html. Exhibit D is drawn from the tabs' state data only.
+text('mainframe.html', '{"k": "Lines changed", "v": "1"}', '{"k": "Lines changed", "v": "2"}', ref='T46-4f')
+text('mainframe.html', 'Fixing that one line took both from unusable to mostly correct.',
+     "Fixing that line, along with a second change I didn't control for, took both from unusable to mostly correct.",
+     ref='T46-4f')
+text('mainframe.html', 'THE FILE SETUP (JCL)', 'THE FILE SETUP (PROGRAM)', ref='T46-4f')
+text('mainframe.html', 'THE REAL DATA', 'THE STORED DATA', ref='T46-4f')
+text('mainframe.html', '>Four steps, each with a fixed scope and a fixed price<',
+     '>Four steps, each with a fixed scope and a price agreed before it starts<', ref='T46-4f')
+# 3m: the Limits line reads at the page's body size and color, in the same place. No word changes.
+text('mainframe.html', '<p style="margin: 0; font-size: 14px; color: #5D6576; max-width: 72ch">Limits, plainly:',
+     '<p style="margin: 0; max-width: 72ch">Limits, plainly:', ref='T46-3m')
 
 # ---------------- write ----------------
 if problems:

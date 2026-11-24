@@ -139,9 +139,9 @@ with sync_playwright() as p:
     clock = pg.inner_text('#sr-clock')
     status = pg.inner_text('#sr-status')
     check('local clock: live time', re.match(r'^\d{1,2}:\d{2}\s?[AP]M$', clock) is not None, clock)
-    check('local clock: status line', status in ("I'm in a work block, so you'll likely hear back today.", "I'm off the clock. Expect a reply the next weekday afternoon."), status)
+    check('local clock: status line', status in ("I'm in a work block, so you'll likely hear back today.", "Expect a reply the next weekday afternoon."), status)   # T-46 2c: was "I'm off the clock. Expect ..."
     # Working-hours logic: Wed 2 PM Pacific vs Sat 2 PM Pacific
-    for iso, want in [('2026-10-14T21:00:00Z', 'work block'), ('2026-10-17T21:00:00Z', 'off the clock'), ('2026-10-14T19:30:00Z', 'off the clock')]:
+    for iso, want in [('2026-10-14T21:00:00Z', 'work block'), ('2026-10-17T21:00:00Z', 'Expect a reply'), ('2026-10-14T19:30:00Z', 'Expect a reply')]:   # T-46 2c
         c2 = browser.new_context()
         p2 = c2.new_page()
         p2.clock.install(time=iso)

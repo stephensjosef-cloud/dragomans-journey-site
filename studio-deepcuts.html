@@ -26,7 +26,7 @@ body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 ::selection{background:#E8592B;color:#17212B}
 .dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
-.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
@@ -146,9 +146,11 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
 }
 </style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
 </head>
 <body>
 <div class="dj">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header style="background:#E4ECD8;color:#17212B" class="noprint">
   <div class="wrap">
@@ -160,12 +162,17 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
       <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
-        <a href="local.html" style="color:#4F5A63;text-decoration:none">Local Route</a>
         <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+  </div>
+</header>
+
+<main id="main">
+<div style="background:#E4ECD8;color:#17212B" class="noprint">
+  <div class="wrap">
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <span class="kick"><a href="studio.html">← The Studio</a></span>
       <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Deepcuts</h1>
@@ -173,9 +180,9 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
       <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#4F5A63">Indie games matched by how they actually play.</p>
     </div>
   </div>
-</header>
+</div>
 
-<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+<div class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
 <!-- studio.py 2026-11-23 77c18c2cbb7e612f -->
   <section class="sec" aria-labelledby="log-h">
     <h2 id="log-h" class="big">Shipped lately</h2>
@@ -191,6 +198,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
     <p class="private">One email when a tester spot opens. No newsletter.</p>
   </section>
 
+</div>
 </main>
 
 <footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">

@@ -22,9 +22,10 @@ studio.py, then on each Studio page only, the same code the passes run, in their
               phone menu, the orange button contrast, the public email; its checks
   plain.py    apply(): every plain-words edit, in order
   intent.py, voice2.py   nothing (no edit names a Studio page; checked on every run)
-  final.py    the visit counter, if CF_BEACON_TOKEN is set, and nobreak_checked()
+  final.py    the visit counter, if CF_BEACON_TOKEN is set, t46_page() (T-46: the header's
+              links, the skip link, the landmarks) and nobreak_checked()
   theme.py    theme_page()
-The sitemap has no lastmod, so it never changes for a new line. A Studio page that
+It doesn't touch sitemap.xml: since T-46 each URL has a lastmod, which the next full build moves for a new line. A Studio page that
 appears or goes (a product's gate or join list changed) needs the full build, its
 sitemap line and its share card: build stops and says so.
 """
@@ -101,6 +102,10 @@ def build():
                 if "cloudflareinsights.com" in t or t.count("</body>") != 1:
                     raise SystemExit(f"board.py: {f}: the visit counter has no single place to go")
                 t = t.replace("</body>", final.BEACON % token + "</body>")
+            try:
+                t = final.t46_page(f, t)              # T-46: the header's links, the skip link, the landmarks
+            except ValueError as e:
+                raise SystemExit("board.py: " + str(e))
             t, problem = final.nobreak_checked(f, t)
             if problem:
                 raise SystemExit("board.py: " + problem)

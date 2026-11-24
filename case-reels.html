@@ -26,7 +26,7 @@ body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 ::selection{background:#E8592B;color:#17212B}
 .dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
-.dj a:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
@@ -54,9 +54,12 @@ h1.big{line-height:1}/* T-23 L2: the comma and any descender on the first line c
 }
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
+<style data-t32>.t46-dark :focus-visible{outline-color:#F07A4E!important}</style>
 </head>
 <body>
 <div class="dj">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header style="background:#E4ECD8;color:#17212B">
   <div class="wrap">
@@ -66,8 +69,19 @@ h1.big{line-height:1}/* T-23 L2: the comma and any descender on the first line c
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
-      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px"><a href="studio.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Studio</a><a href="work.html#free" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Free tools</a><a href="work.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">← All the work</a></div>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
+        <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
+      </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+  </div>
+</header>
+
+<main id="main">
+<div style="background:#E4ECD8;color:#17212B">
+  <div class="wrap">
     <div style="padding:clamp(24px,4vw,56px) 0 clamp(40px,5vw,72px);display:flex;flex-direction:column;gap:22px">
       <span class="mono" style="font-size:13px;letter-spacing:.1em;color:#A93F17">CASE STUDY&nbsp;·&nbsp;REELS&nbsp;·&nbsp;NONPROFIT</span>
       <h1 class="big" style="font-size:clamp(52px,7.4vw,104px);max-width:14ch">Forty reels, one engine.</h1><!-- T-22 K1 -->
@@ -80,9 +94,9 @@ h1.big{line-height:1}/* T-23 L2: the comma and any descender on the first line c
       </div>
     </div>
   </div>
-</header>
+</div>
 
-<main class="wrap" style="padding-top:clamp(32px,4vw,56px);padding-bottom:clamp(48px,6vw,88px)">
+<div class="wrap" style="padding-top:clamp(32px,4vw,56px);padding-bottom:clamp(48px,6vw,88px)">
   <section class="sec" aria-labelledby="c1"><!-- T-22 K3; text is T-23 K3b -->
     <h2 id="c1">How it works</h2>
     <div>
@@ -90,7 +104,7 @@ h1.big{line-height:1}/* T-23 L2: the comma and any descender on the first line c
     </div>
   </section>
 
-  <section aria-labelledby="c7" style="margin-top:12px;background:#17212B;color:#F7F9F3;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+  <section class="t46-dark" aria-labelledby="c7" style="margin-top:12px;background:#17212B;color:#F7F9F3;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:12px">
       <h2 id="c7" class="big" style="font-size:clamp(36px,4.6vw,60px)">Got a phone full of footage?</h2>
       <p style="margin:0;font-size:18px;color:#B9C3CC">Bring the clips. I'll take it from here.</p>
@@ -100,6 +114,7 @@ h1.big{line-height:1}/* T-23 L2: the comma and any descender on the first line c
       <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #3A4654;color:#F7F9F3;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
+</div>
 </main>
 
 <footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">

@@ -35,6 +35,7 @@ input[type=file]{padding:8px;min-height:auto;background:transparent;border-style
 """
 
 BODY = r"""
+  <noscript><p style="margin:0;font-size:17px;color:#3B4540">This tool needs JavaScript to run.</p></noscript>
   <div class="lay">
       <section class="panel a-in" aria-labelledby="w-h">
         <h2 id="w-h" class="label">Your caption</h2>

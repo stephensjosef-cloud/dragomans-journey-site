@@ -26,7 +26,7 @@ body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 ::selection{background:#E8592B;color:#17212B}
 .dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
-.dj a:focus-visible,.dj button:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a:focus-visible,.dj button:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
@@ -62,7 +62,7 @@ a.zm{position:relative;display:block;cursor:zoom-in;color:inherit;-webkit-tap-hi
 .zm-i{position:absolute;right:-8px;bottom:-8px;z-index:1;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#F7F9F3;color:#17212B;border:1px solid #9BAA90;opacity:.9;pointer-events:none}
 .zm-i svg{display:block}
 a.zm:hover .zm-i{opacity:1}
-.dj a.zm:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a.zm:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 html.zv-lock{overflow:hidden}
 .zv{position:fixed;inset:0;z-index:9999;font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;-webkit-font-smoothing:antialiased;opacity:0;transition:opacity .2s ease;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .zv[hidden]{display:none}
@@ -97,9 +97,12 @@ html.zv-lock{overflow:hidden}
 }
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
+<style data-t32>.t46-dark :focus-visible{outline-color:#F07A4E!important}</style>
 </head>
 <body>
 <div class="dj">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header style="background:#E4ECD8;color:#17212B">
   <div class="wrap">
@@ -110,22 +113,27 @@ html.zv-lock{overflow:hidden}
       </a>
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
       <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
-        <a href="local.html" style="color:#4F5A63;text-decoration:none">Local Route</a>
-        <a href="mainframe.html" style="color:#4F5A63;text-decoration:none">Mainframe Route</a>
+        <a href="work.html" style="color:#4F5A63;text-decoration:none" aria-current="page">The work</a>
         <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
         <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+  </div>
+</header>
+
+<main id="main">
+<div style="background:#E4ECD8;color:#17212B">
+  <div class="wrap">
     <div style="padding:clamp(28px,5vw,64px) 0 clamp(44px,6vw,80px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:24px 64px;align-items:end">
       <div style="display:flex;flex-direction:column;gap:16px">
         <h1 class="big" style="font-size:clamp(56px,8vw,112px)">Things<br>I've built</h1>
       </div>
     </div>
   </div>
-</header>
+</div>
 
-<main class="wrap" style="padding-top:clamp(36px,5vw,64px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:26px">
+<div class="wrap" style="padding-top:clamp(36px,5vw,64px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:26px">
   <div role="group" aria-label="Filter the work" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
     <button type="button" class="filt" aria-pressed="true" data-f="all">All</button>
     <button type="button" class="filt" aria-pressed="false" data-f="apps">Apps</button>
@@ -149,12 +157,14 @@ html.zv-lock{overflow:hidden}
       <div class="fb">
       <div class="tags"><span class="tag">My own build</span><span class="tag">App</span></div>
       <h2>Bird League</h2>
-      <p>A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players, and sends sightings to eBird in one tap.</p>
+      <p>A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players in testing, and sends sightings to eBird in one tap.</p>
       <a class="go" href="studio-birdleague.html">See Bird League →</a>
       </div>
     </article>
 
-    <article class="card" data-k="apps">
+    <!-- T-46 3h (Nov 23, 2026): the recipe scaler's card shows under Free tools too. data-also, not data-k: the
+         share cards (tools/og.py) and local.html's tool list (enhance.py) read data-k, and this card stays an app. -->
+    <article class="card" data-k="apps" data-also="free">
       <div class="tags"><span class="tag">Client</span><span class="tag">App</span><span class="tag">In progress</span></div>
       <!-- T-22 K8; body is T-23 K8b -->
       <p class="num">Their recipe cards, now an app.</p>
@@ -229,7 +239,7 @@ html.zv-lock{overflow:hidden}
     </div>
   </div>
 
-  <section aria-labelledby="next-h" style="margin-top:20px;background:#17212B;color:#F7F9F3;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+  <section class="t46-dark" aria-labelledby="next-h" style="margin-top:20px;background:#17212B;color:#F7F9F3;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:12px">
       <h2 id="next-h" class="big" style="font-size:clamp(36px,4.6vw,60px)">Your pile could be next</h2>
       <p style="margin:0;font-size:18px;color:#B9C3CC">Two weeks, $1,500, and it comes off the build price. Or start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
@@ -239,6 +249,7 @@ html.zv-lock{overflow:hidden}
       <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #3A4654;color:#F7F9F3;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
+</div>
 </main>
 
 <footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">
@@ -255,10 +266,14 @@ html.zv-lock{overflow:hidden}
     b.addEventListener('click', function () {
       var f = b.getAttribute('data-f');
       btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
-      cards.forEach(function (c) { c.hidden = f !== 'all' && (' ' + c.getAttribute('data-k') + ' ').indexOf(' ' + f + ' ') < 0; });
+      cards.forEach(function (c) { c.hidden = f !== 'all' && (' ' + c.getAttribute('data-k') + ' ' + (c.getAttribute('data-also') || '') + ' ').indexOf(' ' + f + ' ') < 0; });
       // T-33: a group of cards (the reel engine's two tools) shows only while one of its cards does.
       document.querySelectorAll('#cards .cardgroup').forEach(function (g) { g.hidden = !g.querySelector('.card:not([hidden])'); });
     });
+  });
+  // T-46 3h: the filter follows the address when its # changes, so "Free tools" in this page's own menu filters.
+  window.addEventListener('hashchange', function () {
+    btns.forEach(function (b) { if (location.hash === '#' + b.getAttribute('data-f')) b.click(); });
   });
 })();
 </script>

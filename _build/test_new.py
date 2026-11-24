@@ -351,6 +351,7 @@ T33_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)
 
 
 def un33(s, name=None):
+    s = un46(s, name)   # T-46: the launch fixes out first
     s = un44(s, name)   # T-44: the picture viewer out first
     s = un43(s, name)   # T-43: its words out first, so T-33's blocks match again
     if name not in T33_UNDO:
@@ -377,6 +378,7 @@ T34_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)
 
 
 def un34(s, name=None):
+    s = un46(s, name)   # T-46: the launch fixes out first, then T-45's line
     s = un45(s, name)   # T-45: the dragoman line back to T-34's line first, so t34_undo.json still matches
     s = un44(s, name)   # T-44: the picture viewer out first
     if name not in T34_UNDO:
@@ -404,6 +406,7 @@ T35_NEW_FILES = ('voicecheck.html', 'voicecheck.png', 'og/voicecheck.png', '_bui
 
 
 def un35(s, name=None):
+    s = un46(s, name)   # T-46: the launch fixes out first
     s = un44(s, name)   # T-44: the picture viewer out first
     if name not in T35_UNDO:
         return s
@@ -517,6 +520,29 @@ def un45(s, name=None):
         return s
     for new, old in ((T45_LINE, T45_LINE_OLD), (T45_LINE.replace("'", '&#39;'), T45_LINE_OLD.replace("'", '&#39;'))):
         s = s.replace(new, old)
+    return s
+
+
+# T-46 (Nov 23, 2026): the launch fixes. Josef's four calls and the accuracy words (voice2.py T46-*, call, start, work,
+# tools/receipt.py, build.py), and on every page the header's four links and phone Menu, the skip link, the nav/main
+# split (final.py t46_page()), the focus ring (theme.py) and the noscript lines; plus sitemap.xml's lastmod. un46(s, name)
+# takes all of it back out of a page (or sitemap.xml) from out/ or out-themed/: t46_undo.json holds each changed block
+# of lines beside origin/main's (88f6094) for both folders. Checked when it was written: every T-46 file of out/ and
+# out-themed/ through un46() is the origin/main build byte for byte, and a second pass changes nothing. un33(), un34()
+# and un35() call it first, before un45() and un44(), so their undo files still match. Idempotent.
+T46_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 't46_undo.json'), encoding='utf-8'))
+
+
+def un46(s, name=None):
+    themed = 'Instrument Sans' not in s and 'Big Shoulders Display' not in s   # theme.py swaps both fonts
+    pairs = T46_UNDO['themed' if themed else 'out'].get(name, [])
+    if not pairs:
+        return s
+    if '\r\n' in s:
+        return un46(s.replace('\r\n', '\n'), name).replace('\n', '\r\n')
+    for new, old in pairs:
+        if s.count(new) == 1:
+            s = s.replace(new, old)
     return s
 
 
@@ -2049,7 +2075,8 @@ def s_t_17():
     pairs = _re.findall(r'<li[^>]*><strong[^>]*>([^<]*)</strong><span[^>]*>([^<]*)</span></li>', src)
     check('T-17: "How I work" is four items, each a bold line over its second line, in order',
           pairs == [(V_NEW[f'V{i} bold'], V_NEW[f'V{i} line']) for i in (3, 4, 5, 6)], str(pairs))
-    for keep in ('AI that works the first day', 'Proof your new system', 'The Blueprint: two weeks, $1,500, fixed. If you go ahead, the $1,500 comes off the price.',   # T-19 W1
+    for keep in ('See it working in a week', 'Proof your new system',   # T-46 2a: was 'AI that works the first day'
+                  'The Blueprint: two weeks, $1,500, fixed. If you go ahead, the $1,500 comes off the price.',   # T-19 W1
                  'The Survey · one group of programs · from $8,000 · counts toward the next step', 'Take the Local Route →',
                  'Take the Mainframe Route →', 'How I work, on either side',
                  'For banks, insurers and agencies moving off COBOL with AI.'):
@@ -2058,7 +2085,7 @@ def s_t_17():
         q = newpage(w); q.goto(BASE + 'index.html'); q.wait_for_timeout(400)
         sw = q.evaluate('document.documentElement.scrollWidth')
         check(f'T-17: home has no sideways scroll at {w}', sw <= w, str(sw))
-        cards = q.locator('a.route').evaluate_all('e => e.map(a => { const r = a.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.height), a.scrollHeight - a.clientHeight, a.scrollWidth - a.clientWidth] })')
+        cards = q.locator('.route').evaluate_all('e => e.map(a => { const r = a.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.height), a.scrollHeight - a.clientHeight, a.scrollWidth - a.clientWidth] })')
         check(f'T-17: neither route card spills at {w}', len(cards) == 2 and all(c[3] <= 0 and c[4] <= 0 for c in cards), str(cards))
         lis = q.locator('#rules-h + ol > li').evaluate_all('e => e.map(l => { const r = l.getBoundingClientRect(); return [Math.round(r.x), Math.round(r.y), Math.round(r.height), l.scrollWidth - l.clientWidth] })')
         check(f'T-17: four "How I work" items, none spilling sideways, at {w}', len(lis) == 4 and all(l[3] <= 0 for l in lis), str(lis))
@@ -2067,7 +2094,7 @@ def s_t_17():
                   cards[0][1] == cards[1][1] and cards[0][2] == cards[1][2] and cards[0][0] < cards[1][0], str(cards))
             check('T-17: the four "How I work" items sit in one row, same top and height, at 1440',
                   len({l[1] for l in lis}) == 1 and len({l[2] for l in lis}) == 1, str(lis))
-            begins = q.locator('a.route').evaluate_all('e => e.map(a => Math.round([...a.querySelectorAll("span")].find(s => s.textContent.trim() === "BEGINS WITH").getBoundingClientRect().y))')
+            begins = q.locator('.route').evaluate_all('e => e.map(a => Math.round([...a.querySelectorAll("span")].find(s => s.textContent.trim() === "BEGINS WITH").getBoundingClientRect().y))')
             # The Mainframe card has a 1 px border and the Local card has none, so allow 1 px.
             check('T-17: both "Begins with" lines sit at the same height at 1440 (within the 1 px border)', len(begins) == 2 and abs(begins[0] - begins[1]) <= 1, str(begins))
         else:
@@ -2381,8 +2408,9 @@ def s_t_18():
         return q.evaluate('''(() => { const L = document.querySelector('a[href="work.html#free"]').parentElement;
           return [...L.querySelectorAll('a')].map(a => [a.getAttribute('href'), a.textContent.trim()]) })()''')
     for n in MENU:
-        q = old_page(390); q.goto(OLD + n + '.html'); q.wait_for_timeout(200)
-        want = header_links(q)
+        # T-46 3b: every page's menu holds the home page's four links (start.html first goes back to the Local Route).
+        want = ([['local.html', '← Back to the Local Route']] if n == 'start' else []) + [
+            ['work.html', 'The work'], ['studio.html', 'Studio'], ['work.html#free', 'Free tools'], ['call.html', 'Free 15-min call']]
         for w in (320, 390):
             q = newpage(w, 844); q.goto(BASE + n + '.html'); q.wait_for_timeout(300)
             btn = q.locator('.djm-btn')
@@ -2413,7 +2441,7 @@ def s_t_18():
           const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)] };
           return [r(L), [...L.querySelectorAll('*')].filter(e => e.getBoundingClientRect().width > 0 && !(e.tagName === 'SPAN' && e.closest('a') && (e.getAttribute('style') === 'white-space: nowrap' || (!e.attributes.length && e.querySelector('span[style="white-space: nowrap"]'))))).map(e => [e.tagName, e.tagName === 'svg' ? '' : e.textContent.trim().slice(0, 30), r(e)]),
                   Math.round(document.querySelector('h1').getBoundingClientRect().top)] })()'''
-        for w in (700, 1024, 1440):
+        for w in ():   # T-46 3b: the headers changed on purpose (the four links on every page), so no longer T-17's to the pixel
             got = []
             for base_, pgf in ((BASE, lambda: newpage(w)), (OLD, lambda: old_page(w))):
                 q = pgf(); q.goto(base_ + n + '.html'); settle(q)
@@ -2425,7 +2453,7 @@ def s_t_18():
             check(f'T-18 S1: {n} at {w}: the header matches T-17 (no Menu button, every link where it was; T-21: within 1 px)', near(got[0], got[1]), str(got[0])[:200] + ' | ' + str(got[1])[:200])
     for n in ('local', 'mainframe', 'briefing', 'comp3', '404'):
         src_ = urlopen(BASE + n + '.html').read().decode('utf-8')
-        check(f'T-18 S1: {n} keeps its header, no Menu button', 'djm-btn' not in src_)
+        check(f'T-46 3b: {n} has the Menu button now (T-18 S1 kept it off)', 'djm-btn' in src_)
 
     # S31: "How I work" on phones; 700 px and up as at T-17.
     LI = 'es => es.map(l => { const r = l.getBoundingClientRect(), s = getComputedStyle(l); return [Math.round(r.x), Math.round(r.y), Math.round(r.width), s.paddingLeft, s.paddingRight, s.borderRightWidth] })'
@@ -2499,11 +2527,11 @@ def s_t_19():
         ('W5', 'work', "535 tests", "535 automatic checks", '<p class="num">535 tests</p>', '<p class="num">535 automatic checks</p>'),
         ('W6', 'work', "2 AI translations", "2 AI translations of one bank program", '<p class="num">2 AI translations</p>', '<p class="num">2 AI translations of one bank program</p>'),
         ('W7', 'work', "A competitive birding app I built from zero lines of code. Its first sound screen ran on mock data. Build 49 names birds from a photo or a song, has real players, and sends sightings to eBird in one tap.",
-                       "A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players, and sends sightings to eBird in one tap.", None, None),
+                       "A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players in testing, and sends sightings to eBird in one tap.", None, None),   # T-46 4d
         ('W8', 'start', "Who says yes, and when?", "Who says yes to spending money, and when?", None, None),
         ('W9', 'start', "Good days for Day 1", "Good days for my first visit", '<h2 id="s5">Good days for Day 1</h2>', '<h2 id="s5">Good days for my first visit</h2>'),
         ('W10', 'start', "Start my Blueprint →", "Send my answers →", 'id="bp-send">Start my Blueprint →<', 'id="bp-send">Send my answers →<'),
-        ('W11', 'start', "You get the one-page Blueprint agreement and an invoice for $1,500.", "You get a one-page agreement and an invoice for $1,500.", None, None),
+        ('W11', 'start', "You get the one-page Blueprint agreement and an invoice for $1,500.", "You get a one-page agreement and an invoice for the first half, $750.", None, None),   # T-46 2b
         ('W12', 'call', "Tell me what you run and when you're free.", "Fifteen minutes, free. Tell me what you run and when you're free.",
                         '">Tell me what you run and when you\'re free. I\'ll call you', '">Fifteen minutes, free. Tell me what you run and when you\'re free. I\'ll call you'),
         ('W13', 'shotlist', "Your 10 clips, in walking order", "Your 10 clips. Film them in this order.", None, None),
@@ -5903,7 +5931,7 @@ T33_R3 = ("I'm Josef. Hand me the work you never get to. If someone on your team
           "AI tool that does it instead, and I'll walk you through it in plain English. Nothing reaches your customers until a person "
           "has checked it.")
 T33_R4_ROWS = [('A 40-reel series for a nonprofit', '~4 min a reel'), ('A teaching app, iPhone, iPad, Android and web', 'Over 700 tests'),   # T-43: was '535 tests'
-               ('A birding league with real players', 'zero lines of code to start'),
+               ('A birding league app, with real players in testing', 'zero lines of code to start'),   # T-46 4d: was 'A birding league with real players'
                ('A banking COBOL program, checked in public', '2 AIs compared')]
 T33_R4_OLD = ("REAL RESULT KIDS' COOKING REELS A 40-reel series for a children's nonprofit, cut by one engine. Editing each reel, before "
               "An evening Now ~4 min Reels in the series 40 Posted without their yes 0 Client: a Sonoma County children's nonprofit")

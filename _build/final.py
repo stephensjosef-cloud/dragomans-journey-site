@@ -365,11 +365,259 @@ def nobreak_checked(name, page):
     return done, None
 
 
+# T-46 3g (Nov 23, 2026): two lines held by the " · " rule get a normal space after the dot, so on a narrow
+# phone the part after it can wrap: Local's Blueprint heading ("$1,500" to its own line) and the home
+# footer's email and phone line (at 320). The dot still stays with the words before it.
+HELD = {
+    'local.html': [('>The Blueprint&nbsp;·&nbsp;$1,500</h3>', '>The Blueprint&nbsp;· $1,500</h3>')],
+    'index.html': [('dragomansjourney.com</a>&nbsp;·&nbsp;<a href="tel:', 'dragomansjourney.com</a>&nbsp;· <a href="tel:')],
+}
+
+
+def held_wraps(name, page):
+    for old, new in HELD.get(name, []):
+        n = page.count(old)
+        if n != 1:
+            problems.append('%s: T-46 3g expected %r once, found %d' % (name, old[:50], n))
+            continue
+        page = page.replace(old, new)
+    return page
+
+
+# ---------------- T-46 (Nov 23, 2026): one menu on every page, a skip link, the landmarks ----------------
+# After every exact-match pass (intent.py writes Local's and Mainframe's header links), before the line
+# breaking. tools/board.py runs t46_page() on the Studio pages in the same place.
+#  - 3b: every page's header carries the home page's four links in its order (The work, Studio, Free tools,
+#    Free 15-min call), plus at most one page-specific link (Local: Start a Blueprint; Mainframe: its briefing
+#    button; start, comp3, briefing: their way back), and on phones the home page's Menu button (enhance.py's
+#    MENU_CSS, MENU_BTN, MENU_JS). Local's logo goes to index.html. The page you are on is marked aria-current.
+#  - 3e: "Skip to content", first in the tab order, shown on focus, to <main id="main">. The links sit in a
+#    <nav> outside <main>; every h1 is inside <main>. Where the h1 sat in the same band as the nav (the dark-nav
+#    pages and Local), the band is split in two with the same background: the nav in <header>, the h1 in <main>.
+#  - 3c, 3d: the home page's phone buttons under the intro, and its route cards (a heading each, one link).
+T46_TOP = (('work.html', 'The work'), ('studio.html', 'Studio'), ('work.html#free', 'Free tools'))
+T46_CALL = 'Free 15-min call'
+T46_CSS = ('<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;'
+           'min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}'
+           '.t46-skip:focus{top:12px}'
+           '@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}'
+           '</style>\n')
+T46_INDEX_CSS = ('<style>.t46-cta{display:none}@media (max-width:759px){.t46-cta{display:flex}}'
+                 '.route{position:relative}.t46-go::after{content:"";position:absolute;inset:0}'
+                 '.route .t46-go{text-align:center;justify-content:center}</style>\n')
+T46_SKIP = '<a class="t46-skip" href="#main">Skip to content</a>\n'
+DARK_A = 'color:#C9D2CB;text-decoration:none'
+DARK_CALL = ('display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #4C5F56;'
+             'color:#E9EEE9;text-decoration:none;font-weight:600;border-radius:2px')
+LIGHT_A = 'color: #3A4252; text-decoration: none'
+LIGHT_CALL = ('display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #12161F; '
+              'color: #12161F; text-decoration: none; font-weight: 600')
+T46_CURRENT = {'studio.html': 'studio.html', 'work.html': 'work.html', 'call.html': 'call.html'}
+DARK_PAGES = ('call.html', 'captions.html', 'case-reels.html', 'checkup.html', 'receipt.html', 'scaler.html',
+              'shotlist.html', 'start.html', 'voicecheck.html', 'work.html')   # and every Studio page
+
+
+def t46_menu():
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import enhance                          # the home page's phone menu, written once there (T-18)
+    return enhance.MENU_CSS, enhance.MENU_BTN, enhance.MENU_JS
+
+
+def t46_links(name, a_style, call_style, ind, first='', last='', root=''):
+    cur = T46_CURRENT.get(name)
+
+    def a(href, text, style):
+        return '<a href="%s%s" style="%s"%s>%s</a>' % (root, href, style, ' aria-current="page"' if href == cur else '', text)
+    items = ([first] if first else []) + [a(h, t, a_style) for h, t in T46_TOP] + [a('call.html', T46_CALL, call_style)]
+    return ind + ('\n' + ind).join(items + ([last] if last else []))
+
+
+def t46_one(name, page, old, new):
+    n = page.count(old)
+    if n != 1:
+        raise ValueError('%s: T-46 expected %r once, found %d' % (name, old[:70], n))
+    return page.replace(old, new)
+
+
+def t46_dark(name, t, btn, js):
+    """A dark-nav page (the templates, the tools, the Studio): its links, then the band split in two."""
+    found = re.findall(r'<div class="djm-links" id="djm-links" style="[^"]*">.*?</div>', t, flags=re.S)
+    if len(found) != 1:
+        raise ValueError('%s: T-46 expected one menu link list, found %d' % (name, len(found)))
+    first = {'start.html': '<a href="local.html" style="%s">← Back to the Local Route</a>' % DARK_A}.get(name, '')
+    t = t.replace(found[0], '<div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;'
+                  'gap:18px;font-size:15px">\n' + t46_links(name, DARK_A, DARK_CALL, '        ', first) + '\n      </div>')
+    a = t.index('<header style="background:#0E1B17;color:#E9EEE9')
+    oe = t.index('>\n', a) + 2
+    hopen = t[a:oe]
+    end = t.index('\n</header>\n', a)
+    inner = t[oe:end]
+    svg = ''
+    if inner.startswith('  <svg'):
+        k = inner.index('</svg>\n') + len('</svg>\n')
+        svg, inner = inner[:k], inner[k:]
+    k = inner.index('>\n') + 2
+    wrap = inner[:k]
+    s = inner.index('</script>\n', inner.index('</nav><script>', k)) + len('</script>\n')
+    nav, hero = inner[k:s], inner[s:]
+    if not wrap.startswith('  <div class="wrap"') or not hero.endswith('  </div>') or '<h1' not in hero:
+        raise ValueError('%s: T-46 the header band is not nav, then the hero' % name)
+    rest = t[end + len('\n</header>\n'):]
+    m = re.match(r'\n<main( class="wrap" style="[^"]*")>', rest)
+    if not m or rest.count('</main>') != 1:
+        raise ValueError('%s: T-46 no single <main class="wrap"> after the header' % name)
+    rest = '\n<div' + m.group(1) + '>' + rest[m.end():]
+    rest = rest.replace('</main>', '</div>\n</main>')
+    return (t[:a] + hopen + wrap + nav + '  </div>\n</header>\n\n<main id="main">\n'
+            + '<div' + hopen[len('<header'):] + svg + wrap + hero + '\n</div>\n' + rest)
+
+
+def t46_light(name, t, btn, js, root=''):
+    """A light letterhead (comp3, briefing, 404): the logo, then the Menu button and the links in a <nav>."""
+    m = re.search(r'(<header [^>]*>\n)(.*?)(</header>)', t, flags=re.S)
+    inner = m.group(2)
+    le = inner.index('</a>') + len('</a>')
+    own = inner[le:].strip()
+    if own.count('<a ') > 1:
+        raise ValueError('%s: T-46 more than one link beside the logo' % name)
+    ind = inner[:len(inner) - len(inner.lstrip(' '))]
+    new = (inner[:le] + '\n' + ind + btn + '\n' + ind + '<nav aria-label="Main" class="djm-links" id="djm-links" style="display: flex; '
+           'flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px">\n'
+           + t46_links(name, LIGHT_A, LIGHT_CALL, ind + '  ', own, root=root) + '\n' + ind + '</nav>\n')
+    return t.replace(m.group(0), m.group(1) + new + m.group(3) + js, 1)
+
+
+def t46_mainframe(t, btn, js):
+    name = 'mainframe.html'
+    found = re.findall(r'\n    <div class="mnav" style="[^"]*">.*?</div>', t, flags=re.S)
+    req = re.findall(r'\n    (<a href="#correspondence" class="quiet" style="[^"]*">[^<]*</a>)\n  </nav>', t)
+    if len(found) != 1 or len(req) != 1:
+        raise ValueError('mainframe.html: T-46 expected the jump links and the briefing button once each')
+    t = t46_one(name, t, '\n    ' + req[0] + '\n  </nav>', '\n  </nav>' + js)
+    return t46_one(name, t, found[0], '\n    ' + btn + '\n    <div class="djm-links" id="djm-links" style="display: flex; flex-wrap: wrap; '
+                   'align-items: center; gap: 10px 26px; font-size: 15px">\n' + t46_links(name, LIGHT_A, LIGHT_CALL, '      ', last=req[0])
+                   + '\n    </div>')
+
+
+def t46_local(t, btn, js):
+    name = 'local.html'
+    nav_at = t.index('    <nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 26px 0">')
+    nav_end = t.index('</nav>\n', nav_at) + len('</nav>\n')
+    nav = t[nav_at:nav_end]
+    links = re.findall(r'\n      <div class="navlinks" style="[^"]*">.*?</div>', nav, flags=re.S)
+    start = re.findall(r'\n      (<a href="start.html" class="btn-blaze" style="[^"]*">Start a Blueprint</a>)', nav)
+    if len(links) != 1 or len(start) != 1:
+        raise ValueError('local.html: T-46 expected the header links and its Start a Blueprint once each')
+    new = t46_one(name, nav, '\n      ' + start[0], '')
+    new = t46_one(name, new, '<a href="#top" style="display: flex;', '<a href="index.html" style="display: flex;')
+    new = t46_one(name, new, links[0], '\n      ' + btn + '\n      <div class="djm-links" id="djm-links" style="display: flex; flex-wrap: wrap; '
+                  'align-items: center; gap: 10px 22px; font-size: 15px; font-weight: 500">\n'
+                  + t46_links(name, DARK_A, DARK_CALL, '        ', last=start[0]) + '\n      </div>')
+    new = new[:-len('</nav>\n')] + '</nav>' + js + '\n'
+    t = t[:nav_at] + t[nav_end:].lstrip('\n')
+    band = ('<header style="position: relative; background: #0E1B17; color: #E9EEE9">\n'
+            '  <div style="position: relative; max-width: 1240px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px)">\n'
+            + new + '  </div>\n</header>\n\n')
+    return t46_one(name, t, '<main>\n<!-- ============ HERO (night) ============ -->',
+                   band + '<main id="main">\n<!-- ============ HERO (night) ============ -->')
+
+
+def t46_index(t):
+    name = 'index.html'
+    m = re.findall(r'<span class="djm-links" id="djm-links" (style="[^"]*">.*?)</span>\n  </header>', t, flags=re.S)
+    if len(m) != 1:
+        raise ValueError('index.html: T-46 expected the header links once')
+    t = t46_one(name, t, '<span class="djm-links" id="djm-links" ' + m[0] + '</span>\n  </header>',
+                '<nav aria-label="Main" class="djm-links" id="djm-links" ' + m[0] + '</nav>\n  </header>')
+    # 3c: under the intro, below 760 px, the call button and a small link to the work.
+    p = re.findall(r'(\n    <p style="margin: 0; max-width: 46ch;[^"]*">[^<]*</p>)\n  </header>', t)
+    if len(p) != 1:
+        raise ValueError('index.html: T-46 expected the intro paragraph once')
+    t = t46_one(name, t, p[0], p[0] + '\n    <div class="t46-cta" style="flex-wrap: wrap; justify-content: center; align-items: center; '
+                'gap: 12px 24px"><a href="call.html" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; '
+                'background: #12161F; color: #F4F1EA; text-decoration: none; font-weight: 600">' + T46_CALL + '</a>'
+                '<a href="work.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px">See the work</a></div>')
+    # 3d: each route card's title is a heading; only its button is a link, stretched over the card.
+    for href in ('local.html', 'mainframe.html'):
+        cards = re.findall(r'<a href="%s" class="route" style="[^"]*">.*?\n    </a>' % re.escape(href), t, flags=re.S)
+        if len(cards) != 1:
+            raise ValueError('index.html: T-46 expected the %s card once' % href)
+        lines = cards[0].split('\n')
+        title, go = lines[2], lines[-2]
+        if not (title.startswith('      <span style="') and title.endswith('</span>') and go.startswith('      <span style="')
+                and go.endswith(' →</span>')):
+            raise ValueError('index.html: T-46 the %s card is not title second, button last' % href)
+        lines[0] = lines[0].replace('<a href="%s" class="route"' % href, '<article class="route"', 1)
+        lines[2] = '      <h2 style="margin: 0; ' + title[len('      <span style="'):-len('</span>')] + '</h2>'
+        lines[-2] = ('      <a href="%s" class="t46-go" style="' % href + go[len('      <span style="'):-len('</span>')]
+                     .replace('">', '; text-decoration: none">', 1) + '</a>')
+        lines[-1] = '    </article>'
+        t = t46_one(name, t, cards[0], '\n'.join(lines))
+    # 3g: the footer's email and phone may wrap (the dot's right side is a normal space, after the line breaking).
+    t = t46_one(name, t, '<span style="white-space: nowrap"><a href="mailto:hello@dragomansjourney.com"',
+                '<span><a href="mailto:hello@dragomansjourney.com"')
+    return t46_one(name, t, '</head>', T46_INDEX_CSS + '</head>')
+
+
+def t46_page(name, t):
+    """One page through T-46's header step (see above). Raises ValueError, naming the page, if a pattern misses."""
+    css, btn, js = t46_menu()
+    if 'class="t46-skip"' in t:
+        raise ValueError('%s: T-46 already ran' % name)
+    if name in DARK_PAGES or name.startswith('studio'):
+        t = t46_dark(name, t, btn, js)
+    elif name in ('comp3.html', 'briefing.html', '404.html'):
+        t = t46_one(name, t46_light(name, t, btn, js, '/' if name == '404.html' else ''), '</head>', css + '</head>')
+    elif name == 'mainframe.html':
+        t = t46_one(name, t46_mainframe(t, btn, js), '</head>', css + '</head>')
+    elif name == 'local.html':
+        t = t46_one(name, t46_local(t, btn, js), '</head>', css + '</head>')
+    elif name == 'index.html':
+        t = t46_index(t)
+    else:
+        raise ValueError('%s: T-46 does not know this page' % name)
+    if '<main id="main"' not in t:
+        t = t46_one(name, t, '<main', '<main id="main"') if t.count('<main') == 1 else t
+    if t.count('<main id="main"') != 1:
+        raise ValueError('%s: T-46 expected one <main id="main">' % name)
+    b = t.index('<body>\n') + len('<body>\n')
+    w = t.index('>\n', b) + 2                      # the page's wrapper, the first element in <body>
+    if not t[b:w].startswith('<div class="'):
+        raise ValueError('%s: T-46 the first thing in <body> is not the page wrapper' % name)
+    t = t[:w] + T46_SKIP + t[w:]
+    return t46_one(name, t, '</head>', T46_CSS + '</head>')
+
+
+def t46_all():
+    for name in pages:
+        try:
+            pages[name] = t46_page(name, pages[name])
+        except ValueError as e:
+            problems.append(str(e))
+
+
+# T-46 3n: /llms.txt, made only of words the site already has: the site name as its heading, then each
+# public page (the sitemap's list, in its order) as its <title>, its address and its meta description.
+def llms_txt():
+    urls = re.findall(r'<loc>([^<]+)</loc>', (OUT / 'sitemap.xml').read_text(encoding='utf-8'))
+    lines = ['# ' + NAME, '']
+    for u in urls:
+        f = u[len(SITE):] or 'index.html'
+        title = html.unescape(one(f, r'<title>(.*?)</title>', 'title'))
+        desc = meta_description(f)
+        lines.append('- [%s](%s): %s' % (title, u, desc))
+    return '\n'.join(lines) + '\n'
+
+
 if __name__ == '__main__':
+    t46_all()
     for name in pages:
         pages[name], problem = nobreak_checked(name, pages[name])
         if problem:
             problems.append(problem)
+    for name in HELD:
+        pages[name] = held_wraps(name, pages[name])
+    llms = llms_txt()
 
     # ---------------- write ----------------
     if problems:
@@ -380,6 +628,7 @@ if __name__ == '__main__':
     for name in pages:
         if pages[name] != before[name]:
             (OUT / name).write_text(pages[name], encoding='utf-8')
+    (OUT / 'llms.txt').write_text(llms, encoding='utf-8')
     print('final: structured data on local.html and mainframe.html')
     if CF_BEACON_TOKEN:
         print('final: visit counter on %d pages (not %s)' % (len(pages) - len(NO_BEACON), ', '.join(NO_BEACON)))

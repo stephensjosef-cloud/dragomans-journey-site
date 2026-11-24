@@ -23,7 +23,7 @@
 body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 *{box-sizing:border-box}
-.fk a:focus-visible,.fk button:focus-visible{outline:2px solid #E8592B;outline-offset:3px}
+.fk a:focus-visible,.fk button:focus-visible{outline:2px solid #A93F17;outline-offset:3px}
 .fk button{font:inherit;cursor:pointer}
 .route{transition:transform 260ms cubic-bezier(.2,.7,.2,1)}
 .route:hover{transform:translateY(-4px)}
@@ -94,10 +94,13 @@ a{color:#A93F17}a:hover{color:#17212B}
 .route span[style*="min-height: 52px"]{text-align:center;justify-content:center}
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
-<style data-t32>.pen{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11' fill='none' stroke='%23E8592B' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:100% 0.2em;background-position:0 100%;padding-bottom:0.12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}.pen.pen-ink{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11' fill='none' stroke='%23F07A4E' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E")}</style>
+<style>.t46-cta{display:none}@media (max-width:759px){.t46-cta{display:flex}}.route{position:relative}.t46-go::after{content:"";position:absolute;inset:0}.route .t46-go{text-align:center;justify-content:center}</style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
+<style data-t32>.pen{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11' fill='none' stroke='%23E8592B' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:100% 0.2em;background-position:0 100%;padding-bottom:0.12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}.pen.pen-ink{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11' fill='none' stroke='%23F07A4E' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E")}.t46-dark :focus-visible{outline-color:#F07A4E!important}</style>
 </head>
 <body>
 <div class="fk" style="font-family: 'Barlow', 'Helvetica Neue', system-ui, sans-serif; color: #17212B; background: #E4ECD8; font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased">
+<a class="t46-skip" href="#main">Skip to content</a>
 
   <!-- letterhead -->
   <header class="djm-bar" style="max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; border-bottom: 1px solid #9BAA90">
@@ -106,41 +109,42 @@ a{color:#A93F17}a:hover{color:#17212B}
       <span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px">Dragoman's Journey</span>
     </span>
     <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
-    <span class="djm-links" id="djm-links" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px"><a href="work.html" style="color: #2E3A47; text-decoration: none">The work</a><a href="studio.html" style="color: #2E3A47; text-decoration: none">Studio</a><a href="work.html#free" style="color: #2E3A47; text-decoration: none">Free tools</a><a href="call.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #17212B; color: #17212B; text-decoration: none; font-weight: 600"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a></span>
+    <nav aria-label="Main" class="djm-links" id="djm-links" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px"><a href="work.html" style="color: #2E3A47; text-decoration: none">The work</a><a href="studio.html" style="color: #2E3A47; text-decoration: none">Studio</a><a href="work.html#free" style="color: #2E3A47; text-decoration: none">Free tools</a><a href="call.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #17212B; color: #17212B; text-decoration: none; font-weight: 600"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a></nav>
   </header>
 
   <script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
-  <main>
+  <main id="main">
   <!-- hero -->
   <header style="max-width: 1240px; margin: 0 auto; padding: clamp(56px, 8vw, 104px) clamp(16px, 4vw, 48px) 24px; display: flex; flex-direction: column; gap: 22px; align-items: center; text-align: center">
     <h1 style="margin: 0; max-width: 16ch; font-family: 'Barlow Semi Condensed', Impact, sans-serif; font-weight: 900; font-size: clamp(56px, 8vw, 120px); line-height: 0.9; letter-spacing: -0.01em; color: #17212B; text-wrap: balance">AI, made <span class="pen" style="white-space: nowrap">easy.</span></h1>
     <p style="margin: 0; max-width: 46ch; font-size: clamp(18px, 1.6vw, 21px); color: #2E3A47">Hey, I'm Josef, your dragoman. That's the old word for the guide travelers trusted in a strange land. Out there, AI is loud and confusing. In here, I'll walk you through it one plain step at a time.</p>
+    <div class="t46-cta" style="flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 24px"><a href="call.html" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; background: #17212B; color: #F7F9F3; text-decoration: none; font-weight: 600"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a><a href="work.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px">See the work</a></div>
   </header>
 
   <!-- the two routes -->
   <section aria-label="Routes" style="max-width: 1240px; margin: 0 auto; padding: clamp(40px, 5vw, 64px) clamp(16px, 4vw, 48px) clamp(64px, 8vw, 104px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 20px">
 
-    <a href="local.html" class="route" style="display: flex; flex-direction: column; gap: 20px; padding: clamp(28px, 3.4vw, 44px); background: #E4ECD8; color: #17212B; text-decoration: none; min-height: 520px">
+    <article class="route" style="display: flex; flex-direction: column; gap: 20px; padding: clamp(28px, 3.4vw, 44px); background: #E4ECD8; color: #17212B; text-decoration: none; min-height: 520px">
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #A93F17">THE LOCAL ROUTE</span>
-      <span style="font-family: 'Barlow Semi Condensed', Impact, sans-serif; font-weight: 900; text-transform: none; font-size: clamp(48px, 5.4vw, 76px); line-height: 0.88">AI that works the first day</span>
+      <h2 style="margin: 0; font-family: 'Barlow Semi Condensed', Impact, sans-serif; font-weight: 900; text-transform: none; font-size: clamp(48px, 5.4vw, 76px); line-height: 0.88">See it working in a week</h2>
       <span style="font-size: 18px; color: #4F5A63">For shops and nonprofits around Sonoma County. Whatever keeps sliding to the bottom of the list, hand it over. Videos nobody edits, <span style="white-space: nowrap">follow-ups</span> nobody sends, the spreadsheet everyone avoids, the app you keep meaning to make. I build the AI tool that does it, and you watch it work before you decide to go ahead.</span>
       <span style="display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 18px; border-top: 1px solid #9BAA90; font-family: 'JetBrains Mono', monospace; font-size: 14px">
         <span style="color: #4F5A63">BEGINS WITH</span>
         <span style="color: #17212B">The Blueprint: two weeks, $1,500, fixed. If you go ahead, the $1,500 comes off the price.</span>
       </span>
-      <span style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; background: #E8592B; color: #17212B; font-weight: 700">Take the Local Route →</span>
-    </a>
+      <a href="local.html" class="t46-go" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; background: #E8592B; color: #17212B; font-weight: 700; text-decoration: none">Take the Local Route →</a>
+    </article>
 
-    <a href="mainframe.html" class="route" style="display: flex; flex-direction: column; gap: 20px; padding: clamp(28px, 3.4vw, 44px); background: #F7F9F3; color: #17212B; text-decoration: none; border: 1px solid #17212B; min-height: 520px">
+    <article class="route" style="display: flex; flex-direction: column; gap: 20px; padding: clamp(28px, 3.4vw, 44px); background: #F7F9F3; color: #17212B; text-decoration: none; border: 1px solid #17212B; min-height: 520px">
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #A93F17">THE MAINFRAME ROUTE</span>
-      <span style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(42px, 4.6vw, 66px); line-height: 1.0; letter-spacing: -0.02em">Proof your new system <span style="color: #A93F17">does what the old one did.</span></span>
+      <h2 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(42px, 4.6vw, 66px); line-height: 1.0; letter-spacing: -0.02em">Proof your new system <span style="color: #A93F17">does what the old one did.</span></h2>
       <span style="font-size: 18px; color: #2E3A47">For banks, insurers and agencies moving off COBOL with AI. I build a tool that runs your old system and your new one on the same real data and flags every difference, plus a report your auditors can check for themselves, all before anything goes live.</span>
       <span style="display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 18px; border-top: 1px solid #9BAA90; font-family: 'JetBrains Mono', monospace; font-size: 14px">
         <span style="color: #4F5A63">BEGINS WITH</span>
         <span>The Survey&nbsp;·&nbsp;one group of programs&nbsp;·&nbsp;from $8,000&nbsp;·&nbsp;counts toward the next step</span>
       </span>
-      <span style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; background: #17212B; color: #F7F9F3; font-weight: 600">Take the Mainframe Route →</span>
-    </a>
+      <a href="mainframe.html" class="t46-go" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; background: #17212B; color: #F7F9F3; font-weight: 600; text-decoration: none">Take the Mainframe Route →</a>
+    </article>
   </section>
 
   <!-- the shared rules -->
@@ -157,14 +161,14 @@ a{color:#A93F17}a:hover{color:#17212B}
   </section>
 
   </main>
-  <footer style="background: #17212B; color: #B9C3CC">
+  <footer class="t46-dark" style="background: #17212B; color: #B9C3CC">
     <div style="max-width: 1240px; margin: 0 auto; padding: clamp(48px, 6vw, 72px) clamp(16px, 4vw, 48px); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 28px 48px">
       <div style="display: flex; flex-direction: column; gap: 10px; max-width: 620px">
         <span style="font-family: 'Newsreader', Georgia, serif; font-weight: 300; font-size: clamp(28px, 3vw, 40px); line-height: 1.15; color: #F7F9F3">Dragoman <span class="pen pen-ink">(n.)</span></span>
         <span style="font-size: 17px; color: #B9C3CC">A dragoman was the guide and interpreter travelers hired in places where they didn't speak the language. For most businesses, AI is that place right now. I speak it, so you don't have to.</span>
       </div>
       <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px">
-        <span style="white-space: nowrap"><a href="mailto:hello@dragomansjourney.com" style="color: #F7F9F3; display: inline-flex; align-items: center; min-height: 44px">hello@dragomansjourney.com</a> · <a href="tel:+17073948719" style="color: #F7F9F3; display: inline-flex; align-items: center; min-height: 44px; white-space: nowrap">707-394-8719</a></span>
+        <span><a href="mailto:hello@dragomansjourney.com" style="color: #F7F9F3; display: inline-flex; align-items: center; min-height: 44px">hello@dragomansjourney.com</a>&nbsp;· <a href="tel:+17073948719" style="color: #F7F9F3; display: inline-flex; align-items: center; min-height: 44px; white-space: nowrap">707-394-8719</a></span>
         <a href="https://github.com/stephensjosef-cloud" style="color: #B9C3CC">GitHub</a>
         <span>Santa Rosa, California</span>
       </div>

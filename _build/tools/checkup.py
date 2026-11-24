@@ -37,6 +37,7 @@ CSS = r"""
 """
 
 BODY = r"""
+  <noscript><p style="margin:0;font-size:17px;color:#3B4540">This tool needs JavaScript to run.</p></noscript>
   <section class="panel" id="ask" aria-labelledby="ask-h">
     <h2 id="ask-h" class="label">Your website's address</h2>
     <form id="form" class="box" novalidate>

@@ -31,6 +31,7 @@ h1.big{text-wrap:balance}
 """
 
 BODY = r"""
+  <noscript><p style="margin:0;font-size:17px;color:#3B4540">This tool needs JavaScript to run.</p></noscript>
   <section class="panel noprint" aria-labelledby="l-type">
     <p class="label" id="l-type">What do you run?</p><div class="chips" role="group" aria-labelledby="l-type" id="c-type"></div>
     <button type="button" class="fold" id="f-details" aria-expanded="false" aria-controls="details" style="margin-top:12px">Change the details</button>

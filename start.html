@@ -26,7 +26,7 @@ body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 ::selection{background:#E8592B;color:#17212B}
 .dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
-.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
@@ -66,13 +66,14 @@ a{color:#A93F17}a:hover{color:#17212B}
 }
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
 <style data-t32>.t32-rt{position:relative}.t32-rt::before{content:"";position:absolute;left:58px;top:0;bottom:-12px;width:3px;background:repeating-linear-gradient(to bottom,#E8592B 0 10px,transparent 10px 18px);pointer-events:none}.t32-rt-end::before{bottom:0}.t32-rl{position:relative}.t32-rl::before{content:"";position:absolute;left:-12px;top:.35em;bottom:.35em;width:3px;background:repeating-linear-gradient(to bottom,#E8592B 0 10px,transparent 10px 18px);pointer-events:none}</style>
 </head>
 <body>
 <div class="dj">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header style="background:#E4ECD8;color:#17212B;position:relative;overflow:hidden">
-  <svg aria-hidden="true" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;opacity:.35"><path d="M-40 60 C 200 30, 400 90, 640 54 S 1040 20, 1240 66 S 1480 90, 1520 60" fill="none" stroke="rgba(168,139,92,0.38)"/><path d="M-40 140 C 200 100, 400 180, 640 132 S 1040 90, 1240 146 S 1480 180, 1520 140" fill="none" stroke="rgba(168,139,92,0.38)"/><path d="M-40 220 C 200 170, 400 270, 640 210 S 1040 160, 1240 226 S 1480 270, 1520 220" fill="none" stroke="rgba(168,139,92,0.6)"/><path d="M-40 300 C 200 260, 400 340, 640 290 S 1040 250, 1240 306 S 1480 340, 1520 300" fill="none" stroke="rgba(168,139,92,0.38)"/></svg>
   <div class="wrap" style="position:relative">
     <nav aria-label="Main" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:26px 0">
       <a href="local.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#17212B;text-decoration:none">
@@ -80,8 +81,21 @@ a{color:#A93F17}a:hover{color:#17212B}
         <span style="font-weight:700;font-size:18px">Dragoman's Journey</span>
       </a>
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
-      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px"><a href="studio.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Studio</a><a href="work.html#free" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">Free tools</a><a href="local.html" style="display:inline-flex;align-items:center;min-height:44px;color:#4F5A63;text-decoration:none;font-size:15px">← Back to the Local Route</a></div>
+      <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
+        <a href="local.html" style="color:#4F5A63;text-decoration:none">← Back to the Local Route</a>
+        <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
+        <a href="studio.html" style="color:#4F5A63;text-decoration:none">Studio</a>
+        <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
+        <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
+      </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+  </div>
+</header>
+
+<main id="main">
+<div style="background:#E4ECD8;color:#17212B;position:relative;overflow:hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;opacity:.35"><path d="M-40 60 C 200 30, 400 90, 640 54 S 1040 20, 1240 66 S 1480 90, 1520 60" fill="none" stroke="rgba(168,139,92,0.38)"/><path d="M-40 140 C 200 100, 400 180, 640 132 S 1040 90, 1240 146 S 1480 180, 1520 140" fill="none" stroke="rgba(168,139,92,0.38)"/><path d="M-40 220 C 200 170, 400 270, 640 210 S 1040 160, 1240 226 S 1480 270, 1520 220" fill="none" stroke="rgba(168,139,92,0.6)"/><path d="M-40 300 C 200 260, 400 340, 640 290 S 1040 250, 1240 306 S 1480 340, 1520 300" fill="none" stroke="rgba(168,139,92,0.38)"/></svg>
+  <div class="wrap" style="position:relative">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:clamp(28px,5vw,72px);align-items:end;padding:clamp(28px,5vw,64px) 0 clamp(48px,6vw,88px)">
       <div style="display:flex;flex-direction:column;gap:18px">
         <span class="mono t21-eb" style="font-size:13px;letter-spacing:.1em;color:#A93F17">THE BLUEPRINT&nbsp;·&nbsp;$1,500&nbsp;·&nbsp;TWO WEEKS</span>
@@ -97,9 +111,10 @@ a{color:#A93F17}a:hover{color:#17212B}
       </div>
     </div>
   </div>
-</header>
+</div>
 
-<main class="wrap" style="padding-top:clamp(40px,5vw,72px);padding-bottom:clamp(64px,8vw,112px)">
+<div class="wrap" style="padding-top:clamp(40px,5vw,72px);padding-bottom:clamp(64px,8vw,112px)">
+  <noscript><p style="max-width:880px;margin:0 auto 24px;font-size:17px;color:#2E3A47">This form needs JavaScript. You can email <a href="mailto:hello@dragomansjourney.com">hello@dragomansjourney.com</a> instead.</p></noscript>
   <form id="bp" novalidate style="max-width:880px;margin:0 auto">
     <div class="hp" aria-hidden="true"><label>Website <input name="website" id="website" tabindex="-1" autocomplete="off"></label></div>
 
@@ -194,7 +209,7 @@ a{color:#A93F17}a:hover{color:#17212B}
       <p id="bp-err" class="err" role="alert" hidden></p>
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px">
         <button type="submit" class="send" id="bp-send">Send my answers →</button>
-        <span style="font-size:15px;color:#4F5A63">Nothing is charged today. Next comes my reply, the agreement and the invoice.</span>
+        <span style="font-size:15px;color:#4F5A63">Nothing is charged today. Next comes my reply, the agreement and an invoice for the first half, $750. The second half comes after the Day 7 sample, only if you keep going.</span>
       </div>
     </div>
   </form>
@@ -204,12 +219,13 @@ a{color:#A93F17}a:hover{color:#17212B}
     <h2 id="done-h" class="big" style="font-size:clamp(44px,6vw,80px)">Got it, thank you</h2>
     <p style="margin:0;font-size:19px;color:#2E3A47;max-width:56ch">I've got your answers. Here's what happens next:</p>
     <ol class="t32-rl" style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:18px;color:#17212B">
-      <li>I read your answers myself and write back with any questions.</li>
-      <li>You get a <span style="white-space: nowrap">one-page</span> agreement and an invoice for $1,500.</li>
+      <li>I read your answers myself and write back by the next weekday afternoon.</li>
+      <li>You get a <span style="white-space: nowrap">one-page</span> agreement and an invoice for the first half, $750.</li>
       <li>Once it's signed, we lock in Day 1 and I come see the real work.</li>
     </ol>
     <a href="local.html#proof" style="align-self:flex-start;display:inline-flex;align-items:center;min-height:52px;padding:0 22px;margin-top:6px;background:#17212B;color:#F7F9F3;text-decoration:none;font-weight:700;border-radius:2px">While you wait, see the work →</a>
   </section>
+</div>
 </main>
 
 <footer class="wrap" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">

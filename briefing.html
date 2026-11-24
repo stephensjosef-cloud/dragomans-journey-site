@@ -48,20 +48,40 @@ a{color:#1C5FA8}a:hover{color:#17212B}
 @media (max-width:720px){.row{grid-template-columns:1fr}}
 </style>
 <style>p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab,.mono,span[style*="JetBrains Mono"]),:is(h1,h2,h3,h4,button,.btn,.chip,.iq,.filt,label,.label,.lab) :is(span,strong){text-wrap:balance}</style>
+<style>
+.djm-btn{display:none}
+@media (max-width:699px){
+.djm{flex-wrap:wrap!important;row-gap:0!important;column-gap:0!important}
+.djm .djm-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 12px;margin-left:auto;font:inherit;font-size:16px;font-weight:600;cursor:pointer;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:2px}
+.djm .djm-links{display:none!important}
+.djm.open .djm-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;flex-basis:100%;padding:12px 0 4px}
+.djm.open .djm-links>a{display:flex!important;align-items:center!important;min-height:48px!important;font-size:16px!important}
+.djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
+}
+</style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
 <style data-t32>.pen{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11' fill='none' stroke='%231C5FA8' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:100% 0.2em;background-position:0 100%;padding-bottom:0.12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}.pen.pen-ink{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13 C 60 6, 120 16, 180 9 S 270 7, 297 11' fill='none' stroke='%238FB8E8' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E")}</style>
 </head>
 <body>
 <div class="mf">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header class="wrap" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-top:22px;padding-bottom:22px;border-bottom:1px solid #9BAA90">
   <a href="mainframe.html" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#17212B;text-decoration:none">
     <svg width="26" height="26" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 28 L13 10 L19 20 L23 14 L30 28 Z" fill="none" stroke="#17212B" stroke-width="1.8" stroke-linejoin="round"/><circle cx="23" cy="7" r="2.4" fill="#1C5FA8"/></svg>
     <span class="serif" style="font-size:20px">Dragoman's Journey</span>
   </a>
-  <a href="mainframe.html" style="display:inline-flex;align-items:center;min-height:44px;color:#2E3A47;text-decoration:none;font-size:15px">← The Mainframe Route</a>
-</header>
+  <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
+  <nav aria-label="Main" class="djm-links" id="djm-links" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; font-size: 15px">
+    <a href="mainframe.html" style="display:inline-flex;align-items:center;min-height:44px;color:#2E3A47;text-decoration:none;font-size:15px">← The Mainframe Route</a>
+    <a href="work.html" style="color: #2E3A47; text-decoration: none">The work</a>
+    <a href="studio.html" style="color: #2E3A47; text-decoration: none">Studio</a>
+    <a href="work.html#free" style="color: #2E3A47; text-decoration: none">Free tools</a>
+    <a href="call.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #17212B; color: #17212B; text-decoration: none; font-weight: 600"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
+  </nav>
+</header><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
 
-<main>
+<main id="main">
   <section class="wrap" style="padding-top:clamp(48px,7vw,96px);padding-bottom:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:24px 64px;align-items:end">
     <div style="display:flex;flex-direction:column;gap:16px">
       <h1 class="serif" style="margin:0;font-weight:300;font-size:clamp(44px,6vw,84px);line-height:1;letter-spacing:-0.025em">Ask me about your <span class="pen" style="color:#1C5FA8">system</span></h1>
@@ -70,6 +90,7 @@ a{color:#1C5FA8}a:hover{color:#17212B}
   </section>
 
   <section class="wrap" style="padding-top:36px;padding-bottom:clamp(64px,8vw,112px)">
+    <noscript><p style="max-width:1000px;margin:0 0 24px;font-size:17px;color:#2E3A47">This form needs JavaScript. You can email <a href="mailto:hello@dragomansjourney.com">hello@dragomansjourney.com</a> instead.</p></noscript>
     <form id="br" novalidate style="max-width:1000px">
       <div class="hp" aria-hidden="true"><label>Website <input id="website" tabindex="-1" autocomplete="off"></label></div>
 

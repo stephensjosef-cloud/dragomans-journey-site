@@ -26,7 +26,7 @@ body{margin:0;background:#E4ECD8}
 a{color:#A93F17}a:hover{color:#17212B}
 ::selection{background:#E8592B;color:#17212B}
 .dj{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;color:#17212B;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
-.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a:focus-visible,.dj button:focus-visible,.dj input:focus-visible,.dj textarea:focus-visible,.dj select:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 .wrap{max-width:1240px;margin:0 auto;padding-left:clamp(16px,4vw,48px);padding-right:clamp(16px,4vw,48px)}
 .big{font-family:'Barlow Semi Condensed',Impact,sans-serif;font-weight:800;text-transform:none;line-height:.9;margin:0}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
@@ -151,7 +151,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .grow figure{flex:none;margin:0;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start}
 .grow img{display:block;height:var(--h);width:auto;max-width:none;border:1.5px solid #9BAA90;border-radius:2px;background:#EDF2E6}
 .grow figcaption{contain:inline-size;font-size:14px;line-height:1.4;color:#2E3A47}
-.dj .grow:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj .grow:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 @media (max-width:799px){.grow{margin-right:calc(-1 * clamp(16px,4vw,48px));padding-right:clamp(16px,4vw,48px)}}
 @media (min-width:800px){.grow{--h:calc(217px * 1349 / 660 + 3px);flex-wrap:wrap;overflow:visible;gap:18px 10px;padding-bottom:0}}
 
@@ -177,7 +177,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .shelf .sn{font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1.25;overflow-wrap:break-word}
 .shelf .sk,.shelf .sp{font-size:14px;line-height:1.35;color:#4F5A63}
 .shelf a:hover .sn{color:#A93F17}
-.dj .shelf:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj .shelf:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 @media (min-width:800px){.shelf{margin:-6px -6px 0;overflow:visible}
 .shelf ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 18px;width:auto;padding:6px}
 .shelf li{width:auto}}
@@ -187,7 +187,7 @@ a.zm{position:relative;display:block;cursor:zoom-in;color:inherit;-webkit-tap-hi
 .zm-i{position:absolute;right:-8px;bottom:-8px;z-index:1;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#F7F9F3;color:#17212B;border:1px solid #9BAA90;opacity:.9;pointer-events:none}
 .zm-i svg{display:block}
 a.zm:hover .zm-i{opacity:1}
-.dj a.zm:focus-visible{outline:3px solid #E8592B;outline-offset:3px}
+.dj a.zm:focus-visible{outline:3px solid #A93F17;outline-offset:3px}
 html.zv-lock{overflow:hidden}
 .zv{position:fixed;inset:0;z-index:9999;font-family:'Barlow','Helvetica Neue',system-ui,sans-serif;-webkit-font-smoothing:antialiased;opacity:0;transition:opacity .2s ease;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .zv[hidden]{display:none}
@@ -222,9 +222,12 @@ html.zv-lock{overflow:hidden}
 .djm.open .djm-links>a[href="call.html"]{justify-content:center!important;margin-top:8px}
 }
 </style>
+<style>.t46-skip{position:absolute;left:12px;top:-200px;z-index:1000;display:inline-flex;align-items:center;min-height:48px;padding:0 18px;background:#17212B;color:#F7F9F3;font-weight:700;font-size:16px;text-decoration:none}.t46-skip:focus{top:12px}@media (max-width:699px){.djm.open .djm-links>a[style*="padding"]{justify-content:center!important;margin-top:8px}}</style>
+<style data-t32>.t46-dark :focus-visible{outline-color:#F07A4E!important}</style>
 </head>
 <body>
 <div class="dj">
+<a class="t46-skip" href="#main">Skip to content</a>
 
 <header style="background:#E4ECD8;color:#17212B" class="noprint">
   <div class="wrap">
@@ -236,20 +239,25 @@ html.zv-lock{overflow:hidden}
       <button type="button" class="djm-btn" aria-expanded="false" aria-controls="djm-links">Menu</button>
       <div class="djm-links" id="djm-links" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:15px">
         <a href="work.html" style="color:#4F5A63;text-decoration:none">The work</a>
-        <a href="local.html" style="color:#4F5A63;text-decoration:none">Local Route</a>
         <a href="studio.html" style="color:#4F5A63;text-decoration:none" aria-current="page">Studio</a>
         <a href="work.html#free" style="color:#4F5A63;text-decoration:none">Free tools</a>
         <a href="call.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid #9BAA90;color:#17212B;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-min</span> call</span></a>
       </div>
     </nav><script>(function(n){n.classList.add('djm');var b=n.querySelector('.djm-btn');function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o))}b.addEventListener('click',function(){set(!n.classList.contains('open'))});n.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus()}})})(document.currentScript.previousElementSibling)</script>
+  </div>
+</header>
+
+<main id="main">
+<div style="background:#E4ECD8;color:#17212B" class="noprint">
+  <div class="wrap">
     <div style="padding:clamp(24px,4vw,52px) 0 clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:16px;max-width:880px">
       <h1 class="big" style="font-size:clamp(52px,7.4vw,104px)">Follow along<br>while I piece it together</h1>
       <p style="margin:0;max-width:56ch;font-size:clamp(18px,1.6vw,21px);color:#4F5A63">Everything I'm building right now, and the date each piece was finished.</p>
     </div>
   </div>
-</header>
+</div>
 
-<main class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
+<div class="wrap" style="padding-top:clamp(32px,4.5vw,56px);padding-bottom:clamp(64px,8vw,112px);display:flex;flex-direction:column;gap:24px">
 <!-- studio.py 2026-11-23 77c18c2cbb7e612f -->
   <section class="sec logsec" aria-labelledby="log-h"><script>document.currentScript.parentNode.classList.add('js')</script>
     <div class="logtop">
@@ -417,7 +425,7 @@ html.zv-lock{overflow:hidden}
     </article>
   </div>
 
-  <section aria-labelledby="next-h" style="margin-top:20px;background:#17212B;color:#F7F9F3;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
+  <section class="t46-dark" aria-labelledby="next-h" style="margin-top:20px;background:#17212B;color:#F7F9F3;padding:clamp(26px,4vw,48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:20px 48px;align-items:center;border-radius:2px">
     <div style="display:flex;flex-direction:column;gap:12px">
       <h2 id="next-h" class="big" style="font-size:clamp(36px,4.6vw,60px)">Your pile could be next</h2>
       <p style="margin:0;font-size:18px;color:#B9C3CC">Two weeks, $1,500, and it comes off the build price. Or start with a free <span style="white-space: nowrap">15-minute</span> call.</p>
@@ -427,6 +435,7 @@ html.zv-lock{overflow:hidden}
       <a href="call.html" style="display:inline-flex;align-items:center;min-height:56px;padding:0 22px;border:1.5px solid #3A4654;color:#F7F9F3;text-decoration:none;font-weight:600;border-radius:2px"><span>Free <span style="white-space: nowrap">15-minute</span> call</span></a>
     </div>
   </section>
+</div>
 </main>
 
 <footer class="wrap noprint" style="padding-top:28px;padding-bottom:40px;border-top:1px solid #9BAA90;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:#4F5A63">

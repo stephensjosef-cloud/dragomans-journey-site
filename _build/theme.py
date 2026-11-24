@@ -237,12 +237,28 @@ def css_zone(sel, body):
     return 'light'
 
 
+# T-46 3f (Nov 23, 2026): the focus ring reaches 3:1 on every background it sits on. On the light pages it is the
+# darker accent ink (orange text on light, #A93F17; the Mainframe pages' blue is dark enough already); inside a
+# band that stays dark (FOCUS_DARK, below) it is the accent on ink. The picture viewer (.zv) is dark and keeps its own.
+FOCUS_RING = re.compile(r'(outline(?:-color)?\s*:[^;{}]*?)' + re.escape(ORANGE), re.I)
+
+
+def focus_ring(sel, body, mf):
+    if mf or ':focus' not in sel or '.zv' in sel:
+        return body
+    return FOCUS_RING.sub(lambda m: m.group(1) + ORANGE_TEXT, body)
+
+
+def focus_dark_css(mf):
+    return '.t46-dark :focus-visible{outline-color:' + (BLUE_ON_INK if mf else ORANGE_ON_INK) + '!important}'
+
+
 def theme_css(css, mf, where):
     out, i = [], 0
     for m in re.finditer(r'([^{}]*)\{([^{}]*)\}', css):
         sel, body = m.group(1), m.group(2)
         out.append(css[i:m.start()])
-        out.append(sel + '{' + theme_decls(body, css_zone(sel, body), mf, f'{where} <style> {sel.strip()[:60]}') + '}')
+        out.append(sel + '{' + focus_ring(sel, theme_decls(body, css_zone(sel, body), mf, f'{where} <style> {sel.strip()[:60]}'), mf) + '}')
         i = m.end()
     out.append(css[i:])
     return ''.join(out)
@@ -491,6 +507,8 @@ def theme_page(html, page):
         zone = elem_zone(tag, attrs, style or '', parent, page)
         if zone == 'dark' and 'pen' in (attrs.get('class') or '').split():
             rest = rest.replace('class="pen', 'class="pen pen-ink', 1)
+        if zone == 'dark' and parent != 'dark' and tag not in SMALL:     # T-46 3f: a band that stays dark
+            rest = rest.replace(' class="', ' class="t46-dark ', 1) if ' class="' in rest else ' class="t46-dark"' + rest
         if style is not None:
             new = theme_decls(style, zone, mf, f'{page} <{tag} style>', tag)
             rest = rest.replace(f'style="{style}"', f'style="{new}"', 1)
@@ -514,7 +532,8 @@ def theme_page(html, page):
     html = fonts(''.join(out))
     html = mark_routes(html, page)
     html = add_ring(html, page, mf)
-    css = (RING_CSS if RINGS.get(page) else '') + route_css(page, mf) + (pen_css(mf) if PEN_ON.search(html) else '')
+    css = (RING_CSS if RINGS.get(page) else '') + route_css(page, mf) + (pen_css(mf) if PEN_ON.search(html) else '') \
+        + (focus_dark_css(mf) if 't46-dark' in html else '')
     if css:
         if html.count('</head>') != 1:
             raise SystemExit(f'theme.py: {page}: no single </head>')

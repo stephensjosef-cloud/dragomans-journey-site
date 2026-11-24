@@ -105,12 +105,14 @@ a{color:#A93F17}a:hover{color:#16201C}
       <div class="fb">
       <div class="tags"><span class="tag">My own build</span><span class="tag">App</span></div>
       <h2>Bird League</h2>
-      <p>A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players, and sends sightings to eBird in one tap.</p>
+      <p>A competitive birding app I built from zero lines of code. It names birds from a photo or a song, has real players in testing, and sends sightings to eBird in one tap.</p>
       <a class="go" href="studio-birdleague.html">See Bird League →</a>
       </div>
     </article>
 
-    <article class="card" data-k="apps">
+    <!-- T-46 3h (Nov 23, 2026): the recipe scaler's card shows under Free tools too. data-also, not data-k: the
+         share cards (tools/og.py) and local.html's tool list (enhance.py) read data-k, and this card stays an app. -->
+    <article class="card" data-k="apps" data-also="free">
       <div class="tags"><span class="tag">Client</span><span class="tag">Program app</span><span class="tag">In build</span></div>
       <!-- T-22 K8; body is T-23 K8b -->
       <p class="num">Their recipe cards, now an app.</p>
@@ -211,10 +213,14 @@ a{color:#A93F17}a:hover{color:#16201C}
     b.addEventListener('click', function () {
       var f = b.getAttribute('data-f');
       btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
-      cards.forEach(function (c) { c.hidden = f !== 'all' && (' ' + c.getAttribute('data-k') + ' ').indexOf(' ' + f + ' ') < 0; });
+      cards.forEach(function (c) { c.hidden = f !== 'all' && (' ' + c.getAttribute('data-k') + ' ' + (c.getAttribute('data-also') || '') + ' ').indexOf(' ' + f + ' ') < 0; });
       // T-33: a group of cards (the reel engine's two tools) shows only while one of its cards does.
       document.querySelectorAll('#cards .cardgroup').forEach(function (g) { g.hidden = !g.querySelector('.card:not([hidden])'); });
     });
+  });
+  // T-46 3h: the filter follows the address when its # changes, so "Free tools" in this page's own menu filters.
+  window.addEventListener('hashchange', function () {
+    btns.forEach(function (b) { if (location.hash === '#' + b.getAttribute('data-f')) b.click(); });
   });
 })();
 </script>

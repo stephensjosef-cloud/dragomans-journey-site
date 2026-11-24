@@ -4,7 +4,7 @@ import sys
 CSS = r"""
 .lay{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);grid-template-areas:'pick paper' 'acts paper';grid-template-rows:auto 1fr;gap:28px;align-items:start}
 .lay>.a-pick{grid-area:pick}.lay>.a-paper{grid-area:paper}.lay>.a-acts{grid-area:acts}
-@media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'pick' 'paper' 'acts';grid-template-rows:none}.lay>.a-acts{margin-top:-12px}}
+@media (max-width:900px){.lay{grid-template-columns:minmax(0,1fr);grid-template-areas:'pick' 'paper' 'acts';grid-template-rows:none}.lay>.a-acts{margin-top:-12px}.lay>.a-paper{position:static!important}}
 .row2{padding:2px 0 6px}
 .row2 .fold{min-height:48px;font-size:14px}
 .ed{display:grid;grid-template-columns:72px minmax(0,1fr) 48px;gap:8px;align-items:center;padding:2px 0 14px;font-family:'Instrument Sans','Helvetica Neue',system-ui,sans-serif}
@@ -37,6 +37,7 @@ CSS = r"""
 """
 
 BODY = r"""
+  <noscript><p style="margin:0;font-size:17px;color:#3B4540">This tool needs JavaScript to run.</p></noscript>
   <div class="lay">
     <div style="display:flex;flex-direction:column;gap:24px;min-width:0" class="noprint a-pick">
       <section class="panel" aria-labelledby="a-h">
@@ -138,12 +139,12 @@ function renderReceipt(){
   });
   if(!c.rows.length){f.innerHTML='<p class="c" style="padding:24px 0">Nothing rung up yet.</p>';updateBring(c);return}
   var weeks=c.tot/40, fin=finishDate(c.tot);
-  var backWeek=c.back*c.rate/50, payback=backWeek>0?Math.ceil(1500/backWeek):0;
+  var backWeek=c.back*c.rate/50, payback=backWeek>0?Math.ceil(3000/backWeek):0;
   f.innerHTML='<hr><div class="rl tot"><span>TOTAL</span><span>'+money(c.tot*c.rate)+'</span></div><div class="rl"><span>Hours</span><span>'+hrs(c.tot)+'</span></div>'+
     '<div class="rl"><span>Full work weeks</span><span>'+(Math.round(weeks*10)/10)+'</span></div><hr>'+
     '<p style="margin:0">Done all at once, starting New Year\'s Day, you\'d finish on</p><p class="big2">'+fin.toLocaleDateString('en-US',{month:'long',day:'numeric'})+'</p><hr>'+
     '<div class="rl tot"><span>You could get back</span><span>'+money(c.back*c.rate)+'</span></div><div class="rl"><span>Hours</span><span>'+hrs(c.back)+'</span></div>'+
-    (payback?'<p style="margin:10px 0 0">At that pace, a $1,500 Blueprint pays for itself in about <b>'+payback+' week'+(payback===1?'':'s')+'</b>.</p>':'')+
+    (payback?'<p style="margin:10px 0 0">At that pace, a Build from $3,000 would pay for itself in about <b>'+payback+' week'+(payback===1?'':'s')+'</b>.</p>':'')+
     '<hr><p class="c">KEEP THIS RECEIPT<br>THANK YOU FOR COUNTING</p>';
   updateBring(c);
 }
