@@ -2070,6 +2070,60 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 **Josef, by hand:** wait for Claude's look, then say push it in the Dragoman's Journey chat.
 
+**Nov 24, FIX-R2c** (no offers to show client work; "anything in orange")
+
+- **Why:** Josef, Nov 24: a client's footage, code and app are never shown to a prospect, so the site never offers to; the hint must match what's orange (the first orange item on the Reels tab is words, "An evening").
+- **Commit:** `317be36` T-49: FIX-R2c, no offers to show client work; anything in orange. Then "T-49 receipt: FIX-R2c" (this text). On `trip/T-49` from `4ec429a`; main still `8329d80`.
+- **Gate 0a PASS:** origin/trip/T-49 was `4ec429a`, origin/main `8329d80`.
+- **Gate 0b PASS:** full build of a scratch copy of origin/trip/T-49 (git worktree): `out-themed/` equals its root, 75 of 75, byte for byte.
+- **What changed (source):** `_build/enhance.py`, commented "T-49 R2c":
+  - FOOT's reels and app footnotes are empty strings.
+  - LOCAL_CSS gets `#rc-src-foot:empty{display:none}`, so the empty footnote takes no space in the card.
+  - The hint reads "Tap anything in orange to see where it comes from."
+  - `enhance_local()` stops the build if "open any of them on a call", "share my screen" or "orange number" is still on the page, or if the hint or the CSS rule isn't there exactly once.
+  - `_build/plain.py`: its rewrite of the Apps footnote is removed. The line it rewrote is gone, and plain.py stops the build on an edit that misses. It now applies 254 edits instead of 255.
+- **What changed (root):** `local.html` only.
+- **Removed and added** (visible text, scripts and styles stripped):
+  - `-Tap any orange number to see where it comes from.`
+  - `+Tap anything in orange to see where it comes from.`
+  - In the page's script, both footnotes are gone. These no longer show on the Reels and Apps tabs, which now show no footnote:
+    - `-These logs hold a client's footage, so they stay private. I'll open any of them on a call.`
+    - `-This is a client's app, so the code stays private. I'll share my screen and run the checks while you watch.`
+  - In the page's style: `+#rc-src-foot:empty{display:none}`.
+  - The method footnote "All of it is public. Open the repo and check it yourself." is unchanged.
+
+**C1 (gate) PASS.** Full build from clean `out/` and `out-themed/` finished. Root equals `out-themed/`, 75 of 75.
+
+**C2 (gate) PASS.** Against the 0b baseline, the only changed root file is `local.html` (74 of 75 the same). sitemap.xml unchanged.
+
+**C3 (gate) PASS.** In `local.html`, scripts included:
+- "open any of them on a call" 0, "share my screen" 0, "orange number" 0.
+- "Tap anything in orange to see where it comes from." 1; "Tap any orange number" was there 1 time before.
+- The method footnote line in FOOT is the same, once before and once after.
+
+**C4.** Older asserts not run, which will now fail, both in `_build/test_new.py`, section `local-page`:
+- line 1016, "reels foot text" (wants "stay private" in `#rc-src-foot`)
+- line 1019, "app foot text" (wants "share my screen" in `#rc-src-foot`)
+
+Lines 3735 and 3748 only use "orange number" in their check names. Line 4407 reads enhance.py's `foot.innerHTML = djNb(esc(FOOT[tab] || ''))`, which is unchanged. No undo file (t33, t34, t35, t46) holds these strings.
+
+**Step 3, other offers to show a client's work (searched, not changed):** none found in the repo root's visible text or scripts. The search covered every root .html and llms.txt for: on a call, show you, I'll show, share my, screen share, open the log, open any, stays private, while you watch, footage, the log, client's, on request, walk through, private, confidential. Close calls left alone, none of them an offer to show a client's work:
+- index: "I'll show you, in plain words, what it can do for your business."
+- index: "you watch it work before you decide to go ahead": the prospect's own tool.
+- local: the drop-in "look at it together": the visitor's own binder or clips.
+- local: the COBOL tab's "Open the repo": Josef's own public repo.
+- local: the reels tab's notes "The client's three notes..." and "Every reel waits for the client's yes...": about the client, not showing their work.
+- briefing: "Please don't send source code or production data here."
+
+**Not looked at:** everything visual. Not seen at 390 or 320: the Reels and Apps tabs with no footnote, or the new hint.
+
+**Differed from this plan:**
+- The prompt named two places for the orange hint in enhance.py: the Results card and the "One shoot, one finished reel" card. There is one. enhance.py writes the hint once, under the heading "One shoot, one finished reel", which the later passes rename to the Results card's "Forty reels, one engine." So it changed in its one place, and C3's count is 1 before and 1 after.
+- The edits are in enhance.py's source text, which can't apply twice. The checks run after them, in `enhance_local()`, as listed above.
+- plain.py changed too (see source), or the build would stop.
+- The local `out/` and `out-themed/` were cleared before the final build, so they were built fresh.
+- Every command ran on its own this time.
+
 ---
 
 ## T-48 · FIX-R2: two sides, support optional, three lines, R-02 fixes · DONE (build)
