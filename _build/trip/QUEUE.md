@@ -2057,10 +2057,10 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 - **Asserts not updated, none run (11-21 rule):** `test_new.py` sections that count sitemap URLs, llms.txt lines, `MENU_PAGES` or the pages `enhance.py` copies, and T-46's visible-text checks on local.html (no `un47()` was added); expect them to need the two pages and the two links if a full run is ever asked for.
 - **Differed from this plan:** the look pass served the fonts from npm (fontsource) because fonts.googleapis.com is blocked here; the reviewer's fixes went in after its read, with no second reviewer.
 - **Added Nov 24, 10:10 AM** (Josef: "we call it \"your pile\" way too often, that is not a common phrase"), commit `586d9f2`: every "pile" a reader can see is gone (10 places; the rest are code names and #pile= addresses, kept so links don't break). Old → new: Local "Start here. What do you have a pile of?" → "Start here. What would you hand me?"; Local "Bring your pile" → "Bring the work"; Local "Free tools for your pile" → "Free tools"; start.html step 1 "What do you have a pile of?" → "What would you hand me?", its summary label "My pile" → "What I'd hand off", its missing-field line "what you have a pile of (step 1)" → "what you'd hand me (step 1)"; work.html and studio.html "Your pile could be next" → "Yours could be next"; both samples "Want a plan like this for your pile?" → "Want a plan like this of your own?". Checks: visible-text diff per page is exactly these lines; no visible "pile" on any page; 390 and 320 with real fonts on local, start, work, studio and the samples, no sideways scroll; axe clean on all six.
+- **Added Nov 24, 10:15 AM** (Josef: "i will always do support, if they purchased from me there is always support (as long as they pay the small monthly fee)"), commit `95c9662`: the Blueprint sample's price row "Support, if she wants it" → "Support and the monthly report" ($750 a month). sitemap.xml: start and work `lastmod` 2026-11-24 (they changed in the pile commit). Checked: visible-text diff is that one line; 390 and 320 no sideways scroll; axe clean.
 - **Josef, by hand:**
   1. Look at the two pages' words and screenshots (sent in chat), and the "pile" replacements.
-  2. Say whether the monthly report comes with support.
-  3. Say "push it" in the Dragoman's Journey chat.
+  2. Say "push it" in the Dragoman's Journey chat.
 
 ---
 
