@@ -2035,6 +2035,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-46 · The launch fixes from the two reviews and Josef's four calls · READY
+
+**Why:** Nov 23, 2026: review/R-01's `R-01.md` and `R-01b.md` (two independent pre-marketing reviews); Josef's calls: split payment, "See it working in a week", a reply by the next weekday afternoon, keep the tool for good; "go".
+
+**Done when:** every item in steps 2 to 5 is built, the visible-text diff of every page contains only the approved words, the checks in step 7 pass, T-46's receipt is filled in, and trip/T-46 is pushed. main moves only on Josef's "push it" in this session.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
