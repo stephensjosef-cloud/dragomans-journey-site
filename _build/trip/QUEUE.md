@@ -2002,6 +2002,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-45 · The home line becomes the dragoman line · READY
+
+**Why:** Nov 23, 2026: Josef on the old line under "AI, made easy.", "this reads as condescending ... i want to love it"; on the new line, "love it, lets go".
+
+**Done when:** index.html shows the new line exactly, nothing else on the site changed, the checks in step 4 pass, T-45's receipt is filled in, trip/T-45 is pushed. main moves only on Josef's "push it" in this session.
+
+**Receipt:**
+
+---
+
 ## T-13 · The first drop-in date · GATED
 
 **Gate:** Josef gives Claude the date, the hours and the place.
