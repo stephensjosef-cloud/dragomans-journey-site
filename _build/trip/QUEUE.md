@@ -2035,6 +2035,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-48 · FIX-R2: two sides, support optional, three lines, R-02 fixes · READY
+
+**Why:** Josef ruled on Nov 24 that the site speaks to small businesses at his standard rate, with nonprofits as one short word-of-mouth section; that support is optional; that boards are welcome; and he picked new words for three lines two strangers called AI. Every word below is approved exactly as written; where this prompt says "judgment", favor what a busy small-business owner on a phone needs at that spot.
+
+**Done when:** every change in A to E is in the built pages at the repo root, the checks in F pass, T-48's receipt in _build/trip/QUEUE.md is filled in, and trip/T-48 is pushed. main does not move.
+
+**Receipt:**
+
+---
+
 ## T-47 · Proof: a sample Blueprint and a sample monthly report · DONE (build)
 
 **Why:** Nov 24, 2026: after T-46 the fresh reviewer (the nonprofit skeptic) scored the site 5 of 10 and asked for a sample Blueprint, a sample monthly report and a worked busywork example. PROOF-1 (vault: `Claude outputs/dragomans-journey/prompt-PROOF-1.md`), a Duet build (ruled Nov 24): one made-up bakery carried through the real Blueprint days and its first monthly report, labeled as made up on every page.
