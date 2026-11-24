@@ -2035,13 +2035,31 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-47 · Proof: a sample Blueprint and a sample monthly report · READY
+## T-47 · Proof: a sample Blueprint and a sample monthly report · DONE (build)
 
 **Why:** Nov 24, 2026: after T-46 the fresh reviewer (the nonprofit skeptic) scored the site 5 of 10 and asked for a sample Blueprint, a sample monthly report and a worked busywork example. PROOF-1 (vault: `Claude outputs/dragomans-journey/prompt-PROOF-1.md`), a Duet build (ruled Nov 24): one made-up bakery carried through the real Blueprint days and its first monthly report, labeled as made up on every page.
 
 **Done when:** `sample-blueprint.html` and `sample-report.html` are built from `tools/samples.py`, linked from Local's Day 14 line and monthly report block and from each other, in the sitemap, llms.txt and share cards; checks 4a to 4f pass; this receipt is filled in; trip/T-47 is pushed. main moves only on Josef's "push it".
 
 **Receipt:**
+- **Status: DONE (build), Nov 24, 2026.** A Duet build (ruled Nov 24): run by Claude in its own cloud workspace from the vault prompt PROOF-1. Nothing is live until Josef says "push it". No Worker touched; `main` not moved.
+- **Branch:** `trip/T-47`, cut from `origin/main` `16cd0ef`. Commits: `f5d4f36` this item (READY), `b344f0c` the work, and this receipt in the commit after it.
+- **Built:** `tools/samples.py` writes `sample-blueprint.html` and `sample-report.html` with `chrome.page()` (no "More free tools" line; not in `chrome.TOOLS` or `FREE_TOOLS`). Registered in `enhance.py` (`add_pages`, `MENU_PAGES`, `TOOL_PAGES`, the em-dash loop), `final.py` `DARK_PAGES`, `build.py` sitemap, `tools/og.py` pages. `voice2.py` P1-a and P1-b add Local's two links. Share cards drawn by `tools/og.py` for the two new pages only (a driver narrowing its page list; og.py's own list now names them).
+- **Checks:**
+  - **4a PASS:** against origin/main, the only changed files are the ones above, plus `sitemap.xml` (two new URLs; `lastmod` 2026-11-24 on local and the Studio pages) and `llms.txt` (two new lines). The three Studio pages differ only in their build-day stamp (11-24); no other difference after the dates are removed.
+  - **4b PASS:** Local's visible text gains exactly "See a sample plan →" and "See a sample report →", nothing else.
+  - **4c PASS:** each new page: one h1, one `main#main`, Menu, skip link, "Sample · a made-up bakery" kicker, "made up" in the lede; every link on both pages and on Local resolves to a root file.
+  - **4d PASS:** 390 and 320, real fonts (12 of 12 faces loaded, served from the npm fontsource packages because Google Fonts is blocked in this workspace): scrollWidth equals the viewport on both new pages and Local; no page errors.
+  - **4e PASS:** axe-core 4.10.3 (wcag2a, 2aa, 21a, 21aa, best-practice) at 390 on both new pages and Local: no violations.
+  - **Voice checker** (`voiceCheck()` from voicecheck.html) on every sentence of both pages: no marks; the first draft's flat-rhythm note on the Blueprint page is gone after the reviewer fixes.
+  - **4f, fresh reviewer** (the nonprofit skeptic, 390 screenshots, quoted brief): **7 of 10** (was 5). Believes now: the tool holds what it can't read, nothing goes out without the owner's yes, the report admits breakage, he'd say you don't need him. Fixed from its findings: Day 7's flat run of short sentences merged; "Nobody has to learn an app." and "She'd keep the plan either way." out; the launch date now reads "The second Monday after she says go." (Local promises a launch date); the build $3,600 (was exactly the $3,000 minimum); "4 of 4" now under "Sundays the bake sheet was ready by 6 PM"; "Missed orders (2 the month before) 0"; "Most took her a minute or two." Not changed, for Josef: whether the monthly report comes with support (the sample implies it does); the report shows time saved rather than money brought in (busywork); the small kicker. No second reviewer pass on the fixed words.
+- **Looked at:** both new pages full length at 390, Local's How it works at 390 (the Day 14 link and the monthly report block). Not looked at: 1440, Safari, a real phone.
+- **Asserts not updated, none run (11-21 rule):** `test_new.py` sections that count sitemap URLs, llms.txt lines, `MENU_PAGES` or the pages `enhance.py` copies, and T-46's visible-text checks on local.html (no `un47()` was added); expect them to need the two pages and the two links if a full run is ever asked for.
+- **Differed from this plan:** the look pass served the fonts from npm (fontsource) because fonts.googleapis.com is blocked here; the reviewer's fixes went in after its read, with no second reviewer.
+- **Josef, by hand:**
+  1. Look at the two pages' words and screenshots (sent in chat).
+  2. Say whether the monthly report comes with support.
+  3. Say "push it" in the Dragoman's Journey chat.
 
 ---
 
