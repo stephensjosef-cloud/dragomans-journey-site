@@ -114,8 +114,8 @@ function renderLines(){
   }).join('');
 }
 function calc(){
-  var rate=parseFloat(document.getElementById('rate').value)||0,tot=0,back=0;
-  var rows=lines.map(function(l){var h=(parseFloat(l.min)||0)/60*PER[l.per][1];var b=h*V[l.v][1];tot+=h;back+=b;return {l:l,h:h,b:b}});
+  var rate=Math.max(0,parseFloat(document.getElementById('rate').value)||0),tot=0,back=0;   /* T-48 E6: never below 0 */
+  var rows=lines.map(function(l){var h=Math.max(0,parseFloat(l.min)||0)/60*PER[l.per][1];var b=h*V[l.v][1];tot+=h;back+=b;return {l:l,h:h,b:b}});
   return {rows:rows,tot:tot,back:back,rate:rate};
 }
 function finishDate(h){var d=new Date(new Date().getFullYear()+1,0,1),left=h;while(left>0){var w=d.getDay();if(w>0&&w<6)left-=8;if(left>0)d.setDate(d.getDate()+1)}return d}
@@ -176,7 +176,7 @@ renderLines();renderReceipt();
 
 write(sys.argv[1], "receipt.html",
       title="Busywork Receipt",
-      description="A free calculator for small businesses and nonprofits: ring up the chores that eat your week and see what they cost in a year, and which ones could honestly come back.",
+      description="A free calculator for small businesses: ring up the chores that eat your week and see what they cost in a year, and which ones could honestly come back.",
       kicker="Free tool",
       h1="Ring up your<br>busywork",
       lede="Tap the chores that eat your week. See what a year of them costs you.",

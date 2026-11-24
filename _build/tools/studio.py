@@ -490,7 +490,9 @@ def build(studio, shipped, today):
     assert rows, "shipped.json: nothing to show in the last 120 days"
     n, oldest = numbers(rows)
     strip = (f'\n  <div class="stats" id="stats" data-built="{today.isoformat()}">'
-             f'\n    <p><strong>{n}</strong> {"thing" if n == 1 else "things"} finished since {short_date(oldest, today)}</p>'
+             # T-48 E8 (Nov 24, 2026): "since" names the strip's first date, the Monday of the oldest line's week,
+             # so the count and the chart's axis start on the same day.
+             f'\n    <p><strong>{n}</strong> {"thing" if n == 1 else "things"} finished since {short_date(monday(oldest), today)}</p>'
              '\n  </div>')
     # T-42: every line is in the page and shows with scripts off; with scripts on, SCRIPT shows
     # the 8 newest (data-more marks the rest) and "See all" (hidden until then).

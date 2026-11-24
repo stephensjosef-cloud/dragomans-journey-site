@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reel Shot List · Dragoman's Journey</title>
-<meta name="description" content="A free planner for small businesses and nonprofits: pick what you run and get the 10 phone clips to film, in edit order and in one-lap shooting order.">
+<meta name="description" content="A free planner for small businesses: pick what you run and get the 10 phone clips to film, in edit order and in one-lap shooting order.">
 <link rel="canonical" href="https://dragomansjourney.com/shotlist.html">
 <meta property="og:title" content="Reel Shot List · Dragoman's Journey">
-<meta property="og:description" content="A free planner for small businesses and nonprofits: pick what you run and get the 10 phone clips to film, in edit order and in one-lap shooting order.">
+<meta property="og:description" content="A free planner for small businesses: pick what you run and get the 10 phone clips to film, in edit order and in one-lap shooting order.">
 <meta property="og:site_name" content="Dragoman's Journey">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dragomansjourney.com/shotlist.html">
@@ -76,6 +76,7 @@ p,li,dd,dt,td,th,span,strong,figcaption{text-wrap:pretty}:is(h1,h2,h3,h4,button,
 .spot ol{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px}
 .spot li{display:flex;gap:10px;font-size:15px}
 .spot li b{font-family:'JetBrains Mono',monospace;font-size:13px;min-width:2.2em;color:#A93F17}
+.spot li .ed{white-space:nowrap;color:#3B4540;font-size:14px}
 .rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:16px}
 .r-hook{background:#F6C9B5}.r-place{background:#D9E4D2}.r-hands{background:#F2DEA8}.r-process{background:#F2DEA8}.r-detail{background:#E6DCF0}
 .r-people{background:#CFE0EE}.r-customer{background:#CFE0EE}.r-reveal{background:#F6C9B5}.r-sign{background:#D9E4D2}.r-call{background:#16201C;color:#F2EDE1!important}
@@ -289,6 +290,11 @@ function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
 var SOON=42;   // days out when the countdown starts to show (T-16)
 function daysUntil(d){var t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/864e5)}
 function fmt(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+function nth(n){return n+(n===1?'st':n===2?'nd':n===3?'rd':'th')}
+function shoot(T,clips){   // T-48: [[spot, [clip, ...]], ...] in one lap, each clip with its filming number
+  var groups={},k=0;clips.forEach(function(c){(groups[c.spot]=groups[c.spot]||[]).push(c)});
+  return Object.keys(T.spots).filter(function(s){return groups[s]}).map(function(s){return [s,groups[s].map(function(c){return {film:++k,c:c}})]});
+}
 
 function captions(role){
   var T=TYPES[st.type], g=st.goal, thing=T.thing;
@@ -331,17 +337,16 @@ function render(){
   // The countdown shows only from 42 days out to the day itself (T-16); farther out, nothing.
   document.getElementById('when').hidden=!(d>=0&&d<=SOON);
   document.getElementById('days').textContent=d===0?'Today':d+(d===1?' day':' days');
-  document.getElementById('dayslabel').textContent=d===0?(name+' is today. Post it this morning.'):('until '+name+', '+fmt(target)+'. Film this week, post the week before.');
+  // T-48: under a week out there is no week before to post in, so film now and post on the day.
+  document.getElementById('dayslabel').textContent=d===0?(name+' is today. Post it this morning.'):('until '+name+', '+fmt(target)+(d<7?'. Film now and post on the day.':'. Film this week, post the week before.'));
   document.getElementById('strip').innerHTML=clips.map(function(c){return '<span class="r-'+c.role+'" style="flex:'+c.sec+'">'+c.no+'</span>'}).join('');
   document.getElementById('striplabel').textContent=st.len+' seconds, 10 clips. Hook first, the ask last.';
   document.getElementById('edit').innerHTML=clips.map(function(c){
     return '<div class="clip"><span class="no">'+c.no+'</span><span class="role r-'+c.role+'">'+ROLE_NAME[c.role]+'</span><span class="sec">'+c.sec+' s</span><p>'+djNw(c.text)+'</p>'+
       (c.cap?'<p class="cap">On-screen text: <b>'+djNw(c.cap)+'</b></p>':'')+'</div>';
   }).join('');
-  var groups={};clips.forEach(function(c){(groups[c.spot]=groups[c.spot]||[]).push(c)});
-  var spotOrder=Object.keys(T.spots).filter(function(s){return groups[s]});
-  document.getElementById('shoot').innerHTML=spotOrder.map(function(s,i){
-    return '<div class="spot"><h3>Stop '+(i+1)+': '+T.spots[s]+'</h3><ol>'+groups[s].map(function(c){return '<li><b>#'+c.no+'</b><span>'+djNw(c.text)+'</span></li>'}).join('')+'</ol></div>';
+  document.getElementById('shoot').innerHTML=shoot(T,clips).map(function(g,i){
+    return '<div class="spot"><h3>Stop '+(i+1)+': '+T.spots[g[0]]+'</h3><ol>'+g[1].map(function(f){return '<li><b>'+f.film+'</b><span>'+djNw(f.c.text)+' <span class="ed">'+nth(f.c.no)+' in the video.</span></span></li>'}).join('')+'</ol></div>';
   }).join('');
   var rules=['Hold the phone upright, the way people watch.','Count to five on every clip, then stop. Short clips are easy to trim and impossible to stretch.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
   document.getElementById('rules').innerHTML=rules.map(function(r){return '<li>'+djNw(r)+'</li>'}).join('');
@@ -354,8 +359,7 @@ document.addEventListener('click',function(e){
 document.getElementById('copy').addEventListener('click',function(){
   var T=TYPES[st.type];
   var txt='Reel shot list: '+T.label+', '+st.len+' seconds ('+GOALS[st.goal].label.toLowerCase()+')\n\nTHE EDIT\n'+window._dj.map(function(c){return c.no+'. '+ROLE_NAME[c.role]+' ('+c.sec+' s): '+c.text+(c.cap?'  On-screen: "'+c.cap+'"':'')}).join('\n');
-  var g={};window._dj.forEach(function(c){(g[c.spot]=g[c.spot]||[]).push('#'+c.no)});
-  txt+='\n\nTHE SHOOT (one lap)\n'+Object.keys(T.spots).filter(function(s){return g[s]}).map(function(s){return T.spots[s]+': '+g[s].join(', ')}).join('\n');
+  txt+='\n\nTHE SHOOT (one lap)\n'+shoot(T,window._dj).map(function(g){return T.spots[g[0]]+':\n'+g[1].map(function(f){return f.film+'. '+f.c.text+' ('+nth(f.c.no)+' in the video)'}).join('\n')}).join('\n');
   txt+='\n\nFrom dragomansjourney.com/shotlist.html';
   djCopy(txt,'Shot list');
 });

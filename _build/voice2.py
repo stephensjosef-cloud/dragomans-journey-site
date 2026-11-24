@@ -344,6 +344,65 @@ text('mainframe.html', '>Four steps, each with a fixed scope and a fixed price<'
 text('mainframe.html', '<p style="margin: 0; font-size: 14px; color: #5D6576; max-width: 72ch">Limits, plainly:',
      '<p style="margin: 0; max-width: 72ch">Limits, plainly:', ref='T46-3m')
 
+# ---------------- T-48 (Nov 24, 2026, FIX-R2): two sides, support optional, three lines, R-02 fixes ----------------
+# Josef's words, exactly as approved (old, then new). Only lines a pass before this one writes (the canvas through
+# plain.py and intent.py, and the edits above) change here; the descriptions change in plain.py (home) and build.py
+# (Local), the tools in tools/*.py, start, work and case-reels in their templates. Each edit first checks that its new
+# words aren't already on the page, then has to hit exactly once.
+def t48(page, old, new, ref):
+    if new in pages[page]:
+        problems.append('%s %s: already applied  (%s)' % (ref, page, new[:80]))
+        return
+    text(page, old, new, ref)
+
+
+# R2-1 (A1): the home intro, after the dragoman line.
+t48('index.html', "Out there, AI is loud and confusing. In here, I'll walk you through it one plain step at a time.",
+    "There's a lot of hype around AI. I'll show you, in plain words, what it can do for your business.", ref='R2-1')
+# R2-2 (D1): the Local Route card on the home page (R2 above wrote it).
+t48('index.html', '>For shops and nonprofits around Sonoma County. ', '>For small businesses around Sonoma County. ', ref='R2-2')
+# R2-3 (A2) and R2-4 (A3): Local, after the month-two story. "one-page" keeps the no-break span final.py gives it.
+t48('local.html', 'I build for month two from the start.',
+    "So I build it and test it on your real work, the way you'll use it every day. Everything I build is intended to keep working long after the demo.",
+    ref='R2-3')
+t48('local.html', 'Every month you get a one-page report you can read in a minute.',
+    'With support, every month you get a one-page report you can read in a minute.', ref='R2-4')
+# R2-5 (A4): About, the last paragraph's last sentence.
+t48('local.html', 'That system is why the work comes out right.',
+    'It catches mistakes, including mine, before you see the work.', ref='R2-5')
+# R2-6 (B1): the busywork card's price line (R9 above wrote it). final.py reads the offer's description from this line.
+t48('local.html', '<strong>Build from $3,000</strong> · support from $750/month</p>',
+    '<strong>Build from $3,000</strong> · optional support from $750/month</p>', ref='R2-6')
+# R2-7 (C1) and R2-8 (D4): "We're a good fit if".
+t48('local.html', '<li>One person on your side can say yes.</li>',
+    '<li>Someone on your side can say yes within two weeks.</li>', ref='R2-7')
+t48('local.html', '<li>Small businesses and nonprofits in Sonoma County and the North Bay. Remote works too.</li>',
+    '<li>Small businesses in Sonoma County and the North Bay. Remote works too.</li>', ref='R2-8')
+# R2-9 (D5): the monthly report step. The sentence keeps its period; P1-b's sample link stays after the paragraph.
+t48('local.html', 'One page you can read in a minute and send to your board. It shows',
+    'One page you can read in a minute. It shows', ref='R2-9')
+# R2-10 (D7): Nonprofits, a short section after the fit and not-a-fit cards, before About, inside the same band.
+# Its heading is set like "We're a good fit if" (h3, same face, weight and size); the text is the page's own body text.
+# No new colors. Not in the header or the Menu.
+t48('local.html',
+    '    </div>\n  </div>\n</section>\n\n<!-- ============ LETTER ============ -->',
+    '    </div>\n'
+    '\n    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 64ch">'
+    "\n      <h3 id=\"nonprofits\" style=\"margin: 0; font-family: 'Big Shoulders Display', Impact, sans-serif; font-weight: 800; text-transform: uppercase; font-size: 30px\">Nonprofits</h3>"
+    '\n      <p style="margin: 0">I do the same work for nonprofits at a steep discount. I like building for people who do good work. Most of these jobs come by word of mouth, so if someone sent you, tell me on the call.</p>'
+    '\n    </div>\n'
+    '  </div>\n</section>\n\n<!-- ============ LETTER ============ -->',
+    ref='R2-10')
+# R2-11 (E2): each quiz pick's link goes to its own card in "Three ready to go", not the top of the section.
+# The cards get ids; the picks' links (in the page's state data) point at them. "Not sure" keeps #blueprint.
+for k, cta in (('reels', 'See reels'), ('app', 'See custom apps'), ('flow', 'See automation')):
+    t48('local.html', '<article class="card-lift" data-card="%s"' % k,
+        '<article id="engine-%s" class="card-lift" data-card="%s"' % (k, k), ref='R2-11')
+    t48('local.html', '"href": "#engines", "cta": "%s"' % cta, '"href": "#engine-%s", "cta": "%s"' % (k, cta), ref='R2-11')
+# R2-12 (E9): Day 1.
+t48('local.html', 'I come to you, anywhere in Sonoma County, and watch',
+    'I come to you, anywhere in Sonoma County, or we meet on a video call, and watch', ref='R2-12')
+
 # ---------------- write ----------------
 if problems:
     print('VOICE: %d edit(s) missed, nothing written:' % len(problems))

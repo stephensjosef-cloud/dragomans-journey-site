@@ -374,7 +374,7 @@ def build_local():
     page(
         "local.html",
         "The Local Route · Dragoman's Journey",
-        "Reels, apps and workflows for Sonoma County small businesses and nonprofits, made from what you already have and checked by a person before anything reaches your customers.",
+        "Reels, apps and workflows for Sonoma County small businesses, made from what you already have and checked by a person before anything reaches your customers.",
         SITE + "local.html",
         helmet, body, script,
     )

@@ -43,7 +43,7 @@ BODY = r"""
         <textarea id="cap" spellcheck="true">Fresh sourdough comes out of the oven at 7 every morning. Come early, because the first batch is always gone by 9.</textarea>
       </section>
 
-      <div class="a-len"><label class="label" for="secs" style="display:block">How long is your clip?</label>
+      <div class="a-len"><label class="label" for="secs" style="display:block">How long is your clip? (1 to 60 seconds)</label>
         <div style="display:flex;gap:8px;align-items:center"><input id="secs" type="number" min="1" max="60" step="0.5" value="7.5" style="width:96px"><span>seconds</span></div></div>
 
       <p class="verdict a-vd" id="verdict" role="status"><span class="dot" id="v-dot" aria-hidden="true"></span><span id="v-text"></span></p>
@@ -188,7 +188,8 @@ function render(){
   MAXW=maxW();
   cards=text?splitCards(text,2):[];
   if(st.card>=cards.length)st.card=0;
-  var secs=parseFloat(document.getElementById('secs').value)||0;
+  var rawS=document.getElementById('secs').value.trim(),secs=parseFloat(rawS)||0,badLen=rawS!==''&&!(secs>=1&&secs<=60);   /* T-48 E5 */
+  if(badLen)secs=0;
   var need=cards.reduce(function(a,c){return a+readSecs(c.text)},0);
   var sub=document.getElementById('k-sub');sub.hidden=cards.length<2;sub.textContent=cards.length>1?('Two lines fit on a phone, so this caption shows in '+cards.length+' parts. Tap one to see it.'):'';
   document.getElementById('cards').style.setProperty('--k',String(SIZES[st.size][1]/MAXW));
@@ -202,6 +203,7 @@ function render(){
     hits=hits.filter(function(x,i,a){return a.indexOf(x)===i});
     if(st.app==='none')v.push(['warn','No app picked. Pick the one you post to and this checks whether its buttons cover your words.']);
     else v.push(hits.length?['bad','On '+APPS[st.app].label+', the app\'s own text or buttons cover screen '+hits.join(', ')+'. Move it to the middle or use a smaller size.']:['ok','Clear of the buttons and caption area on '+APPS[st.app].label+'.']);
+    if(badLen)v.push(['warn','A clip here runs 1 to 60 seconds. Type a length in that range to check the timing.']);
     if(secs){v.push(need>secs?['bad','Reading all of it takes about '+need+' seconds and the clip is '+secs+'. Cut words or hold the clip longer, or people scroll before they finish.']:['ok','About '+need+' seconds to read, and the clip runs '+secs+'. Time to spare.'])}
     var big=cards.some(function(c){return c.lines.some(function(l){return measure(l)>MAXW+1})});
     if(big)v.push(['bad','One word is too wide for the screen at this size. Pick a smaller size.']);
@@ -209,7 +211,7 @@ function render(){
   }
   document.getElementById('verdicts').innerHTML=v.map(function(x){return '<li><span class="dot '+x[0]+'" aria-hidden="true"></span><span>'+x[1]+'</span></li>'}).join('');
   /* The one line under the phone (T-18): covered first, then too long, then good to go. */
-  var one=!cards.length?['warn','Type a caption to check it.']:(st.app!=='none'&&hits.length)?['bad','The app\'s buttons cover part of it. Move it up.']:(secs&&need>secs)?['bad','Too long for this clip. People need about '+need+' seconds and your clip is '+secs+'.']:['ok','Good to go. It fits, and people can read it in time.'];
+  var one=!cards.length?['warn','Type a caption to check it.']:(st.app!=='none'&&hits.length)?['bad','The app\'s buttons cover part of it. Move it up.']:badLen?['warn','Type a clip length from 1 to 60 seconds.']:(secs&&need>secs)?['bad','Too long for this clip. People need about '+need+' seconds and your clip is '+secs+'.']:['ok','Good to go. It fits, and people can read it in time.'];
   document.getElementById('v-dot').className='dot '+one[0];
   var vt=document.getElementById('v-text');if(vt.textContent!==one[1])vt.textContent=one[1];
 }
@@ -224,6 +226,7 @@ document.addEventListener('click',function(e){
 });
 document.getElementById('cap').addEventListener('input',function(){clearTimeout(render.t);render.t=setTimeout(render,120)});
 document.getElementById('secs').addEventListener('input',render);
+document.getElementById('secs').addEventListener('change',function(e){var x=parseFloat(e.target.value);if(!isNaN(x)){var c=Math.min(60,Math.max(1,x));if(c!==x)e.target.value=c}render()});
 document.getElementById('bg').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var img=new Image();img.onload=function(){bgImg=img;render()};img.src=URL.createObjectURL(f)});
 document.getElementById('png').addEventListener('click',function(){if(cards.length)pngFor(st.card)});
 document.getElementById('pngall').addEventListener('click',function(){var i=0;(function next(){if(i<cards.length)pngFor(i++,function(){setTimeout(next,350)})})()});
@@ -240,5 +243,5 @@ write(sys.argv[1], "captions.html",
       h1="Can people read the words on your video?",
       lede="Type the words that go on your video. See them on a phone, and find out if people can read them before they're gone.",
       css=CSS, body=BODY, script=SCRIPT, folds=True,
-      cta_h="Rather hand it off?", cta_p="Captions are one step of the reels I make for local businesses and nonprofits. Start with a free 15-minute call.",
+      cta_h="Rather hand it off?", cta_p="Captions are one step of the reels I make for local businesses. Start with a free 15-minute call.",
       cta_href="call.html", cta_btn="Free 15-minute call")

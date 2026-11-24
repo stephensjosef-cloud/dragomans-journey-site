@@ -60,7 +60,7 @@ BLUEPRINT = "".join([
             "Anything it can't read goes to her first. Invoices are drafted for her, and none go out until she says yes.")
         + "<h3>What stays the same</h3>" + p("The cafes order the way they always have, by text, email or voicemail.")
         + "<h3>The price</h3>" + rows([("The Build, fixed", "$3,600"), ("Less the Blueprint", "−$1,500"),
-                                       ("Left to pay for the build", "$2,100"), ("Support and the monthly report", "$750 a month")])
+                                       ("Left to pay for the build", "$2,100"), ("Optional support and the monthly report", "$750 a month")])
         + "<h3>Launch date</h3>" + p("The second Monday after she says go.")
         + "<h3>What it should save</h3>" + p("Most of her four hours on Sunday nights. The monthly report will show the real number.")
         + "<h3>If the answer had been no</h3>" + p("With five cafes or fewer, I'd have told her a free shared order form would do the job.")),
@@ -71,15 +71,16 @@ REPORT = "".join([
     panel("THE ORDER TOOL · FIRST MONTH", "What it did", rows([
         ("Orders read", "212"), ("Sundays the bake sheet was ready by 6 PM", "4 of 4"),
         ("Invoices drafted", "44"), ("Invoices sent without her yes", "0"),
-        ("Missed orders (2 the month before)", "0"),
+        ("Missed orders (2 the month before)", "1"),
+        ("Brought in: orders that used to slip through", "4, about $310"),
     ])),
     panel("", "Held for her", p(
         "9 orders. Six were photos of handwritten notes, two asked for an item that isn't on the list yet, and one cafe wanted to change its standing order.",
         "Most took her a minute or two.")),
     panel("", "What it saved", p("Sunday nights went from about four hours of typing to about 25 minutes of checking.")),
     panel("", "What broke, and how I fixed it", p(
-        "On the 9th, one cafe started ordering from a new email address. Its order landed with the held ones instead of on the week's list.",
-        "She saw it there, and I added the new address that afternoon. Nothing was missed.")),
+        "On the 9th, one cafe started ordering from a new email address, and its order went missing for a day.",
+        "The cafe called, she filled it that afternoon, and I added the new address the same day.")),
     panel("", "Next month", p("Two new cafes start on the 1st. They're set up already.")),
     '<p class="next"><a href="sample-blueprint.html">See the plan this tool came from →</a></p>',
 ])

@@ -278,9 +278,11 @@ function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-
       while ((fm = fre.exec(s))) { if (triad(fm)) S.marks.push({level: 4, rule: 'f', hit: at({hit: fm[0], at: fm.index}), at: fm.index}); }
     });
     // g: a question answered by the very next sentence, short, starting with It, That, This, You, We, I or The.
+    // T-48: a request ("Can you ask...?", "Could we...?", "Would you mind...?") asks someone to do something; it isn't a stage move.
+    var ASK = /^(?:(?:can|could|would|will) (?:you|we|i|someone|somebody|anyone)|may i|would you mind|do you mind|mind if|please)\b/i;
     sents.forEach(function (S, i) {
       var nx = sents[i + 1];
-      if (/\?$/.test(S.text) && nx && nx.text.length <= 80 && /^(?:It|That|This|You|We|I|The)\b/.test(nx.text))
+      if (/\?$/.test(S.text) && !ASK.test(plainCopy(S.text).trim()) && nx && nx.text.length <= 80 && /^(?:It|That|This|You|We|I|The)\b/.test(nx.text))
         S.marks.push({level: 4, rule: 'g', hit: null, at: null});
     });
     // h: three sentences in a row of 2 to 6 words each; the first of the three is marked, and the next run starts after them.
@@ -357,7 +359,7 @@ function djNw(s){return String(s).replace(/(^|[\s(“"'‘])([A-Za-z0-9]+-[A-Za-
       return;
     }
     var hit = R.sentences.map(function (S, i) { S.i = i; return S; }).filter(function (S) { return S.marks.length; });
-    hit.sort(function (a, b) { return a.marks[0].level - b.marks[0].level || a.i - b.i; });
+    // T-48: in the order they appear in the text (each card still lists its own marks worst first).
     var m = R.sentences.length, n = hit.length;
     // T-42 W1: the noun agrees with the count; W3: no mark but a flat rhythm says so.
     $('res-h').textContent = !n ? (R.rhythm ? 'No sentence has a mark, but the rhythm reads flat.'

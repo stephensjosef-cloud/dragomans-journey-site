@@ -369,7 +369,8 @@ EDITS = [
 
     # ---------------- search and link-preview descriptions ----------------
     ('Two routes, one guide: AI productions for Sonoma County small businesses and nonprofits, and proof of behavioral equivalence for COBOL migrations.',
-     'AI, made easy. Josef Stephens builds AI tools for Sonoma County small businesses and nonprofits, and proves COBOL migrations work for banks.'),
+     # T-48 D2 (Nov 24, 2026): small businesses only; nonprofits have their own short section on Local.
+     'AI, made easy. Josef Stephens builds AI tools for Sonoma County small businesses, and proves COBOL migrations work for banks.'),
     ('An equivalence harness that runs the original and the migrated COBOL system over the same files and compares every byte they write, with evidence your auditors can rerun.',
      'Moving off COBOL with AI? I build a tool that runs your old and new systems on the same real data, flags every difference, and gives your auditors proof they can check.'),
 

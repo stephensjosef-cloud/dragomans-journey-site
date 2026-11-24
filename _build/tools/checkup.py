@@ -338,7 +338,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
 
 write(sys.argv[1], "checkup.html",
       title="Website Checkup",
-      description="A free check for small businesses and nonprofits: paste your site's address and get a plain report of what's broken, and whether a machine can read your facts.",
+      description="A free check for small businesses: paste your site's address and get a plain report of what's broken, and whether a machine can read your facts.",
       kicker="Free tool",
       h1="Website<br>checkup",
       lede="Paste your website's address. You get a plain list of what's broken, worst first, and whether AI tools can find your business.",
