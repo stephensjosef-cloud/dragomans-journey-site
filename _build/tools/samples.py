@@ -42,7 +42,7 @@ def panel(day, h, inner):
     d = f'<p class="day">{esc(day)}</p>' if day else ""
     return f'<section class="panel">{d}<h2>{esc(h)}</h2>{inner}</section>'
 
-CTA = dict(cta_h="Want a plan like this for your pile?",
+CTA = dict(cta_h="Want a plan like this of your own?",
            cta_p="Two weeks, $1,500. Half after the Day 7 sample, and it comes off the price if you go ahead.",
            cta_href="start.html", cta_btn="Start a Blueprint →")
 

@@ -121,7 +121,7 @@ a{color:#A93F17}a:hover{color:#17212B}
     <section class="step" aria-labelledby="s1">
       <span class="step-n">01</span>
       <div>
-        <h2 id="s1">What do you have a pile of?</h2>
+        <h2 id="s1">What would you hand me?</h2>
         <p class="hint">Pick the closest. We'll sort out the details on Day 1.</p>
         <div class="chips" role="group" aria-labelledby="s1" data-key="pile" data-single="1">
           <button type="button" class="chip" aria-pressed="false" data-value="Phone videos nobody has time to edit">Videos or photos nobody has time to edit</button>
@@ -289,7 +289,7 @@ a{color:#A93F17}a:hover{color:#17212B}
     return f;
   }
   function summary(f) {
-    var labels = [['name', 'Name'], ['email', 'Email'], ['phone', 'Phone'], ['org', 'Business or program'], ['run', 'What I run'], ['pile', 'My pile'], ['never', 'The part that never gets done'], ['yes', 'Who says yes'], ['when', 'When'], ['days', 'Good days for Day 1'], ['heard', 'How I found you']];
+    var labels = [['name', 'Name'], ['email', 'Email'], ['phone', 'Phone'], ['org', 'Business or program'], ['run', 'What I run'], ['pile', 'What I\'d hand off'], ['never', 'The part that never gets done'], ['yes', 'Who says yes'], ['when', 'When'], ['days', 'Good days for Day 1'], ['heard', 'How I found you']];
     return labels.filter(function (l) { return f[l[0]]; }).map(function (l) { return l[1] + ': ' + f[l[0]]; }).join('\n');
   }
   var err = document.getElementById('bp-err');
@@ -299,7 +299,7 @@ a{color:#A93F17}a:hover{color:#17212B}
     ev.preventDefault();
     var f = fields();
     var missing = [];
-    if (!f.pile) missing.push('what you have a pile of (step 1)');
+    if (!f.pile) missing.push('what you\'d hand me (step 1)');
     if (!f.name) missing.push('your name');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) missing.push('an email I can reply to');
     if (missing.length) { showErr('Almost there. I still need ' + missing.join(', ') + '.'); return; }

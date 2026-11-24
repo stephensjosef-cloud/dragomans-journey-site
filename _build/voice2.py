@@ -328,6 +328,10 @@ text('local.html', "Or a straight answer that you don't need me.</span>",
 text('local.html', "anything that broke and how I fixed it.</p>",
      "anything that broke and how I fixed it. <a href=\"sample-report.html\" style=\"color: #A93F17; font-weight: 600; white-space: nowrap\">See a sample report →</a></p>",
      ref='P1-b')
+# T-47 (Nov 24, 2026, Josef: "we call it \"your pile\" way too often, that is not a common phrase"): "pile" off Local's headings.
+text('local.html', '>Start here. What do you have a pile of?</h2>', '>Start here. What would you hand me?</h2>', ref='P1-c')
+text('local.html', '>Bring your pile</h2>', '>Bring the work</h2>', ref='P1-d')
+text('local.html', '>Free tools for your pile</h2>', '>Free tools</h2>', ref='P1-e')
 text('mainframe.html', '{"k": "Lines changed", "v": "1"}', '{"k": "Lines changed", "v": "2"}', ref='T46-4f')
 text('mainframe.html', 'Fixing that one line took both from unusable to mostly correct.',
      "Fixing that line, along with a second change I didn't control for, took both from unusable to mostly correct.",
