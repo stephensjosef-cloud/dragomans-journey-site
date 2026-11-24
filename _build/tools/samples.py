@@ -60,7 +60,7 @@ BLUEPRINT = "".join([
             "Anything it can't read goes to her first. Invoices are drafted for her, and none go out until she says yes.")
         + "<h3>What stays the same</h3>" + p("The cafes order the way they always have, by text, email or voicemail.")
         + "<h3>The price</h3>" + rows([("The Build, fixed", "$3,600"), ("Less the Blueprint", "−$1,500"),
-                                       ("Left to pay for the build", "$2,100"), ("Support, if she wants it", "$750 a month")])
+                                       ("Left to pay for the build", "$2,100"), ("Support and the monthly report", "$750 a month")])
         + "<h3>Launch date</h3>" + p("The second Monday after she says go.")
         + "<h3>What it should save</h3>" + p("Most of her four hours on Sunday nights. The monthly report will show the real number.")
         + "<h3>If the answer had been no</h3>" + p("With five cafes or fewer, I'd have told her a free shared order form would do the job.")),
