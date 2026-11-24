@@ -369,12 +369,15 @@ def un33(s, name=None):
 # T-34 block proves it: each page of out/ through un34(), themed by theme.py, is origin/main's root page byte for byte. Every older
 # check that read a page through un33() now reads it through un33(un34()), and un30() calls un34() first. Idempotent.
 T34_H1, T34_H1_OLD = 'AI, made easy.', 'AI, made easy'
-T34_LINE = "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I know how to run them. Hand me the job that never gets done, and I'll take it from here."
+T45_LINE_OLD = "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I know how to run them. Hand me the job that never gets done, and I'll take it from here."   # T-34's line, as un45() puts it back
+T45_LINE = "Hey, I'm Josef, your dragoman. That's the old word for the guide travelers trusted in a strange land. Out there, AI is loud and confusing. In here, I'll walk you through it one plain step at a time."
+T34_LINE = T45_LINE   # T-45 (Nov 23, 2026): the line the built home page shows is the dragoman line; every check that expects T34_LINE on the built site now expects it
 T34_LINE_OLD = "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I already know how to run them. Tell me the job that never gets done, and I'll take it from here."
 T34_UNDO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 't34_undo.json'), encoding='utf-8'))
 
 
 def un34(s, name=None):
+    s = un45(s, name)   # T-45: the dragoman line back to T-34's line first, so t34_undo.json still matches
     s = un44(s, name)   # T-44: the picture viewer out first
     if name not in T34_UNDO:
         return s
@@ -503,6 +506,17 @@ def un44(s, name=None):
     s = _r44.sub(r'\n\.top>\.zm\{width:100%;max-width:560px\}\n@media \(min-width:800px\)\{\.top\.has-log>\.zm\{grid-area:img\}\}\n', '', s, count=1)
     s = _r44.sub(r'\na\.zm\{position:relative;.*?\n@media \(prefers-reduced-motion:reduce\)\{\.zv,[^\n]*\}\}\n', '', s, count=1, flags=_r44.S)
     s = _r44.sub(r'\n\(function\(\)\{\nvar D=document,R=D\.documentElement;.*?\n\}\)\(\);\n', '', s, count=1, flags=_r44.S)
+    return s
+
+
+# T-45 (Nov 23, 2026): the line under "AI, made easy." on index.html becomes the dragoman line (voice2.py V1). un45(s, name)
+# puts T-34's line back, so un34() (which calls it first) still matches t34_undo.json, which holds T-34's line and was not
+# edited. Only index.html holds the line. Idempotent: on a page that already has T-34's line nothing matches.
+def un45(s, name=None):
+    if name != 'index.html':
+        return s
+    for new, old in ((T45_LINE, T45_LINE_OLD), (T45_LINE.replace("'", '&#39;'), T45_LINE_OLD.replace("'", '&#39;'))):
+        s = s.replace(new, old)
     return s
 
 

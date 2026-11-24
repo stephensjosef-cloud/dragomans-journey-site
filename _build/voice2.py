@@ -43,7 +43,7 @@ def item(page, old_bold, old_line, new_bold, new_line, ref):
 # ---------------- Home (index.html), T-17 ----------------
 text('index.html',
      "I'm Josef. I build AI tools that take real work off your plate, and I explain every one of them in plain English. Pick the one that sounds like you, and I'll take it from here.",
-     "Hey, I'm Josef. Take a deep breath. AI is a set of power tools, and I know how to run them. Hand me the job that never gets done, and I'll take it from here.",   # T-34 (Nov 20, 2026)
+     "Hey, I'm Josef, your dragoman. That's the old word for the guide travelers trusted in a strange land. Out there, AI is loud and confusing. In here, I'll walk you through it one plain step at a time.",   # T-34 (Nov 20, 2026); T-45 (Nov 23, 2026)
      ref='V1')
 text('index.html',
      "For small businesses and nonprofits in Sonoma County. Hand me the videos you never get to, the lessons in a binder or the chore that eats your week. I'll turn it into reels, an app with your name on it, or a chore that runs itself, and show you that it works.",
