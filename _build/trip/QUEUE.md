@@ -2035,13 +2035,40 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-49 · FIX-R2b: with support, and planned, on Local · READY
+## T-49 · FIX-R2b: with support, and planned, on Local · DONE (build)
 
 **Why:** Josef ruled on Nov 24 that support is optional and that the 40 reels are planned. T-48 changed most places; three lines on Local still say otherwise. The words are exact, as Josef wrote them.
 
 **Done when:** the three lines read as approved on the built local.html at the repo root, the checks C1 to C3 pass, T-49's receipt is filled in, and trip/T-49 is pushed. main does not move.
 
-**Receipt:**
+**Receipt:** Nov 24, 2026. DONE (build), on branch `trip/T-49`, not on main.
+
+- **Branch and commits:** `trip/T-49` from origin/main `8329d80` (gate 0a: main had moved to T-48's receipt commit, so 8329d80 or later holds). `a2e8617` T-49: queue item (READY). `c68e4c7` T-49: FIX-R2b (voice2.py and the built `local.html`). Then "T-49 receipt" (this text). main still `8329d80`.
+- **Gate 0b PASS.** Scratch copy of origin/main (a git worktree, so the sitemap's lastmod is computed), full build from the tool pages through step 6d: `out-themed/` equals that root, 75 of 75 files, byte for byte (the Studio pages too, built the same day).
+- **What changed (source):** `_build/voice2.py`, a new T-49 block (R2b-1 twice, R2b-2, R2b-3), each through `t48()`, which checks first that the new words aren't already on the page, then has to hit exactly once.
+- **What changed (root):** `local.html` only. `sitemap.xml` is unchanged: local.html's lastmod was already 2026-11-24 from T-48, and today is still Nov 24 in Los Angeles.
+- **Removed and added** (visible text of local.html, scripts, styles and head stripped):
+  - `-I test it before it goes live. Each month you get one page showing what it did and anything it held for a person to check.`
+  - `+I test it before it goes live. With support, each month you get one page showing what it did and anything it held for a person to check.`
+  - `-Reels in the series40`
+  - `+Reels planned in the series40`
+  - `-One page you can read in a minute. It shows what the tool did, what it brought in, and anything that broke and how I fixed it. See a sample report →`
+  - `+With support, one page you can read in a minute. It shows what the tool did, what it brought in, and anything that broke and how I fixed it. See a sample report →`
+  - In the page's script, the reels tab's data row `"k": "Reels in the series"` became `"k": "Reels planned in the series"`, so the tab shows the same words after a tap.
+
+**C1 (gate) PASS.** Full build finished; `out-themed/` copied to the root; root equals `out-themed/`, 75 of 75.
+
+**C2 (gate) PASS.** Against the 0b baseline, the only changed root file is `local.html` (74 of 75 the same).
+
+**C3 (gate) PASS.** The visible-text diff is exactly the three changes above. "Reels in the series" appears 0 times in `local.html`, scripts included. The raw diff of `local.html` is 4 lines: the three text lines and the one script data line; the JSON-LD did not change.
+
+**Not looked at:** everything visual. No browser here, so the three lines were not seen at any width, including 390 and 320.
+
+**Differed from this plan:**
+- Early on, before any change, I chained a few read-only git and ls commands with `;` and `&&` (fetch and log; a detached checkout of origin/main and the listings). Against the rule; nothing was changed by them. Once more near the end, a read-only em-dash check (grep, then a diff count, joined with `;`; it found none added). Every other command ran on its own, and the build ran through small Python driver scripts in the scratchpad that call each README step as its own command.
+- og.py (4c) was not run: no headline or description changed.
+
+**Josef, by hand:** wait for Claude's look, then say push it in the Dragoman's Journey chat.
 
 ---
 
