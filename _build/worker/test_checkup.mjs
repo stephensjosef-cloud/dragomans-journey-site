@@ -70,7 +70,11 @@ for (const [ip, priv] of [['10.1.2.3', true], ['172.16.0.1', true], ['172.31.255
   check(`IPv4 ${ip} is ${priv ? 'private' : 'public'}`, T.isPrivateIPv4(ip) === priv);
 }
 for (const [ip, priv] of [['::1', true], ['fd12:3456::1', true], ['fe80::1', true], ['::ffff:10.0.0.1', true],
-  ['::ffff:8.8.8.8', false], ['2606:4700:4700::1111', false], ['2001:db8::1', true]]) {
+  ['::ffff:8.8.8.8', false], ['2606:4700:4700::1111', false], ['2001:db8::1', true],
+  // T-50 H-47: old site-local fec0::/10, and 6to4 (2002::/16) wrapping a private or loopback IPv4; 6to4 wrapping a
+  // public one stays public.
+  ['fec0::1', true], ['fec0:1:2::3', true], ['feff::1', true], ['2002:7f00:1::', true], ['2002:c0a8:101::1', true],
+  ['2002:a00:1::', true], ['2002:a9fe:a9fe::', true], ['2002:808:808::1', false]]) {
   check(`IPv6 ${ip} is ${priv ? 'private' : 'public'}`, T.isPrivateIPv6(ip) === priv);
 }
 const zone = { 'shop.example': ['93.184.216.34'], 'rebind.example': ['192.168.0.10'], 'v6.example': ['2606:4700::6810:1'],

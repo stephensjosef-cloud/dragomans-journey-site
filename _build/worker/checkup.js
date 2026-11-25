@@ -16,6 +16,9 @@ const MAX_BYTES = 1572864;     // 1.5 MB of the page, at most
 const MAX_LINKS = 25;          // links checked, at most
 const RATE_S = 20;             // one check per IP every 20 seconds
 const BUDGET = 46;             // outside requests per check: the Workers Free plan allows 50
+// T-50 H-37: the whole check ends inside 75 seconds, well inside checkup.html's 2-minute wait. Requests share it;
+// a link not tried by then is reported untested, not broken.
+const DEADLINE_MS = 75000;
 const BLOCKED_SUFFIX = [".localhost", ".local", ".internal", ".home.arpa", ".lan", ".intranet", ".corp", ".private"];
 
 // The AI crawlers, by their robots.txt names, from each company's own docs (read Nov 12, 2026).
@@ -51,12 +54,29 @@ function isPrivateIPv6(ip) {
   const v4 = /(?:^|:)(\d+\.\d+\.\d+\.\d+)$/.exec(s);           // ::ffff:10.0.0.1 and friends
   if (v4) return isPrivateIPv4(v4[1]);
   if (/^::ffff:/.test(s)) return true;
-  const first = parseInt(s.split(":")[0] || "0", 16);
+  const g = groups6(s);
+  if (!g) return true;                    // not an address we can read: refuse it
+  const first = g[0];
+  // T-50 H-47: 6to4 (2002::/16) carries an IPv4 address in its next 32 bits; refuse it when that one is private.
+  if (first === 0x2002) return isPrivateIPv4([g[1] >> 8, g[1] & 255, g[2] >> 8, g[2] & 255].join("."));
   return (first & 0xfe00) === 0xfc00 ||   // fc00::/7 unique local
     (first & 0xffc0) === 0xfe80 ||        // fe80::/10 link local
+    (first & 0xffc0) === 0xfec0 ||        // fec0::/10 site local (old, T-50 H-47)
     (first & 0xff00) === 0xff00 ||        // multicast
     first === 0x2001 && parseInt(s.split(":")[1] || "0", 16) === 0x0db8 ||   // documentation
     first === 0 || first === 0x64;        // ::/8 and 64:ff9b:: (translation)
+}
+// The eight 16-bit groups of an IPv6 address, "::" filled in. null: not one.
+function groups6(s) {
+  const halves = s.split("::");
+  if (halves.length > 2) return null;
+  const part = (x) => (x ? x.split(":") : []);
+  const a = part(halves[0]), b = halves.length === 2 ? part(halves[1]) : [];
+  const fill = halves.length === 2 ? 8 - a.length - b.length : 0;
+  if (fill < 0 || (halves.length === 1 && a.length !== 8)) return null;
+  const all = [...a, ...Array(fill).fill("0"), ...b];
+  if (all.length !== 8 || all.some((x) => !/^[0-9a-f]{1,4}$/.test(x))) return null;
+  return all.map((x) => parseInt(x, 16));
 }
 const isIPv4 = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h);
 
@@ -118,11 +138,18 @@ async function dohResolve(host) {
   return out;
 }
 
-function timer() {
+// With deps, a request also stops at the check's deadline: its timer is cut short to what is left ("short").
+// Time used is the clock, or the timeouts that ran out if that's more (the checks run one after another).
+function timer(deps) {
   const ctl = new AbortController();
-  const t = setTimeout(() => ctl.abort(), TIMEOUT_MS);
+  let ms = TIMEOUT_MS, short = false;
+  if (deps && deps.started !== undefined) {
+    const left = DEADLINE_MS - Math.max(Date.now() - deps.started, deps.waited || 0);
+    if (left < ms) { ms = Math.max(0, left); short = true; }
+  }
+  const t = setTimeout(() => { if (deps) deps.waited = (deps.waited || 0) + ms; ctl.abort(); }, ms);
   if (t && t.unref) t.unref();
-  return { signal: ctl.signal, stop: () => clearTimeout(t) };
+  return { signal: ctl.signal, stop: () => clearTimeout(t), short, out: ms <= 0 };
 }
 async function withTimeout(go) {
   const k = timer();
@@ -141,13 +168,15 @@ function spend(deps, n) {
 async function safeFetch(url, method, deps) {
   let current = url;
   for (let hop = 0; hop <= MAX_HOPS; hop++) {
+    if (deps.started !== undefined && Math.max(Date.now() - deps.started, deps.waited || 0) >= DEADLINE_MS) return { error: "deadline", url: current };
     const p = parseTarget(current);
     if (p.error) return { error: p.error, url: current };
     const why = await dnsProblem(new URL(p.url).hostname, deps);
     if (why) return { error: why, url: p.url };
-    if (!spend(deps, 1)) return { error: "budget", url: p.url };
     // The 8 seconds cover the answer and reading its body (readCapped), so the timer runs on.
-    const k = timer();
+    const k = timer(deps);
+    if (k.out) { k.stop(); return { error: "deadline", url: p.url }; }
+    if (!spend(deps, 1)) { k.stop(); return { error: "budget", url: p.url }; }
     let r;
     try {
       r = await deps.fetch(p.url, {
@@ -156,7 +185,7 @@ async function safeFetch(url, method, deps) {
       });
     } catch (e) {
       k.stop();
-      return { error: k.signal.aborted ? "timeout" : "unreachable", url: p.url };
+      return { error: k.signal.aborted ? (k.short ? "deadline" : "timeout") : "unreachable", url: p.url };
     }
     if (r.status >= 300 && r.status < 400 && r.headers.get("Location")) {
       k.stop();
@@ -170,15 +199,16 @@ async function safeFetch(url, method, deps) {
   return { error: "too-many-redirects", url: current };
 }
 
-// Read at most `limit` bytes of a body. Returns { text, bytes, cut }.
+// Read at most `limit` bytes of a body. Returns { text (as UTF-8), data, bytes, cut, broke }.
+// T-50 H-29: "cut" is only the 1.5 MB limit; a body that stops arriving (dropped or timed out) is "broke".
 async function readCapped(response, limit) {
-  if (!response.body) return { text: "", bytes: 0, cut: false };
+  if (!response.body) return { text: "", data: new Uint8Array(0), bytes: 0, cut: false, broke: false };
   const reader = response.body.getReader();
   const chunks = [];
-  let bytes = 0, cut = false;
+  let bytes = 0, cut = false, broke = false;
   while (true) {
     let step;
-    try { step = await reader.read(); } catch (e) { cut = true; break; }   // timed out mid-page
+    try { step = await reader.read(); } catch (e) { broke = true; break; }   // dropped or timed out mid-page
     const { done, value } = step;
     if (done) break;
     if (bytes + value.length > limit) {
@@ -191,15 +221,26 @@ async function readCapped(response, limit) {
   const all = new Uint8Array(bytes);
   let at = 0;
   for (const c of chunks) { all.set(c, at); at += c.length; }
-  return { text: new TextDecoder("utf-8").decode(all), bytes, cut };
+  return { text: new TextDecoder("utf-8").decode(all), data: all, bytes, cut, broke };
+}
+// T-50 H-32: the page's own character set, from the Content-Type header or a meta tag near the top; UTF-8 otherwise.
+function decodePage(data, ctype) {
+  let cs = (/charset\s*=\s*["']?([\w.:-]+)/i.exec(ctype || "") || [])[1];
+  if (!cs) {
+    const head = new TextDecoder("latin1").decode(data.slice(0, 2048));
+    cs = (/<meta\b[^>]*charset\s*=\s*["']?([\w.:-]+)/i.exec(head) || [])[1];
+  }
+  try { return new TextDecoder(cs || "utf-8").decode(data); } catch (e) { return new TextDecoder("utf-8").decode(data); }
 }
 
 // ---------------------------------------------------------------- reading the page
 const decode = (s) => String(s || "")
   .replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
   .replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'")
-  .replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(Number(n)))
-  .replace(/&#x([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, 16)));
+  .replace(/&#(\d+);/g, (m, n) => codePoint(Number(n)))
+  .replace(/&#x([0-9a-f]+);/gi, (m, n) => codePoint(parseInt(n, 16)));
+// T-50 H-36: a character number that names no character is skipped, so one bad one can't stop the check.
+function codePoint(n) { return n > 0 && n <= 0x10ffff && !(n >= 0xd800 && n <= 0xdfff) ? String.fromCodePoint(n) : ""; }
 const squash = (s) => decode(s).replace(/\s+/g, " ").trim();
 function attr(tag, name) {
   const m = new RegExp("\\s" + name + "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s>]+))", "i").exec(tag);
@@ -254,16 +295,21 @@ function actionLinks(html, base) {
   while ((m = rx.exec(html))) {
     const tag = "<" + m[1] + m[2] + ">";
     const inner = m[3];
-    const label = squash(inner.replace(/<[^>]+>/g, " ")) || attr(tag, "aria-label") || attr(tag, "title") ||
+    let label = squash(inner.replace(/<[^>]+>/g, " ")) || attr(tag, "aria-label") || attr(tag, "title") ||
       (attr(inner, "alt") || "");
     const isA = m[1].toLowerCase() === "a";
     const href = isA ? attr(tag, "href") : attr(tag, "formaction") || attr(tag, "data-href");
     const kind = actionKind(label, href || "");
     if (!kind) continue;
+    // T-50 H-51: a button with no words (a picture with no alt text) is named by where it goes.
+    let unnamed = false;
+    if (!label.trim() && href) {
+      try { const u = new URL(href, base), b = new URL(base); label = (u.host === b.host ? "" : u.host.replace(/^www\./, "")) + u.pathname; unnamed = !!label; } catch (e) {}
+    }
     if (!isA && href === null) { out.push({ kind, label: label.slice(0, 80), tag: "button", status: "script" }); continue; }
     const c = classifyHref(href, base);
     if (c.kind === "anchor" || c.kind === "other") continue;
-    out.push({ kind, label: label.slice(0, 80), tag: isA ? "a" : "button", href: href || "", ...(c.kind === "check" ? { url: c.url } : { status: "nowhere" }) });
+    out.push({ kind, label: label.slice(0, 80), ...(unnamed ? { unnamed } : {}), tag: isA ? "a" : "button", href: href || "", ...(c.kind === "check" ? { url: c.url } : { status: "nowhere" }) });
   }
   return out;
 }
@@ -328,12 +374,18 @@ function robotsAllows(groups, agent, path) {
   }
   return !best || best.allow;
 }
+// T-50 H-31: noindex is one of the comma-separated rules ("noindex", "none", "googlebot: noindex"), never a value of
+// another rule ("max-image-preview:none").
+function noindex(content) {
+  return String(content || "").toLowerCase().split(",").some((part) =>
+    part.trim().replace(/^(?!max-|unavailable_after)[a-z0-9_-]+\s*:\s*/, "").split(/\s+/).some((d) => d === "noindex" || d === "none"));
+}
 function aiReaders(robotsTxt, path, metas, xRobots) {
   const groups = parseRobots(robotsTxt);
   const bots = AI_BOTS.map((b) => ({ ...b, allowed: robotsAllows(groups, b.name, path) }));
   const starBlocksAll = groups.some((g) => g.agents.includes("*")) && !robotsAllows(groups, "*", "/");
-  const noindexMeta = metas.some((m) => (m.name === "robots" || m.name === "googlebot" || /bot$/.test(m.name)) && /\b(noindex|none)\b/i.test(m.content));
-  const noindexHeader = /\b(noindex|none)\b/i.test(String(xRobots || ""));
+  const noindexMeta = metas.some((m) => (m.name === "robots" || m.name === "googlebot" || /bot$/.test(m.name)) && noindex(m.content));
+  const noindexHeader = noindex(xRobots);
   return {
     bots,
     answerBlocked: bots.filter((b) => b.kind === "answer" && !b.allowed).map((b) => b.name),
@@ -397,6 +449,7 @@ function structuredData(html) {
     business: {
       type,
       has: { name: !!best.name, address: !!best.address, telephone: !!best.telephone, openingHours: !!(best.openingHours || best.openingHoursSpecification), url: !!best.url },
+      areaServed: !!(best.areaServed || best.serviceArea),   // T-50 H-46: says it serves an area rather than a shop
       name: flat(best.name).slice(0, 200), address: flat(best.address).slice(0, 300),
       telephone: flat(best.telephone).slice(0, 60), openingHours: hoursText(best).slice(0, 300), url: flat(best.url).slice(0, 300)
     }
@@ -407,7 +460,9 @@ function structuredData(html) {
 const PHONE_RX = /(?:\+?1[\s.-]?)?\(?\b([2-9]\d{2})\)?[\s.-]?([2-9]\d{2})[\s.-](\d{4})\b/g;
 const DAY = "(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day|sday|nesday|rsday|urday)?\\.?";
 const TIME = "(?:\\b\\d{1,2}(?::\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?)|\\b\\d{1,2}:\\d{2}\\b|\\bnoon\\b|\\bmidnight\\b)";
-const HOURS_RX = new RegExp("\\b" + DAY + "[^.]{0,40}?" + TIME + "|" + TIME + "[^.]{0,40}?\\b" + DAY + "\\b", "i");
+// T-50 H-30: hours written the everyday way, "Mon-Fri 9-5", count too: a day, then a range of bare hours.
+const SPAN = "\\b\\d{1,2}(?::\\d{2})?\\s*(?:-|\\u2013|\\u2014|to)\\s*\\d{1,2}(?::\\d{2})?\\b(?![-/\\d])";
+const HOURS_RX = new RegExp("\\b" + DAY + "[^.]{0,40}?(?:" + TIME + "|" + SPAN + ")|" + TIME + "[^.]{0,40}?\\b" + DAY + "\\b", "i");
 const STREET_RX = /\b\d{1,6}\s+(?:[NSEW]\.?\s+)?(?:[A-Z0-9][\w.'-]*\s+){0,4}(?:St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Dr|Drive|Ln|Lane|Way|Ct|Court|Pl|Place|Hwy|Highway|Pkwy|Parkway|Cir|Circle|Ter|Terrace|Sq|Square|Trl|Trail)\b\.?/;
 const digits = (s) => { const d = String(s || "").replace(/\D/g, ""); return d.length === 11 && d[0] === "1" ? d.slice(1) : d; };
 function textFacts(html, sd) {
@@ -443,23 +498,38 @@ async function checkLink(url, deps) {
   if (!r.error && [400, 403, 404, 405, 501].includes(r.status)) {
     const g = await safeFetch(url, "GET", deps);
     await done(g);
-    if (g.error !== "budget") r = g;
+    r = g;   // T-50 H-26: a GET that couldn't be sent leaves the link untested, not judged by its HEAD answer
   }
-  if (r.error === "budget") return { status: "unchecked" };
-  if (r.error) return { status: ["timeout", "unreachable", "too-many-redirects"].includes(r.error) ? "broken" : "refused", why: r.error };
+  if (r.error === "budget" || r.error === "deadline") return { status: "unchecked" };
+  // T-50 H-27: a button to a name that no longer exists is broken for every visitor.
+  if (r.error) return { status: ["timeout", "unreachable", "too-many-redirects", "no-such-host"].includes(r.error) ? "broken" : "refused", why: r.error };
   return { status: r.status >= 400 ? "broken" : "working", code: r.status };
 }
 
 async function runCheck(input, deps) {
   const t = parseTarget(input);
   if (t.error) return { ok: false, error: t.error };
-  const page = await safeFetch(t.url, "GET", deps);
-  if (page.error) return { ok: false, error: page.error, url: t.url };
+  deps.started = Date.now(); deps.waited = 0;
+  let page = await safeFetch(t.url, "GET", deps);
+  // T-50 H-25: a site that doesn't answer on https may still answer on plain http. Check that page, and the report
+  // says it isn't on https.
+  if (page.error && (page.error === "unreachable" || page.error === "timeout") && t.url.startsWith("https:")) {
+    const plain = new URL(t.url); plain.protocol = "http:";
+    const p2 = await safeFetch(plain.href, "GET", deps);
+    if (!p2.error) page = p2; else await done(p2);
+  }
+  if (page.error) return { ok: false, error: page.error === "deadline" ? "timeout" : page.error, url: t.url };
   const body = await readCapped(page.response, MAX_BYTES);
   page.stop();
   const final = new URL(page.url);
   const ctype = page.headers.get("Content-Type") || "";
-  const html = !ctype || /html|xml|text\/plain/i.test(ctype) ? body.text : "";
+  // T-50 H-33: the checkup reads web pages. A PDF, a picture or another file gets one plain line, not a page report.
+  const start = new TextDecoder("latin1").decode(body.data.slice(0, 512)).replace(/^\uFEFF?\s*/, "");
+  const looksHtml = /^</.test(start);
+  if (page.status < 400 && (/^%PDF-/.test(start) || /pdf/i.test(ctype))) return { ok: false, error: "pdf", url: page.url };
+  if (page.status < 400 && ctype && !/html|xml|text\/plain/i.test(ctype) && !looksHtml) return { ok: false, error: "not-html", url: page.url };
+  // T-50 H-28: markup inside <!-- --> isn't on the page a visitor sees, so nothing in it is read.
+  const html = (!ctype || /html|xml|text\/plain/i.test(ctype) || looksHtml ? decodePage(body.data, ctype) : "").replace(/<!--[\s\S]*?-->/g, " ");
 
   // Does the plain http address send people on to https? null: couldn't tell.
   let httpToHttps = null;
@@ -499,7 +569,7 @@ async function runCheck(input, deps) {
     ok: true,
     url: t.url, finalUrl: page.url, status: page.status, redirects: page.hops,
     https: final.protocol === "https:", httpToHttps,
-    bytes: body.bytes, cut: body.cut, contentType: ctype.slice(0, 100),
+    bytes: body.bytes, cut: body.cut, incomplete: body.broke, contentType: ctype.slice(0, 100),
     ...basics(html, page.url),
     links: links.slice(0, 60), linksChecked: checked,
     ai: { ...aiReaders(robots, final.pathname + final.search, metas, page.headers.get("X-Robots-Tag")), robotsStatus },

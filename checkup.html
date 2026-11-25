@@ -233,6 +233,9 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     timeout: "Your site took more than 8 seconds to answer. A visitor's phone would likely give up too.",
     unreachable: "Your site didn't answer. It may be down, or blocking checks like this one.",
     'too-many-redirects': 'Your address sends visitors through more than 3 redirects, so I stopped following them.',
+    // T-50 H-33: a file, not a web page
+    pdf: "That address is a PDF, not a web page. The checkup reads web pages, so try the page that links to it.",
+    'not-html': "That address is a file, not a web page. The checkup reads web pages, so try your home page.",
     budget: "That took more checking than I can do at once. Try again in a minute.",
     wait: 'One check every 20 seconds. Try again in a moment.'
   };
@@ -258,6 +261,8 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     }).join('');
   }
 
+  // T-50 H-51: a button with no words of its own is named by where it goes.
+  function btn(l) { return l.unnamed ? 'button to ' + l.label : '"' + l.label + '" button'; }
   function siteCard(r) {
     var f = [], good = [];
     if (r.status >= 400) f.push(finding('bad', 'Your page answers with an error (' + r.status + ')',
@@ -271,12 +276,12 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     var seen = {};
     broken.forEach(function (l) {
       var k = 'b' + l.label + l.url; if (seen[k]) return; seen[k] = 1;
-      f.push(finding('bad', 'Your "' + l.label + '" button ' + (l.code ? 'leads to an error page' : "leads to a page that doesn't load"),
+      f.push(finding('bad', 'Your ' + btn(l) + ' ' + (l.code ? 'leads to an error page' : "leads to a page that doesn't load"),
         cap(LOSS[l.kind]) + '.', 'A five-minute fix in your site builder: point the button at the right page.'));
     });
     nowhere.forEach(function (l) {
       var k = 'n' + l.label; if (seen[k]) return; seen[k] = 1;
-      f.push(finding('bad', 'Your "' + l.label + '" button goes nowhere',
+      f.push(finding('bad', 'Your ' + btn(l) + ' goes nowhere',
         "Unless a script on your page catches the tap, " + LOSS[l.kind] + '.',
         'A five-minute fix in your site builder: give the button a real address.'));
     });
@@ -302,7 +307,11 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     if (!r.description) f.push(finding('warn', 'Your page has no description',
       'Search results and shared links make one up from whatever text they find first.',
       "A five-minute fix in your site builder's page settings, often called SEO."));
-    if (r.cut) f.push(finding('warn', 'Your page is over 1.5 MB before any pictures',
+    // T-50 H-29: a page that stopped arriving partway is said to have stopped, not to be big.
+    if (r.incomplete) f.push(finding('warn', "Your page stopped loading partway",
+      'It stopped arriving after ' + Math.max(1, Math.round(r.bytes / 1024)) + ' KB, so a visitor may see it cut off. I checked only that part. It may be a one-off, so check again in a minute.',
+      'If it happens again, ask whoever hosts your site to look at it.'));
+    else if (r.cut) f.push(finding('warn', 'Your page is over 1.5 MB before any pictures',
       'It loads slowly on a phone with a weak signal. I only read the first 1.5 MB.',
       'Takes some digging, usually an add-on or pasted-in code. An hour with whoever built it.'));
     else if (r.bytes > 1048576) f.push(finding('warn', 'Your page is heavy: ' + (r.bytes / 1048576).toFixed(1) + ' MB before any pictures',
@@ -316,11 +325,10 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     if (r.email || r.contactForm) good.push(r.contactForm ? 'It has a contact form.' : 'It has an email address.');
     if (r.title && r.description) good.push('It has a title and a description.');
     // T-42 W8: the list names each button once (a label seen twice, at two addresses, once) and fills from the next one.
-    var names = working.map(function (l) { return l.label; }).filter(function (x, i, all) { return all.indexOf(x) === i; });
+    var names = working.map(function (l) { return l.unnamed ? 'the one to ' + l.label : '"' + l.label + '"'; }).filter(function (x, i, all) { return all.indexOf(x) === i; });
     if (working.length) good.push(working.length + (working.length === 1 ? ' button works: ' : ' buttons work: ') +
-      (names.length > 4 ? names.slice(0, 4).map(function (x) { return '"' + x + '"'; }).join(', ') + ' and more'
-        : list(names.map(function (x) { return '"' + x + '"'; }))) + '.');
-    if (!r.cut && r.bytes <= 1048576) good.push('It weighs ' + Math.max(1, Math.round(r.bytes / 1024)) + ' KB before pictures.');
+      (names.length > 4 ? names.slice(0, 4).join(', ') + ' and more' : list(names)) + '.');
+    if (!r.cut && !r.incomplete && r.bytes <= 1048576) good.push('It weighs ' + Math.max(1, Math.round(r.bytes / 1024)) + ' KB before pictures.');
     render($('finds1'), f);
     var nSite = count(f);
     $('oks1').innerHTML = good.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('');
@@ -335,7 +343,9 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
 
   // A business with no shop: its structured data names a business and the address has no digit in it
   // (or there is none). With no structured data at all we can't tell, so that case isn't this one.
-  function serviceArea(s) { return !!(s.business && !/[0-9]/.test(s.business.address || '')); }
+  // T-50 H-46: a block with no address at all says nothing about a shop, so it isn't taken for one with none; it needs
+  // a town-only address or an area it serves.
+  function serviceArea(s) { var b = s.business; return !!(b && (b.address || b.areaServed) && !/[0-9]/.test(b.address || '')); }
 
   function aiCard(r) {
     var f = [], a = r.ai, s = r.structured, x = r.facts, noShop = serviceArea(s);
@@ -358,7 +368,7 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     if (a.noindexHeader) f.push(finding('bad', 'Your server tells search engines not to list this page',
       "Google, and AI tools that search the web, leave out a page marked noindex.",
       'Needs whoever runs your hosting: the setting is called X-Robots-Tag.'));
-    if (r.status === 200 && !r.cut && x.textLength < 600) f.push(finding('bad',
+    if (r.status === 200 && !r.cut && !r.incomplete && x.textLength < 600) f.push(finding('bad',
       'Your page holds almost no text a machine can read without running scripts or reading images.',
       "Tools that don't run scripts see an almost empty page, so they can't tell what you do or where.",
       'Takes some work: put your key facts on the page as plain text, not only in pictures or widgets.'));
@@ -411,6 +421,8 @@ var CHECKUP_URL = 'https://dj-checkup.stephens-josef.workers.dev/';   // the dj-
     var v = $('site').value.trim(), go = $('go'), msg = $('msg');
     if (!v) { msg.textContent = ERR.empty; $('site').focus(); return; }
     go.disabled = true; go.textContent = 'Checking…'; msg.textContent = 'Checking ' + v + '. This can take a minute or two.';
+    // T-50 H-38: the last report goes away, so it can't sit under this check's answer.
+    $('rep1').hidden = true; $('stat').hidden = true; $('rep2').hidden = true;
     // T-41 play pass: "name:password@site.com" or "site.com:8080" typed without https:// reads to the Worker as an odd
     // scheme ("Only web addresses that start with http..."); sent with https:// in front, it gets the message that fits.
     var send = /^[^\/:?#]+:/.test(v) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(v) && !/^(?:mailto|javascript|data|tel|sms|file|ftp|about|blob|vbscript):/i.test(v) ? 'https://' + v : v;
