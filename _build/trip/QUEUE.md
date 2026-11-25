@@ -2087,6 +2087,23 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 - **Differed from this plan:** some read-only and edit commands were chained with `;` or `&&` (for example `cd` then a python edit), against the one-command rule; nothing destructive came of it. Sitemap lastmod lines say 2026-11-25 because the commit date is Nov 25 UTC. comp3's source is `_build/comp3.html`, not a tools/ script. The shotlist's hidden Dec 2 2026 caption now says Nov 30 (2027's date, matching the countdown that has rolled over). `test_board.py` reports 2 guard lines wrong about shipped.json, unrelated to T-50 and the same on main. The checkup page and Worker went in one commit.
 - **Josef, by hand:** wait for Claude's real-browser replay of the worst fixes and the look at 390 and 320; approve the C5 messages above; then Claude deploys the Worker in Josef's Chrome (saying so first) and Josef says push it.
 
+**Nov 25, FIX-H1b.** DONE (build), on `trip/T-50`, not on main. Josef approved the 28 messages with three changes. The Worker is not deployed.
+
+- **Commits:** `a416fde` T-50: FIX-H1b, three approved tool messages. Then "T-50 receipt: FIX-H1b" (this text). main still `7ebb77d`.
+- **Gates PASS.** 0a: origin/trip/T-50 `b90c0f7`, origin/main `7ebb77d`. 0b: scratch worktree of `b90c0f7` built in full through 6d; `out-themed/` equals its root, 72 of 75 files byte for byte, and the three Studio pages differ only in their build-day stamp (Nov 25 against Nov 24).
+- **1, caption fitter** (`_build/tools/captions.py`). Old: "On TikTok, the app's own text or buttons cover screen 1. Move it to the middle." New: "On TikTok, the app's own text or buttons cover the first part of your caption. Move it to the middle." Two or more parts read "the first and third parts of your caption" (three: "the first, second and third parts"); a one-part caption reads "your caption". Parts are named in words up to the twentieth, then "the 21st part". The fix advice after it is unchanged.
+- **2, shot list** (`_build/tools/shotlist.py`). Old: "Count to six on every clip, then stop. Short clips are easy to trim and impossible to stretch." New: "Count to six on every clip, then stop." (the number still follows the plan).
+- **3, checkup** (`_build/worker/checkup.js` and `_build/tools/checkup.py`). An unnamed picture button's label always starts with the link's host without "www.". Old: "Your button to /book leads to an error page", "Your button to /book goes nowhere", "the one to /order". New: "Your button that goes to goldencrust.com/book leads to an error page", "Your button that goes to goldencrust.com/book goes nowhere", "the one that goes to goldencrust.com/order".
+- **C1 PASS.** Full build, copied to the root: BUILD OK.
+- **C2 PASS.** `run_all.mjs`: 54 repros, 0 still failing.
+- **C3 PASS.** `test_checkup.mjs local.html`: 157 of 157, with 2 new cases: a same-site picture button on www.goldencrust.com is labelled "goldencrust.com/book", and an outside one "tables.example/reserve".
+- **C4 PASS.** Against the 0b baseline build, the root files that changed are captions.html, checkup.html and shotlist.html. sitemap.xml did not change (those three already said 2026-11-25).
+- **C5 PASS.** "cover screen", "impossible to stretch" and "button to " appear 0 times in the built captions.html, shotlist.html, checkup.html and in checkup.js.
+- **Repro and test edits:** `H-45-captions.mjs` looked for the words "cover screen"; it now looks for "cover the ..." or "cover your caption", the approved words, so it still catches the bug (it reports "bug not present", with the verdict "cover your caption. Move it to the top." at both spots). H-26 and H-51 needed no change. No existing Worker test expected the old label; two were added (C3).
+- **Not looked at:** everything visual (no browser here), the real clipboard, print and PNG export, the Worker on Cloudflare.
+- **Differed from this plan:** the build also rewrote the three Studio pages' build-day stamp at the root (Nov 24 to Nov 25); those are not committed, as on the baseline.
+- **Josef, by hand:** unchanged from above: Claude's real-browser replay and the look at 390 and 320; then Claude deploys the Worker in Josef's Chrome (saying so first) and Josef says push it.
+
 ---
 
 ## T-49 · FIX-R2b: with support, and planned, on Local · DONE (build)
