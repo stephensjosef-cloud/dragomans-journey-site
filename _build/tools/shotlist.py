@@ -251,7 +251,7 @@ function render(){
   // T-50 H-17: the time to film covers the longest clip the edit uses, five seconds at the least.
   var film=Math.max(5,Math.ceil(Math.max.apply(null,clips.map(function(c){return c.sec}))));
   document.getElementById('filmfor').textContent='Film each one for about '+NUMW[film]+' seconds. The number beside it is how long it stays in the finished video.';
-  var rules=['Hold the phone upright, the way people watch.','Count to '+NUMW[film]+' on every clip, then stop. Short clips are easy to trim and impossible to stretch.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
+  var rules=['Hold the phone upright, the way people watch.','Count to '+NUMW[film]+' on every clip, then stop.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
   document.getElementById('rules').innerHTML=rules.map(function(r){return '<li>'+djNw(r)+'</li>'}).join('');
   window._dj=clips;
 }

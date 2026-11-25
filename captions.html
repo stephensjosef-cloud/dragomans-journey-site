@@ -312,6 +312,13 @@ function drawCaption(c,lines,L){
   });
 }
 function hit(L,z){return !(L.x+L.w<=z[0]||L.x>=z[0]+z[2]||L.y+L.h<=z[1]||L.y>=z[1]+z[3])}
+/* FIX-H1b: the covered parts named in words: "your caption" when it is one part, else "the first part of your
+   caption" or "the first and third parts of your caption". */
+var ORD=['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth','thirteenth','fourteenth','fifteenth','sixteenth','seventeenth','eighteenth','nineteenth','twentieth'];
+function ordinal(n){if(ORD[n-1])return ORD[n-1];var t=n%100,u=n%10;return n+(t>10&&t<14?'th':u===1?'st':u===2?'nd':u===3?'rd':'th')}
+function coverName(hits,total){if(total<2)return 'your caption';
+  var w=hits.slice().sort(function(a,b){return a-b}).map(ordinal);
+  return 'the '+(w.length===1?w[0]+' part':w.slice(0,-1).join(', ')+' and '+w[w.length-1]+' parts')+' of your caption'}
 /* The screens the app's buttons would cover with the caption at position p. */
 function hitsAt(p){var save=st.pos,out=[];st.pos=p;
   cards.forEach(function(c,i){var Lc=layout(c.lines);APPS[st.app].z.forEach(function(z){if(hit(Lc,z)&&out.indexOf(i+1)<0)out.push(i+1)})});
@@ -351,7 +358,7 @@ function render(){
     if(hits.length){var to=['mid','top','low'].filter(function(p){return p!==st.pos&&!hitsAt(p).length})[0];
       fix=to?'Move it to the '+{mid:'middle',top:'top',low:'bottom'}[to]+'.':big?'Shorten the long word.':'Use a smaller size.'}
     if(st.app==='none')v.push(['warn','No app picked. Pick the one you post to and this checks whether its buttons cover your words.']);
-    else v.push(hits.length?['bad','On '+APPS[st.app].label+', the app\'s own text or buttons cover screen '+hits.join(', ')+'. '+fix]:['ok','Clear of the buttons and caption area on '+APPS[st.app].label+'.']);
+    else v.push(hits.length?['bad','On '+APPS[st.app].label+', the app\'s own text or buttons cover '+coverName(hits,cards.length)+'. '+fix]:['ok','Clear of the buttons and caption area on '+APPS[st.app].label+'.']);
     if(badLen)v.push(['warn','A clip here runs 1 to 60 seconds. Type a length in that range to check the timing.']);
     if(noLen)v.push(['warn','Type how long your clip runs to check the timing.']);
     /* T-50 H-43: "time to spare" only when there is some */

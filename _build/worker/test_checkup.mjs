@@ -158,6 +158,13 @@ check('relative links resolve against the page, without the #', T.classifyHref('
     J([['book', 'https://shop.example/book'], ['order', 'nowhere'], ['donate', 'nowhere'], ['reserve', 'script'], ['donate', 'https://pay.example/give']]), J(l));
 }
 {
+  // FIX-H1b: a picture button with no words is named by its address, always with the site's name (no "www.").
+  const html = `<a href="/book"><img src="b.png"></a><a href="https://www.tables.example/reserve"><img src="r.png"></a>`;
+  const l = T.actionLinks(html, 'https://www.goldencrust.com/');
+  check('a same-site picture button gets its host', l[0] && l[0].unnamed === true && l[0].label === 'goldencrust.com/book', J(l));
+  check('an outside picture button gets its own host, without www.', l[1] && l[1].unnamed === true && l[1].label === 'tables.example/reserve', J(l));
+}
+{
   // Whole check: a broken Book Now, a working Order, a "#" Donate, and more links than the limit.
   const many = Array.from({ length: 30 }, (_, i) => `<a href="/contact-${i}">Contact ${i}</a>`).join('');
   const home = `<!doctype html><html><head><title>Shop</title><meta name="viewport" content="width=device-width, initial-scale=1">

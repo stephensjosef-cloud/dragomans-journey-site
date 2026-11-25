@@ -301,10 +301,11 @@ function actionLinks(html, base) {
     const href = isA ? attr(tag, "href") : attr(tag, "formaction") || attr(tag, "data-href");
     const kind = actionKind(label, href || "");
     if (!kind) continue;
-    // T-50 H-51: a button with no words (a picture with no alt text) is named by where it goes.
+    // T-50 H-51: a button with no words (a picture with no alt text) is named by where it goes. FIX-H1b: always
+    // with the site's own name in front ("goldencrust.com/book"), the address a visitor would recognize.
     let unnamed = false;
     if (!label.trim() && href) {
-      try { const u = new URL(href, base), b = new URL(base); label = (u.host === b.host ? "" : u.host.replace(/^www\./, "")) + u.pathname; unnamed = !!label; } catch (e) {}
+      try { const u = new URL(href, base); label = u.host.replace(/^www\./, "") + u.pathname; unnamed = !!label; } catch (e) {}
     }
     if (!isA && href === null) { out.push({ kind, label: label.slice(0, 80), tag: "button", status: "script" }); continue; }
     const c = classifyHref(href, base);
