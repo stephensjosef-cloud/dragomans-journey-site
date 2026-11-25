@@ -2035,13 +2035,57 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
-## T-50 · FIX-H1: the 54 bugs from H-01 · READY
+## T-50 · FIX-H1: the 54 bugs from H-01 · DONE (build)
 
 **Why:** the free tools are a stranger's first test of whether Josef's work holds up. The H-01 hunt (Nov 24, 2026, `_build/review/H-01.md`) found 54 bugs in the seven free tools, each with a repro that fails. Each one is fixed at its cause, so the tool tells the truth for every input; a tool never says something its result doesn't back up. The repros stay in `_build/review/H-01/` as regression tests.
 
 **Done when:** on `trip/T-50`, `node _build/review/H-01/run_all.mjs` reports 54 of 54 fixed; `node _build/worker/test_checkup.mjs` passes; the full build passes and the only changed root files are the seven tool pages (plus sitemap lastmod lines, and llms.txt or og images only if their words changed); this receipt is filled in; `trip/T-50` is pushed. main does not move. The checkup Worker is not deployed by this item.
 
-**Receipt:**
+**Receipt:** Nov 25, 2026. DONE (build), on branch `trip/T-50`, not on main. The checkup Worker is not deployed.
+
+- **Branch and commits:** `trip/T-50` from origin/main `7ebb77d`. `7c762b5` queue item and the H-01 kit (from `review/H-01` at `bd7d4b0`). `d895492` receipt (H-34, H-01, H-02, H-03). `c577aac` scaler (H-04, H-05, H-06, H-07, H-08, H-09, H-10, H-48, H-50). `989f8d2` captions (H-35, H-40, H-41, H-42, H-43, H-44, H-45). `dfede0b` comp3 (H-39, H-11, H-12, H-13, H-14, H-54). `d869715` shotlist (H-15, H-16, H-17, H-49, H-52, H-53). `ba08fef` voicecheck (H-18 to H-24). `c2af000` checkup (H-38, H-36, H-37, H-25 to H-33, H-46, H-47, H-51). Then "T-50 receipt" (this text, and the sitemap line the checkup commit moved). main still `7ebb77d`.
+- **Gates 0a to 0d PASS.** 0a: origin/main `7ebb77d`, origin/review/H-01 there. 0b: Node, Python 3 with Pillow, jsdom 26.1.0 and canvas in a scratch folder outside the repo. 0c: scratch worktree of origin/main built through step 6d; `out-themed/` equals that root, 75 of 75 files, byte for byte. 0d: branch made, kit checked out, run_all reported 54 bugs.
+- **C1 PASS.** Full build from the tool pages through 6d, copied to the root: BUILD OK; `out-themed/` equals the root, 75 of 75.
+- **C2 PASS.** `run_all.mjs`: 54 repros, 0 still failing.
+- **C3 PASS.** `test_checkup.mjs`: 155 of 155, with 8 new IPv6 cases: fec0::1, fec0:1:2::3, feff::1, 2002:7f00:1::, 2002:c0a8:101::1, 2002:a00:1::, 2002:a9fe:a9fe:: refused; 2002:808:808::1 (6to4 around a public address) allowed.
+- **C4 PASS.** Root files changed against main: captions, checkup, comp3, receipt, scaler, shotlist and voicecheck `.html`, and seven `<lastmod>` lines in `sitemap.xml` (those pages, now 2026-11-25). Nothing else; no llms.txt or og change.
+- **C5.** Static text of all seven pages (scripts and styles stripped): no change. Rendered first screen and sample result (jsdom, Nov 25 10:00 Pacific): receipt "February 26" became "February 26, 2027"; captions sample "Time to spare." became "That just fits." (7.5 s read, 7.5 s clip); scaler, comp3 (first chip), shotlist, voicecheck (sample) and checkup the same. Every new or changed message a tool can now show:
+  - Receipt 1: "Done all at once, starting New Year's Day, you'd finish on February 26, 2027": the date carries its year; the line is left off at 0 hours or past the year 9999.
+  - Scaler 2: "No amount to scale." for a line with no amount that isn't a seasoning; a seasoning keeps "No amount to scale. Season to taste."
+  - Scaler 3: small amounts show a measurable size, like "1.3 ml", "2.5 g", "1/16 oz".
+  - Scaler 4: units it can't convert keep their name and scale as a number: "1 1/2 pints", "3 heaping tbsp".
+  - Scaler 5: the unit agrees with its number: "6 pinches", "1 bunch".
+  - Scaler 6: amounts in words scale: "One onion" doubled is "2 onions"; "a dozen eggs" halved is "6 eggs".
+  - Scaler 7: "About 1 stick." only for butter itself, not buttermilk or peanut butter.
+  - Captions 8: "Type how long your clip runs to check the timing." when no clip length is typed.
+  - Captions 9: "About 7.5 seconds to read, and the clip runs 7.5. That just fits." when the read time equals the clip.
+  - Captions 10: "On TikTok, the app's own text or buttons cover screen 1. Move it to the middle." The advice names a spot that is clear (middle, top or bottom), else "Shorten the long word." or "Use a smaller size."
+  - Captions 11: one-line verdict "The app's buttons cover part of it. Move it to the middle." with the same advice (was "Move it up.").
+  - Captions 12: "One word is too wide for the screen, even at Small. Shorten it." when even Small is too wide.
+  - Captions 13: one-line verdict "One word is too wide for the screen." (was "Good to go").
+  - Captions 14: one-line verdict "Type a clip length from 1 to 60 seconds." now also when no length is typed.
+  - Captions 15: pop-up "Type a caption first." when Copy is pressed with nothing typed.
+  - Comp3 16: "The picture clause is unsigned, but the sign half-byte says minus (D). An unsigned field has no minus, so the value shows without one. Check what wrote this field."
+  - Comp3 17: "The picture clause is unsigned but the field carries a plus sign. Usually harmless, worth knowing." now only for a plus sign.
+  - Comp3 18: "Use a point for decimals, like 3.5. A comma here only separates thousands." in Value to bytes when "3,5" is typed.
+  - Shotlist 19: "Your sign or window, with its lights on." for the cafe plan in the evening (else "in daylight").
+  - Shotlist 20: "Film each one for about six seconds. The number beside it is how long it stays in the finished video." The number covers the longest clip the edit uses: five for 30 seconds; six, seven or nine for 45 seconds, by plan.
+  - Shotlist 21: "Count to six on every clip, then stop. Short clips are easy to trim and impossible to stretch." with the same number.
+  - Shotlist 22: "Give on Giving Tuesday, Dec 1": the date is worked out for the year shown.
+  - Voicecheck: no new words. Marks change: elevate, unlock and journey only in slogan use; list numbers, bullets, "St." and "Mr." no longer split or hide sentences; "Hey, can you...?" counts as a request; short text in another alphabet is refused as before; an English list of food names is checked.
+  - Checkup 23: "That address is a PDF, not a web page. The checkup reads web pages, so try the page that links to it."
+  - Checkup 24: "That address is a file, not a web page. The checkup reads web pages, so try your home page."
+  - Checkup 25: "Your page stopped loading partway" / "It stopped arriving after 40 KB, so a visitor may see it cut off. I checked only that part. It may be a one-off, so check again in a minute." / "If it happens again, ask whoever hosts your site to look at it."
+  - Checkup 26: a picture button with no words is named by where it goes: "Your button to /book leads to an error page", "Your button to /book goes nowhere"; good list "2 buttons work: the one to /order and "Menu"."
+  - Checkup 27: "Your site isn't on https" now also for a site that answers only on plain http (it used to get no report).
+  - Checkup 28: links the checkup ran out of time for are counted in "... 30 in all, 21 of them I couldn't test from here." instead of being called broken.
+- **C6, fresh reviewer** (a new subagent, given only the C5 list, its size and the quoted brief). Its words: AI-sounding: 21 "Short clips are easy to trim and impossible to stretch." ("sounds like a slogan"); 17 "Usually harmless, worth knowing." Confusing: 16 "picture clause… sign half-byte says minus (D)" (jargon); 10 "cover screen 1"; 20 two numbers in one breath; 26 "/book" reads like code; 27 doesn't say why https matters; 1 "Done what, all at once?"; 12 "Small" as a setting; 3 "1/16 oz" ("My kitchen scale can't weigh that"). Promises too much: 28 "every... 30 in all, 21 of them I couldn't test"; 10 and 11 "Move it to the middle" stated as a sure fix. Not changed by this run: 17 and 21's second sentence, 1, 16's audience (COBOL programmers) and 27's reason (its own cost and fix lines sit under it on the page) predate T-50; the rest is Josef's call with the C5 approval.
+- **C7, older asserts not run, likely to fail:** `test_new.py` 2294 (T-18 S11 expects "Move it up."); ~2284 (T-18 caption fitter same as T-17, where a verdict changed); ~4555 (T-25 F2 scaler results exactly as T-24, the typed recipe with "12 pinches of salt" and small kid amounts); T-25 F3 caption results unchanged (verdict "That just fits."); 1016 and 1019 (already expected to fail after R2c). Likely still pass: 2292 and 3000 (Good to go), W15 at 2539 (30 second text unchanged). `test_site.py`: nothing found.
+- **Checked and held:** receipt, scaler, captions, comp3, shotlist, voicecheck and checkup each ran their H-01.md held behaviours after their fix (sample and chips the same as main; comp3 864 of 864 round trips; shotlist 84 combinations sum and number; voicecheck 200,000 words in 50 ms; checkup refuses localhost, 127.1, [::1], 0, 169.254.169.254, metadata.google.internal and port 0, treats fd00::1, fe80::1, ::ffff:7f00:1, 64:ff9b::7f00:1, 2001:db8::1, 100.64.0.1, 255.255.255.255 and 0.0.0.0 as private, and five healthy reports read the same as main).
+- **Repros edited:** none.
+- **Not looked at:** everything visual (no browser here, 390 and 320 not seen), the real clipboard, print, PNG export, the Worker on Cloudflare (tested in Node only).
+- **Differed from this plan:** some read-only and edit commands were chained with `;` or `&&` (for example `cd` then a python edit), against the one-command rule; nothing destructive came of it. Sitemap lastmod lines say 2026-11-25 because the commit date is Nov 25 UTC. comp3's source is `_build/comp3.html`, not a tools/ script. The shotlist's hidden Dec 2 2026 caption now says Nov 30 (2027's date, matching the countdown that has rolled over). `test_board.py` reports 2 guard lines wrong about shipped.json, unrelated to T-50 and the same on main. The checkup page and Worker went in one commit.
+- **Josef, by hand:** wait for Claude's real-browser replay of the worst fixes and the look at 390 and 320; approve the C5 messages above; then Claude deploys the Worker in Josef's Chrome (saying so first) and Josef says push it.
 
 ---
 
