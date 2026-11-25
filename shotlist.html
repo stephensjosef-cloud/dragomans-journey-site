@@ -157,7 +157,7 @@ h1.big{text-wrap:balance}
     <div id="cut" class="printopen" hidden>
       <section class="panel" aria-labelledby="edit-h">
         <h2 id="edit-h" style="margin:0 0 4px;font-size:22px">The edit: 10 clips, in the order people see them</h2>
-        <p class="private" style="margin-bottom:8px">Film each one for about five seconds. The number beside it is how long it stays in the finished video.</p>
+        <p class="private" style="margin-bottom:8px" id="filmfor">Film each one for about five seconds. The number beside it is how long it stays in the finished video.</p>
         <div id="edit"></div>
         <p class="label" style="margin-top:18px">The reel, second by second</p>
         <div class="strip" id="strip" aria-hidden="true"></div>
@@ -220,7 +220,7 @@ var TYPES = {
   ['c','You or your crew: a quick wave or a nod to camera.'],
   ['t','A regular\'s cup or plate landing on their table (ask first).'],
   ['c','The finished thing on a plate, turned slowly toward the camera.'],
-  ['o','Your sign or window, in daylight.'],
+  ['o','Your sign or window, {light}.'],
   ['c','You holding up the finished thing, saying one line.']]},
  food:{label:'Restaurant or food truck', thing:'the dish', spots:{k:'The line',p:'The pass',d:'The dining room',o:'Outside'}, clips:[
   ['k','Flame, sizzle, or a knife through something crisp. Sound on.'],
@@ -255,7 +255,7 @@ var TYPES = {
   ['ch','The finished result, turned slowly.'],
   ['d','Your name on the wall or the door.'],
   ['d','You, one line: who it\'s for and how to book.']]},
- trades:{label:'Trades or repair', thing:'the fix', spots:{j:'The job',t:'The truck',b:'The bench',o:'Out front'}, clips:[
+ trades:{label:'Trades or repair', thing:'the fix', spots:{t:'The truck',j:'The job',b:'The bench',o:'Out front'}, clips:[
   ['j','The before: the broken thing, up close.'],
   ['t','Pulling up, or the van doors opening.'],
   ['j','Your hands on the tool, starting the work.'],
@@ -266,7 +266,7 @@ var TYPES = {
   ['j','The after, from the exact spot you shot the before.'],
   ['t','Your name on the truck or your shirt.'],
   ['t','You, one line: what you fix and how to reach you.']]},
- gym:{label:'Gym or class', thing:'the class', spots:{f:'The floor',w:'The whiteboard wall',d:'The front desk',o:'Outside'}, clips:[
+ gym:{label:'Gym or class', thing:'the class', spots:{o:'Outside',w:'The whiteboard wall',f:'The floor',d:'The front desk'}, clips:[
   ['f','One rep, close: the bar leaving the floor, or feet landing.'],
   ['o','The door at class time, people walking in.'],
   ['f','Chalk, tape or gloves going on.'],
@@ -304,6 +304,12 @@ var LIGHT={
  pm:{label:'Evening',tip:'Turn on every light you have. Keep windows behind the camera, never behind the person.'}
 };
 var st={type:'shop',goal:'door',len:30,light:'am'};
+// T-50 H-52: the lap runs in the order of each type's spots, so a gym starts outside at class time and a
+// trades job starts at the truck, before the work. H-49: {light} in a clip follows the light picked.
+var LIT={am:'in daylight',mid:'in daylight',pm:'with its lights on'};
+var GT='Dec 1';   // T-50 H-16: Giving Tuesday's date, set from the same day the countdown uses
+var autoGoal=null;   // T-50 H-15: the goal Nonprofit replaced, given back when the type changes again
+var NUMW=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
 
 function thanksgiving(y){var d=new Date(y,10,1);var first=(4-d.getDay()+7)%7;return new Date(y,10,1+first+21)}
 function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
@@ -322,7 +328,7 @@ function captions(role){
    door:{hook:'This is why it\'s worth the trip',reveal:'This is '+thing+'.',call:'Come see us this Saturday'},
    how:{hook:'How '+thing+' really gets made',process:'No shortcuts here',reveal:'Start to finish',call:'Come try it fresh'},
    people:{hook:'Meet the people behind '+thing,people:'This is who you\'ll see',reveal:'Made by people who care',call:'Come say hi'},
-   give:{hook:'Here\'s what your support did this week',customer:'This is who it\'s for',reveal:'This is what a gift becomes',call:'Give on Giving Tuesday, Dec 1'}
+   give:{hook:'Here\'s what your support did this week',customer:'This is who it\'s for',reveal:'This is what a gift becomes',call:'Give on Giving Tuesday, '+GT}
   };
   return (M[g]||{})[role]||'';
 }
@@ -336,7 +342,7 @@ function plan(){
   var clips=T.clips.map(function(c,i){
     var r=ROLES[i];
     var s=Math.max(1,Math.round(st.len*w[r]/sum*2)/2);
-    return {no:i+1,role:r,spot:c[0],text:c[1],sec:s,cap:captions(r)};
+    return {no:i+1,role:r,spot:c[0],text:c[1].replace('{light}',LIT[st.light]),sec:s,cap:captions(r)};
   });
   var tot=clips.reduce(function(a,c){return a+c.sec},0), diff=st.len-tot, i=0;
   var order=clips.slice().sort(function(a,b){return w[b.role]-w[a.role]});
@@ -348,9 +354,11 @@ function render(){
   chips('c-goal',Object.keys(GOALS).map(function(k){return [k,GOALS[k].label]}),'goal');
   chips('c-len',LENS.map(function(n){return [n,n+' seconds']}),'len');
   chips('c-light',Object.keys(LIGHT).map(function(k){return [k,LIGHT[k].label]}),'light');
-  var T=TYPES[st.type], clips=plan(), y=new Date().getFullYear();
+  var T=TYPES[st.type], y=new Date().getFullYear();
   var tg=thanksgiving(y); if(daysUntil(addDays(tg,5))<0) tg=thanksgiving(y+1);
   var sbs=addDays(tg,2), gt=addDays(tg,5);
+  GT=fmt(gt);
+  var clips=plan();
   var np=st.type==='nonprofit'||st.goal==='give';
   var target=np?gt:sbs, name=np?'Giving Tuesday':'Small Business Saturday';
   var d=daysUntil(target);
@@ -368,13 +376,25 @@ function render(){
   document.getElementById('shoot').innerHTML=shoot(T,clips).map(function(g,i){
     return '<div class="spot"><h3>Stop '+(i+1)+': '+T.spots[g[0]]+'</h3><ol>'+g[1].map(function(f){return '<li><b>'+f.film+'</b><span>'+djNw(f.c.text)+' <span class="ed">'+nth(f.c.no)+' in the video.</span></span></li>'}).join('')+'</ol></div>';
   }).join('');
-  var rules=['Hold the phone upright, the way people watch.','Count to five on every clip, then stop. Short clips are easy to trim and impossible to stretch.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
+  // T-50 H-17: the time to film covers the longest clip the edit uses, five seconds at the least.
+  var film=Math.max(5,Math.ceil(Math.max.apply(null,clips.map(function(c){return c.sec}))));
+  document.getElementById('filmfor').textContent='Film each one for about '+NUMW[film]+' seconds. The number beside it is how long it stays in the finished video.';
+  var rules=['Hold the phone upright, the way people watch.','Count to '+NUMW[film]+' on every clip, then stop. Short clips are easy to trim and impossible to stretch.','Don\'t zoom. Walk closer.','Wipe the lens on your shirt first. It\'s the cheapest upgrade there is.',LIGHT[st.light].tip];
   document.getElementById('rules').innerHTML=rules.map(function(r){return '<li>'+djNw(r)+'</li>'}).join('');
   window._dj=clips;
 }
 document.addEventListener('click',function(e){
   var b=e.target.closest('.chip[data-k]');
-  if(b){var k=b.dataset.k,v=b.dataset.v;st[k]=k==='len'?+v:v;if(k==='type'&&v==='nonprofit')st.goal='give';render();return}
+  if(b){var k=b.dataset.k,v=b.dataset.v,had=document.activeElement===b;
+    if(k==='type'){
+      if(v==='nonprofit'){if(st.goal!=='give'){autoGoal=st.goal;st.goal='give'}}
+      else if(autoGoal&&st.goal==='give'){st.goal=autoGoal;autoGoal=null}
+    }
+    if(k==='goal')autoGoal=null;
+    st[k]=k==='len'?+v:v;render();
+    // T-50 H-53: the chips are rebuilt, so the pressed one gets keyboard focus back.
+    if(had){var nb=document.querySelector('.chip[data-k="'+k+'"][data-v="'+v+'"]');if(nb)nb.focus()}
+    return}
 });
 document.getElementById('copy').addEventListener('click',function(){
   var T=TYPES[st.type];
