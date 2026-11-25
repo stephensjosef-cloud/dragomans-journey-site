@@ -2035,6 +2035,16 @@ Start a Claude Code session on the web on repo `stephensjosef-cloud/dragomans-jo
 
 ---
 
+## T-50 · FIX-H1: the 54 bugs from H-01 · READY
+
+**Why:** the free tools are a stranger's first test of whether Josef's work holds up. The H-01 hunt (Nov 24, 2026, `_build/review/H-01.md`) found 54 bugs in the seven free tools, each with a repro that fails. Each one is fixed at its cause, so the tool tells the truth for every input; a tool never says something its result doesn't back up. The repros stay in `_build/review/H-01/` as regression tests.
+
+**Done when:** on `trip/T-50`, `node _build/review/H-01/run_all.mjs` reports 54 of 54 fixed; `node _build/worker/test_checkup.mjs` passes; the full build passes and the only changed root files are the seven tool pages (plus sitemap lastmod lines, and llms.txt or og images only if their words changed); this receipt is filled in; `trip/T-50` is pushed. main does not move. The checkup Worker is not deployed by this item.
+
+**Receipt:**
+
+---
+
 ## T-49 · FIX-R2b: with support, and planned, on Local · DONE (build)
 
 **Why:** Josef ruled on Nov 24 that support is optional and that the 40 reels are planned. T-48 changed most places; three lines on Local still say otherwise. The words are exact, as Josef wrote them.
