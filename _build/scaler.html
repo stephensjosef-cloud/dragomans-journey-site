@@ -171,12 +171,19 @@ var UNITS=[
  [/^(ml|milliliters?|millilitres?)$/i,'ml',1],[/^(l|liters?|litres?)$/i,'ml',1000],
  [/^(oz\.?|ounces?)$/i,'wt',1],[/^(lbs?\.?|pounds?)$/i,'wt',16],[/^(g|grams?)$/i,'g',1],[/^(kg|kilograms?)$/i,'g',1000],
  [/^(pinch(es)?|dash(es)?)$/i,'pinch',1],
- [/^(cloves?|cans?|sticks?|slices?|bunch(es)?|heads?|packages?|pkgs?\.?|packets?|jars?|bags?|sprigs?|stalks?|pieces?)$/i,'count',1]
+ [/^(cloves?|cans?|sticks?|slices?|bunch(es)?|heads?|packages?|pkgs?\.?|packets?|jars?|bags?|sprigs?|stalks?|pieces?|drops?)$/i,'count',1],
+ // T-50 H-06: a unit it can't convert keeps its own name and scales as a number ("1 1/2 pints").
+ [/^(pints?|pts?\.?|quarts?|qts?\.?|gallons?|gals?\.?|handfuls?|scoops?|splash(es)?|knobs?|drizzles?)$/i,'keep',1]
 ];
 var GRAMS={'flour':120,'sugar':200,'brown sugar':213,'powdered sugar':120,'rice':185,'oats':90,'rolled oats':90,'cocoa':85,'butter':227};
+// T-50 H-09, H-10: a weight or a stick count only for the thing itself, not for a word that contains it
+// ("buttermilk", "peanut butter", "Rice Krispies", "cauliflower").
+var NOT_AFTER='krispies|cereal|noodles?|paper|vinegar|wine|milk|cakes?|crackers?|beans?|snap|peas|cookies?|squash|lettuce|cream|scotch|nuts?|pudding|syrup|substitute';
+function isButter(name){return /^\s*(?:(?:unsalted|salted|cold|chilled|softened|soft|melted|browned|vegan|sweet|cultured|european|plain|good|real|cubed|diced|room[- ]temperature)\s+)*butter\b(?![a-z])(?!\s+(?:krispies|cereal|beans?|lettuce|milk|nuts?|scotch|cream|squash|cups?|cookies?)\b)/i.test(name.replace(/\([^)]*\)/g,''))}
 var st={batch:'all'};
 function num(s){
   s=s.trim();var m;
+  if(/^\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(s))return +s.replace(/,/g,'');   // T-50 H-06: "1,000"
   if((m=s.match(/^(\d+)\s*([¼-¾⅐-⅞])/)))return +m[1]+UF[m[2]];
   if(UF[s[0]]!=null&&s.length===1)return UF[s[0]];
   if((m=s.match(/^(\d+)\s+(\d+)\/(\d+)$/)))return +m[1]+m[2]/m[3];
@@ -184,7 +191,16 @@ function num(s){
   if((m=s.match(/^\d*\.?\d+$/)))return +s;
   return null;
 }
-var QTY=/^((?:\d+\s+\d+\/\d+)|(?:\d+\s*[¼-¾⅐-⅞])|(?:\d+\/\d+)|(?:\d*\.?\d+)|[¼-¾⅐-⅞])(?:\s*(?:-|to|–)\s*((?:\d+\s+\d+\/\d+)|(?:\d+\/\d+)|(?:\d*\.?\d+)|[¼-¾⅐-⅞]))?\s*/;
+// T-50 H-06, H-07, H-08: a thousands comma ("1,000"), a range ending in a mixed number ("1-1½") and an
+// "or" range ("1 or 2") all read as amounts.
+var QTY=/^((?:\d{1,3}(?:,\d{3})+(?:\.\d+)?)|(?:\d+\s+\d+\/\d+)|(?:\d+\s*[¼-¾⅐-⅞])|(?:\d+\/\d+)|(?:\d*\.?\d+)|[¼-¾⅐-⅞])(?:\s*(?:-|to|–|or)\s*((?:\d{1,3}(?:,\d{3})+(?:\.\d+)?)|(?:\d+\s+\d+\/\d+)|(?:\d+\s*[¼-¾⅐-⅞])|(?:\d+\/\d+)|(?:\d*\.?\d+)|[¼-¾⅐-⅞]))?\s*/;
+// T-50 H-48: an amount written as a word ("One onion", "an egg", "a dozen eggs", "half a cup"). "a little",
+// "a few" and the like stay amounts it can't scale.
+var WORDN={a:1,an:1,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12};
+var WQTY=/^(half\s+a\s+dozen|half\s+an?|an?\s+dozen|an?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+(?=[A-Za-z])/i;
+var VAGUE=/^(little|bit|few|touch|squeeze|sprinkle|dollop|smidge|smidgen|lot|lots|tad|hint|dusting|couple|good|generous|large\s+handful|big)\b/i;
+var MODS=/^(heaping|heaped|level|scant|rounded|generous)\s+/i;
+function wordQty(w){w=w.toLowerCase().replace(/\s+/g,' ');if(w==='half a dozen')return 6;if(/dozen$/.test(w))return 12;if(/^half/.test(w))return .5;return WORDN[w]}
 function parse(line){
   var raw=line.trim();if(!raw)return null;
   var m=raw.match(QTY);
@@ -194,10 +210,18 @@ function parse(line){
   if(!m){
     var pm=raw.match(/^(a\s+)?(pinch|dash)\b\s*(of\s+)?(.*)$/i);
     if(pm)return {raw:raw,q:1,kind:'pinch',mult:1,name:pm[4]||'',unit:pm[2].toLowerCase(),wasText:'a '+pm[2].toLowerCase()};
+    var wq=raw.match(WQTY);
+    if(wq&&!(/^an?$/i.test(wq[1])&&VAGUE.test(raw.slice(wq[0].length))))return unitPart(raw,wordQty(wq[1]),null,raw.slice(wq[0].length));
     return {raw:raw,q:null,name:raw};
   }
-  var q=num(m[1]),q2=m[2]?num(m[2]):null,rest=raw.slice(m[0].length);
+  return unitPart(raw,num(m[1]),m[2]?num(m[2]):null,raw.slice(m[0].length));
+}
+function unitPart(raw,q,q2,rest){
   var wm=rest.match(/^([A-Za-z.]+(?:\s?oz\.?)?)\s*(.*)$/),kind='each',mult=1,unit='',name=rest;
+  // T-50 H-06: "2 heaping tbsp" keeps its spoon and its word, since a heaping spoon is its own measure.
+  var mod=rest.match(MODS);
+  if(mod){var mw=rest.slice(mod[0].length).match(/^([A-Za-z.]+)\s*(.*)$/);
+    if(mw&&UNITS.some(function(u){return u[1]!=='each'&&u[0].test(mw[1])}))return {raw:raw,q:q,q2:q2,kind:'keep',mult:1,unit:mod[1]+' '+mw[1],name:mw[2].replace(/^of\s+/i,'')}}
   if(wm){
     var first=wm[1];
     for(var i=0;i<UNITS.length;i++){if(UNITS[i][0].test(first)){kind=UNITS[i][1];mult=UNITS[i][2];unit=first;name=wm[2];break}}
@@ -223,10 +247,23 @@ function volText(tsp){
   var cups=qc/4;
   return (cups?frac(cups,4)+' cup'+(cups>1?'s':''):'')+(rt?(cups?' + ':'')+frac(rt,2)+' tbsp':'');
 }
-function wtText(oz){if(oz>=16){var lb=Math.round(oz/16*4)/4;return frac(lb,4)+' lb'}return (oz<1?frac(Math.round(oz*4)/4,4):Math.round(oz*2)/2)+' oz'}
-function gText(g){return g>=1000?(Math.round(g/100)/10)+' kg':(g<20?Math.round(g):Math.round(g/5)*5)+' g'}
-function mlText(ml){return ml>=1000?(Math.round(ml/100)/10)+' L':Math.round(ml/5)*5+' ml'}
-function gramsFor(name){var n=name.toLowerCase(),best=null;Object.keys(GRAMS).forEach(function(k){if(n.indexOf(k)>=0&&(!best||k.length>best.length))best=k});return best?GRAMS[best]:null}
+// T-50 H-05: a small amount keeps a size you can measure: sixteenths of an ounce, one decimal for ml and g under 10.
+function small(x){return Math.max(.1,Math.round(x*10)/10)}
+function wtText(oz){if(oz<=0)return '0 oz';if(oz>=16){var lb=Math.round(oz/16*4)/4;return frac(lb,4)+' lb'}return (oz<.25?frac(Math.max(1,Math.round(oz*16))/16,16):oz<1?frac(Math.round(oz*4)/4,4):Math.round(oz*2)/2)+' oz'}
+function gText(g){if(g<=0)return '0 g';return g>=1000?(Math.round(g/100)/10)+' kg':(g<10?small(g):g<20?Math.round(g):Math.round(g/5)*5)+' g'}
+function mlText(ml){if(ml<=0)return '0 ml';return ml>=1000?(Math.round(ml/100)/10)+' L':(ml<10?small(ml):Math.round(ml/5)*5)+' ml'}
+function gramsFor(name){var n=name.toLowerCase(),best=null;Object.keys(GRAMS).forEach(function(k){
+  var ok=k==='butter'?isButter(n):new RegExp('(^|[^a-z])'+k+'(?![a-z])(?!\\s+(?:'+NOT_AFTER+')\\b)').test(n);
+  if(ok&&(!best||k.length>best.length))best=k});return best?GRAMS[best]:null}
+// T-50 H-50: a unit word agrees with its number ("6 pinches", "1 bunch"); an abbreviation stays as written.
+var ABBR=/^(tbsps?|tsps?|tbs|T|t|c|oz|lbs?|ml|l|g|kg|qts?|pts?|gals?|pkgs?|fl)$/i;
+function unitAgree(u,n){
+  var m=String(u).match(/^(.*?)([A-Za-z]+)(\.?)$/);if(!m)return u;
+  var w=m[2];
+  if(m[3]||ABBR.test(w)){if(n<=1&&/^(tbsps|tsps|lbs|qts|pts|gals|pkgs)$/i.test(w))w=w.slice(0,-1);return m[1]+w+m[3]}
+  return m[1]+(n>1?(isPlural(w)?w:toPlural(w)):(isPlural(w)?toSingle(w):w));
+}
+function qText(x){if(x<=0)return '0';return x<.25?frac(Math.max(1,Math.round(x*8))/8,8):frac(Math.round(x*4)/4,4)}
 // T-46 3k: a count word agrees with its number ("2 large eggs", "1 ripe banana"). The word is the last one
 // before a comma, a bracket or a joining word ("eggs, beaten", "eggs at room temperature").
 var IRR={leaf:'leaves',loaf:'loaves',knife:'knives',half:'halves',potato:'potatoes',tomato:'tomatoes'};
@@ -242,25 +279,28 @@ function agree(name,n){
 function scaleLine(p,f){
   if(!p)return null;
   if(p.kind==='of'){var oq=p.q*f,on=Math.ceil(oq-1e-9);return {amt:p.lead+on+' '+agree(p.name,on),name:'',note:Math.abs(oq-on)>.01?'Rounded up from '+(Math.round(oq*10)/10)+'.':'',was:p.raw}}
-  if(p.q==null)return {amt:'',name:p.name,note:'No amount to scale. Season to taste.'};
+  // T-50 H-48: "Season to taste" only for a seasoning; any other line with no amount just says so.
+  if(p.q==null)return {amt:'',name:p.name,note:'No amount to scale.'+(/\b(salt|pepper|spices?|seasoning|herbs?|to taste|garnish|paprika|cumin|chili|oregano|thyme|basil|parsley|cilantro|nutmeg|cinnamon|vanilla|zest)\b/i.test(p.name)?' Season to taste.':'')};
   var q=p.q*f,q2=p.q2!=null?p.q2*f:null,note='',was=p.raw.slice(0,p.raw.length-p.name.length).trim();
   if(p.kind==='vol'){
     var t=q*p.mult,a=volText(t);
     if(q2!=null)a=volText(t)+' to '+volText(q2*p.mult);
     var gpc=gramsFor(p.name);
     if(gpc&&t>=48)note='About '+gText(t/48*gpc)+' if you weigh it.';
-    if(/butter/i.test(p.name)&&t>=24){var sk=Math.round(t/24*4)/4;note='About '+frac(sk,4)+' stick'+(sk>1?'s':'')+'.'}
+    if(isButter(p.name)&&t>=24){var sk=Math.round(t/24*4)/4;note='About '+frac(sk,4)+' stick'+(sk>1?'s':'')+'.'}
     return {amt:a,name:p.name,note:note,was:was};
   }
   if(p.kind==='wt')return {amt:wtText(q*p.mult)+(q2!=null?' to '+wtText(q2*p.mult):''),name:p.name,note:'',was:was};
   if(p.kind==='g')return {amt:gText(q*p.mult)+(q2!=null?' to '+gText(q2*p.mult):''),name:p.name,note:'',was:was};
   if(p.kind==='ml')return {amt:mlText(q*p.mult)+(q2!=null?' to '+mlText(q2*p.mult):''),name:p.name,note:'',was:was};
-  if(p.kind==='pinch'){was=p.wasText||was;var pn=Math.max(1,Math.round(q));return {amt:pn>=8?frac(Math.round(pn/8*8)/8,8)+' tsp':pn+' '+p.unit+(pn>1?'es':''),name:p.name,note:pn>=8?'That many pinches is about '+frac(pn/8,8)+' tsp.':'',was:was}}
-  var whole=Math.ceil(q-1e-9),u=p.unit?p.unit.replace(/s$/i,''):'';
+  if(p.kind==='pinch'){was=p.wasText||was;var pn=Math.max(1,Math.round(q));return {amt:pn>=8?frac(Math.round(pn/8*8)/8,8)+' tsp':pn+' '+unitAgree(p.unit,pn),name:p.name,note:pn>=8?'That many pinches is about '+frac(pn/8,8)+' tsp.':'',was:was}}
+  if(p.kind==='keep'){var kt=qText(q),kt2=q2!=null?qText(q2):null,kn=q2!=null?q2:q;
+    return {amt:kt+(kt2?' to '+kt2:'')+' '+unitAgree(p.unit,kn>1?2:kn),name:p.name,note:'',was:was}}
+  var whole=Math.ceil(q-1e-9),u=p.unit||'';
   if(Math.abs(q-whole)>.01)note='Rounded up from '+(Math.round(q*10)/10)+'.';
   if(/\beggs?\b/i.test(p.name)&&whole>=6){var dz=Math.ceil(whole/12);note=(note?note+' ':'')+'Buy '+dz+' dozen.'}
   var hi=q2!=null?Math.ceil(q2-1e-9):null,top=hi||whole;
-  var label=(hi&&hi!==whole?whole+' to '+hi:String(whole))+(u?' '+u+(top>1&&!/s$/.test(u)?(/(ch|sh)$/.test(u)?'es':'s'):''):'');
+  var label=(hi&&hi!==whole?whole+' to '+hi:String(whole))+(u?' '+unitAgree(u,top):'');
   if(hi)note='';
   return {amt:label,name:u?p.name:agree(p.name,top),note:note,was:was};
 }
@@ -277,8 +317,10 @@ function render(){
   document.getElementById('batchrow').hidden=batches<2;
   if(batches<2)st.batch='all';
   document.querySelectorAll('[data-b]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.b===st.batch))});
-  var rows=document.getElementById('rec').value.split(/\n/).map(parse).filter(Boolean).map(function(p){return scaleLine(p,showF)});
-  lastRows=rows;
+  var parsed=document.getElementById('rec').value.split(/\n/).map(parse).filter(Boolean);
+  var rows=parsed.map(function(p){return scaleLine(p,showF)});
+  // T-50 H-04: the shopping list is always what to buy for the whole amount, even while "One batch" is showing.
+  lastRows=showF===f?rows:parsed.map(function(p){return scaleLine(p,f)});
   document.getElementById('out').innerHTML=rows.map(function(r){return '<tr><td class="amt">'+amtNw(esc(r.amt))+(r.was?'<span class="was">was '+amtNw(esc(r.was))+'</span>':'')+'</td><td>'+amtNw(esc(r.name))+'</td><td class="note">'+amtNw(esc(r.note||''))+'</td></tr>'}).join('')||'<tr><td colspan="3" class="note">Paste some ingredients to start.</td></tr>';
 }
 document.addEventListener('click',function(e){var b=e.target.closest('[data-b]');if(b){st.batch=b.dataset.b;render()}});
