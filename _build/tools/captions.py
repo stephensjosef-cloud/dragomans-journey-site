@@ -102,19 +102,32 @@ var st={size:'m',pos:'low',box:'dark',app:'reels',card:0};
 var cv=document.getElementById('cv'),ctx=cv.getContext('2d'),bgImg=null,cards=[];
 
 function font(){return '700 '+SIZES[st.size][1]+"px 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif"}
-function measure(t){ctx.font=font();return ctx.measureText(t).width}
+/* T-50 H-35: every width is measured once per font and kept, and a line is first sized from its words'
+   widths, so a long caption redraws quickly. A line is measured whole only when it sits near the limit.
+   The kept widths are dropped when the web font finishes loading. */
+var MEMO={};
+function measure(t){var f=font(),k=f+'|'+t;if(!(k in MEMO)){if(MEMO.n>20000)MEMO={};MEMO.n=(MEMO.n||0)+1;ctx.font=f;MEMO[k]=ctx.measureText(t).width}return MEMO[k]}
 function maxW(){var m=W-2*MARGIN-2*PADX;APPS[st.app].z.forEach(function(z){if(z[0]>W/2&&z[1]>200&&z[1]+z[3]<H-200)m=Math.min(m,2*(z[0]-W/2)-2*PADX-20)});return m}
 var MAXW=0;
 function wrap(words,width){
-  var lines=[],cur='';
+  var lines=[],cur=[],cw=0,sp=measure(' ');
   for(var i=0;i<words.length;i++){
-    var tryL=cur?cur+' '+words[i]:words[i];
-    if(measure(tryL)<=width||!cur){cur=tryL}else{lines.push(cur);cur=words[i]}
+    var ww=measure(words[i]),est=cur.length?cw+sp+ww:ww,fit;
+    if(!cur.length)fit=true;
+    else if(est<width-6)fit=true;
+    else if(est>width+6)fit=false;
+    else fit=measure(cur.join(' ')+' '+words[i])<=width;
+    if(fit){cur.push(words[i]);cw=est}else{lines.push(cur.join(' '));cur=[words[i]];cw=ww}
   }
-  if(cur)lines.push(cur);return lines;
+  if(cur.length)lines.push(cur.join(' '));return lines;
 }
 /* Same number of lines as a plain wrap, but every line as even as it can be. */
+var BAL={};
 function balanced(text){
+  var key=st.size+'|'+st.app+'|'+text;if(BAL[key])return BAL[key];
+  return (BAL[key]=balanced0(text));
+}
+function balanced0(text){
   var words=text.trim().split(/\s+/).filter(Boolean);if(!words.length)return [];MAXW=maxW();
   var base=wrap(words,MAXW),n=base.length,lo=0,hi=MAXW;
   if(n===1)return base;
@@ -171,6 +184,10 @@ function drawCaption(c,lines,L){
   });
 }
 function hit(L,z){return !(L.x+L.w<=z[0]||L.x>=z[0]+z[2]||L.y+L.h<=z[1]||L.y>=z[1]+z[3])}
+/* The screens the app's buttons would cover with the caption at position p. */
+function hitsAt(p){var save=st.pos,out=[];st.pos=p;
+  cards.forEach(function(c,i){var Lc=layout(c.lines);APPS[st.app].z.forEach(function(z){if(hit(Lc,z)&&out.indexOf(i+1)<0)out.push(i+1)})});
+  st.pos=save;return out}
 function draw(){
   ctx.clearRect(0,0,W,H);
   if(bgImg){var s=Math.max(W/bgImg.width,H/bgImg.height),iw=bgImg.width*s,ih=bgImg.height*s;ctx.drawImage(bgImg,(W-iw)/2,(H-ih)/2,iw,ih)}
@@ -185,33 +202,41 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp
 function render(){
   chips('c-size',SIZES,'size');chips('c-pos',POS,'pos');chips('c-box',BOX,'box');chips('c-app',APPS,'app');
   var text=document.getElementById('cap').value.trim();
-  MAXW=maxW();
+  MAXW=maxW();BAL={};
   cards=text?splitCards(text,2):[];
   if(st.card>=cards.length)st.card=0;
   var rawS=document.getElementById('secs').value.trim(),secs=parseFloat(rawS)||0,badLen=rawS!==''&&!(secs>=1&&secs<=60);   /* T-48 E5 */
   if(badLen)secs=0;
+  var noLen=!badLen&&!secs;   /* T-50 H-40: no clip length, so the timing can't be checked */
   var need=cards.reduce(function(a,c){return a+readSecs(c.text)},0);
   var sub=document.getElementById('k-sub');sub.hidden=cards.length<2;sub.textContent=cards.length>1?('Two lines fit on a phone, so this caption shows in '+cards.length+' parts. Tap one to see it.'):'';
   document.getElementById('cards').style.setProperty('--k',String(SIZES[st.size][1]/MAXW));
   document.getElementById('cards').innerHTML=cards.map(function(c,i){return '<button type="button" class="cardline" data-card="'+i+'" aria-pressed="'+(i===st.card)+'"><span class="n">'+(i+1)+'</span><span class="t"><span>'+esc(c.lines.join('\n'))+'</span></span><span class="s">'+readSecs(c.text)+' s</span></button>'}).join('');
-  var L=draw(),v=[],hits=[];
+  var L=draw(),v=[],hits=[],fix='',big=false;
   if(!cards.length){v.push(['warn','Type a caption to check it.'])}
   else{
     var orphan=cards.some(function(c){var l=c.lines;return l.length>1&&l[l.length-1].split(' ').length===1});
     v.push(orphan?['warn','One screen ends on a single word. Add or trim a word in that sentence.']:['ok','No line is stranded on its own. Lines are balanced to even widths and kept clear of the app\'s side buttons.']);
-    cards.forEach(function(c,i){var Lc=layout(c.lines);APPS[st.app].z.forEach(function(z){if(hit(Lc,z))hits.push(i+1)})});
-    hits=hits.filter(function(x,i,a){return a.indexOf(x)===i});
-    if(st.app==='none')v.push(['warn','No app picked. Pick the one you post to and this checks whether its buttons cover your words.']);
-    else v.push(hits.length?['bad','On '+APPS[st.app].label+', the app\'s own text or buttons cover screen '+hits.join(', ')+'. Move it to the middle or use a smaller size.']:['ok','Clear of the buttons and caption area on '+APPS[st.app].label+'.']);
-    if(badLen)v.push(['warn','A clip here runs 1 to 60 seconds. Type a length in that range to check the timing.']);
-    if(secs){v.push(need>secs?['bad','Reading all of it takes about '+need+' seconds and the clip is '+secs+'. Cut words or hold the clip longer, or people scroll before they finish.']:['ok','About '+need+' seconds to read, and the clip runs '+secs+'. Time to spare.'])}
+    hits=hitsAt(st.pos);
+    /* T-50 H-45: the advice names a place that clears the buttons, checked with these same lines. */
     var big=cards.some(function(c){return c.lines.some(function(l){return measure(l)>MAXW+1})});
-    if(big)v.push(['bad','One word is too wide for the screen at this size. Pick a smaller size.']);
+    if(hits.length){var to=['mid','top','low'].filter(function(p){return p!==st.pos&&!hitsAt(p).length})[0];
+      fix=to?'Move it to the '+{mid:'middle',top:'top',low:'bottom'}[to]+'.':big?'Shorten the long word.':'Use a smaller size.'}
+    if(st.app==='none')v.push(['warn','No app picked. Pick the one you post to and this checks whether its buttons cover your words.']);
+    else v.push(hits.length?['bad','On '+APPS[st.app].label+', the app\'s own text or buttons cover screen '+hits.join(', ')+'. '+fix]:['ok','Clear of the buttons and caption area on '+APPS[st.app].label+'.']);
+    if(badLen)v.push(['warn','A clip here runs 1 to 60 seconds. Type a length in that range to check the timing.']);
+    if(noLen)v.push(['warn','Type how long your clip runs to check the timing.']);
+    /* T-50 H-43: "time to spare" only when there is some */
+    if(secs){v.push(need>secs?['bad','Reading all of it takes about '+need+' seconds and the clip is '+secs+'. Cut words or hold the clip longer, or people scroll before they finish.']:need===secs?['ok','About '+need+' seconds to read, and the clip runs '+secs+'. That just fits.']:['ok','About '+need+' seconds to read, and the clip runs '+secs+'. Time to spare.'])}
+    /* T-50 H-44: "pick a smaller size" only when a smaller size would fit the word */
+    if(big){var wide=Math.max.apply(null,cards.map(function(c){return Math.max.apply(null,c.text.split(' ').map(measure))})),k=SIZES.s[1]/SIZES[st.size][1];
+      v.push(['bad',st.size!=='s'&&wide*k<=MAXW+1?'One word is too wide for the screen at this size. Pick a smaller size.':'One word is too wide for the screen, even at Small. Shorten it.'])}
     if(st.size==='s')v.push(['warn','Small text reads fine on a big phone and poorly on a small one. Medium is the safer bet.']);
   }
   document.getElementById('verdicts').innerHTML=v.map(function(x){return '<li><span class="dot '+x[0]+'" aria-hidden="true"></span><span>'+x[1]+'</span></li>'}).join('');
   /* The one line under the phone (T-18): covered first, then too long, then good to go. */
-  var one=!cards.length?['warn','Type a caption to check it.']:(st.app!=='none'&&hits.length)?['bad','The app\'s buttons cover part of it. Move it up.']:badLen?['warn','Type a clip length from 1 to 60 seconds.']:(secs&&need>secs)?['bad','Too long for this clip. People need about '+need+' seconds and your clip is '+secs+'.']:['ok','Good to go. It fits, and people can read it in time.'];
+  /* T-50 H-40, H-41: "good to go" only when every check above passed */
+  var one=!cards.length?['warn','Type a caption to check it.']:(st.app!=='none'&&hits.length)?['bad','The app\'s buttons cover part of it. '+fix]:big?['bad','One word is too wide for the screen.']:(badLen||noLen)?['warn','Type a clip length from 1 to 60 seconds.']:(secs&&need>secs)?['bad','Too long for this clip. People need about '+need+' seconds and your clip is '+secs+'.']:['ok','Good to go. It fits, and people can read it in time.'];
   document.getElementById('v-dot').className='dot '+one[0];
   var vt=document.getElementById('v-text');if(vt.textContent!==one[1])vt.textContent=one[1];
 }
@@ -230,9 +255,9 @@ document.getElementById('secs').addEventListener('change',function(e){var x=pars
 document.getElementById('bg').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var img=new Image();img.onload=function(){bgImg=img;render()};img.src=URL.createObjectURL(f)});
 document.getElementById('png').addEventListener('click',function(){if(cards.length)pngFor(st.card)});
 document.getElementById('pngall').addEventListener('click',function(){var i=0;(function next(){if(i<cards.length)pngFor(i++,function(){setTimeout(next,350)})})()});
-document.getElementById('copy').addEventListener('click',function(){djCopy(cards.map(function(c){return c.lines.join('\n')}).join('\n\n'),'Captions')});
+document.getElementById('copy').addEventListener('click',function(){if(!cards.length){djToast('Type a caption first.');return}djCopy(cards.map(function(c){return c.lines.join('\n')}).join('\n\n'),'Captions')});   /* T-50 H-42 */
 render();
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(render);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){MEMO={};render()});
 })();
 """
 
