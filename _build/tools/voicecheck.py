@@ -60,7 +60,10 @@ SCRIPT = r"""
       'Long dashes are the mark people spot first now.', 'Use a period or a comma.'],
     ['b', /\b(?:isn't|is not|aren't|not) (?:(?:just |only |about )?[^.?!]{3,60}?(?:[,;.] ?(?:it's|it is|they're)\b|\u2014)|(?:just |only |about )[^.?!]{3,60}?[,;] ?but\b)/gi,
       '"It\'s not this, it\'s that" is the most copied shape in AI writing.', 'Say the second half on its own.'],
-    ['c', /\b(?:leverag\w*|seamless\w*|unlock\w*|elevat\w*|robust|streamlin\w*|effortless\w*|game.chang\w*|delve\w*|tapestry|cutting.edge|empower\w*|harness the|supercharg\w*|revolutioni\w*|transformative|next.level|world.class|bespoke|curated|holistic|synerg\w*|journey to|in today's|landscape of|at the end of the day|when it comes to|it's worth noting|rest assured)\b/gi,
+    // T-50 H-23, H-24: three words are marked only in the use AI reaches for. "Elevate" as a verb about something
+    // ("elevate your brand"), not an elevator or an elevation; "unlock" as a promise ("unlock your potential"), not
+    // unlocking a car or a door; "journey to" as a metaphor ("a journey to better health"), not a trip to a place.
+    ['c', /\b(?:leverag\w*|seamless\w*|unlock(?:s|ed|ing)?(?= (?:(?:your|the|their|our|its|new|a|more) )?(?:(?:full|true|real|hidden|whole|next) )?(?:potential|power|growth|success|value|possibilit\w*|opportunit\w*|secrets?|magic|creativity|insights?|savings|freedom|benefits|level)\b)|elevat(?:e|es|ed|ing)(?= (?:your|our|the|their|every|any|its|my)\b)|robust|streamlin\w*|effortless\w*|game.chang\w*|delve\w*|tapestry|cutting.edge|empower\w*|harness the|supercharg\w*|revolutioni\w*|transformative|next.level|world.class|bespoke|curated|holistic|synerg\w*|journey to(?= )|in today's|landscape of|at the end of the day|when it comes to|it's worth noting|rest assured)\b/gi,
       '"{hit}" is one of the words AI reaches for.', 'Say what actually happens.'],
     ['d', /^(?:Whether you're|Whether you are|Imagine |Picture this|In a world|Let's face it|Here's the thing|The truth is|Simply put|Look,)/gi,
       '"{hit}" warms up instead of starting.', 'Start with the point.'],
@@ -84,12 +87,28 @@ SCRIPT = r"""
   function words(s) { var w = String(s).trim().split(/\s+/); return w[0] ? w : []; }
 
   // Sentences end at . ! ? followed by a space or the end (the punctuation stays), and at a line break.
+  // T-50 H-20: a list line's own number ("1.") is not a sentence. H-21: a short form like "St." or "a.m." ends a
+  // sentence only when a capital follows it ("Fourth St. Come by." is two sentences, "St. in Santa Rosa" one);
+  // a title like "Mr." or "Dr." never does, and neither does "St." meaning Saint ("visit St. Helena").
+  var TITLE = /(?:^|[\s(])(?:Mr|Mrs|Ms|Dr|Prof|Mt|Ft)$/;
+  var SHORT = /(?:^|[\s(])(?:St|Ave|Blvd|Rd|Ste|Hwy|Ln|Ct|Pkwy|No|vs|etc|approx|Inc|Co|Corp|Ltd|a\.m|p\.m|e\.g|i\.e|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept?|Oct|Nov|Dec|hrs?|mins?|oz|lbs?|tbsp|tsp|qt|pt|sq|ft)$/i;
+  function ends(line, i, start) {
+    var before = line.slice(0, i), after = line.slice(i + 1).replace(/^\s+/, '');
+    if (line[i] !== '.') return true;
+    if (TITLE.test(before)) return false;
+    if (!SHORT.test(before)) return true;
+    if (!/^\p{Lu}/u.test(after)) return !after;
+    // "St." before a capital: a street after a number or a name inside the sentence ("on Main St."), else Saint.
+    var seg = line.slice(start, i).trim(), m = /(\S+)\s+St$/.exec(seg);
+    if (/(?:^|[\s(])St$/.test(before)) return !!m && (/^\d/.test(m[1]) || (/^\p{Lu}/u.test(m[1]) && seg.length > m[0].length));
+    return true;
+  }
   function split(text) {
     var out = [];
     String(text).split(/\r\n|\r|\n/).forEach(function (line) {
-      var start = 0;
-      for (var i = 0; i < line.length; i++) {
-        if ('.!?'.indexOf(line[i]) > -1 && (i + 1 === line.length || /\s/.test(line[i + 1]))) {
+      var start = 0, lm = /^\s*(?:[-*\u2022\u2023\u25E6\u2013\u2014]|\d{1,2}[.)])\s+/.exec(line);
+      for (var i = lm ? lm[0].length : 0; i < line.length; i++) {
+        if ('.!?'.indexOf(line[i]) > -1 && (i + 1 === line.length || /\s/.test(line[i + 1])) && ends(line, i, start)) {
           out.push(line.slice(start, i + 1)); start = i + 1;
         }
       }
@@ -160,8 +179,15 @@ SCRIPT = r"""
     sents.forEach(function (S) {
       var s = plainCopy(S.text);
       var at = function (h) { return S.text.substr(h.at, h.hit.length); };
+      // T-50 H-22: the rules read from the first word, so a blanked-out bullet doesn't hide a mark that starts the line.
+      var lead = /^\s*/.exec(s)[0].length;
       L1.forEach(function (r) {
-        finds(r[1], s).forEach(function (h) { S.marks.push({level: 1, rule: r[0], hit: at(h), at: h.at}); });
+        finds(r[1], s.slice(lead)).forEach(function (h) {
+          h.at += lead;
+          // "journey to" a named place or a number ("to Tahoe", "to 5th Street") is a trip, not a metaphor.
+          if (/^journey to$/i.test(h.hit) && /^ (?:(?:a|an|the|your|our) )?[\p{Lu}\d]/u.test(s.slice(h.at + h.hit.length))) return;
+          S.marks.push({level: 1, rule: r[0], hit: at(h), at: h.at});
+        });
       });
       finds(L2[1], s).forEach(function (h) { S.marks.push({level: 2, rule: L2[0], hit: at(h), at: h.at}); });
       // T-41 play pass: the swap test speaks only where the sentence already reaches for generic words (a level 1 or 2
@@ -174,9 +200,11 @@ SCRIPT = r"""
     // g: a question answered by the very next sentence, short, starting with It, That, This, You, We, I or The.
     // T-48: a request ("Can you ask...?", "Could we...?", "Would you mind...?") asks someone to do something; it isn't a stage move.
     var ASK = /^(?:(?:can|could|would|will) (?:you|we|i|someone|somebody|anyone)|may i|would you mind|do you mind|mind if|please)\b/i;
+    // T-50 H-23: a greeting in front ("Hey, can you...?") doesn't turn a request into a stage move.
+    var HELLO = /^(?:(?:hey|hi|hello|ok|okay|oh|so|also|quick question)(?: there| all| team| guys| [A-Z][a-z]+)?[,!:]?\s+)+/i;
     sents.forEach(function (S, i) {
       var nx = sents[i + 1];
-      if (/\?$/.test(S.text) && !ASK.test(plainCopy(S.text).trim()) && nx && nx.text.length <= 80 && /^(?:It|That|This|You|We|I|The)\b/.test(nx.text))
+      if (/\?$/.test(S.text) && !ASK.test(plainCopy(S.text).trim().replace(HELLO, '')) && nx && nx.text.length <= 80 && /^(?:It|That|This|You|We|I|The)\b/.test(nx.text))
         S.marks.push({level: 4, rule: 'g', hit: null, at: null});
     });
     // h: three sentences in a row of 2 to 6 words each; the first of the three is marked, and the next run starts after them.
@@ -204,15 +232,22 @@ SCRIPT = r"""
   }
   window.voiceCheck = check;
 
-  // T-42 W2: the rules only know English. Text of 12 words or more where under 1 word in 12 is a common English
-  // word (or written mostly outside the Latin alphabet) gets one line and no marks.
+  // T-42 W2: the rules only know English. T-50 H-18, H-19: text written mostly outside the Latin alphabet is never
+  // checked, however short (Chinese has no spaces, so it reads as one word). Latin-alphabet text of 12 words or more is
+  // refused only when it shows another language: more of another language's common words than English ones (two at
+  // least), or many accented letters and few English words. A plain English list of services passes.
   var EN = /^(?:the|and|to|of|in|is|you|we|it|for|on|with|our|your|that|this|are|be|my|at|as|can|will|have|from|or|by|an|not|but|all|so|if|they|was|what|when|who|how|do|get|just|more|about|us|me|their|there|here|one|out|up|any|every)$/;
+  var OTHER = /^(?:de|la|que|el|los|las|del|por|una|para|es|su|se|lo|como|pero|sus|le|ya|este|esta|muy|sobre|y|al|nuestro|nuestra|nosotros|les|des|et|est|une|du|pour|dans|qui|ce|sur|au|avec|nous|vous|sont|mais|der|und|das|ist|nicht|ein|eine|zu|mit|sich|auf|für|im|dem|wir|ihr|auch|il|che|di|della|sono|gli|non|da|em|uma|não|é|het|een|en|voor|niet|zijn|ang|ng|mga|sa|ay|yang|di|ini|itu|dengan|untuk|tidak|và|của|là|không|có)$/;
   function english(text) {
     var w = words(text.toLowerCase().replace(/[\u2018\u2019]/g, "'")).map(function (x) { return x.replace(/^[^\p{L}]+|[^\p{L}']+$/gu, ''); }).filter(Boolean);
-    if (w.length < 12) return true;
-    var letters = (text.match(/\p{L}/gu) || []).length, latin = (text.match(/[A-Za-z\u00C0-\u024F]/g) || []).length;
+    var letters = (text.match(/\p{L}/gu) || []).length, latin = (text.match(/[A-Za-z\u00C0-\u024F\u1E00-\u1EFF]/g) || []).length;
     if (letters && latin / letters < 0.5) return false;
-    return w.filter(function (x) { return EN.test(x); }).length / w.length >= 1 / 12;
+    if (w.length < 12) return true;
+    var en = w.filter(function (x) { return EN.test(x); }).length, other = w.filter(function (x) { return OTHER.test(x); }).length;
+    var accents = (text.match(/[\u00C0-\u024F\u1E00-\u1EFF]/g) || []).length;
+    if (other >= 2 && other > en) return false;
+    if (latin && accents / latin > 0.05 && en / w.length < 1 / 12) return false;
+    return true;
   }
   window.voiceEnglish = english;
 
