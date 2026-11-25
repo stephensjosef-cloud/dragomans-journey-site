@@ -243,14 +243,29 @@ function renderLines(){
 }
 function calc(){
   var rate=Math.max(0,parseFloat(document.getElementById('rate').value)||0),tot=0,back=0;   /* T-48 E6: never below 0 */
-  var rows=lines.map(function(l){var h=Math.max(0,parseFloat(l.min)||0)/60*PER[l.per][1];var b=h*V[l.v][1];tot+=h;back+=b;return {l:l,h:h,b:b}});
-  return {rows:rows,tot:tot,back:back,rate:rate};
+  var rows=lines.map(function(l){var h=Math.max(0,parseFloat(l.min)||0)/60*PER[l.per][1];var b=h*V[l.v][1];tot+=h;back+=b;return {l:l,h:h,b:b,m:Math.round(h*rate)}});
+  /* T-50 H-01: TOTAL is the sum of the dollar amounts printed on the lines, so the receipt adds up */
+  var totM=rows.reduce(function(a,r){return a+r.m},0);
+  return {rows:rows,tot:tot,back:back,rate:rate,totM:totM};
 }
-function finishDate(h){var d=new Date(new Date().getFullYear()+1,0,1),left=h;while(left>0){var w=d.getDay();if(w>0&&w<6)left-=8;if(left>0)d.setDate(d.getDate()+1)}return d}
+/* The weekday, from New Year's Day on, when h hours of 8-hour workdays end. T-50 H-34: worked out in a few
+   steps, never a day at a time, so a huge number answers at once; null when there is nothing to do or the
+   date is past what a date can show. */
+function finishDate(h){
+  if(!(h>0)||!isFinite(h))return null;
+  var n=Math.ceil(h/8),d=new Date(new Date().getFullYear()+1,0,1);
+  while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);
+  var weeks=Math.floor((n-1)/5),rem=(n-1)%5;
+  if(weeks>5e6)return null;
+  d.setDate(d.getDate()+weeks*7);
+  while(rem>0){d.setDate(d.getDate()+1);if(d.getDay()>0&&d.getDay()<6)rem--}
+  if(isNaN(d.getTime())||d.getFullYear()>9999)return null;
+  return d;
+}
 function receiptText(c){
   var out=['BUSYWORK RECEIPT','dragomansjourney.com/receipt.html',''];
-  c.rows.forEach(function(r){out.push(r.l.name+': '+hrs(r.h)+' a year, '+money(r.h*c.rate)+' ('+V[r.l.v][0]+')')});
-  out.push('','Total: '+hrs(c.tot)+' a year, '+money(c.tot*c.rate),'You could get back: about '+hrs(c.back)+' ('+money(c.back*c.rate)+')');
+  c.rows.forEach(function(r){out.push(r.l.name+': '+hrs(r.h)+' a year, '+money(r.m)+' ('+V[r.l.v][0]+')')});
+  out.push('','Total: '+hrs(c.tot)+' a year, '+money(c.totM),'You could get back: about '+hrs(c.back)+' ('+money(c.back*c.rate)+')');
   return out.join('\n');
 }
 function renderReceipt(){
@@ -259,7 +274,7 @@ function renderReceipt(){
   var rows=document.querySelectorAll('#rows .row2'),f=document.getElementById('p-foot');
   c.rows.forEach(function(r,i){var el=rows[i];if(!el)return;
     el.querySelector('[data-o=name]').innerHTML=djNw(esc(r.l.name));
-    el.querySelector('[data-o=money]').textContent=money(r.h*c.rate);
+    el.querySelector('[data-o=money]').textContent=money(r.m);
     el.querySelector('[data-o=hrs]').textContent=hrs(r.h)+' a year';
     var v=el.querySelector('[data-o=v]');v.className='t-'+r.l.v;v.textContent=V[r.l.v][0];
     el.querySelector('[data-o=change]').setAttribute('aria-label','Change '+r.l.name);
@@ -268,9 +283,10 @@ function renderReceipt(){
   if(!c.rows.length){f.innerHTML='<p class="c" style="padding:24px 0">Nothing rung up yet.</p>';updateBring(c);return}
   var weeks=c.tot/40, fin=finishDate(c.tot);
   var backWeek=c.back*c.rate/50, payback=backWeek>0?Math.ceil(3000/backWeek):0;
-  f.innerHTML='<hr><div class="rl tot"><span>TOTAL</span><span>'+money(c.tot*c.rate)+'</span></div><div class="rl"><span>Hours</span><span>'+hrs(c.tot)+'</span></div>'+
+  f.innerHTML='<hr><div class="rl tot"><span>TOTAL</span><span>'+money(c.totM)+'</span></div><div class="rl"><span>Hours</span><span>'+hrs(c.tot)+'</span></div>'+
     '<div class="rl"><span>Full work weeks</span><span>'+(Math.round(weeks*10)/10)+'</span></div><hr>'+
-    '<p style="margin:0">Done all at once, starting New Year\'s Day, you\'d finish on</p><p class="big2">'+fin.toLocaleDateString('en-US',{month:'long',day:'numeric'})+'</p><hr>'+
+    /* T-50 H-02, H-03: the finish date carries its year, and shows only when there are hours to finish */
+    (fin?'<p style="margin:0">Done all at once, starting New Year\'s Day, you\'d finish on</p><p class="big2">'+fin.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'</p><hr>':'')+
     '<div class="rl tot"><span>You could get back</span><span>'+money(c.back*c.rate)+'</span></div><div class="rl"><span>Hours</span><span>'+hrs(c.back)+'</span></div>'+
     (payback?'<p style="margin:10px 0 0">At that pace, a Build from $3,000 would pay for itself in about <b>'+payback+' week'+(payback===1?'':'s')+'</b>.</p>':'')+
     '<hr><p class="c">KEEP THIS RECEIPT<br>THANK YOU FOR COUNTING</p>';
